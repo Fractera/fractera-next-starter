@@ -67,7 +67,7 @@ export function ShellHome({ config }: { config: AppConfig }) {
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 flex flex-col items-center gap-9 text-center px-6 pt-16 max-w-2xl w-full"
+        className="relative z-10 flex flex-col items-center gap-9 text-center px-6 pt-[100px] pb-[100px] max-w-2xl w-full"
       >
         {/* Badge */}
         <motion.div
@@ -77,7 +77,7 @@ export function ShellHome({ config }: { config: AppConfig }) {
         >
           <span className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.18em] text-primary/80 uppercase border border-primary/20 rounded-full px-4 py-1.5 bg-primary/5 backdrop-blur-sm">
             <Sparkles size={10} />
-            Production-Coding AI Server
+            Fractera-next-starter
           </span>
         </motion.div>
 

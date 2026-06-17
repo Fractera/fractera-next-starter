@@ -162,7 +162,22 @@
   > `_components/index.tsx`, суффиксы
   `.client`/`.server`, типизированный `_meta.ts`).
 ---
+## 5. Авторизация
 
+  NextAuth v5 (провайдеры: учётные данные + гость).
+  Читать пользователя — `/api/me`; защита страницы —
+  хук `useRouteAccess(meta)`; вход гостя —
+  `/api/auth/guest`; запись данных —
+  `/api/project/default/<resource>`
+  (штамп `user.id`); промоушен `register()` сохраняет
+  `user.id`. Роли: `guest/user/architect` (enforced) +
+  бизнес-роли (полный список — `ALL_ROLES`, 15). **Гость
+  ≠ неавторизованный**: на странице с
+  `requiresGuestRegistration: true` гостю выдаётся
+  постоянный id, его работа сохраняется и привязывается
+  при регистрации.
+  > Детали — `HOW-USE-AUTH.md`,
+  `CRUD-DOCS/auth-architecture.md`.
 
   
 

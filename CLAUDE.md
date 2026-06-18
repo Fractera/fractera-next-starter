@@ -57,7 +57,8 @@ Environment map (number = nesting depth):
    - 3.5 Domain settings — domain connection + certificate
 
 **Environment calls.** Reach a service by its port/endpoint: memory — `/api/rag/*`, deploy — `/api/deploy`,
-media — `:3300`, orchestration — Hermes `:9119`.
+media — `:3300`, orchestration — Hermes `:9119`. Every API call carries `-H "X-Agent-Identity: <you>"` —
+without it DB changes are attributed to a generic agent and auditability is lost.
 
 **Boundary.** App `:3000` is your domain of authority. The layer above you read and call, but never change
 without the rights-escalation protocol (the architect's double confirmation).
@@ -178,8 +179,9 @@ Before any action:
 
 ### 6.3. Opening a step (development step)
 - **6.3.1** Create the step file `NEW-STEPS/<NN>-slug.md` with the `fractera:step` block and the
-  **importance** field (`optional` | `mandatory` | `critical`). Describe: inputs, the planned result,
-  intermediate results (decomposition), planned changes to the routing tree.
+  **importance** field (`optional` | `mandatory` | `critical`) — exact file format in `development-steps.md`.
+  Describe: inputs, the planned result, intermediate results (decomposition), planned changes to the
+  routing tree.
 - **6.3.2** Create the intermediate sub-steps obvious at this stage. Growing more sub-steps in later cycles
   is allowed and normal.
 - **6.3.3** If needed, change the `/architecture` tree. A route is described by two files: `_meta.ts` (the
@@ -212,10 +214,20 @@ page renders the result **and** a row appears in the DB). The fifth proof is the
 ### 6.7. Deploy preparation (only with the architect's permission)
 - **6.7.1** Load and **re-read the anti-patterns** (`PATTERNS/ANTI-PATTERNS/`) before launching.
 - **6.7.2** Found a discrepancy — cancel the deploy, fix it.
-- **6.7.3** Launch the deploy. Mechanics: `DEPLOY_SECRET` from `bridges/app/.env.local` (**a sanctioned
-  exception** to the §3 boundary — deploy is a platform action, secret read-only) → `POST /api/deploy`
-  (header `X-Deploy-Secret`) → poll `/api/deploy/status` until `COMPLETED | FAILED | HEALTH_FAILED`. Build
-  takes 2–4 min, only `app/` is rebuilt.
+- **6.7.3** Launch the deploy (reading `DEPLOY_SECRET` from `bridges/app/.env.local` is a **sanctioned
+  exception** to the §3 boundary — deploy is a platform action, secret read-only). Build takes 2–4 min,
+  only `app/` is rebuilt:
+  ```bash
+  DEPLOY_SECRET=$(grep "^DEPLOY_SECRET=" /opt/fractera/bridges/app/.env.local | cut -d'=' -f2)
+  RESULT=$(curl -s -X POST http://localhost:3002/api/deploy \
+    -H "Content-Type: application/json" -H "X-Deploy-Secret: $DEPLOY_SECRET" \
+    -d "{\"description\":\"what changed\"}")
+  JOB_ID=$(echo $RESULT | grep -o '"jobId":"[^"]*"' | cut -d'"' -f4)
+  while true; do
+    S=$(curl -s "http://localhost:3002/api/deploy/status?jobId=$JOB_ID")
+    echo $S | grep -qE '"status":"(COMPLETED|FAILED|HEALTH_FAILED)"' && break; sleep 10
+  done; echo $S
+  ```
 
 ### 6.8. Deploy result
 - **6.8.1 Failure (`FAILED` / `HEALTH_FAILED`).** Record a row in Deployments (`status=error`, commit).

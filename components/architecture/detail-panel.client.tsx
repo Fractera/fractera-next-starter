@@ -62,6 +62,15 @@ export function DetailPanel({ node }: { node: ArchNode | null }) {
         <SkillContentViewer key={node.id} agent={node.skillRef.agent} name={node.skillRef.name} />
       )}
 
+      {node.content && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">Definition</span>
+          <pre className="max-h-[48vh] overflow-auto rounded-lg border border-border bg-muted/20 p-3 font-mono text-[11px] leading-relaxed text-foreground/90 whitespace-pre-wrap">
+            {node.content}
+          </pre>
+        </div>
+      )}
+
       {node.editTo && (
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">Current content</span>

@@ -61,5 +61,11 @@ export type ArchNode = {
    *  /ai-draft-settings?agent=&object=instruction&target=<doc> (selects, never creates —
    *  instruction drafts are always seeded). */
   editTo?: { agent: string; object: "instruction"; target: string }
+  /** Inline full body for a leaf whose content is small and already on hand (e.g. an MCP
+   *  server's definition block). The detail panel renders it in a scrollable container,
+   *  the same way a skill's SKILL.md is shown — so the node has a real body, not just a
+   *  one-line description. (Skills fetch lazily via skillRef because files are large; MCP
+   *  defs are a few lines, so they ride along in the tree.) */
+  content?: string
   children?: ArchNode[]
 }

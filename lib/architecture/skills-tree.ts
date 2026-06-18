@@ -152,7 +152,15 @@ function mcpSummary(def: Record<string, unknown>): string {
 }
 
 function mcpLeaf(platform: string, name: string, def: Record<string, unknown>): ArchNode {
-  return { id: `${platform}-mcp-${name}`, label: name, kind: "mcp", description: mcpSummary(def) }
+  return {
+    id: `${platform}-mcp-${name}`,
+    label: name,
+    kind: "mcp",
+    description: mcpSummary(def),
+    // The full server definition, shown in the panel's scrollable container (like a
+    // skill's SKILL.md) so the node has a real body, not just a title + one-liner.
+    content: JSON.stringify({ [name]: def }, null, 2),
+  }
 }
 
 // JSON configs (claude/gemini/qwen/kimi): the `mcpServers` object, name -> definition.

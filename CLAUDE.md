@@ -152,16 +152,16 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <stage id="6.1" name="Triage">
     <triage>
       <trigger n="1" type="next-step" source="NEW-STEPS/" goto="6.3"/>
-      <trigger n="2" type="direct-task" goto="6.3"><brainstorm ref="section-2" mode="dense"/></trigger>
+      <trigger n="2" type="direct-task" goto="6.3"/>
       <trigger n="3" type="architecture-state" goto="flow-B"/>
       <trigger n="4" type="agent-drafts" goto="flow-A"/>
     </triage>
-    <flow id="A" page="/ai-draft-settings" folder="AI-DRAFT-SETTINGS/{AGENT}/ (SKILLS/, MCP/)">
+    <flow id="flow-A" page="/ai-draft-settings" folder="AI-DRAFT-SETTINGS/{AGENT}/ (SKILLS/, MCP/)">
       <action>convert each draft into a new step (spec)</action>
       <action>delete the draft record (Discard / Remove draft)</action>
       <constraint>do not touch the original instruction/skill/MCP files; build nothing here</constraint>
     </flow>
-    <flow id="B" page="/architecture">
+    <flow id="flow-B" page="/architecture">
       <action>take ONE record: todo on a live route | declared page (README.md, no built file) | danger/deletion</action>
       <action>delete it on the tab; create a step for it</action>
       <repeat until="tree empty"/>

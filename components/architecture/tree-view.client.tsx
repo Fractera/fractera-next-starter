@@ -1,7 +1,7 @@
 "use client"
 
 import {
-  ChevronRight, Plus, Folder, FolderOpen, File, FileText, FileCode,
+  ChevronRight, Plus, Pencil, Folder, FolderOpen, File, FileText, FileCode,
 } from "lucide-react"
 import type { ArchNode, ArchKind } from "@/lib/architecture/types"
 
@@ -37,10 +37,11 @@ type Props = {
   onSelect: (node: ArchNode) => void
   onToggle: (id: string) => void
   onAdd: (parent: ArchNode) => void
+  onEdit: (node: ArchNode) => void
 }
 
 export function TreeNode({
-  node, depth, selectedId, expanded, blink, onSelect, onToggle, onAdd,
+  node, depth, selectedId, expanded, blink, onSelect, onToggle, onAdd, onEdit,
 }: Props) {
   const hasChildren = !!node.children?.length || !!node.addable
   const isOpen = expanded.has(node.id)
@@ -55,33 +56,44 @@ export function TreeNode({
   return (
     <div>
       <style>{`@keyframes archBlink{0%,100%{background-color:transparent}50%{background-color:rgb(245 158 11 / 0.35)}}`}</style>
-      <button
-        id={`arch-node-${node.id}`}
-        onClick={handleClick}
-        style={{ paddingLeft: depth * 16 + 8, animation: isBlinking ? "archBlink 1s ease-in-out 3" : undefined }}
-        className={`group flex w-full items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-xs transition-colors ${
-          isSelected ? "bg-primary/15 text-foreground" : "text-foreground hover:bg-muted/60"
-        }`}
-      >
-        <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-foreground/60">
-          {hasChildren && (
-            <ChevronRight size={12} className={`transition-transform ${isOpen ? "rotate-90" : ""}`} />
-          )}
-        </span>
-        <NodeIcon node={node} isOpen={isOpen} />
-        <span className={`ml-0.5 truncate font-semibold ${node.declared ? "text-amber-600" : "text-foreground"}`}>{node.label}</span>
-        {node.pending && (
-          <span className="ml-1 shrink-0 rounded-full border border-amber-500/50 px-1.5 font-mono text-[9px] font-semibold text-amber-600">req</span>
-        )}
-        {node.badge && (
-          <span className="ml-1 shrink-0 rounded-full border border-sky-500/50 px-1.5 font-mono text-[9px] font-semibold text-sky-600">{node.badge}</span>
-        )}
-        {node.port && (
-          <span className="ml-auto shrink-0 font-mono text-[10px] text-foreground/60">
-            {node.port}
+      {/* Row = the select button plus, for an instruction doc, a sibling edit pencil
+          (not nested — nested buttons are invalid). The pencil shows on hover/selection. */}
+      <div className={`group/row flex items-center rounded-md ${isSelected ? "bg-primary/15" : "hover:bg-muted/60"}`}>
+        <button
+          id={`arch-node-${node.id}`}
+          onClick={handleClick}
+          style={{ paddingLeft: depth * 16 + 8, animation: isBlinking ? "archBlink 1s ease-in-out 3" : undefined }}
+          className="group flex min-w-0 flex-1 items-center gap-1.5 py-1.5 pr-2 text-left text-xs text-foreground"
+        >
+          <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-foreground/60">
+            {hasChildren && (
+              <ChevronRight size={12} className={`transition-transform ${isOpen ? "rotate-90" : ""}`} />
+            )}
           </span>
+          <NodeIcon node={node} isOpen={isOpen} />
+          <span className={`ml-0.5 truncate font-semibold ${node.declared ? "text-amber-600" : "text-foreground"}`}>{node.label}</span>
+          {node.pending && (
+            <span className="ml-1 shrink-0 rounded-full border border-amber-500/50 px-1.5 font-mono text-[9px] font-semibold text-amber-600">req</span>
+          )}
+          {node.badge && (
+            <span className="ml-1 shrink-0 rounded-full border border-sky-500/50 px-1.5 font-mono text-[9px] font-semibold text-sky-600">{node.badge}</span>
+          )}
+          {node.port && (
+            <span className="ml-auto shrink-0 font-mono text-[10px] text-foreground/60">
+              {node.port}
+            </span>
+          )}
+        </button>
+        {node.editTo && (
+          <button
+            onClick={() => onEdit(node)}
+            title="Edit in Draft Settings"
+            className="mr-2 inline-flex h-5 shrink-0 items-center gap-1 rounded border border-dashed border-foreground/40 px-1.5 text-[10px] font-semibold text-foreground/70 opacity-0 transition-opacity hover:bg-foreground hover:text-background group-hover/row:opacity-100"
+          >
+            <Pencil size={9} /> edit
+          </button>
         )}
-      </button>
+      </div>
 
       {isOpen && (
         <div style={{ animation: "archReveal .18s ease-out" }}>
@@ -96,6 +108,7 @@ export function TreeNode({
               onSelect={onSelect}
               onToggle={onToggle}
               onAdd={onAdd}
+              onEdit={onEdit}
             />
           ))}
           {node.addable && (

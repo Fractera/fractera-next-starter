@@ -56,5 +56,10 @@ export type ArchNode = {
    *  the draft-agent id and the object kind. Drives the redirect to
    *  /ai-draft-settings?agent=&object= (we create a draft, never a real artefact here). */
   addTo?: { agent: string; object: "skills" | "mcp" }
+  /** On an instruction-doc leaf (CLAUDE.md / AGENTS.md / SOUL.md …): where the "edit"
+   *  pencil should open the existing instruction draft. Drives the redirect to
+   *  /ai-draft-settings?agent=&object=instruction&target=<doc> (selects, never creates —
+   *  instruction drafts are always seeded). */
+  editTo?: { agent: string; object: "instruction"; target: string }
   children?: ArchNode[]
 }

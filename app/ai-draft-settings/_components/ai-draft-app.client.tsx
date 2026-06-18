@@ -27,7 +27,10 @@ type DraftSel = { type: "draft"; draft: Draft }
 type Selection = RefSel | DraftSel | null
 type Group = { agentId: string; kind: GroupKind }
 
-export function AiDraftApp({ initialAgent, initialKind }: { initialAgent?: string; initialKind?: GroupKind } = {}) {
+export function AiDraftApp(
+  { initialAgent, initialObject, initialTarget }:
+  { initialAgent?: string; initialObject?: string; initialTarget?: string } = {},
+) {
   const [agents, setAgents] = useState<AgentNode[]>([])
   const [selected, setSelected] = useState<Selection>(null)
   const [adding, setAdding] = useState<Group | null>(null)
@@ -43,14 +46,24 @@ export function AiDraftApp({ initialAgent, initialKind }: { initialAgent?: strin
     const list: AgentNode[] = data.agents ?? []
     setAgents(list)
     if (!seeded) { setExpanded(new Set(list.map(a => `agent:${a.id}`))); setSeeded(true) }
-    // Deep-link from /ai-core "+": preselect the agent's SKILLS / MCP group and open the
-    // add-draft form, once, if the agent exists. Creating a real artefact is never done
-    // here — this only starts a draft (a wish).
-    if (!preselected && initialAgent && initialKind && list.some(a => a.id === initialAgent)) {
-      const grp: Group = { agentId: initialAgent, kind: initialKind }
-      setActiveGroup(grp)
-      setAdding(grp)
-      setExpanded(prev => new Set([...prev, ...list.map(a => `agent:${a.id}`), `grp:${initialAgent}:${initialKind}`]))
+    // Deep-link from /ai-core (once, if the agent exists):
+    //  - object=skills|mcp ("+")  -> preselect that group and open the add-draft form.
+    //  - object=instruction (pencil) -> SELECT the agent's instruction draft (by target
+    //    name, else its sole instruction — tolerates the /ai-core label vs seeded-name
+    //    mismatch, e.g. Kimi shows AGENTS.md but its instruction is KIMI.md). No creation.
+    const agent = list.find(a => a.id === initialAgent)
+    if (!preselected && agent && initialObject) {
+      setExpanded(prev => new Set([...prev, ...list.map(a => `agent:${a.id}`)]))
+      if (initialObject === "instruction") {
+        const instr = agent.instructions.find(d => d.name === initialTarget) ?? agent.instructions[0]
+        if (instr) { setSelected({ type: "draft", draft: instr }); setActiveGroup(null) }
+      } else {
+        const kind: GroupKind = initialObject === "mcp" ? "mcp" : "skill"
+        const grp: Group = { agentId: agent.id, kind }
+        setActiveGroup(grp)
+        setAdding(grp)
+        setExpanded(prev => new Set([...prev, `grp:${agent.id}:${kind}`]))
+      }
       setPreselected(true)
     }
   }

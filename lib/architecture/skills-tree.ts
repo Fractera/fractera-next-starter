@@ -126,8 +126,24 @@ async function skillsFor(platform: string): Promise<ArchNode[]> {
   return platform === "hermes" ? scanHermesSkills() : scanCoderSkills(platform)
 }
 
+// An instruction-doc leaf gets an "edit" pencil that opens its draft. The 5 platform
+// docs are "<platform>-doc" (label = the filename); Hermes' identity doc is "hermes-soul".
+// The deep-link target is the /ai-core label; the draft page tolerates a mismatch (e.g.
+// Kimi shows AGENTS.md but its seeded instruction is KIMI.md) by falling back to the
+// agent's sole instruction. config.yaml / HERMES.md are not exposed here.
+function editTarget(node: ArchNode): ArchNode["editTo"] | null {
+  if (node.id === "hermes-soul") return { agent: "hermes", object: "instruction", target: "SOUL.md" }
+  if (node.kind === "config" && node.id.endsWith("-doc")) {
+    const platform = node.id.slice(0, -"-doc".length)
+    const agent = PLATFORM_AGENT[platform]
+    if (agent) return { agent, object: "instruction", target: node.label }
+  }
+  return null
+}
+
 // Walk the seed tree and, in place of the static stubs, drop in the real skills; stamp
-// addTo on every add-able Skills / MCP group so "+" deep-links a draft. Returns a new tree.
+// addTo on every add-able Skills / MCP group so "+" deep-links a draft, and editTo on
+// each instruction doc so its pencil opens the draft. Returns a new tree.
 export async function enrichSkills(tree: ArchNode): Promise<ArchNode> {
   async function visit(node: ArchNode): Promise<ArchNode> {
     let next: ArchNode = node
@@ -138,6 +154,9 @@ export async function enrichSkills(tree: ArchNode): Promise<ArchNode> {
       next = { ...next, children: await skillsFor(skillsPlatform), addTo: { agent: PLATFORM_AGENT[skillsPlatform], object: "skills" } }
     } else if (mcpPlatform && PLATFORM_AGENT[mcpPlatform]) {
       next = { ...next, addTo: { agent: PLATFORM_AGENT[mcpPlatform], object: "mcp" } }
+    } else {
+      const editTo = editTarget(node)
+      if (editTo) next = { ...next, editTo }
     }
 
     if (next.children?.length) {

@@ -71,6 +71,14 @@ export function AiCoreApp({ tree }: { tree: ArchNode }) {
     toast.info(`Add to "${parent.label}" — coming in a later step`)
   }
 
+  // "edit" on an instruction doc opens its existing draft on AI Draft Settings (the doc
+  // is never edited here — the draft layer is the single edit surface, like "+").
+  function handleEdit(node: ArchNode) {
+    if (!node.editTo) return
+    const { agent, object, target } = node.editTo
+    router.push(`/ai-draft-settings?agent=${agent}&object=${object}&target=${encodeURIComponent(target)}`)
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <style>{`@keyframes archReveal{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}`}</style>
@@ -100,6 +108,7 @@ export function AiCoreApp({ tree }: { tree: ArchNode }) {
                 onSelect={setSelected}
                 onToggle={toggle}
                 onAdd={handleAdd}
+                onEdit={handleEdit}
               />
             </div>
             <div className="w-1/2">

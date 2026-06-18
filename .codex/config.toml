@@ -1,7 +1,2 @@
 [features]
 codex_hooks = true
-
-[mcp_servers.filesystem]
-command = "npx"
-args = ["-y", "@modelcontextprotocol/server-filesystem", "/opt/fractera/app"]
-description = "DEMO (fake) — read/write files in an allowed directory."

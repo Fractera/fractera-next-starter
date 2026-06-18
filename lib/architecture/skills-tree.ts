@@ -12,15 +12,18 @@ import type { ArchNode } from "./types"
 
 // One coding platform's skills location. Key = the /ai-core platform id (the prefix of
 // its "<id>-skills" group); `agent` = the matching AI-DRAFT-SETTINGS agent id (so the
-// "+" can deep-link a draft); `dir` = where that platform keeps its skills, relative to
-// the app root. Today only Claude Code has a populated dir; the rest render empty until
-// they grow one — honest, not a fake placeholder.
+// "+" can deep-link a draft); `dir` = where that CLI actually loads PROJECT skills from
+// (verified against docs/platforms/<cli>/skills.md). All CLIs share the same SKILL.md
+// format. Codex + Kimi read the vendor-neutral ".agents/skills" (open agent-skills
+// standard); Claude/Gemini/Qwen read their own ".<vendor>/skills". The one canonical
+// skill lives in ".agents/skills/<name>" and the vendor dirs symlink to it — so a single
+// skill shows under every agent without maintaining copies.
 const CODER_SKILL_DIRS: Record<string, { agent: string; dir: string }> = {
   claude: { agent: "claude-code", dir: ".claude/skills" },
-  codex: { agent: "codex", dir: ".codex/skills" },
+  codex: { agent: "codex", dir: ".agents/skills" },
   gemini: { agent: "gemini-cli", dir: ".gemini/skills" },
   qwen: { agent: "qwen-code", dir: ".qwen/skills" },
-  kimi: { agent: "kimi-code", dir: ".kimi/skills" },
+  kimi: { agent: "kimi-code", dir: ".agents/skills" },
 }
 
 // platform id -> draft-agent id, for stamping addTo on Skills / MCP groups.

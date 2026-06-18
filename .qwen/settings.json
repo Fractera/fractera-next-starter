@@ -11,5 +11,12 @@
         ]
       }
     ]
+  },
+  "mcpServers": {
+    "fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "description": "DEMO (fake) — fetch and convert web pages to markdown."
+    }
   }
 }

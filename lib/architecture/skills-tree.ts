@@ -32,6 +32,18 @@ const PLATFORM_AGENT: Record<string, string> = {
   hermes: "hermes",
 }
 
+// Where each CLI declares its MCP servers (project scope), verified against
+// docs/platforms/*/mcp.md. Four are JSON with an `mcpServers` object; Codex is TOML
+// with `[mcp_servers.<name>]` tables. We read these to mirror the real MCP wiring under
+// each agent's MCP group on /ai-core (same idea as skills — show what's really on disk).
+const MCP_CONFIGS: Record<string, { file: string; format: "json" | "toml" }> = {
+  claude: { file: ".mcp.json", format: "json" },
+  codex: { file: ".codex/config.toml", format: "toml" },
+  gemini: { file: ".gemini/settings.json", format: "json" },
+  qwen: { file: ".qwen/settings.json", format: "json" },
+  kimi: { file: ".kimi/mcp.json", format: "json" },
+}
+
 // Hermes keeps its skills as flat *.md files; same allow-list lib/ai-draft/originals.ts
 // reads (prod path, dev relative path, the running agent's home).
 function hermesSkillDirs(cwd: string): string[] {
@@ -126,6 +138,60 @@ async function skillsFor(platform: string): Promise<ArchNode[]> {
   return platform === "hermes" ? scanHermesSkills() : scanCoderSkills(platform)
 }
 
+// One MCP server's one-line summary for the detail panel: its optional description plus
+// the transport (HTTP url or stdio command + args). MCP entries have no standard
+// description field; when our config includes one we surface it.
+function mcpSummary(def: Record<string, unknown>): string {
+  const args = Array.isArray(def.args) ? ` ${def.args.join(" ")}`
+    : typeof def.args === "string" ? ` ${def.args}` : ""
+  const transport = typeof def.url === "string" ? `HTTP · ${def.url}`
+    : typeof def.command === "string" ? `stdio · ${def.command}${args}`
+    : "MCP server"
+  const desc = typeof def.description === "string" ? `${def.description} ` : ""
+  return `${desc}(${transport})`
+}
+
+function mcpLeaf(platform: string, name: string, def: Record<string, unknown>): ArchNode {
+  return { id: `${platform}-mcp-${name}`, label: name, kind: "mcp", description: mcpSummary(def) }
+}
+
+// JSON configs (claude/gemini/qwen/kimi): the `mcpServers` object, name -> definition.
+function jsonMcpNodes(platform: string, text: string): ArchNode[] {
+  let obj: { mcpServers?: Record<string, Record<string, unknown>> }
+  try { obj = JSON.parse(text) } catch { return [] }
+  const servers = obj?.mcpServers
+  if (!servers || typeof servers !== "object") return []
+  return Object.keys(servers).sort().map(name => mcpLeaf(platform, name, servers[name] ?? {}))
+}
+
+// Codex TOML: minimal line reader for `[mcp_servers.<name>]` tables and their scalar keys
+// (enough for display — url / command / args / description). Not a full TOML parser.
+function tomlMcpNodes(platform: string, text: string): ArchNode[] {
+  const out: ArchNode[] = []
+  let cur: { name: string; def: Record<string, unknown> } | null = null
+  const flush = () => { if (cur) out.push(mcpLeaf(platform, cur.name, cur.def)) }
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim()
+    const head = line.match(/^\[mcp_servers\.([A-Za-z0-9_-]+)\]$/)
+    if (head) { flush(); cur = { name: head[1], def: {} }; continue }
+    if (line.startsWith("[")) { flush(); cur = null; continue }
+    if (cur) {
+      const kv = line.match(/^([A-Za-z0-9_]+)\s*=\s*(.+)$/)
+      if (kv) cur.def[kv[1]] = kv[2].trim().replace(/^"(.*)"$/, "$1")
+    }
+  }
+  flush()
+  return out
+}
+
+async function scanMcp(platform: string): Promise<ArchNode[]> {
+  const cfg = MCP_CONFIGS[platform]
+  if (!cfg) return []
+  let text: string
+  try { text = await readFile(resolve(process.cwd(), cfg.file), "utf8") } catch { return [] }
+  return cfg.format === "toml" ? tomlMcpNodes(platform, text) : jsonMcpNodes(platform, text)
+}
+
 // An instruction-doc leaf gets an "edit" pencil that opens its draft. The 5 platform
 // docs are "<platform>-doc" (label = the filename); Hermes' identity doc is "hermes-soul".
 // The deep-link target is the /ai-core label; the draft page tolerates a mismatch (e.g.
@@ -153,7 +219,10 @@ export async function enrichSkills(tree: ArchNode): Promise<ArchNode> {
     if (skillsPlatform && PLATFORM_AGENT[skillsPlatform]) {
       next = { ...next, children: await skillsFor(skillsPlatform), addTo: { agent: PLATFORM_AGENT[skillsPlatform], object: "skills" } }
     } else if (mcpPlatform && PLATFORM_AGENT[mcpPlatform]) {
-      next = { ...next, addTo: { agent: PLATFORM_AGENT[mcpPlatform], object: "mcp" } }
+      // Only the 5 coding CLIs read MCP from a config file; Hermes' MCP group is its
+      // hardcoded 7 loopback bridges (real processes, not in a .mcp.json) — keep those.
+      const children = MCP_CONFIGS[mcpPlatform] ? await scanMcp(mcpPlatform) : node.children
+      next = { ...next, children, addTo: { agent: PLATFORM_AGENT[mcpPlatform], object: "mcp" } }
     } else {
       const editTo = editTarget(node)
       if (editTo) next = { ...next, editTo }

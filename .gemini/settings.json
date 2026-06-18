@@ -13,5 +13,12 @@
         ]
       }
     ]
+  },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "DEMO (fake) — drive a real browser for testing and scraping."
+    }
   }
 }

@@ -62,6 +62,13 @@ export function DetailPanel({ node }: { node: ArchNode | null }) {
         <SkillContentViewer key={node.id} agent={node.skillRef.agent} name={node.skillRef.name} />
       )}
 
+      {node.editTo && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">Current content</span>
+          <SkillContentViewer key={`${node.id}-doc`} agent={node.editTo.agent} name={node.editTo.target} kind="instruction" />
+        </div>
+      )}
+
       {node.href && (
         <a
           href={node.href}

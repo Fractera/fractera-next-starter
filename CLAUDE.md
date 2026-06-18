@@ -128,128 +128,161 @@ attaches to the account on registration.
 
 ## 6. Development pipeline
 
-**This is the core of the document.** Everything above is preamble; here is the pipeline you run
-development by and from which **you must never deviate**. The flow is strictly sequential but **recursive**:
-at almost every beat you decompose the task and spawn sub-steps, drilling down to the level where a
-sub-task is doable with minimal errors. Two cross-cutting laws apply on every beat:
+The core of the document — a strictly sequential, recursive pipeline you must **never deviate from**,
+expressed as XML for unambiguous branching. Read the whole block before acting.
 
-- **Realtime pages.** `/architecture`, `/development-steps`, `/ai-draft-settings`, `/patterns` poll the
-  filesystem and highlight (pulse/blink) changed nodes — the architect sees in real time how you complete
-  or create sub-steps. Every action you take on disk = a visible event in the interface.
-- **A task may not fit in one cycle — that is normal.** If sub-steps don't resolve the task in the current
-  cycle, you are NOT obliged to force it through at any cost: you create one or more **new steps** with
-  descriptions so the next session (you or another model) repeats the pipeline. One architect request
-  usually spawns not a single completion but 2–3 new steps and/or a dozen sub-steps. That is the correct
-  scenario.
+```xml
+<pipeline name="development" rules="never-deviate; sequential; recursive">
 
-### 6.0. Session entry
-Before any action:
-- **Mode.** Detect and announce: `curl -s --max-time 2 http://localhost:3002/api/rag/status` or
-  `test -d /opt/fractera/app` → **PROD** (changes are visible only after deploy); otherwise **DEV**
-  (hot-reload, Brain offline). Discipline and proof requirements are identical in both.
-- **Context.** Read `GLOSSARY.md` (project terms — otherwise concept drift) and the completed history in
-  `COMPLETED-STEPS/` (what was already built and why — don't re-solve solved problems).
-- **Brain.** Check memory availability: `GET /api/rag/status`. Offline → work from the files on disk.
+  <law id="realtime-pages">/architecture, /development-steps, /ai-draft-settings, /patterns poll the
+    filesystem and highlight (pulse/blink) changed nodes; the architect sees you complete/create sub-steps
+    in real time. Every on-disk action = a visible event.</law>
+  <law id="multi-cycle">A task may not fit in one cycle — normal. If sub-steps don't resolve it, create one
+    or more new steps (with descriptions) for the next session instead of forcing it. One request usually
+    spawns 2-3 new steps and/or a dozen sub-steps.</law>
 
-### 6.1. User request · triage
-- **6.1.0 Classify the request** into one of four triggers and enter the matching branch:
-  1. "next step" → take the top one from `NEW-STEPS/` (the `/development-steps` page);
-  2. **direct task** "build …" → straight to opening a step (6.3);
-  3. "architecture state" → flow B (6.1.2);
-  4. "agent drafts" → flow A (6.1.1).
-- **6.1.1 (flow A) Drafts on `/ai-draft-settings`** (folder `AI-DRAFT-SETTINGS/<AGENT>/`, subfolders
-  `SKILLS/`, `MCP/`): **convert each** draft into a new step (as a spec) and delete the draft record
-  (Discard / Remove draft). Do **not** touch the original instruction/skill/MCP files — a future step
-  applies them. **You build nothing here** — you only turn drafts into steps.
-- **6.1.2 (flow B) Architecture state `/architecture`:** take **one** route record — a to-do on a live
-  route, a declared page (has `README.md`, no built file), or a danger/deletion request — delete it from
-  the tab and create a step for it. Repeat until the tree is empty.
-- **6.1.3 Brainstorm** per §2 (survey until "go / proceed"), **adaptively**: on an already-decomposed
-  "next step" — minimal; on a direct task — dense.
+  <stage id="6.0" name="Session entry">
+    <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
+      visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
+    <action>Read GLOSSARY.md (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Check memory: GET /api/rag/status; offline -> work from files on disk.</action>
+    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known</gate>
+  </stage>
 
-> Ideal cycle completion: both service pages (`/architecture` + `/ai-draft-settings`) are empty **and** the
-> current step is closed.
+  <stage id="6.1" name="Triage">
+    <triage>
+      <trigger n="1" type="next-step" source="NEW-STEPS/" goto="6.3"/>
+      <trigger n="2" type="direct-task" goto="6.3"><brainstorm ref="section-2" mode="dense"/></trigger>
+      <trigger n="3" type="architecture-state" goto="flow-B"/>
+      <trigger n="4" type="agent-drafts" goto="flow-A"/>
+    </triage>
+    <flow id="A" page="/ai-draft-settings" folder="AI-DRAFT-SETTINGS/{AGENT}/ (SKILLS/, MCP/)">
+      <action>convert each draft into a new step (spec)</action>
+      <action>delete the draft record (Discard / Remove draft)</action>
+      <constraint>do not touch the original instruction/skill/MCP files; build nothing here</constraint>
+    </flow>
+    <flow id="B" page="/architecture">
+      <action>take ONE record: todo on a live route | declared page (README.md, no built file) | danger/deletion</action>
+      <action>delete it on the tab; create a step for it</action>
+      <repeat until="tree empty"/>
+    </flow>
+    <brainstorm ref="section-2" mode="adaptive">survey until "go/proceed"; next-step -> minimal,
+      direct task -> dense</brainstorm>
+    <gate>exactly one trigger chosen; goal restated to the architect and confirmed "go"</gate>
+  </stage>
 
-### 6.2. Enriching task context
-- **6.2.1** Optionally, as needed: a targeted memory query (`POST /api/rag/query`, mode `hybrid`) to
-  prefetch context — then **verify in the real source on disk** (memory is an acceleration layer, not the
-  truth).
-- **6.2.2** A quick, shallow pass over the `/patterns` page (folder `PATTERNS/`): memorize the **names** of
-  existing patterns — they'll help for reuse.
+  <stage id="6.2" name="Enrich task context">
+    <action optional="true">targeted memory query: POST /api/rag/query (mode hybrid) to prefetch -> then
+      verify in the real source on disk (memory accelerates, it is not the truth)</action>
+    <action>quick shallow pass over /patterns (PATTERNS/): memorize pattern names for reuse</action>
+    <gate>every memory-derived claim used was re-checked against the source on disk</gate>
+  </stage>
 
-### 6.3. Opening a step (development step)
-- **6.3.1** Create the step file `NEW-STEPS/<NN>-slug.md` with the `fractera:step` block and the
-  **importance** field (`optional` | `mandatory` | `critical`) — exact file format in `development-steps.md`.
-  Describe: inputs, the planned result, intermediate results (decomposition), planned changes to the
-  routing tree.
-- **6.3.2** Create the intermediate sub-steps obvious at this stage. Growing more sub-steps in later cycles
-  is allowed and normal.
-- **6.3.3** If needed, change the `/architecture` tree. A route is described by two files: `_meta.ts` (the
-  `RouteMeta` descriptor) and `README.md` (the living to-do). To declare a page/endpoint = create
-  `README.md` (a declared node); route tasks are written via `/api/project/default/architecture/tasks`.
-  **Creating a page → FIRST decide the access shape** (public / private / public+guest) per
-  `HOW-USE-AUTH.md` (see §5) — before code, not by guessing.
+  <stage id="6.3" name="Open a step">
+    <action>create NEW-STEPS/{NN}-slug.md with the fractera:step block and importance
+      (optional|mandatory|critical); exact format in development-steps.md. Describe inputs, planned result,
+      intermediate results (decomposition), planned routing-tree changes.</action>
+    <action>create the intermediate sub-steps obvious now (growing more in later cycles is normal)</action>
+    <action>if needed, change the /architecture tree: a route = _meta.ts (RouteMeta) + README.md (living
+      to-do); declare a page/endpoint = create README.md (declared node); tasks via
+      /api/project/default/architecture/tasks</action>
+    <constraint>creating a page -> FIRST decide the access shape (public|private|public+guest) per
+      HOW-USE-AUTH.md (see section-5), before code, not by guessing</constraint>
+    <branch on="oversized-task">deliverable of THIS step = the step-chain + declared pages, not code</branch>
+    <gate>fractera:step block parses and importance set; every declared page has an access shape</gate>
+  </stage>
 
-### 6.4. Development cycle (repeatable)
-- **6.4.1** Pull the patterns needed this cycle (`/patterns`); none fits — create a new one and agree it
-  with the architect. Write code per §4 (static-first, `.client`/`.server` naming, ≤200 lines).
-- **6.4.2** Take from the `/architecture` tree the task of the matching route into development (get the
-  existing steps and elements for the node). Do the next sub-step:
-  - **6.4.2.1** Finish the sub-step: in `/architecture` close the task, clear `README.md` (declared→live
-    once the real route file exists).
-  - **6.4.2.2** Decompose the task: add new sub-steps to `NEW-STEPS/` and new to-dos to the `/architecture`
-    tree.
-- Repeat the cycle as many times as needed; **mark each iteration in the task checklist**.
-- While you wait for a deploy/feedback — don't idle: extract **new patterns from the fresh code**. On a
-  long step watch the budget and **do not cross the 50 % context boundary**.
+  <stage id="6.4" name="Development cycle" repeat="as needed">
+    <action>pull the patterns needed (/patterns); none fits -> create one and agree with the architect.
+      Write code per section-4 (static-first, .client/.server naming, &lt;=200 lines).</action>
+    <action>take the matching route's task from /architecture into development (get existing steps/elements
+      for the node); do the next sub-step:</action>
+    <substep id="6.4.2.1" name="finish">close the task in /architecture; clear README.md
+      (declared -> live once the real route file exists)</substep>
+    <substep id="6.4.2.2" name="decompose">add new sub-steps to NEW-STEPS/ and new to-dos to /architecture</substep>
+    <action>mark each iteration in the task checklist</action>
+    <action>while waiting on a deploy/feedback, don't idle: extract new patterns from the fresh code; on a
+      long step do not cross the 50% context boundary</action>
+    <note name="composition">composition = assembling the page from parallel-routing slots + reusable
+      patterns per shell-component-architecture.md (happens here, in the per-page cycle)</note>
+    <gate>per iteration: README task cleared, checklist item ticked, code obeys section-4</gate>
+  </stage>
 
-### 6.5. Verification (pre-deploy)
-Run and check the change's behavior locally / on the current server — before launching the deploy.
+  <stage id="6.5" name="Verification (pre-deploy)">
+    <action>run and check the change's behavior locally / on the current server, before the deploy</action>
+    <gate>the new behavior was reproduced at least once</gate>
+  </stage>
 
-### 6.6. Two proofs
-Present the architect **two independent proofs** from different planes that the task is done (e.g.: the
-page renders the result **and** a row appears in the DB). The fifth proof is the live URL after deploy
-(6.8).
+  <stage id="6.6" name="Two proofs">
+    <action>present the architect two independent proofs from different planes (e.g. page renders the
+      result AND a row appears in the DB); the fifth proof is the live URL after deploy (6.8)</action>
+    <gate>two genuinely independent proofs, both reported in plain text</gate>
+  </stage>
 
-### 6.7. Deploy preparation (only with the architect's permission)
-- **6.7.1** Load and **re-read the anti-patterns** (`PATTERNS/ANTI-PATTERNS/`) before launching.
-- **6.7.2** Found a discrepancy — cancel the deploy, fix it.
-- **6.7.3** Launch the deploy (reading `DEPLOY_SECRET` from `bridges/app/.env.local` is a **sanctioned
-  exception** to the §3 boundary — deploy is a platform action, secret read-only). Build takes 2–4 min,
-  only `app/` is rebuilt:
-  ```bash
-  DEPLOY_SECRET=$(grep "^DEPLOY_SECRET=" /opt/fractera/bridges/app/.env.local | cut -d'=' -f2)
-  RESULT=$(curl -s -X POST http://localhost:3002/api/deploy \
-    -H "Content-Type: application/json" -H "X-Deploy-Secret: $DEPLOY_SECRET" \
-    -d "{\"description\":\"what changed\"}")
-  JOB_ID=$(echo $RESULT | grep -o '"jobId":"[^"]*"' | cut -d'"' -f4)
-  while true; do
-    S=$(curl -s "http://localhost:3002/api/deploy/status?jobId=$JOB_ID")
-    echo $S | grep -qE '"status":"(COMPLETED|FAILED|HEALTH_FAILED)"' && break; sleep 10
-  done; echo $S
-  ```
+  <stage id="6.7" name="Deploy preparation" requires="architect-approval">
+    <action>load and re-read the anti-patterns (PATTERNS/ANTI-PATTERNS/) before launching</action>
+    <branch on="discrepancy-found">cancel the deploy; fix</branch>
+    <action>launch the deploy (reading DEPLOY_SECRET from bridges/app/.env.local is a sanctioned exception
+      to the section-3 boundary — platform action, secret read-only); build 2-4 min, only app/ rebuilt:</action>
+    <command lang="bash"><![CDATA[
+DEPLOY_SECRET=$(grep "^DEPLOY_SECRET=" /opt/fractera/bridges/app/.env.local | cut -d'=' -f2)
+RESULT=$(curl -s -X POST http://localhost:3002/api/deploy \
+  -H "Content-Type: application/json" -H "X-Deploy-Secret: $DEPLOY_SECRET" \
+  -d "{\"description\":\"what changed\"}")
+JOB_ID=$(echo $RESULT | grep -o '"jobId":"[^"]*"' | cut -d'"' -f4)
+while true; do
+  S=$(curl -s "http://localhost:3002/api/deploy/status?jobId=$JOB_ID")
+  echo $S | grep -qE '"status":"(COMPLETED|FAILED|HEALTH_FAILED)"' && break; sleep 10
+done; echo $S
+    ]]></command>
+    <gate>anti-patterns re-read; none matches this change; the architect approved</gate>
+  </stage>
 
-### 6.8. Deploy result
-- **6.8.1 Failure (`FAILED` / `HEALTH_FAILED`).** Record a row in Deployments (`status=error`, commit).
-  Study `log[]`. Add a new **anti-pattern** to `PATTERNS/ANTI-PATTERNS/`. Fix — retry.
-- **6.8.2 Success (`COMPLETED`).**
-  - **6.8.2.1** Decide which patterns to keep; create the category, save to `PATTERNS/PATTERNS/<category>/`.
-  - **6.8.2.2** Record a row in Deployments **yourself** — call `owner_product_loop_record_deployment`
-    (Deployments MCP, `:3215`): `platform=<you>`, `model=<your model id>`, `tokens` (honestly; none → 0),
-    `commit_hash`, `step`, `page_url`, `status=ready`. `result=3` by default — **the user sets the stars**.
-    Mark "in production" **only** after a recheck: the live URL returns HTTP 200 (the fifth proof of §6.6).
+  <stage id="6.8" name="Deploy result">
+    <branch on="FAILED|HEALTH_FAILED">
+      <action>record a Deployments row (status=error, commit); study log[]; add an anti-pattern to
+        PATTERNS/ANTI-PATTERNS/; fix; retry</action>
+    </branch>
+    <branch on="COMPLETED">
+      <action>save useful patterns: create the category, write PATTERNS/PATTERNS/{category}/</action>
+      <action>record a Deployments row yourself: owner_product_loop_record_deployment (Deployments MCP
+        :3215) — platform={you}, model={your-model-id}, tokens (honest; none -> 0), commit_hash, step,
+        page_url, status=ready; result=3 default (the user sets the stars)</action>
+      <constraint>mark "in production" ONLY after a recheck: the live URL returns HTTP 200 (fifth proof)</constraint>
+    </branch>
+    <gate>terminal status handled per the branch taken</gate>
+  </stage>
 
-### 6.9. Close the step
-Move the step file `<NN>-slug.md` from `NEW-STEPS/` to `DEVELOPMENT-STEPS/COMPLETED-STEPS/`
-(`status:completed`, `completedAt`). In it — a **maximally complete report, no abridgement**: what was
-done, what you hit, which patterns were used and which created, deploy errors, the model, tokens.
+  <stage id="6.9" name="Close the step">
+    <action>move {NN}-slug.md from NEW-STEPS/ to DEVELOPMENT-STEPS/COMPLETED-STEPS/ (status:completed,
+      completedAt); write a maximally complete report (no abridgement): what was done, what you hit,
+      patterns used/created, deploy errors, model, tokens</action>
+    <gate>file in COMPLETED-STEPS/ with status/completedAt set and a complete report</gate>
+  </stage>
 
-### 6.10. Ingest to memory
-Ingest into vector memory (`POST /api/rag/ingest`, header `X-Agent-Identity`) the completed step file (from
-`COMPLETED-STEPS/`) **and everything created during the step**: new patterns/anti-patterns, ADRs/docs,
-`GLOSSARY.md` terms.
+  <stage id="6.10" name="Ingest to memory">
+    <action>POST /api/rag/ingest (header X-Agent-Identity) the completed step file (from COMPLETED-STEPS/)
+      AND everything created during the step: new patterns/anti-patterns, ADRs/docs, GLOSSARY.md terms</action>
+    <gate>ingest returned OK for the step file and every artifact created</gate>
+  </stage>
 
-### 6.11. Report to the architect
-Report the step's completion. Strongly recommend:
-- **6.11.1** Rate the result in the Deployments table — set the stars (1–3).
-- **6.11.2** Reset the context before the next step.
+  <stage id="6.11" name="Report to the architect">
+    <action>report completion; strongly recommend: (1) rate the result in Deployments — set stars (1-3);
+      (2) reset the context before the next step</action>
+    <gate>architect informed; stars + context-reset recommended</gate>
+  </stage>
+
+  <done name="Process validation">
+    <rule>DONE only when EVERY stage gate (6.0-6.11) is green AND, measured against the architect's
+      original request from 6.1:</rule>
+    <requires ref="6.6">two independent proofs hold</requires>
+    <requires ref="6.8">deploy COMPLETED and the live URL returns HTTP 200</requires>
+    <requires ref="6.9">the step sits in COMPLETED-STEPS/</requires>
+    <requires ref="6.10">the step is ingested</requires>
+    <on-red>any gate red -> the process is IN PROGRESS: never say "done"; loop back to the failing stage and
+      re-run from there</on-red>
+    <note>per-stage gates verify "built right"; this final gate validates "built the right thing"</note>
+  </done>
+
+</pipeline>
+```

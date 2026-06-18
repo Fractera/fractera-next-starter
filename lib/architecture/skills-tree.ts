@@ -90,9 +90,15 @@ async function scanCoderSkills(platform: string): Promise<ArchNode[]> {
   let dirents
   try { dirents = await readdir(abs, { withFileTypes: true }) } catch { return [] }
   const out: ArchNode[] = []
-  for (const d of dirents.filter(e => e.isDirectory() && !e.name.startsWith(".")).sort((a, b) => a.name.localeCompare(b.name))) {
-    let fm: { name?: string; description?: string } = {}
-    try { fm = frontmatter(await readFile(join(abs, d.name, "SKILL.md"), "utf8")) } catch { /* no SKILL.md — still list the dir */ }
+  // Select a skill by whether <name>/SKILL.md is readable — NOT by e.isDirectory().
+  // A skill dir may be a SYMLINK (we keep one canonical skill in .agents/skills and
+  // symlink the vendor dirs to it), and Dirent.isDirectory() is false for a symlink, so
+  // an isDirectory() filter silently drops every symlinked skill (Claude/Gemini/Qwen).
+  // readFile follows the link, so this works for real dirs and symlinks alike.
+  for (const d of dirents.filter(e => !e.name.startsWith(".")).sort((a, b) => a.name.localeCompare(b.name))) {
+    let content: string
+    try { content = await readFile(join(abs, d.name, "SKILL.md"), "utf8") } catch { continue }
+    const fm = frontmatter(content)
     out.push(skillLeaf(platform, entry.agent, fm.name || d.name, fm.description || ""))
   }
   return out

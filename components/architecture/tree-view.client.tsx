@@ -37,7 +37,9 @@ type Props = {
   onSelect: (node: ArchNode) => void
   onToggle: (id: string) => void
   onAdd: (parent: ArchNode) => void
-  onEdit: (node: ArchNode) => void
+  /** Optional — only /ai-core wires it (the instruction-doc edit pencil). Other callers
+   *  (e.g. /architecture) omit it; nodes without editTo never show the pencil anyway. */
+  onEdit?: (node: ArchNode) => void
 }
 
 export function TreeNode({
@@ -84,7 +86,7 @@ export function TreeNode({
             </span>
           )}
         </button>
-        {node.editTo && (
+        {node.editTo && onEdit && (
           <button
             onClick={() => onEdit(node)}
             title="Edit in Draft Settings"

@@ -62,11 +62,6 @@
 **Вызовы окружения.** К сервису обращаешься по его порту/эндпоинту: память — `/api/rag/*`, деплой —
 `/api/deploy`, медиа — `:3300`, оркестрация — Hermes `:9119`.
 
-**Дискавери.** Дерево выше — статичный seed. Актуальный состав (навыки, MCP-серверы, агенты, прочие
-элементы) получаешь по требованию из `/ai-core` — точнее, из вызова, возвращающего дерево компонентов
-этой страницы (`ARCHITECTURE_TREE` + живая ветвь Documentation). Объявленные там новые сущности входят в
-цикл сборки.
-
 **Граница.** App `:3000` — твоя область ведения. Слой выше читаешь и вызываешь, но не изменяешь без
 протокола расширения прав (двойное подтверждение архитектора).
 
@@ -108,14 +103,28 @@ Next-ловушки, молча ломающие статику/ISR: `auth()`, `
 
 ## 5. Авторизация
 
-NextAuth v5 (провайдеры: учётные данные + гость). Читать пользователя — `/api/me`; защита страницы — хук
-`useRouteAccess(meta)`; вход гостя — `/api/auth/guest`; запись данных — `/api/project/default/<resource>`
-(штамп `user.id`); промоушен `register()` сохраняет `user.id`. Роли: `guest/user/architect` (enforced) +
-бизнес-роли (полный список — `ALL_ROLES`, 15). **Гость ≠ неавторизованный**: на странице с
-`requiresGuestRegistration: true` гостю выдаётся постоянный id, его работа сохраняется и привязывается при
-регистрации.
+NextAuth v5, два провайдера (учётные данные + гость); покрытие — через шлюз `fractera-auth :3001`.
+Авторизация — закрытый слой вне `app/`: сам туда не ходишь и ничего там не исследуешь — работаешь
+только перечисленным здесь.
 
-> Детали — `HOW-USE-AUTH.md`, `CRUD-DOCS/auth-architecture.md`.
+Хуки и функции:
+- `getSession(req?)` (`lib/auth/get-session.ts`) — серверное чтение личности → `{ userId, email, roles }`.
+  Учитывает заголовок `X-Agent-Identity` (роль `agent`); dev-bypass → `architect`; иначе проксирует
+  `:3001/api/session`.
+- `/api/me` — клиентское чтение личности (`fetch('/api/me')`).
+- `useRouteAccess(meta)` (`lib/hooks/use-route-access.ts`) — клиентский гард: по `_meta.ts` навешивает
+  public / public+guest / private; читает `/api/me`, не `auth()` в page.
+- `/api/auth/guest?redirectUrl=…` — вход гостя (hard-navigation, ставит cookie сессии).
+- `registerRedirectUrl(href, role)` (`lib/runtime-urls`) — построение redirect на регистрацию.
+- `register()` — промоушен гостя в полный аккаунт (платформенный, `:3001`); `user.id` сохраняется.
+- `POST /api/project/default/<resource>` — запись данных посетителя; строка штампуется его `user.id`.
+
+Роли: `guest / user / architect` — enforced-тиры; + бизнес-роли (полный список — `ALL_ROLES`, 15:
+`vip_user`, `subscriber_lite/standard/max`, `buyer`, `manager`, …). **Гость ≠ неавторизованный**: на
+странице с `requiresGuestRegistration: true` гостю выдаётся постоянный `user.id`, его работа сохраняется
+и при регистрации привязывается к аккаунту.
+
+> Рецепт — `HOW-USE-AUTH.md`; концепция — `CRUD-DOCS/auth-architecture.md`.
 
 ---
 

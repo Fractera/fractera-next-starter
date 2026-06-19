@@ -4,14 +4,15 @@
 // Materializes a declared route into the standard shell-component skeleton BY
 // CONSTRUCTION, so the agent never hand-types (and drifts from) the convention in
 // CRUD-DOCS/workspace-standards/shell-component-architecture.md. Emits:
-//   <out>/[lang]/<path>/page.tsx              thin Server Component
-//   <out>/[lang]/<path>/_components/index.tsx entry (server)
-//   <out>/[lang]/<path>/_components/<name>.client.tsx | .server.tsx   one leaf
-//   <out>/[lang]/<path>/_meta.ts              full RouteMeta, access baked in
+//   <out>/<path>/page.tsx              thin Server Component
+//   <out>/<path>/_components/index.tsx entry (server)
+//   <out>/<path>/_components/<name>.client.tsx | .server.tsx   one leaf
+//   <out>/<path>/_meta.ts              full RouteMeta, access baked in
 //
 // Access shape is wired from --access per HOW-USE-AUTH.md, so §6.3's "decide
-// access before code" is satisfied at emit time. The _meta.filePath omits [lang]
-// to match the existing convention (see app/[lang]/ai-core/_meta.ts).
+// access before code" is satisfied at emit time. This is the FLAT slot: routes
+// live at app/<path>/ (no [lang]). The _meta.filePath keeps the existing
+// "app/app/<path>/page.tsx" display convention (see app/ai-core/_meta.ts).
 //
 // Usage:
 //   node scaffold-route.mjs --path /feed --access private --roles user
@@ -211,8 +212,8 @@ async function main() {
   const access = { access: args.access || "private", roles: args.roles }
   if (!["public", "private", "guest"].includes(access.access))
     throw new Error('--access must be public | private | guest')
-  // physical root: real user pages live under app/app/[lang]/<path>/
-  const root = resolve(args.out ? String(args.out) : "app/app/[lang]")
+  // physical root: the flat slot keeps routes under app/<path>/ (no [lang]).
+  const root = resolve(args.out ? String(args.out) : "app")
   const info = analyzePath(path)
   const routeDir = join(root, info.clean)
   if (await exists(routeDir) && !args.force)

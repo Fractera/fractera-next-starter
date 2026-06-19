@@ -30,7 +30,7 @@ node .claude/skills/scaffold-route/scaffold-route.mjs --path "/post/[id]" --acce
 node .claude/skills/scaffold-route/scaffold-route.mjs --path /api/posts --access private --kind api
 ```
 
-## What it emits (under `app/app/[lang]/<route>/`)
+## What it emits (under `app/<route>/` — the flat slot, no `[lang]`)
 - `page.tsx` — thin Server Component (renders the entry, never `"use client"`).
 - `_components/index.tsx` — the entry (server by default).
 - `_components/<name>.client.tsx` | `.server.tsx` — one leaf with a matching directive.

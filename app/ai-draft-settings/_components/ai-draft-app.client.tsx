@@ -75,6 +75,7 @@ export function AiDraftApp(
   const [seeded, setSeeded] = useState(false)
   const [preselected, setPreselected] = useState(false)
   const [howOpen, setHowOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState<Draft | null>(null)
 
   async function refresh() {
     const res = await fetch("/api/ai-draft-settings")
@@ -139,6 +140,25 @@ export function AiDraftApp(
     const res = await fetch(`/api/ai-draft-settings/${selected.draft.id}`, { method: "DELETE" })
     if (!res.ok) return
     setSelected(null)
+    await refresh()
+  }
+  // Flow-A "Launch": bundle EVERY pending draft on the page into ONE detailed step,
+  // delete them all, and land on /development-steps to see it.
+  async function launchAll() {
+    const res = await fetch("/api/development-steps", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bundleAll: true }),
+    })
+    if (!res.ok) return
+    window.location.href = "/development-steps"
+  }
+  // Per-leaf delete — opens a confirm modal first (deletion is permanent).
+  async function confirmDeleteDraft() {
+    if (!confirmDelete) return
+    const res = await fetch(`/api/ai-draft-settings/${confirmDelete.id}`, { method: "DELETE" })
+    setConfirmDelete(null)
+    if (!res.ok) return
+    if (selected?.type === "draft" && selected.draft.id === confirmDelete.id) setSelected(null)
     await refresh()
   }
   async function createDraft(agentId: string, kind: GroupKind, name: string, mode: DraftMode, target: string | null): Promise<boolean> {
@@ -227,6 +247,8 @@ export function AiDraftApp(
                   onSelectDraft={selectDraft}
                   onSelectReference={selectReference}
                   onSelectGroup={selectGroup}
+                  onLaunch={launchAll}
+                  onDeleteDraft={d => setConfirmDelete(d)}
                 />
               </div>
             </div>
@@ -259,6 +281,35 @@ export function AiDraftApp(
           </div>
         </div>
       </div>
+
+      {/* Permanent-delete confirm modal — the rightmost hover action requires the
+          architect to acknowledge the deletion is final before the draft is removed. */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirmDelete(null)}>
+          <div className="w-full max-w-sm rounded-xl border border-border bg-background p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-bold text-foreground">Delete this draft?</h3>
+            <p className="mt-2 text-xs leading-relaxed text-foreground/70">
+              You are about to permanently delete the {confirmDelete.kind} draft
+              <span className="font-semibold text-foreground"> “{confirmDelete.name}”</span>.
+              This is final and cannot be undone. The real file is not affected.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteDraft}
+                className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+              >
+                Delete permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

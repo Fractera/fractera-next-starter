@@ -59,7 +59,8 @@ file — this draft is a mirror, the original is never edited here.
 - `kind` — `instruction` | `skill` | `mcp`.
 - `mode` — `supplement` | `replace` (how the agent applies the wish — the switch at the top).
 - `target` — the real original this draft refers to, or `null` for a brand-new record.
-- `name` — short title.
+- `name` — short title; follow the **Naming convention** below (the same ≤ 6-word rule
+  governs both skills and MCP tools).
 - `tasks` — the wishes (`kind:"todo"`) and deletion requests (`kind:"delete"` with `outcome`).
 
 ### Colour rules (same as `/architecture`)
@@ -67,6 +68,23 @@ file — this draft is a mirror, the original is never edited here.
 - `target` set, or any open task → **`(req)` badge only**, name stays black (an overlay / a
   seeded instruction doc with wishes).
 - A real original with no draft → black, dimmed, read-only reference.
+
+## Naming convention — one rule for MCP tools AND skills
+
+A new record's `name` obeys a single shared cap, applied **equally to MCP connectors and
+to skills**: the name is **at most six words** (four to six is the norm). Keep it specific
+and action-shaped; never pad it past six words. The cap was first written for MCP names
+only — it now governs **skill names just the same**; the two are one rule.
+
+- **MCP tool** — snake_case, structured as `<tier>_<area>_<action>_<object>`
+  (e.g. `owner_draft_create_record`). The tier word (`public` / `user` / `owner`) is the
+  first of the four-to-six words; six is the hard ceiling.
+- **Skill** — kebab-case (e.g. `create-draft`, `scaffold-route`). No tier prefix, but the
+  **same word ceiling**: four to six words, six maximum; prefer the fewest that read clearly.
+
+**Grandfathered (do NOT retrofit):** the two skills already in the project —
+`create-draft` and `scaffold-route` — are **exempt**; they are not renamed to fit this
+rule. The convention governs only records created from here on.
 
 ## Danger zone (faithful to `/architecture`)
 - **Order deletion** — a `kind:"delete"` task: ask an agent to **retire the real original** and

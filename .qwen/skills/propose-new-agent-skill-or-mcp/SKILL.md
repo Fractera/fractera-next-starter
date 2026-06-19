@@ -1,5 +1,5 @@
 ---
-name: create-draft
+name: propose-new-agent-skill-or-mcp
 description: >
   Propose a new agent skill or MCP connector by creating a structured draft record
   on /ai-draft-settings. Use when you notice an automation opportunity, a repeating
@@ -8,7 +8,7 @@ description: >
   Works standalone via the local HTTP API — no Hermes and no MCP bridge required.
 ---
 
-# create-draft
+# propose-new-agent-skill-or-mcp
 
 Propose a new agent skill or MCP connector for any of the agents in this project.
 The draft lands on `/ai-draft-settings` for the architect to review. You do not

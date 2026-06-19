@@ -72,19 +72,23 @@ file — this draft is a mirror, the original is never edited here.
 ## Naming convention — one rule for MCP tools AND skills
 
 A new record's `name` obeys a single shared cap, applied **equally to MCP connectors and
-to skills**: the name is **at most six words** (four to six is the norm). Keep it specific
-and action-shaped; never pad it past six words. The cap was first written for MCP names
-only — it now governs **skill names just the same**; the two are one rule.
+to skills**: the name is **at most six words** (four to six is the norm; aim for the
+descriptive upper end). Keep it specific and action-shaped, and make sure **a human grasps
+at a glance what it does** — the name is read by people, not only by agents. Never pad past
+six words, but do not under-name either: two terse words that a human cannot decode are wrong.
+The cap was first written for MCP names only — it now governs **skill names just the same**;
+the two are one rule.
 
 - **MCP tool** — snake_case, structured as `<tier>_<area>_<action>_<object>`
   (e.g. `owner_draft_create_record`). The tier word (`public` / `user` / `owner`) is the
   first of the four-to-six words; six is the hard ceiling.
-- **Skill** — kebab-case (e.g. `create-draft`, `scaffold-route`). No tier prefix, but the
-  **same word ceiling**: four to six words, six maximum; prefer the fewest that read clearly.
+- **Skill** — kebab-case (e.g. `propose-new-agent-skill-or-mcp`). No tier prefix, but the
+  **same word ceiling**: four to six words, six maximum; prefer a name a human reads at a glance.
 
-**Grandfathered (do NOT retrofit):** the two skills already in the project —
-`create-draft` and `scaffold-route` — are **exempt**; they are not renamed to fit this
-rule. The convention governs only records created from here on.
+**Grandfathered (one left):** `scaffold-route` is not yet renamed to fit this rule — a pending
+follow-up. The other early skill **was** brought into line: `create-draft` → renamed to
+`propose-new-agent-skill-or-mcp` (six words, human-clear). The convention governs every record
+from here on; that single grandfathered name is the only exception.
 
 ## Danger zone (faithful to `/architecture`)
 - **Order deletion** — a `kind:"delete"` task: ask an agent to **retire the real original** and

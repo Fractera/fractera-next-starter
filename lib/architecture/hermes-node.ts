@@ -84,7 +84,7 @@ export const HERMES_NODE: ArchNode = {
                 "(propose a new skill/MCP draft) and owner_draft_send_to_steps (promote " +
                 "pending drafts into a development step, then remove them). Both tier owner, " +
                 "mutating, §8.2 dry_run confirm-first. Convenience path for Hermes — the " +
-                "create-draft skill gives every agent the same drafting result self-" +
+                "propose-new-agent-skill-or-mcp skill gives every agent the same drafting result self-" +
                 "sufficiently over the local HTTP API, so no MCP is required for the coders.",
             },
           ],

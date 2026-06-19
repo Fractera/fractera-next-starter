@@ -45,11 +45,11 @@ export const HERMES_NODE: ArchNode = {
         ]),
         {
           id: "hermes-mcp",
-          label: "MCP servers — 7 bridges",
+          label: "MCP servers — 8 bridges",
           kind: "group",
           description:
             "The bridges exposed to Hermes as callable tools over loopback JSON-RPC " +
-            "(ports 3210–3216). They show up at start-up — which is why Hermes sees " +
+            "(ports 3210–3216, 3221). They show up at start-up — which is why Hermes sees " +
             "his tools even before his memory or role.",
           children: [
             mcp("mcp-claude", "claude-bridge :3210"),
@@ -74,6 +74,17 @@ export const HERMES_NODE: ArchNode = {
                 "One snapshot of all five coding agents before delegating: installed, " +
                 "logged_in, busy, last_worked. Tool: check_agents_readiness. Read-only " +
                 "— facts only; the choose-agent skill decides.",
+            },
+            {
+              id: "mcp-ai-draft",
+              label: "ai-draft-bridge :3221",
+              kind: "mcp",
+              description:
+                "Propose a new skill or MCP connector as a draft on /ai-draft-settings. " +
+                "Tool: owner_draft_create_record (tier owner, mutating; §8.2 dry_run " +
+                "confirm-first). Convenience path for Hermes — the create-draft skill " +
+                "gives every agent the same result self-sufficiently over the local HTTP " +
+                "API, so no MCP is required for the five coders.",
             },
           ],
         },

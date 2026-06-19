@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// scaffold-route — deterministic route skeleton emitter (H3).
+// scaffold-declared-route-into-component-skeleton — deterministic route skeleton emitter (H3).
 //
 // Materializes a declared route into the standard shell-component skeleton BY
 // CONSTRUCTION, so the agent never hand-types (and drifts from) the convention in
@@ -15,9 +15,9 @@
 // "app/app/<path>/page.tsx" display convention (see app/ai-core/_meta.ts).
 //
 // Usage:
-//   node scaffold-route.mjs --path /feed --access private --roles user
-//   node scaffold-route.mjs --path /post/[id] --access guest
-//   node scaffold-route.mjs --path /pricing --access public --out /tmp/scratch
+//   node scaffold-declared-route-into-component-skeleton.mjs --path /feed --access private --roles user
+//   node scaffold-declared-route-into-component-skeleton.mjs --path /post/[id] --access guest
+//   node scaffold-declared-route-into-component-skeleton.mjs --path /pricing --access public --out /tmp/scratch
 //
 // Deterministic and idempotent-guarded: refuses to overwrite an existing route
 // dir unless --force. Never writes outside the target root.
@@ -85,7 +85,7 @@ function metaTs({ path, kind, leafName, entryIsClient, access, segs, params }) {
   return `import type { RouteMeta } from "@/lib/architecture/route-meta"
 
 // STANDARD ROUTE DESCRIPTOR — do not delete any field.
-// Scaffolded by .claude/skills/scaffold-route. Fill what applies; leave the rest
+// Scaffolded by .claude/skills/scaffold-declared-route-into-component-skeleton. Fill what applies; leave the rest
 // as undefined / [] / null. Never remove a key.
 const meta: RouteMeta = {
   // — Identity & lifecycle —
@@ -165,7 +165,7 @@ const meta: RouteMeta = {
 
   // — Audit —
   owner: undefined,
-  createdBy: "scaffold-route",
+  createdBy: "scaffold-declared-route-into-component-skeleton",
   createdAt: ${JSON.stringify(new Date().toISOString())},
   updatedAt: undefined,
 }
@@ -244,4 +244,4 @@ async function main() {
   console.log(`\nscaffolded ${kind} ${path}  (access=${access.access})  ->  ${routeDir}`)
 }
 
-main().catch(e => { console.error("scaffold-route:", e.message); process.exit(1) })
+main().catch(e => { console.error("scaffold-declared-route-into-component-skeleton:", e.message); process.exit(1) })

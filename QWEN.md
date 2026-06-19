@@ -163,7 +163,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     </flow>
     <flow id="flow-B" page="/architecture">
       <action>take ONE record: todo on a live route | declared page (README.md, no built file) | danger/deletion</action>
-      <action>delete it on the tab; create a step for it</action>
+      <action>delete it on the tab; create a step for it (OR materialize many at once: hover a pending node -> Launch bundles EVERY pending record into one step and removes the sources; the skill declare-architecture-page-or-task and MCP owner_arch_create_record / owner_arch_send_to_steps do the same for an agent)</action>
       <repeat until="tree empty"/>
     </flow>
     <brainstorm ref="section-2" mode="adaptive">survey until "go/proceed"; next-step -> minimal,
@@ -188,7 +188,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       /api/project/default/architecture/tasks</action>
     <constraint>creating a page -> FIRST decide the access shape (public|private|public+guest) per
       HOW-USE-AUTH.md (see section-5), before code, not by guessing — this access shape becomes the
-      scaffold-route --access argument</constraint>
+      scaffold-declared-route-into-component-skeleton --access argument</constraint>
     <branch on="oversized-task">deliverable of THIS step = the step-chain + declared pages, not code</branch>
     <gate>fractera:step block parses and importance set; every declared page has an access shape</gate>
   </stage>
@@ -196,7 +196,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <stage id="6.4" name="Development cycle" repeat="as needed">
     <action>pull the patterns needed (/patterns); none fits -> create one and agree with the architect.
       Write code per section-4 (static-first, .client/.server naming, &lt;=200 lines).</action>
-    <action>materialize the route skeleton with the scaffold-route skill (.claude/skills/scaffold-route —
+    <action>materialize the route skeleton with the scaffold-declared-route-into-component-skeleton skill (.claude/skills/scaffold-declared-route-into-component-skeleton —
       page/entry/leaf/_meta by construction, the --access shape baked in); then write only the domain code,
       never hand-type the skeleton</action>
     <action>take the matching route's task from /architecture into development (get existing steps/elements

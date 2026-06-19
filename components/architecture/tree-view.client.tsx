@@ -2,6 +2,7 @@
 
 import {
   ChevronRight, Plus, Pencil, Folder, FolderOpen, File, FileText, FileCode,
+  Rocket, Trash2,
 } from "lucide-react"
 import type { ArchNode, ArchKind } from "@/lib/architecture/types"
 
@@ -40,10 +41,17 @@ type Props = {
   /** Optional — only /ai-core wires it (the instruction-doc edit pencil). Other callers
    *  (e.g. /architecture) omit it; nodes without editTo never show the pencil anyway. */
   onEdit?: (node: ArchNode) => void
+  /** Optional — only /architecture wires these (flow-B materializer, step 126). On a
+   *  pending (req) node, hover reveals Launch (bundle ALL pending records into one
+   *  development step) and Delete (this record, via a confirm modal in the parent).
+   *  Both must be present for the actions to render. */
+  onLaunch?: () => void
+  onDeletePending?: (node: ArchNode) => void
 }
 
 export function TreeNode({
   node, depth, selectedId, expanded, blink, onSelect, onToggle, onAdd, onEdit,
+  onLaunch, onDeletePending,
 }: Props) {
   const hasChildren = !!node.children?.length || !!node.addable
   const isOpen = expanded.has(node.id)
@@ -95,6 +103,27 @@ export function TreeNode({
             <Pencil size={9} /> edit
           </button>
         )}
+        {/* Hover actions on a pending (req) node — flow-B materializer (step 126).
+            Launch is global (bundle all pending records); Delete is this record and
+            sits rightmost. Siblings of the select button (no nested buttons). */}
+        {node.pending && onLaunch && onDeletePending && (
+          <div className="mr-1 hidden shrink-0 items-center gap-0.5 group-hover/row:flex">
+            <button
+              onClick={onLaunch}
+              title="Launch — bundle all pending records into one development step"
+              className="rounded p-1 text-foreground/60 transition-colors hover:bg-violet-500/15 hover:text-violet-600"
+            >
+              <Rocket size={12} />
+            </button>
+            <button
+              onClick={() => onDeletePending(node)}
+              title="Delete this record (permanent; the real route file is untouched)"
+              className="rounded p-1 text-foreground/60 transition-colors hover:bg-red-500/15 hover:text-red-600"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        )}
       </div>
 
       {isOpen && (
@@ -111,6 +140,8 @@ export function TreeNode({
               onToggle={onToggle}
               onAdd={onAdd}
               onEdit={onEdit}
+              onLaunch={onLaunch}
+              onDeletePending={onDeletePending}
             />
           ))}
           {node.addable && (

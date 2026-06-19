@@ -85,10 +85,12 @@ the two are one rule.
 - **Skill** — kebab-case (e.g. `propose-new-agent-skill-or-mcp`). No tier prefix, but the
   **same word ceiling**: four to six words, six maximum; prefer a name a human reads at a glance.
 
-**Grandfathered (one left):** `scaffold-route` is not yet renamed to fit this rule — a pending
-follow-up. The other early skill **was** brought into line: `create-draft` → renamed to
-`propose-new-agent-skill-or-mcp` (six words, human-clear). The convention governs every record
-from here on; that single grandfathered name is the only exception.
+**Both early skills are now in line:** `create-draft` → `propose-new-agent-skill-or-mcp` and
+`scaffold-route` → `scaffold-declared-route-into-component-skeleton` (six words, human-clear). The
+convention governs every record from here on, with no grandfathered exceptions.
+
+**Recent records already conform (step 126):** skill `declare-architecture-page-or-task` (five words)
+and MCP `owner_arch_create_record` / `owner_arch_send_to_steps` (owner tier first, ≤ five words).
 
 ## Danger zone (faithful to `/architecture`)
 - **Order deletion** — a `kind:"delete"` task: ask an agent to **retire the real original** and

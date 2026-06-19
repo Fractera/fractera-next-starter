@@ -1,9 +1,9 @@
 ---
-name: scaffold-route
+name: scaffold-declared-route-into-component-skeleton
 description: Materialize a declared route into the standard shell-component skeleton (page.tsx + _components/index.tsx + a leaf + a full RouteMeta _meta.ts) by construction, with the access shape baked in. Use when turning a declared /architecture node (README.md, no built file) into a live page/endpoint, or when starting any new route — instead of hand-typing the convention.
 ---
 
-# scaffold-route
+# scaffold-declared-route-into-component-skeleton
 
 Emits the route skeleton **deterministically** so you never hand-type (and drift
 from) `CRUD-DOCS/workspace-standards/shell-component-architecture.md`. The
@@ -21,13 +21,13 @@ encoded once in the script — you do not reproduce them from memory.
 
 ## Run
 ```bash
-node .claude/skills/scaffold-route/scaffold-route.mjs --path <route> --access <public|private|guest> [--roles a,b] [--kind page|api] [--force]
+node .claude/skills/scaffold-declared-route-into-component-skeleton/scaffold-declared-route-into-component-skeleton.mjs --path <route> --access <public|private|guest> [--roles a,b] [--kind page|api] [--force]
 ```
 Examples:
 ```bash
-node .claude/skills/scaffold-route/scaffold-route.mjs --path /feed --access private --roles user
-node .claude/skills/scaffold-route/scaffold-route.mjs --path "/post/[id]" --access guest
-node .claude/skills/scaffold-route/scaffold-route.mjs --path /api/posts --access private --kind api
+node .claude/skills/scaffold-declared-route-into-component-skeleton/scaffold-declared-route-into-component-skeleton.mjs --path /feed --access private --roles user
+node .claude/skills/scaffold-declared-route-into-component-skeleton/scaffold-declared-route-into-component-skeleton.mjs --path "/post/[id]" --access guest
+node .claude/skills/scaffold-declared-route-into-component-skeleton/scaffold-declared-route-into-component-skeleton.mjs --path /api/posts --access private --kind api
 ```
 
 ## What it emits (under `app/<route>/` — the flat slot, no `[lang]`)

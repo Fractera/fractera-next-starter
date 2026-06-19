@@ -6,6 +6,11 @@
 > и дополняет журнал роста (Приложение A). Написан на русском (язык авторитетного замысла);
 > публичный англопорт — отдельный шаг.
 >
+> **Документ-близнец — ДРУГОЙ цикл.** [`architecture-dev-pipeline.md`](./architecture-dev-pipeline.md)
+> описывает цикл **разработки кода** (`/architecture → development-steps`, flow-B). Этот документ — про
+> цикл **эволюции навыка/MCP** (`/ai-draft-settings → development-steps`, flow-A). Оба сходятся в журнал
+> шагов и делят дисциплину декомпозиции, но это **разные** конвейеры — не путать и не сливать.
+>
 > **Опирается на** (папка `CRUD-DOCS/workspace-standards/`):
 > [`development-methodology.md`](./development-methodology.md) — мастер-методология (этот док = её
 > конкретное применение) · [`ai-draft-settings.md`](./ai-draft-settings.md) — слой черновиков ·
@@ -149,8 +154,8 @@
 
 **Применение в этом кейсе:** навык `create-draft` (2 слова, человеку неочевидно, что делает)
 **переименован в `propose-new-agent-skill-or-mcp`** (6 слов, читается с ходу). MCP-инструменты
-`owner_draft_create_record` / `owner_draft_send_to_steps` уже соответствуют. `scaffold-route` —
-единственный grandfathered, pending follow-up.
+`owner_draft_create_record` / `owner_draft_send_to_steps` уже соответствуют. `scaffold-route`
+приведён к стандарту — переименован в `scaffold-declared-route-into-component-skeleton`.
 
 **На будущее (звено 6):** когда черновик превращается в реальный навык/MCP, генератор имени
 ОБЯЗАН выдавать 4–6-словное человекочитаемое имя — это войдёт в автоматизацию звена 6.

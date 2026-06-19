@@ -60,6 +60,8 @@ export function ArchitectureApp() {
   const [endpointBase, setEndpointBase] = useState<string | null>(null)
   const [blink, setBlink] = useState<Set<string>>(new Set())
   const [hidden, setHidden] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<ArchNode | null>(null)  // flow-B Delete confirm
+  const [launching, setLaunching] = useState(false)                          // flow-B Launch in flight
 
   // Live polling (step 106): one signature snapshot per tick. Diff against the
   // previous snapshot to blink ONLY the changed nodes; first load just seeds the
@@ -220,6 +222,44 @@ export function ArchitectureApp() {
     if (res.ok) { setSelected(null); refresh() }
   }
 
+  // flow-B Launch (step 126): bundle EVERY pending record on /architecture into one
+  // development step, then go to /development-steps to see it. The bundle + source-
+  // record deletion happens server-side (POST /api/development-steps).
+  async function launchBundle() {
+    if (launching) return
+    setLaunching(true)
+    try {
+      const res = await fetch("/api/development-steps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bundleArchitecture: true }),
+      })
+      if (res.ok) { window.location.href = "/development-steps"; return }
+    } catch {}
+    setLaunching(false)
+  }
+
+  // flow-B Delete (step 126): confirm, then remove just this pending record. A declared
+  // route (req- node) drops its requested row; a live route with open tasks clears its
+  // tasks. The real route file is never touched. Then refresh + clear selection if it was it.
+  async function confirmDeletePending() {
+    const node = pendingDelete
+    if (!node) return
+    let url: string | null = null
+    const req = node.id.startsWith("req-")
+      ? requested.find(r => requestedNodeId(r.id) === node.id) ?? null
+      : null
+    if (req) url = projectApi(`/architecture/requested/${req.id}`)
+    else if (node.href) url = projectApi(`/architecture/tasks?path=${encodeURIComponent(node.href)}`)
+    if (!url) { setPendingDelete(null); return }
+    const res = await fetch(url, { method: "DELETE" })
+    if (res.ok) {
+      if (selected?.id === node.id) setSelected(null)
+      refresh()
+    }
+    setPendingDelete(null)
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-8">
@@ -273,6 +313,8 @@ export function ArchitectureApp() {
                   onSelect={(n) => { setSelected(n); setDeclaring(false) }}
                   onToggle={toggle}
                   onAdd={() => setDeclaring(true)}
+                  onLaunch={launchBundle}
+                  onDeletePending={(n) => setPendingDelete(n)}
                 />
               </div>
             </div>
@@ -301,6 +343,44 @@ export function ArchitectureApp() {
           onClose={() => setPicking(false)}
           onPick={(b) => { setPicking(false); setSelected(null); setEndpointBase(b) }}
         />
+      )}
+
+      {/* flow-B Delete confirm (step 126): removing the staging record only — the real
+          route file, if any, is never touched. */}
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setPendingDelete(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl border border-border bg-background p-5 shadow-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 className="text-sm font-bold text-foreground">Delete this record?</h2>
+            <p className="mt-2 text-xs leading-relaxed text-foreground/80">
+              This permanently removes the staging record
+              <span className="font-mono font-medium text-foreground"> {pendingDelete.label}</span>
+              {pendingDelete.declared
+                ? " (a declared page/endpoint that was never built)."
+                : " (the open to-do / deletion tasks on this route)."}
+              {" "}The real route file, if one exists, is never touched.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setPendingDelete(null)}
+                className="inline-flex h-7 items-center rounded-md border border-foreground/40 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted/60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeletePending}
+                className="inline-flex h-7 items-center rounded-md bg-red-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   )

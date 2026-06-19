@@ -6,7 +6,7 @@ import type { ArchNode } from "./types"
 // a LIVE mirror of the real skill files on disk — the same idea buildDocsNode() uses
 // for the Documentation corpus. Until now each platform's Skills group held an empty
 // array (builders.ts) and Hermes' skills were hardcoded leaves (hermes-node.ts), so a
-// real skill like .claude/skills/scaffold-route never showed up. This reads the disk.
+// real skill like .claude/skills/scaffold-declared-route-into-component-skeleton never showed up. This reads the disk.
 // View-only: it lists what is there and tags each leaf with a skillRef the detail panel
 // uses to fetch the full text. It writes nothing.
 

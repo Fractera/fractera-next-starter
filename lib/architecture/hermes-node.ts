@@ -45,11 +45,11 @@ export const HERMES_NODE: ArchNode = {
         ]),
         {
           id: "hermes-mcp",
-          label: "MCP servers — 8 bridges",
+          label: "MCP servers — 9 bridges",
           kind: "group",
           description:
             "The bridges exposed to Hermes as callable tools over loopback JSON-RPC " +
-            "(ports 3210–3216, 3221). They show up at start-up — which is why Hermes sees " +
+            "(ports 3210–3216, 3221, 3222). They show up at start-up — which is why Hermes sees " +
             "his tools even before his memory or role.",
           children: [
             mcp("mcp-claude", "claude-bridge :3210"),
@@ -86,6 +86,18 @@ export const HERMES_NODE: ArchNode = {
                 "mutating, §8.2 dry_run confirm-first. Convenience path for Hermes — the " +
                 "propose-new-agent-skill-or-mcp skill gives every agent the same drafting result self-" +
                 "sufficiently over the local HTTP API, so no MCP is required for the coders.",
+            },
+            {
+              id: "mcp-arch",
+              label: "arch-bridge :3222",
+              kind: "mcp",
+              description:
+                "Architecture records + flow-B over /architecture. Tools: owner_arch_create_record " +
+                "(declare a page/endpoint, or file a to-do / deletion on a route) and " +
+                "owner_arch_send_to_steps (bundle pending records into a development step, then " +
+                "remove them). Both tier owner, mutating, §8.2 dry_run confirm-first. Convenience " +
+                "path for Hermes — the declare-architecture-page-or-task skill gives every agent the " +
+                "same result self-sufficiently over the local HTTP API, so no MCP is required for the coders.",
             },
           ],
         },

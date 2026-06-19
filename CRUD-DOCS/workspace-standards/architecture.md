@@ -68,6 +68,27 @@ So the loop is: you **declare** a page from the architect (writes a README.md) �
 README, opens a development step, builds the page (writes `page.tsx`) → the README is removed and the
 node flips from declared to live. "Add page" / "Add endpoint" declare at any depth.
 
+## Materializer — flow-B → development-steps (step 126)
+
+The page is the entry of the **code development cycle**: pending records collect here, then move to a
+build step. A **pending** record is a declared route (README, no built file) **or** a live route with
+open tasks — the set the tree marks with `req`.
+
+- **Create a record** — three ways, all writing the same README on disk: the panel UI (`declare` ·
+  `to-do` · order deletion), the self-sufficient skill **`declare-architecture-page-or-task`** (plain
+  HTTP, any agent, no Hermes/MCP needed), or the MCP **`owner_arch_create_record`** (arch-bridge
+  :3222, owner tier, §8.2 dry_run — convenience path for Hermes).
+- **Launch / Delete** — hover a pending node: **🚀 Launch** bundles **every** pending record into
+  **one** development step (a brief with a section per record) and removes the sources (declared
+  READMEs snapped, live-route tasks cleared; the real route file is never touched). **🗑 Delete**
+  removes just that record (with a confirm). The same bundle is callable via MCP
+  **`owner_arch_send_to_steps`** (:3222).
+- **Route:** `POST /api/development-steps { bundleArchitecture: true }` (all) or `{ path }` (one).
+
+This mirrors flow-A on `/ai-draft-settings` (skill evolution) but for ordinary code work — the two
+cycles are twins, not duplicates. Full standard: [`architecture-dev-pipeline.md`](./architecture-dev-pipeline.md)
+(this cycle) vs [`skill-evolution-pipeline.md`](./skill-evolution-pipeline.md) (the other).
+
 ## The right panel
 
 Selecting a node opens its panel: header (kind · status · path · `Open page`), the description, the

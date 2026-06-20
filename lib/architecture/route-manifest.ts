@@ -1,5 +1,5 @@
 import type { RouteMeta } from "./route-meta"
-import homeMeta from "@/app/_meta"
+import homeMeta from "@/app/[lang]/_meta"
 import dashboardMeta from "@/app/dashboard/_meta"
 import aiCoreMeta from "@/app/ai-core/_meta"
 import architectureMeta from "@/app/architecture/_meta"

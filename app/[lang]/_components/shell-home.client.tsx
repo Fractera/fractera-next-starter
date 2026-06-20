@@ -6,6 +6,8 @@ import { Zap, LayoutDashboard, Sparkles } from "lucide-react";
 import { adminBase } from "@/lib/runtime-urls";
 import { iconUrl, resolveBrandName, DEFAULT_APP_CONFIG, type AppConfig } from "@/config/app-config.defaults";
 import { HomeConfigList } from "./home-config-list.client";
+import { LanguageSwitcher } from "@/components/language-switcher.client";
+import { getHomeStrings } from "@/lib/i18n/home-strings";
 
 const AI_TOOLS = [
   { name: "Claude Code",    color: "bg-orange-500/10 text-orange-400 border-orange-500/25" },
@@ -20,13 +22,15 @@ const AI_TOOLS = [
   { name: "Object Storage", color: "bg-teal-500/10   text-teal-400   border-teal-500/25"   },
 ];
 
-export function ShellHome({ config }: { config: AppConfig }) {
+export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: string }) {
   const [appUrl, setAppUrl] = useState("");
   const [adminUrl, setAdminUrl] = useState("");
   useEffect(() => {
     setAppUrl(window.location.origin);
     setAdminUrl(adminBase());
   }, []);
+
+  const t = getHomeStrings(lang);
 
   // The brand mark, only when the owner has uploaded one (logo wins, else the generated icon).
   const iconSrc = config.logo ?? iconUrl(config, "icon_192");
@@ -43,6 +47,12 @@ export function ShellHome({ config }: { config: AppConfig }) {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background">
+
+      {/* Language switcher — top-right. Renders nothing when a single language is
+          configured (the env collapses to one → the button disappears). */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSwitcher />
+      </div>
 
       {/* Ambient glow orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -77,7 +87,7 @@ export function ShellHome({ config }: { config: AppConfig }) {
         >
           <span className="inline-flex items-center gap-2 text-[11px] font-mono tracking-[0.18em] text-primary/80 uppercase border border-primary/20 rounded-full px-4 py-1.5 bg-primary/5 backdrop-blur-sm">
             <Sparkles size={10} />
-            Fractera-next-starter
+            {t.badge}
           </span>
         </motion.div>
 
@@ -113,13 +123,12 @@ export function ShellHome({ config }: { config: AppConfig }) {
               customDesc
             ) : (
               <>
-                Your app is already live in production
+                {t.liveLead}
                 {appUrl && (
-                  <> at <span className="text-foreground font-mono font-medium">{appUrl}</span></>
+                  <> {t.atWord} <span className="text-foreground font-mono font-medium">{appUrl}</span></>
                 )}
-                {" "}— a domain you can replace with your own at any time.{" "}
-                Open the <span className="text-foreground font-medium">Admin Panel</span> to
-                customize this page and turn it into your own product.
+                {" "}{t.replaceDomain}{" "}
+                {t.openAdminPre} <span className="text-foreground font-medium">{t.adminPanel}</span> {t.openAdminPost}
               </>
             )}
           </p>
@@ -162,14 +171,14 @@ export function ShellHome({ config }: { config: AppConfig }) {
             className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/25"
           >
             <Zap size={14} />
-            Start Coding
+            {t.startCoding}
           </a>
           <a
             href="/dashboard"
             className="inline-flex items-center gap-2 h-11 px-6 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted active:scale-95 transition-all"
           >
             <LayoutDashboard size={14} />
-            Dashboard
+            {t.dashboard}
           </a>
         </motion.div>
 
@@ -180,7 +189,7 @@ export function ShellHome({ config }: { config: AppConfig }) {
           transition={{ delay: 1, duration: 0.6 }}
           className="text-[11px] font-mono text-muted-foreground/40 tracking-widest uppercase"
         >
-          Your code &nbsp;·&nbsp; Your server &nbsp;·&nbsp; Your AI
+          {t.footer}
         </motion.p>
       </motion.div>
     </main>

@@ -6,8 +6,8 @@ import type { RouteMeta } from "@/lib/architecture/route-meta"
 const meta: RouteMeta = {
   // — Identity & lifecycle —
   kind: "page",
-  path: "/",
-  filePath: "app/app/page.tsx",
+  path: "/[lang]",
+  filePath: "app/[lang]/page.tsx",
   status: "live",
   todo: [],
 
@@ -18,14 +18,14 @@ const meta: RouteMeta = {
   enforcedBy: undefined,
 
   // — Routing shape —
-  isDynamicRoute: false,
-  segmentParams: [],
+  isDynamicRoute: true,
+  segmentParams: ["lang"],
   pathParams: [],
   dynamicParams: undefined,
   prerenderedParams: undefined,
   routeGroup: undefined,
   parallelSlot: undefined,
-  parentLayout: "app/app/layout.tsx",
+  parentLayout: "app/[lang]/layout.tsx",
 
   // — Rendering & caching —
   rendering: "static",
@@ -52,7 +52,10 @@ const meta: RouteMeta = {
   },
 
   // — i18n —
-  i18n: { localized: false, locales: [], defaultLocale: undefined },
+  // Localized route: the [lang] segment selects the language. The actual locale
+  // set is env-driven (NEXT_PUBLIC_SUPPORTED_LANGUAGES); these reflect the shipped
+  // default (English + Spanish). proxy.ts maps `/` → `/<defaultLocale>`.
+  i18n: { localized: true, locales: ["en", "es"], defaultLocale: "en" },
 
   // — Inputs —
   queryParams: [],

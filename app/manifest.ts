@@ -2,9 +2,10 @@ import type { MetadataRoute } from "next";
 import { getAppConfig } from "@/config/app-config";
 import { iconUrl } from "@/config/app-config.defaults";
 
-// PWA manifest served at /manifest.webmanifest. Read at runtime from the live site config so
-// Admin -> Site Settings changes apply without a rebuild (hence force-dynamic, not force-static).
-export const dynamic = "force-dynamic";
+// PWA manifest served at /manifest.webmanifest. Static-first canon: time-based ISR (revalidate = 600)
+// — regenerated lazily on the first request after the window, never on an idle timer. Site Settings
+// changes reflect within the window. Never force-dynamic. (STATIC-FIRST.md)
+export const revalidate = 600;
 
 export default function manifest(): MetadataRoute.Manifest {
   const cfg = getAppConfig();

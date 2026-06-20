@@ -77,10 +77,15 @@ build-time or from a user action via `/api/*`).
 access. So access is built into development from the start — the access shape is decided before the code.
 Details in the next block, "Authorization".
 
-**Static-first (SSG/ISR).** All routing is server-generated; client components in routes are forbidden. The
-overwhelming majority of content is SSG/ISR. Client routing for dynamic pages — only in extreme cases and
-only by agreement with the user. Remember the Next traps that silently break static/ISR: `auth()`,
-`cookies()`, `headers()` in a layout/page.
+**Static-first (SSG/ISR) — CANON: "better nothing than a dynamic page".** Creating a dynamic page is
+FORBIDDEN; exception only when ABSOLUTELY necessary and only after the architect's DOUBLE confirmation —
+better to build nothing than to make a page dynamic where it could be static. Foundation: the product MUST
+work with JavaScript OFF (the App Router ships server HTML; the real no-JS killer is client-side routing /
+a client component owning a route, not SSR). So routing is server-generated, client components in routes
+are forbidden, content is SSG/ISR. A root `force-dynamic` (e.g. on `app/layout.tsx`) silently forces the
+WHOLE subtree dynamic — never do it; use ISR (`revalidate`). Exception: architect-only pages (the service
+cockpit) MAY and SHOULD stay dynamic. Next traps: `auth()`, `cookies()`, `headers()` in a layout/page.
+**Full canon + how-to → [`STATIC-FIRST.md`](STATIC-FIRST.md)** (deep recipe: `CRUD-DOCS/workspace-standards/static-first.md`).
 
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`

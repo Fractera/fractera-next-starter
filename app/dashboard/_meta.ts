@@ -30,7 +30,9 @@ const meta: RouteMeta = {
   parentLayout: "app/app/layout.tsx",
 
   // — Rendering & caching —
-  rendering: "dynamic",
+  // Static-first canon: private != dynamic. Auth is a client guard (enforcedBy: "component",
+  // /api/me) and data comes from authenticated /api/*, so the shell is static. (STATIC-FIRST.md)
+  rendering: "static",
   revalidate: undefined,
   runtime: "nodejs",
   maxDuration: undefined,

@@ -7,10 +7,11 @@ import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config";
 // pages (/architecture, /ai-core, …) live at the root and never reach here —
 // proxy.ts keeps them unprefixed.
 //
-// generateStaticParams enumerates the configured languages so they can be
-// statically generated once the content subtree is opted out of force-dynamic
-// (see CRUD-DOCS/workspace-standards/multilingual-content.md §4 — the static
-// optimization is a follow-up that requires a real `next build` to verify).
+// generateStaticParams enumerates the configured languages for static generation.
+// The content subtree is now ISR, not force-dynamic: the root layout no longer forces
+// dynamic, and app/[lang]/page.tsx declares dynamicParams + revalidate (static-first canon —
+// STATIC-FIRST.md / CRUD-DOCS/workspace-standards/static-first.md). Verify the static/ISR
+// output on a real `next build` (architect — no build on Windows, rule 2).
 export function generateStaticParams() {
   return SUPPORTED_LANGUAGES.map((lang) => ({ lang }));
 }

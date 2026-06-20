@@ -16,9 +16,13 @@ the project root. This is the single source of truth — there is no database ta
 - **Consumers (all server-side):** `app/layout.tsx` (`generateMetadata` via
   `lib/construct-metadata.ts`, `generateViewport`, and Organization/WebSite/LocalBusiness
   JSON-LD via `lib/jsonld.ts`) and `app/manifest.ts` (the PWA manifest).
-- **Applies at runtime — no rebuild.** The root layout and manifest are `force-dynamic`, so a
-  save shows up on the **next page load**. (This is why config is a file, not a `NEXT_PUBLIC_*`
-  env var — those are baked into the build and would need a rebuild.)
+- **Applies via ISR — no full rebuild, and NEVER via a root `force-dynamic`.** Pages that read
+  `getAppConfig()` use ISR (`export const revalidate = N`): a save shows up after the revalidate window
+  (seconds–minutes) while the page stays **static** and works with JavaScript off. The public surface must
+  **never** be made dynamic to reflect settings instantly — that violates the static-first canon
+  (`STATIC-FIRST.md`); a slightly delayed reflection is the accepted trade. Architect-only pages (the
+  service cockpit) may read config live, since they are allowed to be dynamic. (This is why config is a
+  file, not a `NEXT_PUBLIC_*` env var — those are baked into the build and would need a rebuild.)
 
 ## Images
 Branding images are **not** stored in the config — they live in object storage (the Media

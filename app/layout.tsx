@@ -11,9 +11,12 @@ import { buildOrganizationSchema, buildWebSiteSchema, buildLocalBusinessSchema }
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// Render at runtime so Admin -> Site Settings (the on-disk app-config.json) is reflected on the
-// next request without a rebuild. The Shell is an interactive workspace, not a static site.
-export const dynamic = "force-dynamic";
+// Static-first canon (STATIC-FIRST.md): the public surface is NEVER force-dynamic. Time-based ISR —
+// the page is generated once, then re-generated LAZILY on the first request that arrives AFTER the
+// revalidate window, for THAT page only. With no traffic the server sleeps; a page no one visits is
+// never re-rendered. Admin -> Site Settings (read here via getAppConfig) therefore reflects within the
+// window. Architect-only service pages opt into `dynamic = "force-dynamic"` individually.
+export const revalidate = 600;
 
 export function generateMetadata(): Metadata {
   return constructMetadata();

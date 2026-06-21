@@ -127,10 +127,35 @@ When a root `force-dynamic` was hiding the real render mode of every page:
 
 ---
 
+## §4a. JS-gated animations break no-JS — and need recorded consent
+SSG/ISR is necessary but **not sufficient** for no-JS: a statically generated route can still paint
+**invisible**. The trap on this product was framer-motion `initial={{ opacity: 0 }}` + `animate={{
+opacity: 1 }}` on the home blocks — framer-motion writes the *initial* state into the SSR HTML, so the
+server shipped every element at `opacity:0` and the page only appeared after hydration ran the enter
+animation. JS off (or hydration stalls) → **white screen** (17 `opacity:0` blocks in the SSR HTML).
+Fix: `initial={false}` → elements mount at the visible `animate()` target (SSR `opacity:0`: 17 → 0).
+
+**Rule.** Content is visible in server HTML without JS; entrance/scroll motion is **progressive
+enhancement only** and must never ship content hidden. Forbidden by default: framer-motion `initial={{
+opacity: 0 }}`, CSS starting at `opacity:0`/`visibility:hidden` revealed by JS. Use `initial={false}`,
+CSS that animates **from visible**, or `whileInView` with a visible base state.
+
+**Override = informed, recorded consent** (same class as a dynamic page). If the owner insists on a
+JS-gated entrance animation, the agent must: (1) **explain the risks explicitly** — white screen with
+JS off; blank to JS-less crawlers/AI bots (SEO/GEO); total loss if hydration ever fails; FOIC + worse
+LCP; accessibility/reduced-motion harm; (2) **require explicit confirmation after** the risks are on
+record; (3) **record the consent** — timestamp, who approved, exact scope — in the page/component
+`_meta.ts` (`noJsConsent: { by, at, scope, reason }`) and/or the `STATIC-FIRST.md` override log. An
+undocumented JS-gated animation is a bug, treated like an undocumented `force-dynamic`. Full canon —
+`STATIC-FIRST.md` "The animation trap".
+
 ## §5. Verification checklist
 - `grep` for `force-dynamic`: only on architect-only pages (and API routes), never the root layout.
 - Build output: public + `[lang]` routes are static/ISR.
 - JS disabled: `/`, `/<lang>` render complete HTML.
+- **No JS-gated visibility:** the SSR HTML has **no content shipped at `opacity:0`/`visibility:hidden`**
+  (`curl <page> | grep -c opacity:0` → 0 for content); any entrance animation is progressive-enhancement
+  only, or carries a recorded `noJsConsent` (§4a).
 - A private page (`/dashboard`) renders its static shell with JS off and gates/loads via client + API once JS runs.
 - With no traffic the server is idle; a content change appears on the next visit after the revalidate window.
 - Every changed `_meta.ts` `rendering` field matches the page's real mode.

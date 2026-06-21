@@ -37,6 +37,46 @@ dynamic — every page under it, public content included, silently loses static 
 instead; if one page truly needs runtime config, scope `dynamic` to that single architect-only page, never
 the root. Other silent static/ISR breakers in a layout/page: `auth()`, `cookies()`, `headers()`.
 
+## The animation trap — JS-gated visibility breaks no-JS (recorded consent required)
+A real regression on this product: the home landing wrapped every block in framer-motion
+`initial={{ opacity: 0 }}` + `animate={{ opacity: 1 }}`. Framer-motion ships the **initial** state
+into the SSR HTML, so the server sent every element at `opacity:0` and the page only became visible
+**after** client hydration ran the enter animation. With JS off — or before/if hydration stalls — the
+**entire page was a white screen.** This is a no-JS canon violation even though the route itself was
+SSG/ISR: the HTML was complete but **painted invisible**. (It predated the multilingual work; the
+fix was `initial={false}` so elements mount at the visible `animate()` target. Verified: SSR
+`opacity:0` count went 17 → 0, content visible without JS.)
+
+**The rule.** Content MUST be visible in server HTML **without JavaScript**. An entrance/scroll
+animation is **progressive enhancement only** — it may add motion when JS runs, but it must NEVER ship
+the content hidden. Forbidden by default: framer-motion `initial={{ opacity: 0, … }}`, CSS that starts
+at `opacity:0`/`visibility:hidden` and reveals via JS, any "reveal on hydrate" pattern. Correct
+patterns: `initial={false}` (mount at the visible state), CSS keyframes that animate **from visible**,
+or `whileInView` guarded so the base state is visible.
+
+**The override — only with informed, recorded consent.** If the owner insists on an animation that
+hides content until JS runs, this is the SAME class of decision as making a page dynamic: the agent
+**must not just do it.** The agent is REQUIRED to:
+1. **Explain the concrete risks, explicitly** — do not gloss them:
+   - **White screen without JS** — visitors with JS disabled, locked-down browsers, or a slow network
+     before hydration see a blank page.
+   - **Invisible to machine readers** — crawlers and AI bots that do not execute JS index a blank page;
+     direct SEO/GEO damage.
+   - **Total loss on any hydration failure** — one JS error anywhere unmounts the tree and the page
+     stays permanently white; without the animation the content would still be there.
+   - **Flash of invisible content (FOIC)** + worse perceived performance and Largest-Contentful-Paint.
+   - **Accessibility** — reduced-motion users, screen readers, and low-power devices are penalised.
+2. **Require explicit confirmation** from the owner after the risks are stated (a single "ok" to a
+   risk-free pitch does not count — the risks must be on the record first).
+3. **Record the consent** — the moment the owner agreed, **with timestamp, who approved, and the exact
+   scope** (which page/component is allowed to gate visibility on JS). Write it where the override
+   lives: the page/component `_meta.ts` (a `noJsConsent: { by, at, scope, reason }` field) and/or this
+   doc's override log. An undocumented JS-gated animation is a bug, not a feature — treat it like an
+   undocumented `force-dynamic`.
+
+This mirrors the dynamic-page rule: the default is non-negotiable, the exception exists only behind an
+**explicit, informed, recorded** owner decision.
+
 ## How to do it right (summary)
 - **Public `[lang]` routes:** `generateStaticParams()` + `export const dynamicParams = true` +
   `export const revalidate = N` (e.g. 600) — **no root `force-dynamic`**.

@@ -51,7 +51,7 @@ export function HomeConfigList({ config }: { config: AppConfig }) {
         href={adminBase() || "#"}
         target="_blank"
         rel="noopener noreferrer"
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.45, duration: 0.5 }}
         className="group inline-flex items-center gap-2 text-[12px] text-muted-foreground/70 hover:text-foreground transition-colors"
@@ -65,7 +65,7 @@ export function HomeConfigList({ config }: { config: AppConfig }) {
   let row = 0;
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.4, duration: 0.5 }}
       className="flex flex-col gap-4 text-left w-full max-w-sm mx-auto"
@@ -80,7 +80,7 @@ export function HomeConfigList({ config }: { config: AppConfig }) {
               return (
                 <motion.li
                   key={f.path}
-                  initial={{ opacity: 0, x: -8 }}
+                  initial={false}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.44 + row++ * 0.04, duration: 0.3, ease: "easeOut" }}
                   className="flex items-center gap-2.5 text-[12.5px]"

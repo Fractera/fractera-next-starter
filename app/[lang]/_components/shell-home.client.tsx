@@ -74,14 +74,14 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_50%,transparent_40%,hsl(var(--background))_100%)]" />
 
       <motion.div
-        initial={{ opacity: 0, y: 28 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 flex flex-col items-center gap-9 text-center px-6 pt-[100px] pb-[100px] max-w-2xl w-full"
       >
         {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.88 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1, duration: 0.4 }}
         >
@@ -94,7 +94,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
         {/* Brand icon — only when the owner uploaded a logo / generated an icon set */}
         {iconSrc && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 8 }}
+            initial={false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 0.14, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="-mb-3"
@@ -110,7 +110,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* Wordmark + tagline */}
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center gap-3"
@@ -139,7 +139,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* AI tool pills */}
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.32, duration: 0.5 }}
           className="flex flex-wrap justify-center gap-2"
@@ -147,7 +147,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
           {AI_TOOLS.map((tool, i) => (
             <motion.span
               key={tool.name}
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.34 + i * 0.07, duration: 0.35, ease: "easeOut" }}
               className={`text-[11px] font-mono px-3 py-1 rounded-full border backdrop-blur-sm ${tool.color}`}
@@ -159,7 +159,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* CTA buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.75, duration: 0.45 }}
           className="flex flex-wrap items-center justify-center gap-3"
@@ -184,7 +184,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* Footer micro-text */}
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.6 }}
           className="text-[11px] font-mono text-muted-foreground/40 tracking-widest uppercase"

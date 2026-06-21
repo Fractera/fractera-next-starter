@@ -9,6 +9,7 @@ import { projectApi } from "@/lib/architecture/project-api"
 import type { Product } from "./types"
 import { ProductForm } from "./product-form.client"
 import { ProductTable } from "./product-table.client"
+import { ProductTableSkeleton } from "./product-table-skeleton"
 
 const ENV_HINT = process.env.NODE_ENV === "development"
   ? " — Check REMOTE_DATA_URL and DATA_API_KEY in .env.local"
@@ -92,14 +93,12 @@ export function DashboardApp() {
     }
   }
 
-  if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <span className="text-xs font-mono text-muted-foreground animate-pulse">Loading…</span>
-      </div>
-    )
-  }
-
+  // No early "Loading…" return. The static shell (header, action button, table
+  // chrome) renders without JS; the dynamic VALUES are the only part gated on the
+  // client fetch — until `ready` we show the skeleton table in their place, so a
+  // no-JS / pre-hydration visitor sees the real layout, not a blank spinner
+  // (STATIC-FIRST.md §4a). SSR renders this same !ready branch, so it matches the
+  // client's first render — no hydration mismatch.
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -132,10 +131,16 @@ export function DashboardApp() {
           />
         )}
 
-        <ProductTable products={products} deleting={deleting} onDelete={handleDelete} />
+        {ready
+          ? <ProductTable products={products} deleting={deleting} onDelete={handleDelete} />
+          : <ProductTableSkeleton />
+        }
 
         <p className="mt-6 text-[10px] text-muted-foreground font-mono opacity-50 text-center">
-          {products.length} product{products.length !== 1 ? "s" : ""} · data stored in SQLite · images via media service
+          {ready
+            ? `${products.length} product${products.length !== 1 ? "s" : ""} · data stored in SQLite · images via media service`
+            : "data stored in SQLite · images via media service"
+          }
         </p>
       </div>
     </main>

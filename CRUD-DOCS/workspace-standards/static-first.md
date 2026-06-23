@@ -39,6 +39,69 @@ This is the target shape for FNS `app/[lang]/…`.
 
 ---
 
+## §1b. The root layout is BARE; `<html lang>` is owned per zone (multiple root layouts)
+Static-first depends on **where `<html>` and the language live**. The root `app/layout.tsx` wraps every
+route, so anything it renders or reads leaks to the whole tree. It must therefore be a bare pass-through;
+each **zone** owns its own `<html>` via a route-group layout (Next.js "multiple root layouts"). Current
+FNS shape (mirrors `22slots-main` and FES):
+
+```
+app/
+  layout.tsx              → return children;            (+ import "../styles/index.css")  — BARE root
+  [lang]/
+    layout.tsx            → <html lang={validLang}> + <head>(theme-init / JSON-LD / GA) + <body>;
+                            generateStaticParams + revalidate; VALIDATES lang
+    page.tsx, …           → public content (SSG / ISR)
+  (service)/              ← route group, invisible in the URL (paths unchanged; proxy.ts untouched)
+    layout.tsx            → <html lang="en">                              (architect-only English zone)
+    architecture/ ai-core/ ai-draft-settings/ dashboard/ debug/
+    development-steps/ documents/ glossary/ patterns/ project/  not-found.tsx   → force-dynamic (allowed)
+  manifest.ts  api/       → not HTML (no <html> needed)
+```
+
+**Why the root must be bare.** Two failure modes, both from the root being shared:
+1. A **Dynamic API** in the root (`headers()`/`cookies()`/`auth()`) → the **whole tree** renders on every
+   request (loses SSG/ISR). Covered in §0/§4.
+2. **`<html lang>` set from a single value in the root → the language is locked to the full route depth.**
+   The root sits **above** the `[lang]` segment, so it cannot see the route param; a
+   `<html lang={getAppConfig().lang}>` ships the **same** `lang` for every page, and `/es` serves Spanish
+   content inside `<html lang="en">`. This is the **anti-pattern this step removed** — wrong `lang` for SEO
+   and accessibility on every non-default language, across the entire site.
+
+**Correct — bare root + per-zone `<html>`:**
+
+```tsx
+// app/layout.tsx — BARE: no <html>, no Dynamic API, no config-derived lang
+import "../styles/index.css";
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}
+```
+
+```tsx
+// app/[lang]/layout.tsx — owns <html lang>, taken from the route param and VALIDATED first
+const { lang } = await params;
+if (!SUPPORTED_LANGUAGES.includes(lang)) notFound();   // 22slots rule: never trust the segment — validate
+return (
+  <html lang={lang} suppressHydrationWarning>
+    <head>{/* theme-init, JSON-LD, GA */}</head>
+    <body className={bodyFontClass}><ThemeProvider>{children}<Toaster/></ThemeProvider></body>
+  </html>
+);
+```
+
+```tsx
+// app/(service)/layout.tsx — architect-only English zone owns its own <html lang="en">
+return <html lang="en" suppressHydrationWarning>…</html>;
+```
+
+**The 22slots lesson (extract ≠ trust).** 22slots does not merely read `params.lang` — it **always
+validates** it (`resolveLang` / `includes(...) ? lang : notFound()`) before it reaches `<html lang>` or any
+render. Extracting the segment without validating is itself an anti-pattern: an invented locale would emit
+`<html lang="zz">` or render against a missing dictionary. Validate, then use.
+
+---
+
 ## §2. Classify every route before you set a render mode
 For each route under `app/`, pick one — by construction, in `_meta.ts` (`rendering`) and on the page:
 

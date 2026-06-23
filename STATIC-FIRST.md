@@ -37,6 +37,28 @@ dynamic — every page under it, public content included, silently loses static 
 instead; if one page truly needs runtime config, scope `dynamic` to that single architect-only page, never
 the root. Other silent static/ISR breakers in a layout/page: `auth()`, `cookies()`, `headers()`.
 
+## The root layout must be a BARE pass-through — `<html lang>` belongs to the zone that knows the language
+The root `app/layout.tsx` must be exactly `return children` (plus the global CSS import). It must **not**
+render `<html>/<body>`, must **not** call a Dynamic API, and must **not** set `<html lang>` from a single
+config value. Reason: the root wraps **every** route, so anything it does leaks to the whole tree.
+
+- **Anti-pattern — English locked to the full route depth.** A root `<html lang={getConfig().lang}>` (one
+  constant) ships the SAME `lang` for every page. `/es` then serves Spanish content inside
+  `<html lang="en">` — the language is locked across the entire route depth because the root layout sits
+  **above** the `[lang]` segment and never sees the route param. (Same class of bug as `headers()` in the
+  root: a single shared decision poisoning the whole tree — here the SEO/a11y `lang`, there the rendering
+  mode.)
+- **Correct — each zone owns its own `<html>` (Next.js "multiple root layouts" via route groups):**
+  - `app/[lang]/layout.tsx` → `<html lang={validLang}>`, where `validLang` is the **route param**, and it is
+    **VALIDATED first** (`if (!SUPPORTED_LANGUAGES.includes(lang)) notFound()`). The 22slots rule: never
+    just *extract* the segment — **always validate it** before it reaches `<html lang>` or any render.
+  - `app/(service)/layout.tsx` → `<html lang="en">` for the architect-only English zone (service cockpit).
+  - The route group `(service)` is invisible in the URL, so service pages keep their unprefixed paths and
+    `proxy.ts` is untouched.
+
+Reference implementations: `Documents/fractera/22slots-main/app` and FES (the platform shell). Deep how-to
+with the full zone tree and code — `CRUD-DOCS/workspace-standards/static-first.md`.
+
 ## The animation trap — JS-gated visibility breaks no-JS (recorded consent required)
 A real regression on this product: the home landing wrapped every block in framer-motion
 `initial={{ opacity: 0 }}` + `animate={{ opacity: 1 }}`. Framer-motion ships the **initial** state

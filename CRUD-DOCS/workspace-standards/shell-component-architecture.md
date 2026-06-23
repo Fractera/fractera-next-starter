@@ -32,6 +32,26 @@ app/<route>/
 API routes use `route.ts` in place of `page.tsx` and rarely need `_components/`.
 Files/folders prefixed `_` are Next.js private — excluded from routing.
 
+## Root layout zones (who owns `<html>`)
+
+Above the route folders sits the layout hierarchy. The **root `app/layout.tsx` is a
+bare pass-through** (`return children` + global CSS) — it renders no `<html>/<body>`
+and calls no Dynamic API, so it never forces the tree dynamic and never locks one
+`<html lang>` for every language. Each **zone** owns its own `<html>` via a route-group
+layout (Next.js "multiple root layouts"):
+
+```
+app/
+  layout.tsx     → return children;                         (bare root — owns nothing)
+  [lang]/layout  → <html lang={validLang}>  (route param, VALIDATED) — public, SSG/ISR
+  (service)/layout → <html lang="en">       (architect-only zone; route group invisible in URL)
+```
+
+`<html lang>` belongs to the zone that knows the language (the `[lang]` segment), never
+the shared root — a config-derived `<html lang>` in the root is the "language locked to
+full route depth" anti-pattern. Full rationale, the anti-pattern, and the validate-don't-
+trust rule: [`static-first.md` §1b](./static-first.md). Canon: [`STATIC-FIRST.md`](../../STATIC-FIRST.md).
+
 ## Rules
 
 1. **`page.tsx` is a thin Server Component.** Never `"use client"`. It returns the

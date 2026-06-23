@@ -20,7 +20,8 @@ can read and change every setting.
    local-business address. The Shell reads it on every request and deep-merges it over the
    code defaults, so a partial object is always valid. **Changes apply on the next page
    load — no rebuild.** This is the right substrate for AI: it is a plain, transparent,
-   diffable JSON file an agent can read and write directly.
+   diffable JSON file an agent can read directly. Writing it, though, goes through the
+   validated setter (see below) — not by hand-editing raw JSON.
 
 2. **Build-time env** — `app/.env.local`
    (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`, `NEXT_PUBLIC_DEFAULT_LOCALE`).
@@ -33,22 +34,38 @@ can read and change every setting.
    uploaded through the panel (it crops + stores); an agent can set an `images.*` path to a
    URL it already has, but cannot upload a file.
 
-**Why not a database / why not env-for-everything:** the config is small, single-owner and
-low-frequency. A database would make it opaque to agents (needs a query layer) for no
-benefit; flat env vars cannot hold nested structure and are build-time (the language pain).
-The JSON file is the most transparent and agent-native option, so it is the primary store.
+**Substrate vs. write path — two separate questions:**
+- *Where the bytes live* (substrate) = the JSON file. The config is small, single-owner and
+  low-frequency. A database would make it opaque to agents (needs a query layer) for no
+  benefit; flat env vars cannot hold nested structure and are build-time (the language
+  pain). So the file is the most transparent, agent-native store, and it stays the substrate.
+- *How a change is written* (write path) = the **validated setter**, never raw hand-editing.
+  An agent that edits the JSON by hand can emit broken JSON, clobber keys, mis-nest a path,
+  write the wrong type, or race another writer. The setter validates against the catalog,
+  merges safely and writes atomically — it gives the safety of a database without the
+  opacity. File substrate + validated setter is the optimum; raw file editing is the worst
+  write path and is a last resort only.
 
 ## How an agent changes a setting
 
-**Preferred — MCP tools** (when `app-settings-bridge` :3218 is reachable):
+**Read** straight from the file or via the list tools — reading never corrupts.
+
+**Write through the validated setter — this is THE write path for every agent.** The setter
+reaches the agent as the `app-settings-bridge` MCP server (:3218, owner tier), registered in
+every agent's MCP client (not only Hermes), so even a lone agent has it. Same setter is
+exposed over HTTP as the panel routes `/api/config/site` and `/api/config/languages`.
 - `owner_app_settings_list_text_fields` — list every setting with path, role, current
   value, and whether it is still the default.
-- `owner_app_settings_set_text_value { path, value }` — set one field (validated).
-- `owner_app_settings_list_languages` / `owner_app_settings_set_languages { languages }`.
+- `owner_app_settings_set_text_value { path, value }` — set one text field (validated,
+  atomic, applies next load).
+- `owner_app_settings_list_languages` / `owner_app_settings_set_languages { languages }` —
+  read / set the language set (rebuild required to apply).
 
-**Always available — edit the files directly** (works for any agent, no MCP):
-- Text/SEO/PWA → edit `app/APP-CONFIG/app-config.json` at the dot-path (merge, don't clobber).
-- Languages → upsert the two `NEXT_PUBLIC_*` keys in `app/.env.local`, then rebuild.
+**Last resort only — raw file edit** (when no setter is reachable at all: no MCP bridge AND
+the Shell's config API is down). It is unvalidated and easy to corrupt, so mitigate: read
+first and merge (never clobber), match the catalog's declared type, validate the JSON is
+well-formed, and write atomically (temp file + rename). Languages → upsert the two
+`NEXT_PUBLIC_*` keys in `app/.env.local`, then rebuild.
 
 Always confirm the change with the owner first (show old → new), then write.
 

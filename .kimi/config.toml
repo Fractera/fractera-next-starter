@@ -3,3 +3,10 @@ event = "PostToolUse"
 matcher = "WriteFile|StrReplaceFile"
 command = "bash -c 'AGENT_IDENTITY=kimi python3 /opt/fractera/app/.agent-hooks/brain-ingest.py'"
 timeout = 15
+
+# App Settings MCP (L2 owner bridge, :3218) — read/set the app's branding/SEO/PWA
+# settings + language set via the validated setter. HTTP transport; token from the
+# HERMES_MCP_SECRET env var (exported by the deploy). Localhost accepts no-token too.
+[mcp_servers.app-settings-bridge]
+url = "http://localhost:3218"
+bearer_token_env_var = "HERMES_MCP_SECRET"

@@ -1,2 +1,10 @@
 [features]
 codex_hooks = true
+
+# App Settings MCP (L2 owner bridge, :3218) — lets this agent read/set the app's
+# branding/SEO/PWA settings + language set through the validated setter. Streamable
+# HTTP transport; token read from the HERMES_MCP_SECRET env var (exported by the
+# deploy). On localhost the bridge currently accepts calls without a token too.
+[mcp_servers.app-settings-bridge]
+url = "http://localhost:3218"
+bearer_token_env_var = "HERMES_MCP_SECRET"

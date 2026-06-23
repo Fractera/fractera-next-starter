@@ -1,4 +1,12 @@
 {
+  "mcpServers": {
+    "app-settings-bridge": {
+      "httpUrl": "http://localhost:3218",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
+    }
+  },
   "hooks": {
     "PostToolUse": [
       {

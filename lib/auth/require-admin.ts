@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { shouldBypassAuth } from "@/lib/auth/auth-bypass"
+import { authBaseFromHost } from "@/lib/auth-base-server"
 
 // Server-component guard for the admin-only service pages (AI Core, Architecture,
 // Development steps, Patterns, Glossary, Documents, AI Draft Settings, Debug).
@@ -36,5 +37,12 @@ export async function requireAdmin(): Promise<void> {
     // fall through to redirect
   }
 
-  redirect("/register?requireRole=architect")
+  // The register/login forms live on the AUTH service (auth.<domain> in Secure
+  // mode, <ip>:3001 in IP mode) — NOT on this app domain. A bare relative
+  // "/register" would be caught by proxy.ts's language router and rewritten to
+  // "/<lang>/register", a page the app does not have → white screen. Build the
+  // absolute auth URL from the request host instead.
+  const proto = h.get("x-forwarded-proto") ?? "https"
+  const host = h.get("x-forwarded-host") ?? h.get("host")
+  redirect(`${authBaseFromHost(host, proto)}/register?requireRole=architect`)
 }

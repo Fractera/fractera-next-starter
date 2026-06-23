@@ -2,11 +2,22 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { shouldBypassAuth } from "@/lib/auth/auth-bypass";
 import { getSession } from "@/lib/auth/get-session";
+import { authBaseFromHost } from "@/lib/auth-base-server";
 import {
   SUPPORTED_LANGUAGES,
   DEFAULT_LANGUAGE,
   SINGLE_LANG_MODE,
 } from "@/config/translations/translations.config";
+
+// Auth-service routes that must NEVER be served by this app. The login /
+// registration / guest forms belong to the auth service (auth.<domain> in Secure
+// mode, <ip>:3001 in IP mode). If anything navigates the browser to a relative
+// "/login" or "/register" on the app domain, the language router below would
+// rewrite it to "/<lang>/register" — a page this app does not have → white
+// screen. This guard rescues any such stray link by redirecting to the auth host
+// (a different host, so there is no redirect loop). See
+// reports/errors/relative-auth-path-langprefix-whitescreen.md.
+const AUTH_FORM_PATHS = new Set(["/login", "/register", "/guest-login"]);
 
 // ──────────────────────────────────────────────────────────────────────────
 // This proxy does TWO jobs, branched by path:
@@ -178,6 +189,15 @@ function languageRouter(request: NextRequest): NextResponse {
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
+
+  // Job 0 — rescue stray auth-form links to the auth host (before language
+  // routing, which would otherwise rewrite "/register" → "/<lang>/register").
+  if (AUTH_FORM_PATHS.has(pathname)) {
+    const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    const target = `${authBaseFromHost(host, proto)}${pathname}${request.nextUrl.search}`;
+    return NextResponse.redirect(target);
+  }
 
   // Job 1 — API auth gate.
   if (pathname.startsWith("/api")) {

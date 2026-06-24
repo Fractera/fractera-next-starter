@@ -106,4 +106,27 @@ and MCP `owner_arch_create_record` / `owner_arch_send_to_steps` (owner tier firs
 4. The real files (`CLAUDE.md`, `~/.hermes/SOUL.md`, the skills dir, `config.yaml` MCP, …) are
    the targets — **only the agent writes them**, never this page.
 
+## Materialization format contract — the canonical form a draft becomes (MANDATORY)
+
+A draft is only a wish. When you materialize it into the **real** record, you MUST write it in the
+**one canonical form per agent**, or the capability silently fails to load for that agent. This is not
+optional polish: a skill written in the wrong shape is invisible to the agent that needs it. (Real
+incident — flat `<name>.md` Hermes skills were never discovered; Hermes is strict, see the table.)
+**Self-sufficiency rule:** every capability is duplicated into ALL agents in their discoverable form —
+never centralize on Hermes, never assume one specific agent exists.
+
+| Kind | Canonical form (identical idea everywhere) | 5 CLI (claude-code/codex/gemini-cli/qwen-code/kimi-code) | Hermes |
+|---|---|---|---|
+| **skill** | a **directory** `<name>/SKILL.md` with **YAML frontmatter** (`name:` required, `description:` carrying trigger keywords, optional `metadata`) — never a bare flat `<name>.md` | canon `.agents/skills/<name>/SKILL.md` + a copy/symlink in each of `.claude/.gemini/.qwen/.codex/.kimi/skills` | substrate `services/hermes-skills/<name>/SKILL.md` → bootstrap `cp -r` to `/root/.hermes/skills/<name>/SKILL.md` |
+| **mcp** | a bridge server on a port **+ registration in every agent's MCP client** + an entry in `MCP-REGISTRY.md` | the slot's `.mcp.json` (and per-agent config) | `~/.hermes/config.yaml` `mcp_servers:` (+ Bearer) |
+| **instruction** | merged/replaced into the agent's **root instruction file** | `CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `QWEN.md` / `KIMI.md` | `SOUL.md` (identity) + `HERMES.md` (project rules) |
+
+**Why Hermes is the strict case:** it discovers skills ONLY as `<name>/SKILL.md` (its loader walks for
+files literally named `SKILL.md` and reads the name from frontmatter or the parent folder). A flat
+`<name>.md` is never indexed → the agent picks a wrong vendored skill instead. The 5 CLI already use the
+directory+frontmatter form, so **one canon satisfies all six** — just apply it everywhere, Hermes included.
+
+**Naming on materialization:** the generated `<name>` obeys the Naming convention above (kebab-case skill /
+snake_case `<tier>_<area>_<action>_<object>` MCP, four-to-six words, human-readable at a glance).
+
 Static page — no live polling; it loads on open and refetches after each edit.

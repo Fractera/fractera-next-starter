@@ -72,3 +72,12 @@ Report to the architect:
 
 The originals are never edited here — the draft is a mirror; the architect approves
 and an agent later applies it to the real file.
+
+## When the draft is materialized — write the canonical form (do not flatten)
+
+You only propose here. When the draft is later turned into the **real** record, it MUST take the one
+canonical form per agent, or it silently fails to load. In particular a **skill** is a directory
+`<name>/SKILL.md` with YAML frontmatter (`name:` + a trigger-rich `description:`) — **never a bare flat
+`<name>.md`** (Hermes discovers only `<name>/SKILL.md`; a flat file is invisible and the agent picks the
+wrong skill). The same canon serves all six agents. Full per-agent table (skill / mcp / instruction) —
+`CRUD-DOCS/workspace-standards/ai-draft-settings.md` → "Materialization format contract".

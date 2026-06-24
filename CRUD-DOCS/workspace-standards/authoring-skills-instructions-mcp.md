@@ -104,6 +104,86 @@ metadata:
 
 ---
 
+## §1.5. Движение данных — топология, жизненный цикл, зеркало `/ai-core`
+
+Это сердце документа: **где данные лежат, как текут от пожелания до живой способности, и как они
+отражаются в `/ai-core`.** Раньше тут и ломалось (плоский файл невидим Hermes; мирор `/ai-core` читал не
+тот формат). Три диаграммы.
+
+### A. Топология на диске — какой файл за что отвечает
+
+```
+ВОРКСПЕЙС (слот app/ = FNS-клон)                СУБСТРАТ Hermes (ai-workspace)        ЖИВОЙ Hermes (сервер)
+─────────────────────────────────              ──────────────────────────────       ─────────────────────
+ИНСТРУКЦИИ (личность каждого агента)
+  CLAUDE.md  AGENTS.md  GEMINI.md               services/hermes-soul/SOUL.md   ──┐
+  QWEN.md    KIMI.md                                                             ├─► /root/.hermes/SOUL.md
+                                                                                 │   (+ HERMES.md правила)
+НАВЫКИ (канон <name>/SKILL.md + frontmatter)
+  .agents/skills/<name>/SKILL.md  ◄── КАНОН      services/hermes-skills/         ──┘
+  .claude /.gemini /.qwen/skills/<name>/  ──┐       <name>/SKILL.md  ──(bootstrap cp -r)──► /root/.hermes/skills/<name>/SKILL.md
+  (копии/симлинки; codex+kimi читают .agents)│
+                                              └─ читают 5 кодеров
+MCP (регистрация в клиенте каждого агента)
+  .mcp.json            (claude)                config.yaml mcp_servers:  ──────► Hermes вызывает мосты :32xx
+  .codex/config.toml   (codex, TOML)           (+ Bearer-секреты)
+  .gemini/settings.json .qwen/settings.json .kimi/mcp.json
+                                              + авторитетный каталог MCP-REGISTRY.md
+```
+
+**Ключ:** канон навыка — `.agents/skills/<name>/SKILL.md`; вендор-папки (`.claude/.gemini/.qwen`) держат
+копию/симлинк. **Hermes держит СВОЮ копию в субстрате** (`services/hermes-skills/`), т.к. слот `app/`
+сменный — субстрат не зависит от файлов гостя. На деплое `bootstrap cp -r` кладёт навыки Hermes в
+`/root/.hermes/skills/<name>/SKILL.md`, а `install_hermes_soul` — `SOUL.md`.
+
+### B. Жизненный цикл способности — от пожелания до живого, отражённого инструмента
+
+```
+[1] ЧЕРНОВИК            [2] СБОР В ШАГ           [3] МАТЕРИАЛИЗАЦИЯ          [4] ОТРАЖЕНИЕ
+архитектор/агент   →    pending-черновики   →    агент пишет РЕАЛЬНЫЙ    →   /ai-core сканит диск
+пишет пожелание         собираются в один        файл в КАНОН-форму          и показывает живой
+на /ai-draft-settings   шаг разработки           для КАЖДОГО агента          каталог (мирор)
+(реальный файл                                   (§1: <name>/SKILL.md,
+ НЕ трогается)                                     MCP-клиенты, корневые
+   │                        │                      инстр-файлы)                   │
+   ▼                        ▼                          ▼                          ▼
+AI-DRAFT-SETTINGS/      /development-steps      .agents/skills/… , config     дерево /ai-core =
+<AGENT>/SKILLS|MCP/     (NEW-STEPS/NN-slug)     .yaml , CLAUDE.md , …          точное зеркало диска
+  (зеркало-черновик)                            (+ субстрат Hermes)
+```
+
+Звенья 1–2 автоматизированы (навык `propose-new-agent-skill-or-mcp` + MCP `owner_draft_*`). Звено 3 —
+**ручная работа агента по формату §1** (см. §2.5 «раскладка по папкам»). Звено 4 — авто (сканер).
+
+### C. Зеркало `/ai-core` — как диск превращается в дерево (живой мирор, ничего не пишет)
+
+`/ai-core` (architect-only страница в продукте) при каждом открытии **заново читает диск** (dynamic,
+no-store) и строит дерево. Механизм — `lib/architecture/skills-tree.ts` `enrichSkills`:
+
+```
+ОТКРЫТИЕ /ai-core
+   │
+   ├─ для группы "<platform>-skills":
+   │     5 кодеров → scanCoderSkills: readdir(<dir>) → для каждого <name>/SKILL.md
+   │                  → frontmatter (name/description) → лист дерева
+   │     Hermes     → scanHermesSkills: readdir(services/hermes-skills | /root/.hermes/skills)
+   │                  → для каждого <name>/SKILL.md → frontmatter → лист  (legacy плоский .md тоже)
+   │
+   ├─ для группы "<platform>-mcp":
+   │     5 кодеров → scanMcp: читает .mcp.json / config.toml / settings.json → mcpServers → лист
+   │     Hermes    → 7 захардкоженных loopback-мостов :3210–3216 (реальные процессы, не в .mcp.json)
+   │
+   └─ инструкц-доки → editTarget → карандаш ✎ открывает черновик (SOUL.md и пр.)
+```
+
+Деталь панели читает **реальный текст файла** через `GET /api/ai-core/skill` → `coderSkillFile` (кодеры)
+или `readOriginal("hermes","skill",name)` (Hermes) — оба резолвят `<name>/SKILL.md`. **Сканер и read-API
+обязаны знать ТОТ ЖЕ формат, что bootstrap кладёт на диск** — иначе мирор пуст (баг шага 137: сканер читал
+плоский `.md`, а навыки стали папками → `/ai-core` показывал ноль навыков Hermes; исправлено — оба читают
+`<name>/SKILL.md`). Это и есть «синхронизация с `/ai-core`»: **один формат на диске, в сканере и в bootstrap.**
+
+---
+
 ## §2. Как СОЗДАЁТСЯ способность — конвейер draft → step → materialize
 
 Создание идёт не «правкой живых файлов вслепую», а через аудируемый слой черновиков
@@ -123,6 +203,50 @@ metadata:
 > Полный замысел эволюции способности (исполнение → тест → визуализация → переписывание, звенья 3–7) —
 > [`skill-evolution-pipeline.md`](./skill-evolution-pipeline.md). Этот документ — про **форму и хранение**,
 > тот — про **цикл доведения до качества**.
+
+---
+
+## §2.5. Инструкция модели: ЧЕРНОВИК → ПРАВИЛЬНАЯ ИНСТРУКЦИЯ → РАСКЛАДКА ПО ПАПКАМ
+
+**Это исполняемая инструкция для ИИ-модели на звене 3 (материализация).** Когда архитектор добавил
+пожелание к Hermes (или любому агенту) и запустил шаг, модель читает ЭТОТ раздел и раскладывает файлы
+ровно так. Цель: на выходе способность открываема ВСЕМИ агентами и видна в `/ai-core`.
+
+### Шаг 0 — прочитать черновик и определить тип
+Открой `AI-DRAFT-SETTINGS/<AGENT>/…` → машинный блок `<!-- fractera:draft … -->`. Возьми `kind`
+(`instruction`|`skill`|`mcp`), `mode` (`supplement`|`replace`), `target`, `name`, `tasks` (пожелания).
+Имя приведи к §3 (kebab навык / snake_case `<tier>_…` MCP, 4–6 слов).
+
+### Если `kind: "skill"` — раскладка по 6 местам (КАНОН `<name>/SKILL.md` + frontmatter)
+1. Напиши **канон** `.agents/skills/<name>/SKILL.md` — с frontmatter (`name:` + `description:` с
+   ТРИГГЕР-КЛЮЧАМИ запроса; тело = когда применять/шаги/примеры). Это источник для codex+kimi.
+2. Сделай **копию** в `.claude/skills/<name>/SKILL.md`, `.gemini/…`, `.qwen/…` (на Windows — копии, не
+   симлинки). Так навык видят Claude/Gemini/Qwen.
+3. Для **Hermes** напиши копию в субстрат `ai-workspace/services/hermes-skills/<name>/SKILL.md` (тот же
+   формат). Bootstrap `cp -r` доставит её в `/root/.hermes/skills/<name>/SKILL.md` на деплое.
+4. **Никогда** не плоский `<name>.md` — Hermes его не откроет (§1, антипаттерн §6).
+5. Проверь: `frontmatter.name` присутствует; `description` несёт ключи запроса.
+
+### Если `kind: "mcp"` — мост + регистрация в КАЖДОМ клиенте + реестр
+1. Мост-сервер (порт), отвечает на JSON-RPC `initialize` + `tools/list` (иначе Hermes = 0 инструментов).
+2. Зарегистрируй в КАЖДОМ MCP-клиенте: `.mcp.json` (claude), `.codex/config.toml` (TOML), `.gemini/
+   settings.json`, `.qwen/settings.json`, `.kimi/mcp.json`; для Hermes — `config.yaml mcp_servers:` (+ Bearer).
+3. Добавь строку в `MCP-REGISTRY.md` (имя §3, тир, мутирующий?, что возвращает).
+4. Мутирующий инструмент обязан переспрашивать (§4, навык `confirm-before-mutation`).
+
+### Если `kind: "instruction"` — merge/replace в корневой файл
+- `supplement` → вмерджи пожелания в реальный файл; `replace` → перепиши.
+- Цели: `CLAUDE.md`/`AGENTS.md`/`GEMINI.md`/`QWEN.md`/`KIMI.md`; для Hermes — `SOUL.md` (личность,
+  субстрат `services/hermes-soul/SOUL.md`) и/или `HERMES.md` (правила).
+- Помни: SOUL.md грузится в промпт Hermes КАЖДОЕ сообщение — пиши сжато, тяжёлое выноси в навык.
+
+### Шаг N — закрыть и проверить отражение
+1. Удали черновик (`Remove draft` / автоудаление при сборке) — он был зеркалом, не оригиналом.
+2. Открой `/ai-core` → новая способность видна под нужным агентом (сканер §1.5-C прочитал диск).
+3. Поведенческий тест: на профильный запрос «словами» агент (особенно Hermes) выбирает ИМЕННО её.
+4. Если `kind: "delete"` в `tasks` — выведи реальный оригинал из эксплуатации и отрефактори использования.
+
+**Критерий «разложено правильно» = чек-лист §5.** Пока он не зелёный — способность не готова.
 
 ---
 

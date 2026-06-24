@@ -47,7 +47,12 @@ export async function readOriginal(
       resolve(cwd, "docs/HERMES/hermes-agent-main/docker", t),    // seed template fallback
     ]
   } else if (kind === "skill") {
+    // Canonical (step 137): Hermes skills are <name>/SKILL.md directories. Legacy flat
+    // <name>.md kept last so an older server still reads. firstReadable picks the first hit.
     candidates = [
+      `/opt/fractera/services/hermes-skills/${t}/SKILL.md`,
+      resolve(cwd, "..", "services/hermes-skills", t, "SKILL.md"),
+      `/root/.hermes/skills/${t}/SKILL.md`,
       `/opt/fractera/services/hermes-skills/${t}.md`,
       resolve(cwd, "..", "services/hermes-skills", `${t}.md`),
       `/root/.hermes/skills/${t}.md`,

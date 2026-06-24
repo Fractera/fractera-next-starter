@@ -44,8 +44,11 @@ const MCP_CONFIGS: Record<string, { file: string; format: "json" | "toml" }> = {
   kimi: { file: ".kimi/mcp.json", format: "json" },
 }
 
-// Hermes keeps its skills as flat *.md files; same allow-list lib/ai-draft/originals.ts
-// reads (prod path, dev relative path, the running agent's home).
+// Hermes loads its skills from the SAME canonical shape as the coders now: a directory
+// <name>/SKILL.md with YAML frontmatter (step 137 — a flat <name>.md is never discovered
+// by Hermes' own loader). Same allow-list lib/ai-draft/originals.ts reads (prod path, dev
+// relative path, the running agent's home). Legacy flat *.md is still tolerated on read so
+// an older server keeps mirroring.
 function hermesSkillDirs(cwd: string): string[] {
   return [
     "/opt/fractera/services/hermes-skills",
@@ -116,18 +119,30 @@ async function scanCoderSkills(platform: string): Promise<ArchNode[]> {
   return out
 }
 
-// Hermes' skills are flat *.md (no frontmatter); name = filename, description = first prose line.
+// Hermes' skills are now <name>/SKILL.md with frontmatter (step 137) — mirror them the same
+// way as the coders. A legacy flat <name>.md (older servers) still shows: name = filename,
+// description = first prose line. Uses the first hermes dir that exists.
 async function scanHermesSkills(): Promise<ArchNode[]> {
   for (const dir of hermesSkillDirs(process.cwd())) {
     try { await stat(dir) } catch { continue }
-    let names
-    try { names = await readdir(dir) } catch { continue }
+    let dirents
+    try { dirents = await readdir(dir, { withFileTypes: true }) } catch { continue }
     const out: ArchNode[] = []
-    for (const f of names.filter(n => n.endsWith(".md")).sort((a, b) => a.localeCompare(b))) {
-      const name = f.replace(/\.md$/, "")
-      let desc = ""
-      try { desc = firstProse(await readFile(join(dir, f), "utf8")) } catch { /* keep empty */ }
-      out.push(skillLeaf("hermes", "hermes", name, desc))
+    for (const d of dirents.filter(e => !e.name.startsWith(".")).sort((a, b) => a.name.localeCompare(b.name))) {
+      // Canonical: <name>/SKILL.md with frontmatter (a symlink resolves via readFile too).
+      try {
+        const content = await readFile(join(dir, d.name, "SKILL.md"), "utf8")
+        const fm = frontmatter(content)
+        out.push(skillLeaf("hermes", "hermes", fm.name || d.name, fm.description || ""))
+        continue
+      } catch { /* not a skill dir — fall through to legacy flat */ }
+      // Legacy: flat <name>.md (no frontmatter) — keep older servers mirroring.
+      if (d.name.endsWith(".md")) {
+        const name = d.name.replace(/\.md$/, "")
+        let desc = ""
+        try { desc = firstProse(await readFile(join(dir, d.name), "utf8")) } catch { /* keep empty */ }
+        out.push(skillLeaf("hermes", "hermes", name, desc))
+      }
     }
     return out
   }

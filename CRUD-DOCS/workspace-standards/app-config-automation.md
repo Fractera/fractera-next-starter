@@ -1,4 +1,4 @@
-# App Config Automation in Agentic Engineering: Settings by an Agent's Voice
+# Using MCP for App Settings in Agentic Engineering | How an Agent Changes the App Config
 
 > Complete reference for a hybrid reader — a technical human **and** an AI agent. It explains,
 > plainly, how a deployed app lets an AI agent change what the app says about itself (name,
@@ -6,12 +6,11 @@
 > the next page load with no rebuild. Connector: `app-settings-bridge` MCP (:3218).
 > Companion skill: `manage-app-settings` (in every agent). Store: `app/APP-CONFIG/app-config.json`.
 
-The idea in one breath: the workspace where AI writes your app should also let AI retune the app
-itself. Changing your site's name, description, SEO or languages should not be a hunt through an
-admin panel — it should be a sentence. So we took the settings panel built for humans and gave the
-AI its own door into it. Fractera is an **Agentic Engineering Infrastructure**: a secure,
-self-hosted workspace where AI models write and run your application on your own server. This is the
-piece that automates its configuration.
+Change your site's name, description, or SEO — even its languages — just by asking an AI agent, in
+chat or by voice. No admin panel to click through. No rebuild to wait for. That is what this page
+explains. Fractera is an **Agentic Engineering Infrastructure**: a secure, self-hosted workspace
+where AI models write and run your application on your own server — and this is the piece that lets
+an agent change the app's own settings.
 
 ---
 

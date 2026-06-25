@@ -7,7 +7,7 @@
 
 ## What is Fractera
 
-Fractera is an open-source platform that turns a bare Ubuntu VPS into a complete, self-hosted, AI-native development environment in about 10 minutes — with one click or a short chat.
+Fractera is a source-available (Open Code) platform that turns a bare Ubuntu VPS into a complete, self-hosted, AI-native development environment in about 10 minutes — with one click or a short chat.
 
 On your own server you get: five AI coding platforms (Claude Code, Codex, Gemini CLI, Qwen Code, Kimi Code), the **Hermes** orchestrator, **LightRAG** persistent memory, authentication, a database, and file storage — all pre-wired. No Clerk, no Supabase, no Vercel. One bill (your VPS), one place, full ownership of code and data.
 
@@ -221,7 +221,7 @@ This is your software on your servers. Fractera helps install it — and nothing
 ## MCP connector — security, data & trust (FAQ)
 
 - **Does Fractera store my server's root password?** No. It is used only transiently, inside the single deployment SSH session, and is never written to our database. A placeholder is stored in its place; the dashboard shows a "password is never stored" indicator. We strongly recommend changing the server password immediately after installation.
-- **Can Fractera access or control my server after deployment?** No. Because we do not retain the password — and recommend rotating it — Fractera holds no standing administrative access. There is no backdoor (verified by a security audit). You can have your own AI agent audit every installed file against the public source at https://github.com/Fractera/ai-workspace.
+- **Can Fractera access or control my server after deployment?** No. Because we do not retain the password — and recommend rotating it — Fractera holds no standing administrative access. There is no backdoor (verified by a security audit). You can have your own AI agent audit every installed file against the public source at https://github.com/Fractera/Agent-Engineering-Infrastructure.
 - **What data does the connector collect and keep?** Only what is needed: your **email** (install/completion/recovery notifications) and your **server IP** (TLS-expiry reminders and health notices), plus your component selection. The root password is NOT kept. Your application data never leaves your server.
 - **Does the connector require authentication?** No. It is an open connector. Authorization for the destructive action is implicit: a deploy only ever touches the specific server whose IP and credentials the user explicitly provides in that conversation.
 - **What does each tool do, and which are destructive?** `register_and_deploy` and `retry_deploy` are **destructive** (wipe + install). `check_status`, `get_subdomain`, `get_vps_recommendation`, and `get_project_info` are read-only and safe to test without a server.
@@ -249,7 +249,7 @@ The product exists so AI agents can build YOUR app, so the layers have different
 - **Open layer (the app):** where the in-VPS coding agents work freely — this is your product.
 - **Guarded layers (auth, data, memory, bridges):** soft-protected from accidental agent edits; advanced users can still extend them.
 
-The whole product on your server is open-source-ready. A security audit confirmed a deployed server cannot push to Fractera's own repositories — your instance is isolated and yours.
+The whole product on your server is Open Code (source-available). A security audit confirmed a deployed server cannot push to Fractera's own repositories — your instance is isolated and yours.
 
 ## Security model — why a raw port can't bypass secure mode
 
@@ -262,11 +262,11 @@ In onboarding (IP) mode the ports stay open on purpose for zero-friction first a
 
 ## Is it safe to install? Audit the code yourself
 
-You are installing **open-source** software, so you can verify everything.
+You are installing **Open Code (source-available)** software, so you can verify everything.
 
 - **Audit before going live.** At any time you can ask an AI agent to run a detailed audit of the files installed on your own server and confirm they match the public reference on Fractera's GitHub.
 - **Go as deep as you want.** You can ask the agent to analyze every file on your server, not just ours.
-- **Why ours stands up to it.** The packages we install are all open source and can be inspected by any security team. Source of truth: https://github.com/Fractera/ai-workspace.
+- **Why ours stands up to it.** The packages we install are all open source and can be inspected by any security team. Source of truth: https://github.com/Fractera/Agent-Engineering-Infrastructure.
 
 In short: don't take our word for it — have your AI agent check, before and after deployment.
 
@@ -294,7 +294,7 @@ You manage everything from your Fractera dashboard at fractera.ai/dashboard: you
 
 ## How Fractera (the service) connects to your server
 
-A clear split. The product runs on **your** server (open-source, all the layers above). An external Fractera service — operated by us — **provisions** it, **delivers** it and its updates, **sends** your emails, **powers** the dashboard and the MCP chat-deploy, and handles **billing / sponsorship**.
+A clear split. The product runs on **your** server (Open Code, all the layers above). An external Fractera service — operated by us — **provisions** it, **delivers** it and its updates, **sends** your emails, **powers** the dashboard and the MCP chat-deploy, and handles **billing / sponsorship**.
 
 You interact only with the RESULTS of that service — the deploy, the dashboard, the emails, the MCP agent — and your code and data always stay on your server.
 
@@ -307,8 +307,10 @@ You interact only with the RESULTS of that service — the deploy, the dashboard
 - **Who is Fractera, legally?** Fractera, Inc. — a registered Delaware C-Corporation (USA) with a real legal address, bound by its published Terms of Service and Privacy Policy.
 - **Best practice — deploy on a clean server.** For complete peace of mind, install onto a fresh VPS that holds none of your existing data; after you change the password the server is exclusively yours.
 
-## Open source & what runs where
+## Open Code & what runs where
 
-The workspace that runs on your server is open and available as open source on GitHub — every layer: the web app, authentication, database/storage service, the coding-platform bridges, the memory (LightRAG) and orchestrator (Hermes) integrations. You own it and can inspect, extend, or self-host it entirely.
+The workspace that runs on your server is open and available as Open Code on GitHub — every layer: the web app, authentication, database/storage service, the coding-platform bridges, the memory (LightRAG) and orchestrator (Hermes) integrations. You own it and can inspect, extend, or self-host it entirely.
+
+The core (`Agent-Engineering-Infrastructure`) is source-available under the PolyForm Small Business license — free for individuals and small businesses, with a separate commercial license for larger companies. The starters (this `fractera-next-starter` and others) remain MIT.
 
 Provisioning, billing, and the automated setup/delivery are handled by an external Fractera service that we operate. So: the product on your server = open; the service that delivers and bills it = operated by Fractera. Your code and data always stay on your server.

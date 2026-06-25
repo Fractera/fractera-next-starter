@@ -79,7 +79,7 @@ Both records are pushed back into LightRAG, so the memory that grounded this req
 
 A pipeline runs once and forgets. This loop **compounds**: memory grows (each request writes its decisions,
 code and outcomes back into LightRAG), history accumulates (completed steps + deployments record how the
-project was made and which agents work best), and it is all **yours and open-source** — every file readable,
+project was made and which agents work best), and it is all **yours and Open Code (source-available)** — every file readable,
 every decision verifiable, on your own VPS, with no cloud lock-in.
 
 ---

@@ -6,6 +6,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "archetypes-bridge": {
+      "type": "http",
+      "url": "http://localhost:3223",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

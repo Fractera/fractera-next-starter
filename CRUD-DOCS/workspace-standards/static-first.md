@@ -108,7 +108,7 @@ For each route under `app/`, pick one — by construction, in `_meta.ts` (`rende
 | Access | Render | How |
 |---|---|---|
 | Public content (`[lang]` home, articles, user-built content) | **SSG / ISR** | `generateStaticParams` + `revalidate = N` (+ `dynamicParams`). No dynamic markers. |
-| Private but no server data at render (e.g. `/dashboard`) | **SSG (static shell)** | Gate client-side: `enforcedBy: "component"`, the client island reads `/api/me` (`useRouteAccess`); data via authenticated `/api/*`. Page stays static. |
+| Private but no server data at render (e.g. `/dashboard`) | **SSG (static shell)** | Gate client-side: `enforcedBy: "component"`, the client island reads `/api/me` inline (see `HOW-USE-AUTH.md` §2); data via authenticated `/api/*`. Page stays static. On a wrong-role visit → localized access-denied toast + soft redirect (`showAccessDenied`, see `HOW-USE-AUTH.md`). |
 | Architect-only service cockpit | **dynamic (allowed)** | `export const dynamic = "force-dynamic"` on that **one** page, never the root. |
 
 **Key insight — "private" does not mean "dynamic".** A private page is kept private by a client guard that

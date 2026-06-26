@@ -112,6 +112,7 @@ export function ArchitectureApp() {
   }, [])
 
   const [routingMap, setRoutingMap] = useState<Record<string, string[]>>({})
+  const [richMap, setRichMap] = useState<Record<string, ArchNode[]>>({})
   const baseTree = useMemo(
     () => buildMergedTree(requested, new Set(taskPaths), projects, builtExtra),
     [requested, taskPaths, projects, builtExtra],
@@ -125,16 +126,18 @@ export function ArchitectureApp() {
     Promise.all(hrefs.map(async (href) => {
       try {
         const r = await fetch(projectApi(`/routing?path=${encodeURIComponent(href)}`))
-        const files = r.ok ? ((await r.json()).files ?? []) : []
-        return [href, files] as const
-      } catch { return [href, []] as const }
-    })).then(pairs => {
-      if (!cancelled) setRoutingMap(Object.fromEntries(pairs))
+        const json = r.ok ? await r.json() : {}
+        return [href, json.files ?? [], (json.nodes ?? []) as ArchNode[]] as const
+      } catch { return [href, [], [] as ArchNode[]] as const }
+    })).then(triples => {
+      if (cancelled) return
+      setRoutingMap(Object.fromEntries(triples.map(([h, f]) => [h, f])))
+      setRichMap(Object.fromEntries(triples.map(([h, , n]) => [h, n])))
     })
     return () => { cancelled = true }
   }, [baseTree])
 
-  const tree = useMemo(() => enrichWithRouting(baseTree, routingMap), [baseTree, routingMap])
+  const tree = useMemo(() => enrichWithRouting(baseTree, routingMap, richMap), [baseTree, routingMap, richMap])
   useEffect(() => { setSelected(prev => prev ?? tree) }, [tree])
 
   // Auto-reveal: when the poll flags new/changed nodes (blink), open their parent
@@ -319,8 +322,11 @@ export function ArchitectureApp() {
               </div>
             </div>
 
-            {/* RIGHT — declaration, real descriptor, requested view, or legacy */}
-            <div className="w-1/2">
+            {/* RIGHT — declaration, real descriptor, requested view, or legacy.
+                overflow-y-auto: the panel can be taller than the column (e.g. the
+                420px source terminal + meta + danger zone), so the COLUMN itself
+                scrolls — reach the bottom elements regardless of viewport size. */}
+            <div className="w-1/2 overflow-y-auto">
               {declaring
                 ? <DeclarePanel base={addBase} onClose={() => setDeclaring(false)} onCreated={onCreated} />
                 : endpointBase !== null

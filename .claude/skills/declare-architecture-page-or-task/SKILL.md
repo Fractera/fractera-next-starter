@@ -40,7 +40,7 @@ A page is **not** declared by guessing access. First read `HOW-USE-AUTH.md` and 
 `public` (anyone) · `private` (which roles) · `public+guest` (anonymous visitor becomes
 a real guest, `requiresGuestRegistration`). Put that decision in the record's to-do so the
 later build step feeds it to `scaffold-declared-route-into-component-skeleton --access`.
-Rule: `CLAUDE.md §6.3`; concept: `CRUD-DOCS/auth-architecture.md`.
+Rule: `CLAUDE.md §6.3`; access shapes — `HOW-USE-AUTH.md`.
 
 ## §8.2 confirm before creating (mandatory)
 

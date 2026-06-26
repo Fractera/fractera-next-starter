@@ -28,12 +28,26 @@ function collectHrefs(node: ArchNode, acc: Set<string>): Set<string> {
   return acc
 }
 const SEED_HREFS = collectHrefs(ROUTES_TREE, new Set<string>())
-const SKIP = new Set(["_components", "node_modules", ".next", "(auth)"])
+const SKIP = new Set(["_components", "_lib", "_data", "node_modules", ".next", "(auth)"])
 const PAGE_FILES = ["page.tsx", "page.ts", "page.jsx", "page.js"]
 const ROUTE_FILES = ["route.ts", "route.js"]
+const LANG_SEG = "[lang]"
 
+// Folder path -> URL path, the Next.js way (must match parser-routes.mjs):
+//   strip route groups (group); strip the leading i18n [lang] locale prefix; keep
+//   other dynamic segments [id]. So app/(service)/dashboard -> /dashboard and
+//   app/[lang]/news -> /news (NOT /[lang]/news, which would orphan the node).
 function toPath(rel: string): string {
-  return rel === "" ? "/" : "/" + rel
+  if (rel === "") return "/"
+  const segs = rel.split("/").filter(Boolean)
+  const out: string[] = []
+  for (let i = 0; i < segs.length; i++) {
+    const s = segs[i]
+    if (s.startsWith("(") && s.endsWith(")")) continue
+    if (i === 0 && s === LANG_SEG) continue
+    out.push(s)
+  }
+  return out.length ? "/" + out.join("/") : "/"
 }
 
 export async function scanTree(): Promise<ScanResult> {

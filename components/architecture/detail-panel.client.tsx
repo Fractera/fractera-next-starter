@@ -3,6 +3,18 @@
 import { ArrowUpRight } from "lucide-react"
 import type { ArchNode } from "@/lib/architecture/types"
 import { SkillContentViewer } from "./skill-content-viewer.client"
+import { CodeEditor } from "./code-editor.client"
+
+// Monaco language from a filename — so a clicked file node renders its real source
+// in the same terminal-style (vs-dark) viewer the route "Source" accordion uses.
+function langOf(label: string): string {
+  const ext = label.slice(label.lastIndexOf(".")).toLowerCase()
+  return ({
+    ".ts": "typescript", ".tsx": "typescript",
+    ".js": "javascript", ".jsx": "javascript", ".mjs": "javascript",
+    ".json": "json", ".css": "css", ".md": "markdown", ".svg": "xml",
+  } as Record<string, string>)[ext] ?? "plaintext"
+}
 
 const KIND_LABEL: Record<string, string> = {
   layer: "Layer",
@@ -64,10 +76,12 @@ export function DetailPanel({ node }: { node: ArchNode | null }) {
 
       {node.content && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">Definition</span>
-          <pre className="max-h-[48vh] overflow-auto rounded-lg border border-border bg-muted/20 p-3 font-mono text-[11px] leading-relaxed text-foreground/90 whitespace-pre-wrap">
-            {node.content}
-          </pre>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/60">
+            {node.kind === "config" ? "Source" : "Definition"}
+          </span>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <CodeEditor value={node.content} language={langOf(node.label)} readOnly />
+          </div>
         </div>
       )}
 

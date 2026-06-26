@@ -121,6 +121,8 @@ Aspects are cross-cutting toggles, each embedded **identically at every level** 
   `architect`) and the **business RBAC** (`ALL_ROLES`: `vip_user`, `subscriber_lite/standard/max`, `buyer`,
   `manager`, …). A structure declares its access; the gate is **one rule embedded into every layout level**,
   the same at depth 1 or depth 4. (Access is decided *before* the structure is built — see `HOW-USE-AUTH.md`.)
+  On a wrong-role visit the gate shows a **localized access-denied toast** (all 82 languages, manual close)
+  then soft-redirects — the owner sees *why*, not a silent bounce (`services/access-feedback`, see `HOW-USE-AUTH.md`).
 - (future) theme, and any other rule that is genuinely the same at every level.
 
 An aspect that cannot be expressed as "the same rule at every level" is **not an aspect** — it does not belong

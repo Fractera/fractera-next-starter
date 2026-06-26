@@ -3,6 +3,9 @@
   "version": "1.2.2",
   "private": true,
   "scripts": {
+    "gen:routes": "node lib/architecture/parser-routes.mjs",
+    "predev": "node lib/architecture/parser-routes.mjs",
+    "prebuild": "node lib/architecture/parser-routes.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

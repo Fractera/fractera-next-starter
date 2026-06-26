@@ -87,6 +87,8 @@ WHOLE subtree dynamic — never do it; use ISR (`revalidate`). Exception: archit
 cockpit) MAY and SHOULD stay dynamic. Next traps: `auth()`, `cookies()`, `headers()` in a layout/page.
 **Full canon + how-to → [`STATIC-FIRST.md`](STATIC-FIRST.md)** (deep recipe: `CRUD-DOCS/workspace-standards/static-first.md`).
 
+**Build-time env vars that must survive a redeploy** (any `NEXT_PUBLIC_*`, the language set, Stripe keys + product ids, custom app vars) → use the **`persist-env-var-with-rebuild`** skill + read `CRUD-DOCS/workspace-standards/build-time-env-and-redeploy.md`. Write the value into the slot's `app/.env.local` through the proper setter, then trigger a rebuild (the slot-scoped build bakes the slot's own `.env.local`). Never hand-wait a `pm2 restart` for a build-time value, never `force-dynamic` to "show it instantly".
+
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`
 - `breadcrumb-trail.server.tsx` ✅
@@ -115,8 +117,10 @@ Hooks & functions:
   Honors the `X-Agent-Identity` header (role `agent`); dev-bypass → `architect`; otherwise proxies
   `:3001/api/session`.
 - `/api/me` — client-side identity read (`fetch('/api/me')`).
-- `useRouteAccess(meta)` (`lib/hooks/use-route-access.ts`) — client guard: per `_meta.ts` it applies
-  public / public+guest / private; reads `/api/me`, never `auth()` in a page.
+- Client guard (inline `/api/me`, no hook): in a `.client.tsx`, `fetch('/api/me')` + the route's `_meta.ts`
+  to apply public / public+guest / private; redirect via `registerRedirectUrl`. Never `auth()` in a page.
+  Reference: `app/(service)/dashboard/_components/dashboard-app.client.tsx`. Server-only hide (architect,
+  dynamic): `requireAdmin()` (`lib/auth/require-admin.ts`).
 - `/api/auth/guest?redirectUrl=…` — guest sign-in (hard navigation, sets the session cookie).
 - `registerRedirectUrl(href, role)` (`lib/runtime-urls`) — builds the register redirect.
 - `register()` — promotes a guest to a full account (platform-side, `:3001`); `user.id` is preserved.
@@ -127,7 +131,7 @@ Roles: `guest / user / architect` — enforced tiers; + business roles (full lis
 with `requiresGuestRegistration: true` the guest is issued a permanent `user.id`, their work persists and
 attaches to the account on registration.
 
-> Recipe — `HOW-USE-AUTH.md`; concept — `CRUD-DOCS/auth-architecture.md`.
+> Recipe — `HOW-USE-AUTH.md`; role vocabulary — `lib/roles.ts` (`ALL_ROLES`).
 
 ---
 

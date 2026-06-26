@@ -43,21 +43,36 @@ export function realPageHrefs(node: ArchNode, acc: string[] = []): string[] {
   return acc
 }
 
-// Turn each real page node into a folder of its routing files. routingMap maps a
-// route href to the routing filenames that exist on disk (page.tsx, layout.tsx…).
-// Components and _meta are intentionally absent — only routing files show.
+// Re-id a server-provided file subtree so ids stay unique under this page node
+// (the server uses path-based ids; prefix with the node id and keep recursion).
+function adoptFileNodes(prefix: string, nodes: ArchNode[]): ArchNode[] {
+  return nodes.map(n => ({
+    ...n,
+    id: `${prefix}/${n.id}`,
+    children: n.children ? adoptFileNodes(prefix, n.children) : undefined,
+  }))
+}
+
+// Turn each real page node into a folder of its REAL files. richMap maps a route
+// href to the full file subtree (routing files + every _components/_lib/_data file,
+// each leaf carrying its source) — a faithful copy of the folder, nothing omitted.
+// routingMap (filenames only) is the legacy fallback when the rich tree is absent.
 export function enrichWithRouting(
   node: ArchNode,
   routingMap: Record<string, string[]>,
+  richMap: Record<string, ArchNode[]> = {},
 ): ArchNode {
   const isRealPage = node.kind === "page" && node.href && !node.declared
+  const rich = isRealPage ? richMap[node.href!] : undefined
   const files = isRealPage ? routingMap[node.href!] : undefined
-  let routingChildren: ArchNode[] = (files ?? []).map(name => ({
-    id: `${node.id}-rf-${name}`,
-    label: name,
-    kind: "config",
-    description: `Routing file ${name} for ${node.href}.`,
-  }))
+  let routingChildren: ArchNode[] = rich && rich.length
+    ? adoptFileNodes(node.id, rich)
+    : (files ?? []).map(name => ({
+        id: `${node.id}-rf-${name}`,
+        label: name,
+        kind: "config",
+        description: `Routing file ${name} for ${node.href}.`,
+      }))
   // A declared (not-built) page/project is a FOLDER with a placeholder page.tsx —
   // it looks like a built page, but the file is created when the agent builds it.
   if (node.declared && node.kind === "page") {
@@ -70,7 +85,7 @@ export function enrichWithRouting(
   }
   // A page node can hold BOTH its routing files (page/layout/…) and nested
   // sub-pages declared under it — show routing files first, then the children.
-  const existing = node.children?.map(c => enrichWithRouting(c, routingMap)) ?? []
+  const existing = node.children?.map(c => enrichWithRouting(c, routingMap, richMap)) ?? []
   const merged = [...routingChildren, ...existing]
   return { ...node, children: merged.length ? merged : undefined }
 }

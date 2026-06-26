@@ -20,6 +20,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "deploy-bridge": {
+      "type": "http",
+      "url": "http://localhost:3225",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

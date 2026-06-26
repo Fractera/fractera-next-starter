@@ -17,8 +17,6 @@ export type HomeStrings = {
   startCoding: string;
   dashboard: string;
   footer: string; // "Your code · Your server · Your AI"
-  sectionsHeading: string; // table-of-contents heading, e.g. "Contents"
-  license: string; // footer link label, e.g. "License"
 };
 
 const STRINGS: Record<string, HomeStrings> = {
@@ -33,8 +31,6 @@ const STRINGS: Record<string, HomeStrings> = {
     startCoding: "Start Coding",
     dashboard: "Dashboard",
     footer: "Your code · Your server · Your AI",
-    sectionsHeading: "Contents",
-    license: "License",
   },
   es: {
     badge: "Fractera-next-starter",
@@ -47,8 +43,6 @@ const STRINGS: Record<string, HomeStrings> = {
     startCoding: "Empezar a programar",
     dashboard: "Panel",
     footer: "Tu código · Tu servidor · Tu IA",
-    sectionsHeading: "Contenido",
-    license: "Licencia",
   },
 };
 

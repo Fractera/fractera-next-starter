@@ -66,10 +66,18 @@ depend on Hermes, memory, or any other agent.
    (dry_run first to say "I'll rebuild, ~2-4 min, ok?", then for real) — it runs the same
    "Deploy" the footer button does and waits for the result. If that tool is not available
    to you, **remind the owner: "press the Deploy button in the footer to rebuild and see
-   the change."** Either way the rebuild is part of the task, not optional — a composed
-   structure that is never rebuilt looks like "nothing happened" (the owner saw exactly this).
+   the change."** Either way the rebuild is part of the task, not optional.
    **Never ask the owner to paste a deploy secret into the chat** — deploy is the tool's job
    or the owner's button, never a secret handed over in conversation.
+3b. **Report the result with the CORRECT public URL — never an internal/plain-HTTP host.**
+   `COMPLETED` from `owner_deploy_rebuild_slot` already means the slot passed a health check —
+   **do NOT run your own `curl` to "verify"**, and NEVER curl an internal name like
+   `http://fractera-app:3000` or `http://127.0.0.1:3000` (both are unprotected/internal; on a
+   secure deployment that is the wrong thing entirely). The compose result gives you
+   **`view_urls`** and the deploy result gives you **`site_url`** — both are mode-aware
+   (secure → `https://<domain>/<lang>/<tab>`, IP → `http://<ip>:3000/...`). Report THOSE to the
+   owner ("Done — your news section is live at https://<domain>/en/news and /es/news"). If you
+   ever do want to self-check a page, use the mode-aware `site_url`, never an internal host.
 4. **Honest refusal + next step.** Say which axis failed in plain words (e.g. "a live
    dashboard is per-user and dynamic — that is the *rendering*/*source* axis, which no
    frozen brick serves"). Then offer ONE of:

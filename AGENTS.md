@@ -155,7 +155,13 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read GLOSSARY.md (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
     <action>Check memory: GET /api/rag/status; offline -> work from files on disk.</action>
-    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known</gate>
+    <action>Read the LANGUAGE SET before authoring ANY content (step 150): the languages in
+      NEXT_PUBLIC_SUPPORTED_LANGUAGES (the slot's .env.local — a plain file read, NO API). It is the ONE
+      authority. Author/translate ONLY for languages in it; NEVER infer the language from the request alone
+      (a request written in Russian does NOT mean the site ships Russian). A language outside the set is
+      degraded safely at runtime (the app will not crash — step 149 vaccine) but authoring it wastes work and
+      ships dead files; if the owner wants a new language, add it via App Settings FIRST (rebuild), then author.</action>
+    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

@@ -46,6 +46,24 @@ function parseArgs(argv) {
   return a
 }
 const exists = async p => { try { await stat(p); return true } catch { return false } }
+
+// Default language set = the SLOT'S OWN authority (NEXT_PUBLIC_SUPPORTED_LANGUAGES in the slot's
+// .env.local), NEVER a hardcoded "en,ru" (step 149 — language-safety vaccine). Composing content for
+// a language the app does not ship is exactly the bug this vaccinates: generate strictly within the
+// app's declared set; with no env, fall back to English only — never silently inject another language.
+async function defaultLanguagesFromSlot(outRoot) {
+  for (const rel of [".env.local", "app/.env.local"]) {
+    try {
+      const env = await readFile(join(outRoot, rel), "utf8")
+      const m = env.match(/^\s*NEXT_PUBLIC_SUPPORTED_LANGUAGES\s*=\s*(.+?)\s*$/m)
+      if (m) {
+        const langs = m[1].trim().replace(/^["']|["']$/g, "").split(",").map(s => s.trim()).filter(Boolean)
+        if (langs.length) return langs.join(",")
+      }
+    } catch { /* no env file at this path — try the next */ }
+  }
+  return "en"
+}
 function pascal(s) { return String(s).split(/[^a-z0-9]+/i).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join("") }
 function camel(s) { const p = pascal(s); return p ? p[0].toLowerCase() + p.slice(1) : p }
 async function walk(dir, base = dir, out = []) {
@@ -262,7 +280,7 @@ async function main() {
   const tab = a.tab
   if (!tab || tab === true || !/^[a-z][a-z0-9-]*$/.test(tab)) throw new Error('--tab is required, kebab-case')
   const format = ["news", "blog", "document"].includes(a.format) ? a.format : "news"
-  const languages = String(a.languages || "en,ru").split(",").map(s => s.trim()).filter(Boolean)
+  const languages = String(a.languages || await defaultLanguagesFromSlot(outRoot)).split(",").map(s => s.trim()).filter(Boolean)
   if (!languages.includes("en")) languages.unshift("en")
   const samples = Math.max(0, Math.min(10, parseInt(a.samples ?? "2", 10) || 0))
   const labels = { en: a["label-en"] || pascal(tab) }

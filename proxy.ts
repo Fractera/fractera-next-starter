@@ -64,6 +64,13 @@ const SERVICE_ROOTS = new Set([
   "project",
 ]);
 
+// PUBLIC root pages — live at the ROOT (no language prefix) like the service pages,
+// but open to everyone (no admin gate). The license is one legal document, not
+// localized, so it must NOT be rewritten to /<lang>/license (that page doesn't exist
+// → white screen, cf. relative-auth-path-langprefix-whitescreen.md). Add public,
+// non-localized root pages here.
+const ROOT_PUBLIC_PAGES = new Set(["license"]);
+
 const LOCALE_COOKIE = "NEXT_LOCALE";
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
@@ -136,8 +143,9 @@ function languageRouter(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
   const firstSegment = pathname.split("/")[1];
 
-  // Service pages stay at the root — never prefixed with a language.
-  if (SERVICE_ROOTS.has(firstSegment)) return NextResponse.next();
+  // Service pages and public root pages (e.g. /license) stay at the root — never
+  // prefixed with a language.
+  if (SERVICE_ROOTS.has(firstSegment) || ROOT_PUBLIC_PAGES.has(firstSegment)) return NextResponse.next();
 
   // Single-language mode: hide the lang prefix from public URLs.
   // /en/about → 301 /about ; internally rewrite /about → /en/about.

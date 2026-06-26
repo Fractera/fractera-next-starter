@@ -182,15 +182,18 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
           </a>
         </motion.div>
 
-        {/* Footer micro-text */}
-        <motion.p
+        {/* Footer micro-text + License link */}
+        <motion.div
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.6 }}
-          className="text-[11px] font-mono text-muted-foreground/40 tracking-widest uppercase"
+          className="flex flex-col items-center gap-2 text-[11px] font-mono text-muted-foreground/40 tracking-widest uppercase"
         >
-          {t.footer}
-        </motion.p>
+          <span>{t.footer}</span>
+          <a href="/license" className="transition-colors hover:text-foreground/70">
+            {t.license}
+          </a>
+        </motion.div>
       </motion.div>
     </main>
   );

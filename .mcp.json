@@ -13,6 +13,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "template-constructor-bridge": {
+      "type": "http",
+      "url": "http://localhost:3224",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

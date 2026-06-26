@@ -81,6 +81,21 @@ Localized UI strings are **data**, so they live in `_data` (`en.ts` + `ru.ts` +
 so they live in `_lib/types.ts`. The shared engine is **not** a per-tab library: it
 is reused by every tab and never copied into a tab's `_lib`.
 
+> **Note — this engine is one BRICK in the Frozen Template Constructor.** This document describes how ONE
+> rendered structure works internally (one shared engine, "change the design once see it everywhere",
+> delete-without-orphans) — **within one major version**. The bigger picture — how an AI agent **composes** a
+> whole structure (news / docs / catalogue) from a basis of vetted bricks by file copy (no code generation),
+> matches a request by envelope, and grows the basis by harvest — is the authoritative subject of
+> **`frozen-template-constructor.md`**. Two things it owns that scope this doc:
+> - **Engine versioning (§8 there):** a breaking major installs **side by side** (`lib/content-v2/` next to
+>   `lib/content-v1/`), each structure **pins** its version, so an old one never breaks. `lib/brand` /
+>   `lib/author` are identity — shared across versions, never versioned.
+> - **The seams (§3, §10 there):** this engine is the renderer brick; the **list provider** (where children
+>   come from) and **uniform aspects** (i18n, roles, applied identically at every level) are the two seams the
+>   constructor composes around it.
+>
+> Do not duplicate those here — link to `frozen-template-constructor.md`.
+
 ---
 
 ## 3. Architecture trees (the mandatory components)

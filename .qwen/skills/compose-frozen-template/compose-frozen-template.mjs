@@ -23,7 +23,9 @@
 //   node compose-frozen-template.mjs --store <frozen-templates-dir> --out <slot-root> \
 //     --source files --depth 1 --rendering static \
 //     --tab news --format news --languages en,ru --label-en News --label-ru Новости \
-//     --samples 2 --roles off [--engine-version v1] [--force]
+//     --samples 2 --roles off [--unauthorized-redirect /] [--engine-version v1] [--force]
+//   --roles: off (public) | guest (public+guest) | <csv of ALL_ROLES> (private) | all
+//   --unauthorized-redirect: fallback page for a visitor lacking the role (default '/')
 //
 // Deterministic, idempotent-guarded, never writes outside --out.
 
@@ -84,40 +86,50 @@ function refuse(axis, detail) {
   process.exit(2)
 }
 
+// The project role vocabulary (mirrors fractera-next-starter/lib/roles.ts ALL_ROLES).
+// Used to VALIDATE --roles and to expand --roles all.
+const ALL_ROLES = ["guest", "user", "architect", "buyer", "vip_user", "subscriber_lite", "subscriber_standard", "subscriber_max", "manager", "senior_manager", "support_manager", "delivery_manager", "finance", "content_editor", "admin"]
+
 // ── engine (versioned + shared, copy-if-absent) ──────────────────────────────
 async function installEngine(storeRoot, outRoot, ver) {
   const engineDir = join(storeRoot, "engine")
   if (!(await exists(engineDir))) { console.log("engine: none, skip"); return }
-  const verPresent = await exists(join(outRoot, `lib/content-${ver}`))
-  const sharedPresent = await exists(join(outRoot, "lib/brand.ts"))
-  if (verPresent && sharedPresent) { console.log(`engine: ${ver} + shared present, skip`); return }
+  // Per-file copy-if-absent: install any engine file the slot is missing without
+  // overwriting an existing one. This is correct idempotent semantics AND it picks
+  // up NEW shared files (e.g. lib/auth-guard) added to the engine after a slot was
+  // first composed — an all-or-nothing skip would leave those missing and break the build.
+  let copied = 0, kept = 0
   for (const rel of await walk(engineDir)) {
     const r = rel.replace(/\\/g, "/")
-    if (isVersioned(r)) {
-      if (verPresent) continue
-      await writeOut(outRoot, versionizePath(r, ver).replace(/\.tpl$/, ""), versionizeContent(await readFile(join(engineDir, rel), "utf8"), ver))
-    } else {
-      if (sharedPresent) continue
-      await writeOut(outRoot, r.replace(/\.tpl$/, ""), await readFile(join(engineDir, rel), "utf8"))
-    }
+    const versioned = isVersioned(r)
+    const destRel = (versioned ? versionizePath(r, ver) : r).replace(/\.tpl$/, "")
+    if (await exists(join(outRoot, destRel))) { kept++; continue }
+    const raw = await readFile(join(engineDir, rel), "utf8")
+    await writeOut(outRoot, destRel, versioned ? versionizeContent(raw, ver) : raw)
+    copied++
   }
-  console.log(`engine: ${verPresent ? "version kept" : "installed " + ver}; shared ${sharedPresent ? "kept" : "installed"}`)
+  console.log(`engine (${ver}): ${copied} copied, ${kept} kept`)
 }
 
 // ── compose the tab through the seams ────────────────────────────────────────
 async function composeTab(storeRoot, primDir, outRoot, tok, opts) {
-  const { tab, languages, labels, samples, ver, source, rolesOn, roleList, force } = opts
+  const { tab, languages, labels, samples, ver, source, rolesOn, requireGuest, roleList, unauthorizedRedirect, force } = opts
   const vz = s => versionizeContent(s, ver)
   const tabSrc = join(primDir, "tab", "app", "[lang]", "{{TAB}}")
   const tabDest = join("app", "[lang]", tab)
   if (await exists(join(outRoot, tabDest)) && !force) throw new Error(`refusing to overwrite ${tabDest} (use --force)`)
 
-  // aspect tokens (Slot B) — uniform, injected into the tab layout
+  // aspect tokens (Slot B) — uniform, injected into the tab layout. Roles use the SHARED
+  // client guard (static-first preserved; the engine ships @/lib/auth-guard/route-guard.client).
   const aspectTok = { "{{ASPECT_IMPORTS}}": "", "{{ASPECT_OPEN}}": "", "{{ASPECT_CLOSE}}": "" }
   if (rolesOn) {
-    aspectTok["{{ASPECT_IMPORTS}}"] = `import { RoleGuard } from './_components/role-guard.server'`
-    aspectTok["{{ASPECT_OPEN}}"] = `<RoleGuard roles={${JSON.stringify(roleList)}}>`
-    aspectTok["{{ASPECT_CLOSE}}"] = `</RoleGuard>`
+    const group = `group=${JSON.stringify(labels.en)}`   // section name for the access-denied toast
+    const props = requireGuest
+      ? `requireGuest unauthorizedRedirect=${JSON.stringify(unauthorizedRedirect)} ${group}`
+      : `roles={${JSON.stringify(roleList)}} unauthorizedRedirect=${JSON.stringify(unauthorizedRedirect)} ${group}`
+    aspectTok["{{ASPECT_IMPORTS}}"] = `import { RouteGuard } from '@/lib/auth-guard/route-guard.client'`
+    aspectTok["{{ASPECT_OPEN}}"] = `<RouteGuard ${props}>`
+    aspectTok["{{ASPECT_CLOSE}}"] = `</RouteGuard>`
   }
   const T = { ...tok, ...aspectTok }
 
@@ -134,11 +146,10 @@ async function composeTab(storeRoot, primDir, outRoot, tok, opts) {
   if (!(await exists(providerSrc))) throw new Error(`list provider not found for source=${source}`)
   await writeOut(outRoot, join(tabDest, "_lib", "list-provider.ts"), vz(applyTokens(await readFile(providerSrc, "utf8"), T)))
 
-  // 3) SEAM (Slot B): if roles on, copy the role guard into the tab _components
-  if (rolesOn) {
-    const guardSrc = join(storeRoot, "aspects", "roles", "role-guard.server.tsx.tpl")
-    await writeOut(outRoot, join(tabDest, "_components", "role-guard.server.tsx"), vz(applyTokens(await readFile(guardSrc, "utf8"), T)))
-  }
+  // 3) SEAM (Slot B): the role guard is the SHARED client guard installed by the engine
+  //    (@/lib/auth-guard/route-guard.client) — nothing to copy per-tab. The server-hide
+  //    alternative (aspects/roles/role-guard.server.tsx.tpl) is documented in the layout,
+  //    not injected (it would make the group dynamic — architect-only exception).
 
   // 4) _data/en.ts (full base UI, label) + per-lang partials + index lang-map
   const enTpl = await readFile(join(tabSrc, "_data", "en.ts.tpl"), "utf8")
@@ -233,6 +244,7 @@ async function main() {
   // request envelope
   const source = a.source || "files", depth = parseInt(a.depth ?? "1", 10), rendering = a.rendering || "static"
   const rolesArg = (a.roles && a.roles !== "off" && a.roles !== true) ? String(a.roles) : "off"
+  const unauthorizedRedirect = (typeof a["unauthorized-redirect"] === "string" && a["unauthorized-redirect"]) || "/"
   const i18nReq = "multi"
 
   // MATCH — base axes select a primitive; refuse naming the failing axis
@@ -257,13 +269,19 @@ async function main() {
   for (const l of languages) { const v = a[`label-${l}`]; if (typeof v === "string") labels[l] = v }
   const ver = String(a["engine-version"] || prim.engineVersion || registry.engineVersion || "v1").replace(/[^a-z0-9]/gi, "")
   const rolesOn = rolesArg !== "off"
-  const roleList = rolesOn ? rolesArg.split(",").map(s => s.trim()).filter(Boolean) : []
+  const requireGuest = rolesArg === "guest"
+  let roleList = []
+  if (rolesOn && !requireGuest) {
+    roleList = rolesArg === "all" ? [...ALL_ROLES] : rolesArg.split(",").map(s => s.trim()).filter(Boolean)
+    const bad = roleList.filter(r => !ALL_ROLES.includes(r))
+    if (bad.length) return refuse("roles", `unknown role(s): ${bad.join(", ")}. Valid (ALL_ROLES): ${ALL_ROLES.join(", ")}; or 'guest' (public+guest) / 'all'`)
+  }
   const tok = { "{{TAB}}": tab, "{{TAB_PASCAL}}": pascal(tab), "{{TAB_CAMEL}}": camel(tab), "{{FORMAT}}": format }
 
-  console.log(`compose '${prim.id}' (engine ${ver}) -> /${tab}  base{source=${source},depth=${depth},${rendering}} aspects{i18n=on, roles=${rolesOn ? roleList.join("+") : "off"}} format=${format} langs=${languages.join(",")} samples=${samples}`)
+  console.log(`compose '${prim.id}' (engine ${ver}) -> /${tab}  base{source=${source},depth=${depth},${rendering}} aspects{i18n=on, roles=${rolesOn ? (requireGuest ? "guest" : roleList.join("+")) : "off"}${rolesOn ? ", fallback=" + unauthorizedRedirect : ""}} format=${format} langs=${languages.join(",")} samples=${samples}`)
   await installEngine(storeRoot, outRoot, ver)
   const primDir = join(storeRoot, prim.path)
-  const { tabDest } = await composeTab(storeRoot, primDir, outRoot, tok, { tab, languages, labels, samples, ver, source, rolesOn, roleList, force: !!a.force })
+  const { tabDest } = await composeTab(storeRoot, primDir, outRoot, tok, { tab, languages, labels, samples, ver, source, rolesOn, requireGuest, roleList, unauthorizedRedirect, force: !!a.force })
   await registerCollection(outRoot, tab, pascal(tab))
   await patchPackageJson(outRoot)
   await appendSitemap(outRoot, tab)

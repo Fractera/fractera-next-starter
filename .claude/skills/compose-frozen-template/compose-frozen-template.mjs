@@ -71,6 +71,11 @@ const isVersioned = r => r.startsWith("lib/content/") || r.startsWith("component
 async function writeOut(outRoot, relDest, content) {
   const dest = join(outRoot, relDest)
   if (!resolve(dest).startsWith(resolve(outRoot))) throw new Error(`refusing to write outside out: ${relDest}`)
+  // HARD GATE: no unsubstituted {{TOKEN}} may ship — it would be broken TS at build
+  // time (a token left in a COMMENT still corrupts the file). Catch ANY template, not
+  // just known ones. Abort BEFORE writing so a half-composed tab never reaches a build.
+  const leftover = content.match(/\{\{[A-Za-z0-9_]+\}\}/g)
+  if (leftover) throw new Error(`unsubstituted token(s) ${[...new Set(leftover)].join(", ")} in ${relDest} — refusing to emit (template bug; tokens must not appear in comments)`)
   await mkdir(dirname(dest), { recursive: true }); await writeFile(dest, content, "utf8")
   console.log("emit", relDest)
 }

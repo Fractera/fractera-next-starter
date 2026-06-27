@@ -77,6 +77,14 @@ Mutating writes files. Restate first and wait for explicit confirmation:
 Call with `dry_run: true` first to preview the exact files, show the owner, get a yes, then
 call without `dry_run`.
 
+## If the tool errors (not a refusal)
+
+A **refusal** (a plain validation reason — stray language, duplicate, missing anchor) means fix
+the content and retry. An **error** (`MODULE_NOT_FOUND`, a 500, "handler not found", a timeout)
+means the tool/infrastructure is **broken** — that is NOT "no tool exists". **Stop, report the
+exact error, and wait.** Do **not** hand-author the content as a workaround, and do **not**
+delegate hand-authoring to another agent — a broken tool is repaired, never bypassed.
+
 ## After a successful mutation
 
 - The result is **automatically fixed in the Deployment table** (`deployment_records`) by

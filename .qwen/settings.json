@@ -5,6 +5,12 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "content-crud-bridge": {
+      "httpUrl": "http://localhost:3226",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   },
   "hooks": {

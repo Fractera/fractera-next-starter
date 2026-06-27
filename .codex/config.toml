@@ -8,3 +8,9 @@ codex_hooks = true
 [mcp_servers.app-settings-bridge]
 url = "http://localhost:3218"
 bearer_token_env_var = "HERMES_MCP_SECRET"
+
+# Content CRUD MCP (L2 owner bridge, :3226) — create/edit/delete a content GROUP (tab)
+# or PAGE (post): deterministic file CRUD, no code generation. owner_content_manage_collection.
+[mcp_servers.content-crud-bridge]
+url = "http://localhost:3226"
+bearer_token_env_var = "HERMES_MCP_SECRET"

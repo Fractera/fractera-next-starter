@@ -33,19 +33,26 @@ depend on Hermes, on memory, or on any other agent.
 - A **group** = a tab/collection (`app/[lang]/<tab>/` — news, blog, documentation). A
   **page** = one post in a tab (`app/[lang]/<tab>/<slug>/`). Both are **co-located static
   folders**; the post list (`_list.generated.ts`) is auto-derived, never hand-written.
-- **You provide DATA, not code.** A page's content is `{ en: { title, subtitle, blocks[],
-  faq[], … }, <lang>: { …partial override } }`. Describing that content is your job;
-  serialising it into TypeScript files is the tool's job. Never hand-edit `_data/*.ts`.
+- **🧊 Phase 1: structure is TAKEN, never generated.** A page is a **CLONE of a frozen stub**
+  (a `compose --samples` post that already has the vetted block structure). You do **NOT**
+  build the body. You pass only **light metadata** — `slug` + optional `title`/`date`/`tags` —
+  and the tool clones the stub under the new slug. **Passing a body (`blocks`) is REFUSED.**
+  Authoring real text into the frozen slots is **Phase 2 (step 155)**, a later step — not here.
 - **6 operations = one tool**, discriminated by `operation × target`:
 
   | operation | target | what you pass | what happens |
   |---|---|---|---|
   | create | group | `tab`, `labels`, `format?`, `languages?`, `samples?` | stands up a new tab (delegates to the Frozen Template Constructor) |
-  | create | page  | `tab`, `slug`, `data` | new post folder from your content; list regenerated |
-  | edit   | page  | `tab`, `slug`, `data` | rewrites the post content (route skeleton untouched) |
+  | create | page  | `tab`, `slug`, opt `title`/`date`/`tags` | **clones the frozen stub** under the new slug; list regenerated |
+  | edit   | page  | `tab`, `slug`, `title`/`date`/`tags` | edits **metadata only** (structure stays frozen; body editing = step 155) |
   | edit   | group | `tab`, `ui` | rewrites the tab's UI chrome (title/breadcrumb/labels) |
   | delete | page  | `tab`, `slug` | removes the post folder; list regenerated |
   | delete | group | `tab` | removes the whole tab + drops its parser-fs line |
+
+- **🔑 Several test/placeholder posts at once → do NOT loop create-page.** Use **`compose
+  --samples N`** (skill `compose-frozen-template` / `owner_template_compose_structure`): the
+  stub posts ARE the test news — one shot, correct structure, ~seconds. `create-page` is for
+  adding ONE more stub-clone under a chosen slug.
 
 ## 🛑 Anti-destructive (the rule that was violated)
 
@@ -57,16 +64,14 @@ depend on Hermes, on memory, or on any other agent.
 ## 🔒 Integrity contract (enforced — a violation is refused, not shipped)
 
 - **`folder === slug`** (the post URL is its folder name; a `slug` field that disagrees =
-  broken links — exactly the `apple` vs `apple-test` 404 bug).
-- **Languages only from the app's declared set** (`en` + whatever is configured). Read the
-  set first (it is the slot's `NEXT_PUBLIC_SUPPORTED_LANGUAGES`). NEVER invent a language
-  the site does not ship (a stray `es` is refused). Want a new language? Add it via
-  **manage-app-settings** first (rebuild), THEN author.
-- **No foreign-script artifacts** (CJK / Arabic / … sneaking into en/ru text — a model
-  artifact). **`founder` block only LAST** (it is the brand sign-off, not a note).
-- **Required root anchor:** weave one link with the EXACT anchor
-  `[Agentic Engineering Infrastructure](/<lang>)` into the content; a news post also wants
-  ≥2 internal links and meaningful H2s (see `NEWS-ARTICLE-STANDARD` / the content engine docs).
+  broken links — exactly the `apple` vs `apple-test` 404 bug). The clone names the folder by `slug`.
+- **No body authoring here.** A `blocks`/body payload is **refused** — the structure comes from
+  the frozen stub, so block structure, the founder block, and the root anchor are inherited
+  correct by construction (no need for you to supply or order them). Body text = step 155.
+- **Metadata languages only from the app's declared set** (`en` + whatever is configured —
+  read the slot's `NEXT_PUBLIC_SUPPORTED_LANGUAGES`). NEVER invent a language the site does not
+  ship (a stray `es` is refused). New language? Add it via **manage-app-settings** first (rebuild).
+- **No foreign-script artifacts** in `title`/`tags` (CJK / Arabic … — a model artifact).
 
 ## Confirm before mutating (mandatory — §8.2)
 

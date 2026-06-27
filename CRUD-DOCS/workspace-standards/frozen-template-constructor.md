@@ -4,7 +4,8 @@
 > (a news feed, a documentation tree, a catalogue) by **composing** it from proven, frozen building blocks —
 > with **zero code generation**, so any AI model produces the identical result. Russian mirror:
 > `public/docs/frozen-template-constructor.md` (FES). Companion engine doc: `content-engine.md` (how one
-> rendered page works internally). This document supersedes the prototype note `frozen-archetypes.md`.
+> rendered page works internally). The earlier prototype note (`frozen-archetypes.md`) has been retired —
+> this is the single source.
 
 ---
 

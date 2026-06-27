@@ -186,7 +186,8 @@ async function reportBlocker(outRoot, a) {
   lines.push("", "**What is needed:** a coding agent (Claude Code / Codex / Gemini / Qwen / Kimi) to analyse the code and finish this. This step stays OPEN as the handoff record.")
   const n = await nextStepNumber(outRoot)
   const opened = await openStep(outRoot, n, title, lines.join("\n"))
-  console.log(JSON.stringify({ ok: true, reportedBlocker: true, step: n, stepFile: opened.rel, message: `Recorded blocker as development step ${pad(n)}. Ask the owner to activate a coding agent to finish it.` }, null, 2))
+  // Compact single-line JSON: the MCP bridge parses the LAST stdout line as the result.
+  console.log(JSON.stringify({ ok: true, reportedBlocker: true, step: n, stepFile: opened.rel, message: `Recorded blocker as development step ${pad(n)}. Ask the owner to activate a coding agent to finish it.` }))
 }
 
 async function main() {
@@ -236,7 +237,7 @@ async function main() {
 
   // 3) DRY-RUN → just the decomposition plan
   if (a["dry-run"]) {
-    console.log(JSON.stringify({ ok: true, dryRun: true, action, tab, topic, sectionExists, plan: subs.map(s => ({ kind: s.kind, name: s.name, pageUrl: s.pageUrl })), note: "Each sub-step runs open→execute→deploy→record(GATE)→close. No close without a deployment_records row." }, null, 2))
+    console.log(JSON.stringify({ ok: true, dryRun: true, action, tab, topic, sectionExists, plan: subs.map(s => ({ kind: s.kind, name: s.name, pageUrl: s.pageUrl })), note: "Each sub-step runs open->execute->deploy->record(GATE)->close. No close without a deployment_records row." }))
     return
   }
 
@@ -245,9 +246,9 @@ async function main() {
   for (const sub of subs) {
     const r = await runCycle(outRoot, env, sub, log)
     results.push(r)
-    if (!r.ok) { console.log(JSON.stringify({ ok: false, action, tab, topic, failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, chronology: log, results }, null, 2)); process.exit(3) }
+    if (!r.ok) { console.log(JSON.stringify({ ok: false, action, tab, topic, failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, chronology: log, results })); process.exit(3) }
   }
-  console.log(JSON.stringify({ ok: true, action, tab, topic, steps: results.map(r => ({ step: r.step, deploymentId: r.deploymentId, pageUrl: r.pageUrl, doneRel: r.doneRel })), chronology: log }, null, 2))
+  console.log(JSON.stringify({ ok: true, action, tab, topic, steps: results.map(r => ({ step: r.step, deploymentId: r.deploymentId, pageUrl: r.pageUrl, doneRel: r.doneRel })), chronology: log }))
 }
 
 main().catch(e => { console.error("orchestrate-content-by-steps:", e.message); process.exit(1) })

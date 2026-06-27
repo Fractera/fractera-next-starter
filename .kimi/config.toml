@@ -16,3 +16,9 @@ bearer_token_env_var = "HERMES_MCP_SECRET"
 [mcp_servers.content-crud-bridge]
 url = "http://localhost:3226"
 bearer_token_env_var = "HERMES_MCP_SECRET"
+
+# Content Orchestrator MCP (L2 owner bridge, :3227) — frozen process: intent → decompose by
+# state → per sub-step open→build→deploy→record(gate)→close. owner_content_orchestrate + owner_report_blocker_step.
+[mcp_servers.content-orchestrator-bridge]
+url = "http://localhost:3227"
+bearer_token_env_var = "HERMES_MCP_SECRET"

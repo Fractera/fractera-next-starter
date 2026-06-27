@@ -27,6 +27,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "content-orchestrator-bridge": {
+      "type": "http",
+      "url": "http://localhost:3227",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

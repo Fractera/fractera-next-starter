@@ -143,7 +143,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   short_name: "Fractera",
   description:
     "Production-Coding AI Server — multiple frontier AI models running entirely on your own server. No cloud lock-in.",
-  url: "https://fractera.ai",
+  url: "https://www.fractera.ai",
   manifest: "/manifest.webmanifest",
   mailSupport: "admin@fractera.ai",
   lang: "en",
@@ -183,7 +183,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
     robotsIndex: true,
     robotsFollow: true,
     keywords: undefined,
-    canonicalBase: "https://fractera.ai",
+    canonicalBase: "https://www.fractera.ai",
     sitemapUrl: undefined,
     disallowPaths: ["/api", "/api/*", "/_next", "/_next/*"],
     locales: ["en"],

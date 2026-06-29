@@ -42,13 +42,14 @@ export function TopMenu({ lang }: { lang: string }) {
         <div className="flex items-center gap-3 min-w-0">
           {leftHas && <DrawerToggle side="left" labels={{ open: ui.openLeft, close: ui.closeLeft }} />}
 
+          {/* Brand: the SHORT company name is ALWAYS shown; the logo sits beside it when
+              one is uploaded (logo + wordmark together, never either/or). */}
           <Link href={`/${lang}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-            {cfg.logo ? (
+            {cfg.logo && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={cfg.logo} alt={cfg.short_name} className="h-7 w-auto object-contain" />
-            ) : (
-              <span className="text-sm font-semibold tracking-tight text-foreground">{cfg.short_name}</span>
+              <img src={cfg.logo} alt="" className="h-7 w-auto object-contain" />
             )}
+            <span className="text-sm font-semibold tracking-tight text-foreground">{cfg.short_name}</span>
           </Link>
 
           {groups.length > 0 && (

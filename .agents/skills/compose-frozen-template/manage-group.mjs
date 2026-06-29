@@ -31,7 +31,7 @@ const isDir = async p => { try { return (await stat(p)).isDirectory() } catch { 
 function pascal(s) { return String(s).split(/[^a-z0-9]+/i).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join("") }
 const ALL_ROLES = ["guest", "user", "architect", "buyer", "vip_user", "subscriber_lite", "subscriber_standard", "subscriber_max", "manager", "senior_manager", "support_manager", "delivery_manager", "finance", "content_editor", "admin"]
 const MENU_SLOTS = ["top", "footer", "left", "right"]
-const out = obj => { console.log(JSON.stringify(obj, null, 2)) }
+const out = obj => { console.log(JSON.stringify(obj)) } // single-line: the MCP bridge parses the LAST output line as JSON
 const die = (msg) => { console.log(JSON.stringify({ ok: false, error: msg })); process.exit(2) }
 
 async function slotLanguages(outRoot) {

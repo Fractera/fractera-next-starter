@@ -107,7 +107,7 @@ function LanguageSwitcherInner() {
       </button>
 
       {open && (
-        <div className="absolute top-full mt-2 right-0 w-64 rounded-lg border border-border bg-background shadow-xl z-50 overflow-hidden">
+        <div className="absolute bottom-full mb-2 right-0 w-64 rounded-xl border border-border bg-popover shadow-2xl z-50 overflow-hidden ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-1 duration-150">
           {/* Search */}
           <div className="relative p-2 border-b border-border">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />

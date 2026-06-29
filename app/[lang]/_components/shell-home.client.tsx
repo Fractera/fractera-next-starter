@@ -6,7 +6,6 @@ import { Zap, LayoutDashboard, Sparkles } from "lucide-react";
 import { adminBase } from "@/lib/runtime-urls";
 import { iconUrl, resolveBrandName, DEFAULT_APP_CONFIG, type AppConfig } from "@/config/app-config.defaults";
 import { HomeConfigList } from "./home-config-list.client";
-import { LanguageSwitcher } from "@/components/language-switcher.client";
 import { getHomeStrings } from "@/lib/i18n/home-strings";
 
 const AI_TOOLS = [
@@ -48,11 +47,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background">
 
-      {/* Language switcher — top-right. Renders nothing when a single language is
-          configured (the env collapses to one → the button disappears). */}
-      <div className="absolute top-4 right-4 z-20">
-        <LanguageSwitcher />
-      </div>
+      {/* Language switcher moved to the footer (step 160) — it lives only there now. */}
 
       {/* Ambient glow orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

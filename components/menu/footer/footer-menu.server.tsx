@@ -14,10 +14,10 @@ import { LanguageSwitcher } from "@/components/language-switcher.client";
 //   3. company — brand + copyright + social icons + theme toggle + language switcher.
 // The footer is always rendered (site furniture + the always-useful theme/language).
 // UI standard: lucide icons, shadcn controls, theme tokens (light + dark).
-const UI: Record<string, { contents: string; rights: string; system: string; light: string; dark: string }> = {
-  en: { contents: "Site contents", rights: "All rights reserved.", system: "Theme: system", light: "Theme: light", dark: "Theme: dark" },
-  es: { contents: "Contenido del sitio", rights: "Todos los derechos reservados.", system: "Tema: sistema", light: "Tema: claro", dark: "Tema: oscuro" },
-  ru: { contents: "Содержание сайта", rights: "Все права защищены.", system: "Тема: системная", light: "Тема: светлая", dark: "Тема: тёмная" },
+const UI: Record<string, { footerPages: string; pageSections: string; rights: string; system: string; light: string; dark: string }> = {
+  en: { footerPages: "Footer pages", pageSections: "Page sections", rights: "All rights reserved.", system: "Theme: system", light: "Theme: light", dark: "Theme: dark" },
+  es: { footerPages: "Páginas del pie", pageSections: "Secciones de la página", rights: "Todos los derechos reservados.", system: "Tema: sistema", light: "Tema: claro", dark: "Tema: oscuro" },
+  ru: { footerPages: "Страницы футера", pageSections: "Разделы страницы", rights: "Все права защищены.", system: "Тема: системная", light: "Тема: светлая", dark: "Тема: тёмная" },
 };
 
 function socialLinks(social: { twitter?: string; github?: string; linkedin?: string; facebook?: string } | undefined) {
@@ -40,23 +40,23 @@ export function FooterMenu({ lang }: { lang: string }) {
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
       <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-lg font-bold tracking-tight">{cfg.short_name}</span>
-        </div>
-
-        {/* Section 1 — footer-page navigation (groups that enabled the footer slot). */}
+        {/* Section 1 — footer-page navigation (groups that enabled the footer slot),
+            under a "Footer pages" heading. */}
         {groups.length > 0 && (
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground font-medium">
-            {groups.map((g) => (
-              <Link key={g.slug} href={`/${lang}/${g.slug}`} className="hover:text-primary transition-colors">
-                {g.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{ui.footerPages}</p>
+            <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground font-medium">
+              {groups.map((g) => (
+                <Link key={g.slug} href={`/${lang}/${g.slug}`} className="hover:text-primary transition-colors">
+                  {g.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         )}
 
         {/* Section 2 — home-section scroll navigation (HOME PAGE ONLY). */}
-        <FooterHomeSections lang={lang} label={ui.contents} />
+        <FooterHomeSections lang={lang} label={ui.pageSections} />
 
         {/* Section 3 — company: copyright + address, social, theme toggle, language. */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm border-t border-border pt-6">

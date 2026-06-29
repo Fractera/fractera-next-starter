@@ -65,7 +65,7 @@ export default async function LangLayout({
   const gaId = cfg.analytics.enabled ? cfg.analytics.googleAnalyticsId : undefined;
 
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning className="scroll-smooth">
       <head>
         <meta name="generator" content="Fractera" />
         <ThemeInit />

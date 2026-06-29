@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
+import { TopMenu } from "@/components/menu/top-menu.server";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
@@ -83,6 +84,9 @@ export default async function LangLayout({
       </head>
       <body className={bodyFontClass}>
         <ThemeProvider>
+          {/* Always-present menu shell (step 160): each menu renders nothing until a
+              group enables its slot. Top is mounted here; footer/left/right follow. */}
+          <TopMenu lang={lang} />
           {children}
           <Toaster position="bottom-right" richColors closeButton />
         </ThemeProvider>

@@ -136,6 +136,9 @@ export interface AppConfig {
     hours?: string;
   };
   contentTypeDefaults: ContentTypeDefaults;
+  // Menu shell (step 160). authButton: show the top-menu Sign-in / account control.
+  // Not every app needs an auth header — apps without accounts leave this false.
+  menus: { authButton: boolean };
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -200,6 +203,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   jsonLd: { website: true, organization: true, localBusiness: false },
   geo: {},
   contentTypeDefaults: { blog: "blog", product: "product", documentation: "documentation" },
+  menus: { authButton: false },
 };
 
 // ---- pure getters (take a config object; safe on client or server) ------------------

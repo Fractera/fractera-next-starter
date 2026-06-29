@@ -104,8 +104,13 @@ depend on Hermes, memory, or any other agent.
 ## How to compose
 
 - **MCP (every agent):** `owner_template_compose_structure` with
-  `{ tab, format, languages, labels, samples, source?, depth?, roles? }`. Always
-  `dry_run: true` first to preview + confirm, then call for real.
+  `{ tab, format, languages, labels, samples, source?, depth?, roles?, menus?, children_as_dropdown? }`.
+  Always `dry_run: true` first to preview + confirm, then call for real.
+  - `menus?` / `children_as_dropdown?` write the **group manifest** (`_data/group.ts`) — menu
+    placement read by the site's menu system. Slots `top`/`footer`/`left`/`right`, each
+    `{ enabled, order }`; default every slot off, order 10 (explicit opt-in). It is
+    **registration metadata, not a Slot A/B property** — the menu components are a separate
+    consumer, not part of composing the structure.
 - **Standalone (lone agent, no MCP):**
   ```bash
   curl -s -H "X-Agent-Identity: <you>" http://localhost:3300/frozen-templates/registry > /tmp/reg.json
@@ -116,6 +121,19 @@ depend on Hermes, memory, or any other agent.
     --tab news --format news --languages en,ru --label-en News --label-ru Новости --samples 2 --roles off
   npm run gen:lists && npx tsc --noEmit
   ```
+
+## Reading & editing an existing group (menu settings, path, roles, languages)
+
+Composing is only creation. To **see** or **edit** groups that already exist, use the sibling
+emitter `manage-group.mjs` (shipped beside this composer) and its MCP tools:
+
+- **`owner_template_list_groups`** — every composed group + its manifest (`slug`, `languages`,
+  `roles`, `menus`, `childrenAsDropdown`). Read-only. Perceive before you edit.
+- **`owner_template_update_group`** `{ tab, slug?, roles?, languages?, menus?, children_as_dropdown? }`
+  — deterministic edits, NO codegen. `slug` renames the folder (path); `roles` rewrites the layout
+  gate; `languages` adds/removes UI chrome (within the app's set); `menus` (`{top,footer,left,right}`,
+  each `{enabled,order}`) turns a menu on and orders the button; `children_as_dropdown` flips child
+  expansion. `dry_run: true` first to preview + confirm, then call for real; then rebuild.
 
 ## Confirm before mutating (mandatory)
 

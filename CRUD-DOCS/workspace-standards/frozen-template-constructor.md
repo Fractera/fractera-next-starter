@@ -231,7 +231,57 @@ image) that the owner replaces; adding the next document is one folder.
 
 ---
 
-## 11. Invariants (do not violate)
+## 11. Group registration: the manifest (menu placement — metadata, NOT an aspect)
+
+A composed group also declares **how it surfaces in the site's menus**. This is a property of
+the group's relationship to the **shell** (one record for the whole group), not a property of
+the structure's internal composition — so by the Two-Slot Law it is **neither a list provider
+(A) nor a uniform aspect (B)**. It is a **third, orthogonal thing: registration metadata**. The
+law governs *internal* composition; the manifest governs *external* registration. (No false
+"third slot" is introduced into composition — the manifest sits beside the data, decoupled.)
+
+The composer emits a lean **group manifest** into `_data/group.ts` (`GroupManifest`, typed in
+the versioned engine `lib/content-<ver>/group-manifest.ts`):
+
+- `slug`, `languages`, `roles` — an **echo of the envelope**, so the menu system reads the
+  group's identity, language set, and access shape from **one place** (it never parses
+  `layout.tsx` or counts `_data/*` files).
+- `menus` — four slots `top` / `footer` / `left` / `right` (left & right are drawer menus some
+  designs render), each `{ enabled: boolean, order: number }`. **Default: every slot disabled,
+  order 10** — surfacing a group is an explicit opt-in.
+- `childrenAsDropdown: boolean` (default `false`) — `true` → the menu expands the group's child
+  pages as a dropdown list; `false` → the button navigates to the group index route. The menu
+  decides *how* to render; the manifest only declares the intent.
+
+The menu components themselves are **not** part of the constructor — they are consumers that
+read this manifest (a separate concern). The constructor's job ends at emitting the metadata.
+
+### 11.1 Reading & editing a live group (how menu settings work)
+
+A composed group is not frozen forever — its **registration** (path, access, languages, menu
+placement) is editable after the fact, by **deterministic file edits, never code generation**.
+The manifest `_data/group.ts` is the single surface the menu reads; edits keep the real artifacts
+in sync so the echo never lies. Two MCP tools (and the `manage-group.mjs` emitter, shipped to
+every agent beside the composer):
+
+- **`owner_template_list_groups`** (read-only) — every composed group + its manifest. A pre-manifest
+  group is returned with a derived envelope (`hasManifest:false`).
+- **`owner_template_update_group`** — patch one existing group; pass only the fields you change:
+  - `slug` → renames the group **folder** (its URL path) + updates the manifest and `parser-fs`.
+  - `roles` (`off`/`guest`/csv/`all`) → rewrites the **layout access gate** + the manifest `roles` echo.
+  - `languages` (final set) → adds/removes the **UI-chrome** `_data/<lang>.ts` + the index lang-map +
+    the echo. Strictly within the app's declared language set (add a new app language first — step 150).
+  - `menus` (`{top,footer,left,right}`, each `{enabled,order}`) → which menus show the group, and the
+    button order within each. **This is exactly how a group is added to a menu and re-ordered.**
+  - `children_as_dropdown` → flip whether the menu button expands the group's child pages as a dropdown.
+
+  Mutating → confirm via `dry_run` first (§8.2). After it writes, the slot needs a **rebuild** to go live.
+
+So the full menu-settings lifecycle is: **compose** sets the initial placement (default all-off),
+**`update_group`** turns a menu on, orders it, and flips the dropdown — and the same tool also moves the
+group's path, access role, and language set. The menu **components** then read `_data/group.ts` and render.
+
+## 12. Invariants (do not violate)
 
 - Composition only — **never LLM code generation**; the same result from any model.
 - **Two-Slot Law:** a property is a list-provider (data) or a uniform aspect (layout); **no cross-slot
@@ -239,6 +289,9 @@ image) that the owner replaces; adding the next document is one folder.
 - **Envelope 100%-fit** or it is not that primitive; refusals name the failing axis.
 - **Static-first / no-JS**; the only dynamic path is the dynamic-descriptor primitive, under the rules.
 - **Versioning side-by-side, pinned; identity never versioned.**
+- **Group manifest = registration metadata, never a slot:** menu placement (`_data/group.ts`)
+  surfaces the group in the shell; it is neither a list provider nor a uniform aspect — do not
+  fold it into composition or invent a "third slot".
 - **Harvest discipline:** freeze a proven, repeating, cleanly-parameterisable shape — never a guess; grow the
   basis Open/Closed, one brick at a time.
 - **Self-sufficient capability** (skill + MCP + composer shipped to every agent; works for a lone agent, no

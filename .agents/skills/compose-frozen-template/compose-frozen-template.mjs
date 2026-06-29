@@ -24,8 +24,14 @@
 //     --source files --depth 1 --rendering static \
 //     --tab news --format news --languages en,ru --label-en News --label-ru Новости \
 //     --samples 2 --roles off [--unauthorized-redirect /] [--engine-version v1] [--force]
+//     [--menus '{"top":{"enabled":true,"order":10}}'] [--children-dropdown true]
 //   --roles: off (public) | guest (public+guest) | <csv of ALL_ROLES> (private) | all
 //   --unauthorized-redirect: fallback page for a visitor lacking the role (default '/')
+//   --menus: group REGISTRATION metadata (step 158) — JSON {top,footer,left,right}, each
+//     {enabled,order}. Default every slot disabled, order 10 (explicit opt-in). Emitted into
+//     _data/group.ts (GroupManifest) for the site menu system; NOT a Slot A/B property.
+//   --children-dropdown: true => the menu expands the group's child pages as a dropdown;
+//     false (default) => the button navigates to the group index route.
 //
 // Deterministic, idempotent-guarded, never writes outside --out.
 
@@ -295,6 +301,30 @@ async function main() {
     if (bad.length) return refuse("roles", `unknown role(s): ${bad.join(", ")}. Valid (ALL_ROLES): ${ALL_ROLES.join(", ")}; or 'guest' (public+guest) / 'all'`)
   }
   const tok = { "{{TAB}}": tab, "{{TAB_PASCAL}}": pascal(tab), "{{TAB_CAMEL}}": camel(tab), "{{FORMAT}}": format }
+
+  // ── group manifest (step 158): menu placement + envelope echo, emitted into _data/group.ts.
+  // Registration metadata (NOT Slot A/B). Default: every slot disabled, order 10 (explicit
+  // opt-in); --menus overrides per slot. groupRoles echoes the resolved access shape.
+  const MENU_SLOTS = ["top", "footer", "left", "right"]
+  const menus = Object.fromEntries(MENU_SLOTS.map(s => [s, { enabled: false, order: 10 }]))
+  if (typeof a.menus === "string") {
+    let parsed; try { parsed = JSON.parse(a.menus) } catch { throw new Error("--menus must be valid JSON") }
+    for (const s of MENU_SLOTS) {
+      const m = parsed && parsed[s]
+      if (m && typeof m === "object") menus[s] = { enabled: !!m.enabled, order: Number.isFinite(m.order) ? Math.trunc(m.order) : 10 }
+    }
+  }
+  const childrenAsDropdown = a["children-dropdown"] === "true" || a["children-dropdown"] === true
+  const groupRoles = rolesOn ? (requireGuest ? "public+guest" : roleList.join("+")) : "public"
+  Object.assign(tok, {
+    "{{GROUP_LANGUAGES}}": JSON.stringify(languages),
+    "{{GROUP_ROLES}}": JSON.stringify(groupRoles),
+    "{{CHILDREN_AS_DROPDOWN}}": String(childrenAsDropdown),
+    "{{MENU_TOP_ENABLED}}": String(menus.top.enabled), "{{MENU_TOP_ORDER}}": String(menus.top.order),
+    "{{MENU_FOOTER_ENABLED}}": String(menus.footer.enabled), "{{MENU_FOOTER_ORDER}}": String(menus.footer.order),
+    "{{MENU_LEFT_ENABLED}}": String(menus.left.enabled), "{{MENU_LEFT_ORDER}}": String(menus.left.order),
+    "{{MENU_RIGHT_ENABLED}}": String(menus.right.enabled), "{{MENU_RIGHT_ORDER}}": String(menus.right.order),
+  })
 
   console.log(`compose '${prim.id}' (engine ${ver}) -> /${tab}  base{source=${source},depth=${depth},${rendering}} aspects{i18n=on, roles=${rolesOn ? (requireGuest ? "guest" : roleList.join("+")) : "off"}${rolesOn ? ", fallback=" + unauthorizedRedirect : ""}} format=${format} langs=${languages.join(",")} samples=${samples}`)
   await installEngine(storeRoot, outRoot, ver)

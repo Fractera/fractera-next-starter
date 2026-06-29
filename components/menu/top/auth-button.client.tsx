@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogIn, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 // Top-menu auth control (step 160). Rendered ONLY when app-config menus.authButton is
 // on (not every app has accounts). Client island: reads identity from /api/me (the slot
@@ -28,17 +28,17 @@ export function AuthButton({ lang, labels }: { lang: string; labels: { signIn: s
     return (
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-foreground max-w-[160px] truncate hidden sm:block">{me.email}</span>
-        <Button asChild variant="ghost" size="sm">
-          <Link href="/api/auth/signout"><LogOut />{labels.signOut}</Link>
-        </Button>
+        <Link href="/api/auth/signout" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+          <LogOut />{labels.signOut}
+        </Link>
       </div>
     );
   }
 
   // Before hydration / no account: the Sign-in link so no-JS visitors also get it.
   return (
-    <Button asChild variant="ghost" size="sm">
-      <Link href={`/login?lang=${lang}`}><LogIn />{labels.signIn}</Link>
-    </Button>
+    <Link href={`/login?lang=${lang}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+      <LogIn />{labels.signIn}
+    </Link>
   );
 }

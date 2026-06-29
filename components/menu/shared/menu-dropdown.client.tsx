@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -30,10 +30,11 @@ export function MenuDropdown({
   const groupHref = `/${lang}/${slug}`;
 
   if (!asDropdown || items.length === 0) {
+    // Button is Base UI (no asChild); a link styled as a button uses buttonVariants().
     return (
-      <Button asChild variant="ghost" size="sm">
-        <Link href={groupHref}>{label}</Link>
-      </Button>
+      <Link href={groupHref} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+        {label}
+      </Link>
     );
   }
 

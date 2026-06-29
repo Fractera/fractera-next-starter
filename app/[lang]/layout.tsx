@@ -7,6 +7,7 @@ import { ThemeInit } from "@/components/theme-init";
 import { DrawerProvider } from "@/providers/drawer-provider.client";
 import { TopMenu } from "@/components/menu/top/top-menu.server";
 import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
+import { DrawerMenu } from "@/components/menu/drawer/drawer-menu.server";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
@@ -94,6 +95,11 @@ export default async function LangLayout({
             <TopMenu lang={lang} />
             {children}
             <FooterMenu lang={lang} />
+            {/* Left & right slide-in drawers (shadcn Sheet), controlled by the same
+                DrawerProvider state as the header toggle icons; each renders nothing
+                until a group enables its side's slot. */}
+            <DrawerMenu side="left" lang={lang} />
+            <DrawerMenu side="right" lang={lang} />
             <Toaster position="bottom-right" richColors closeButton />
           </DrawerProvider>
         </ThemeProvider>

@@ -2,29 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { MenuGroup } from "@/lib/menu/group-menus";
 
 // Mobile collapse of the TOP nav (step 160), mirroring FES site-header: below 780px the
 // desktop group buttons are hidden and this hamburger shows the same groups as a vertical
-// list. Dropdown groups are flattened here (group link + its child pages indented), like
-// the FES original shows its dropdown targets flat.
+// list (dropdown groups flattened — group link + its child pages indented). UI standard:
+// shadcn Button + lucide Menu/X icons (no inline SVG).
 export function MobileMenu({ lang, groups, label }: { lang: string; groups: MenuGroup[]; label: string }) {
   const [open, setOpen] = useState(false);
   if (groups.length === 0) return null;
 
   return (
     <div className="min-[780px]:hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={label}
-        aria-expanded={open}
-        className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-foreground/80 hover:text-foreground hover:bg-accent transition-colors"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          {open ? <path d="M6 6l12 12M18 6L6 18" /> : (<><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>)}
-        </svg>
-      </button>
+      <Button type="button" variant="ghost" size="icon" onClick={() => setOpen((v) => !v)} aria-label={label} aria-expanded={open}>
+        {open ? <X /> : <Menu />}
+      </Button>
 
       {open && (
         <nav className="absolute left-0 right-0 top-14 z-50 border-t border-border bg-background/95 backdrop-blur-sm">

@@ -101,6 +101,15 @@ and CSS — there size is not line-limited.
 **Next.js 16+.** `middleware.ts` is forbidden — use `proxy.ts` as its analog (the `proxy()` function +
 `export const config`).
 
+**UI primitives (mandatory — ONE interface, ONE style).** The whole product is built from a single,
+fixed primitive set; do not hand-roll or mix alternatives. **Icons = `lucide-react` only** (never inline
+`<svg>`, never another icon pack). **Interactive UI = shadcn/ui (`components/ui/*`) only** — buttons
+(`Button`), dropdowns (`DropdownMenu`), modals (`Dialog`), side drawers (`Sheet`), `Popover`, `Tooltip`,
+`Select`, `Checkbox`, etc. (never a raw `<button>`/hand-built dropdown/modal). **Toasts = Sonner** (the
+mounted `<Toaster/>` + `toast()` from `sonner`). This covers menus, drawers, modals, dropdowns and every
+control. Bring non-conforming code to this standard whenever you touch it. Full mapping + recipes →
+`ui-primitives.md`.
+
 > Full route-skeleton standard — `shell-component-architecture.md` (thin `page.tsx`,
 > `_components/index.tsx`, `.client`/`.server` suffixes, typed `_meta.ts`).
 

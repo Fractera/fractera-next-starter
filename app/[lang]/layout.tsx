@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
 import { DrawerProvider } from "@/providers/drawer-provider.client";
-import { TopMenu } from "@/components/menu/top-menu.server";
+import { TopMenu } from "@/components/menu/top/top-menu.server";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";

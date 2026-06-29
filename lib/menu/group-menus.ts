@@ -1,6 +1,7 @@
 import "server-only";
 import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { MENU_SLOTS, type MenuSlot } from "./menu-types";
 
 // Build-time menu source (step 160). The always-present menu components ask this for
 // "which groups belong in slot X, in what order". It SCANS the on-disk group manifests
@@ -9,7 +10,7 @@ import { join } from "node:path";
 // absent in a fresh starter. So the menus compile and render with zero groups (→ null).
 // No DB, no dynamic functions → the [lang] tree stays statically prerendered.
 
-export type MenuSlot = "top" | "footer" | "left" | "right";
+export type { MenuSlot };
 export type MenuChild = { slug: string; title: string };
 export type MenuGroup = {
   slug: string;
@@ -33,7 +34,7 @@ function parseManifest(src: string) {
     top: { enabled: false, order: 10 }, footer: { enabled: false, order: 10 },
     left: { enabled: false, order: 10 }, right: { enabled: false, order: 10 },
   };
-  for (const s of ["top", "footer", "left", "right"] as MenuSlot[]) {
+  for (const s of MENU_SLOTS) {
     const m = src.match(new RegExp(`${s}:\\s*\\{\\s*enabled:\\s*(true|false),\\s*order:\\s*(\\d+)`));
     if (m) menus[s] = { enabled: m[1] === "true", order: parseInt(m[2], 10) };
   }

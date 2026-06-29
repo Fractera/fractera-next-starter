@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups, slotHasGroups } from "@/lib/menu/group-menus";
-import { MenuDropdown } from "@/components/menu/menu-dropdown.client";
-import { MobileMenu } from "@/components/menu/mobile-menu.client";
-import { AuthButton } from "@/components/menu/auth-button.client";
-import { DrawerToggle } from "@/components/menu/drawer-toggle.client";
+import { MenuDropdown } from "@/components/menu/shared/menu-dropdown.client";
+import { MobileMenu } from "@/components/menu/top/mobile-menu.client";
+import { AuthButton } from "@/components/menu/top/auth-button.client";
+import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
 // group enables the top/left/right slot or the app turns on the auth button. Server

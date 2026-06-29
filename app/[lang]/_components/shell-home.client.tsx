@@ -110,10 +110,11 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* Wordmark + tagline */}
         <motion.div
+          id="hero"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center gap-3"
+          className="flex flex-col items-center gap-3 scroll-mt-20"
         >
           <h1 className="text-6xl sm:text-7xl font-bold tracking-tight select-none leading-[1.05] break-words bg-gradient-to-b from-foreground via-foreground/90 to-foreground/50 bg-clip-text text-transparent">
             {brandName}
@@ -139,10 +140,11 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* AI tool pills */}
         <motion.div
+          id="platforms"
           initial={false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.32, duration: 0.5 }}
-          className="flex flex-wrap justify-center gap-2"
+          className="flex flex-wrap justify-center gap-2 scroll-mt-20"
         >
           {AI_TOOLS.map((tool, i) => (
             <motion.span
@@ -159,10 +161,11 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
         {/* CTA buttons */}
         <motion.div
+          id="start"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.75, duration: 0.45 }}
-          className="flex flex-wrap items-center justify-center gap-3"
+          className="flex flex-wrap items-center justify-center gap-3 scroll-mt-20"
         >
           <a
             href={adminUrl || "#"}

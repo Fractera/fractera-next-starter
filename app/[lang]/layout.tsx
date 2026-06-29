@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
 import { DrawerProvider } from "@/providers/drawer-provider.client";
 import { TopMenu } from "@/components/menu/top/top-menu.server";
+import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
@@ -83,14 +84,16 @@ export default async function LangLayout({
           </>
         )}
       </head>
-      <body className={bodyFontClass}>
+      <body className={`${bodyFontClass} min-h-screen flex flex-col`}>
         <ThemeProvider>
           {/* Always-present menu shell (step 160): each menu renders nothing until a
               group enables its slot. DrawerProvider shares the left/right open state
-              between the header toggle icons and the drawer panels (sub-step 3). */}
+              between the header toggle icons and the drawer panels (sub-step 3).
+              Footer is always present (site furniture + theme/language). */}
           <DrawerProvider>
             <TopMenu lang={lang} />
             {children}
+            <FooterMenu lang={lang} />
             <Toaster position="bottom-right" richColors closeButton />
           </DrawerProvider>
         </ThemeProvider>

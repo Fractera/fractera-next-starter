@@ -136,8 +136,9 @@ export interface AppConfig {
     hours?: string;
   };
   contentTypeDefaults: ContentTypeDefaults;
-  // Menu shell (step 160). authButton: show the top-menu Sign-in / account control.
-  // Not every app needs an auth header — apps without accounts leave this false.
+  // Menu shell (step 160). DEPRECATED (step 161): authButton no longer drives the header —
+  // public auth is now the build-time key NEXT_PUBLIC_APP_SHELL_AUTH (null|left|right), read by
+  // components/menu/account/. Field kept for on-disk app-config.json back-compat; it is a no-op.
   menus: { authButton: boolean };
 }
 

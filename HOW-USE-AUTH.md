@@ -183,3 +183,40 @@ rely on it: the visitor's cart and messages are still theirs after they register
 Where the pieces live: role vocabulary → `lib/roles.ts` (`ALL_ROLES`); identity reads → `lib/auth/get-session.ts`
 (server) + `app/api/me/route.ts` (client); redirects → `lib/runtime-urls.ts`; server-only guard →
 `lib/auth/require-admin.ts`.
+
+---
+
+## 6. Public app-shell auth — turning the visitor login ON/OFF (build-time, step 161)
+
+§1–§5 are about per-PAGE access. This section is different: it is the **app-shell** public login — the
+Sign in / account button in the header and the signed-in visitor's account drawer — governed by ONE
+build-time env key, `NEXT_PUBLIC_APP_SHELL_AUTH`:
+
+| Value | Meaning |
+|---|---|
+| absent / empty | **OFF (default)** — no public login control ships; smaller bundle, faster deploy |
+| `left` | ON — account drawer slides in from the left |
+| `right` | ON — account drawer slides in from the right |
+
+**The auth LAYER always exists** (the admin/owner login, the auth service, guest promotion in §4). This
+key does NOT build login screens — it only decides whether the **public** account control renders in the
+shell, and which side its drawer opens from. Enabling it is *connecting* the existing layer, not
+developing auth. When ON, the header is force-rendered even with no menu groups, the guest sees **Sign
+in** (the existing `/login` flow), and a signed-in visitor gets the account drawer (sign out + email +
+roles).
+
+**When to enable:** the app genuinely needs visitor accounts — a store, a social app, a SaaS dashboard.
+**When NOT:** a landing page or portfolio (keep it off; every control costs bundle + deploy time).
+
+**Auto-rule:** if you are asked to build an app that inherently needs accounts, enabling app-shell auth
+is part of that work — do it without making the owner ask separately; the only thing you ask is the
+**drawer side** (left or right). This is also the §5 rule in the root agent instructions.
+
+**How to set it** (never hand-edit the env if a setter exists):
+- skill **`manage-app-shell-auth`** → MCP **`owner_app_settings_set_app_shell_auth`** `{ value: "left" | "right" | "off" }`;
+- or the validated route **`POST /api/config/auth-shell`** `{ value }`;
+- or Admin → **App Settings → App authorization**.
+
+It is **build-time** → a change applies after a **rebuild** (a few minutes), exactly like the language
+set. Reader: `components/menu/account/account-config.ts` (`appShellAuthSide()` / `isAuthRequired()`); the
+control + its 82-language strings are co-located in `components/menu/account/`.

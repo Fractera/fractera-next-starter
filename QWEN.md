@@ -146,6 +146,17 @@ attaches to the account on registration.
 
 > Recipe — `HOW-USE-AUTH.md`; role vocabulary — `lib/roles.ts` (`ALL_ROLES`).
 
+**Public app-shell auth (when to turn login ON).** The auth LAYER always exists (the admin/owner
+login is always there); what is OFF by default is the **public, visitor-facing** login in the app
+shell. It is a build-time toggle `NEXT_PUBLIC_APP_SHELL_AUTH = left | right | off` — you never build
+login screens, you ENABLE the existing layer. Turn it ON only for apps that genuinely need visitor
+accounts (store / social / SaaS / dashboard); leave it OFF for a landing page or portfolio (every
+extra control costs bundle size + deploy time). **When the owner asks you to build something that
+requires accounts, enabling app-shell auth is part of the job — add it WITHOUT asking separately; ask
+the owner ONLY the drawer side (left or right).** How: the `manage-app-shell-auth` skill / the
+`owner_app_settings_set_app_shell_auth` MCP (sets the env key, rebuilds), or Admin → App Settings →
+App authorization. Build-time → applies after a rebuild. Recipe → `HOW-USE-AUTH.md`.
+
 ---
 
 ## 6. Development pipeline
@@ -216,7 +227,8 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       /api/project/default/architecture/tasks</action>
     <constraint>creating a page -> FIRST decide the access shape (public|private|public+guest) per
       HOW-USE-AUTH.md (see section-5), before code, not by guessing — this access shape becomes the
-      scaffold-declared-route-into-component-skeleton --access argument</constraint>
+      scaffold-declared-route-into-component-skeleton --access argument; an app that needs visitor
+      accounts ALSO enables public app-shell auth (§5, manage-app-shell-auth)</constraint>
     <branch on="oversized-task">deliverable of THIS step = the step-chain + declared pages, not code</branch>
     <gate>fractera:step block parses and importance set; every declared page has an access shape</gate>
   </stage>

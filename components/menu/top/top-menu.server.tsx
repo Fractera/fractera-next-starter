@@ -3,7 +3,9 @@ import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups, slotHasGroups } from "@/lib/menu/group-menus";
 import { MenuDropdown } from "@/components/menu/shared/menu-dropdown.client";
 import { MobileMenu } from "@/components/menu/top/mobile-menu.client";
-import { AuthButton } from "@/components/menu/top/auth-button.client";
+import { AccountButton } from "@/components/menu/account/account-button.client";
+import { appShellAuthSide } from "@/components/menu/account/account-config";
+import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
@@ -11,12 +13,10 @@ import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 // component: reads manifests at build (SSG-safe). Mirrors FES site-header: logo on the
 // left, desktop group buttons (hidden < 780px), a mobile hamburger that collapses them,
 // an auth island, and — new — the left/right drawer toggle icons (shown only when that
-// side's menu has a group; the icon flips when its drawer is open).
-const AUTH_LABELS: Record<string, { signIn: string; signOut: string }> = {
-  en: { signIn: "Sign in", signOut: "Sign out" },
-  es: { signIn: "Entrar", signOut: "Salir" },
-  ru: { signIn: "Войти", signOut: "Выйти" },
-};
+// side's menu has a group; the icon flips when its drawer is open). The header is ALSO
+// force-rendered when public auth is enabled (NEXT_PUBLIC_APP_SHELL_AUTH=left|right, step
+// 161) even with zero groups, so the account control always has a home. Account strings are
+// co-located in components/menu/account/ (82 languages); only the drawer aria-labels stay here.
 const UI_LABELS: Record<string, { menu: string; openLeft: string; closeLeft: string; openRight: string; closeRight: string }> = {
   en: { menu: "Menu", openLeft: "Open left menu", closeLeft: "Close left menu", openRight: "Open right menu", closeRight: "Close right menu" },
   es: { menu: "Menú", openLeft: "Abrir menú izquierdo", closeLeft: "Cerrar menú izquierdo", openRight: "Abrir menú derecho", closeRight: "Cerrar menú derecho" },
@@ -26,14 +26,13 @@ const UI_LABELS: Record<string, { menu: string; openLeft: string; closeLeft: str
 export function TopMenu({ lang }: { lang: string }) {
   const cfg = getAppConfig();
   const groups = getMenuGroups("top", lang);
-  const showAuth = cfg.menus?.authButton ?? false;
+  const authSide = appShellAuthSide();
   const leftHas = slotHasGroups("left", lang);
   const rightHas = slotHasGroups("right", lang);
 
   // Not in the render tree until something asks for it (top nav, auth, or a side drawer).
-  if (groups.length === 0 && !showAuth && !leftHas && !rightHas) return null;
+  if (groups.length === 0 && !authSide && !leftHas && !rightHas) return null;
 
-  const auth = AUTH_LABELS[lang] ?? AUTH_LABELS.en;
   const ui = UI_LABELS[lang] ?? UI_LABELS.en;
 
   return (
@@ -65,7 +64,7 @@ export function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {showAuth && <AuthButton lang={lang} labels={auth} />}
+          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} />}
           {rightHas && <DrawerToggle side="right" labels={{ open: ui.openRight, close: ui.closeRight }} />}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}
         </div>

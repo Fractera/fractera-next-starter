@@ -98,6 +98,19 @@ Format: `[domain]-[entity]-[detail]-[role].suffix`
 **Size limit.** Max 200 lines of code in one component (excluding imports/exports). Does not apply to data
 and CSS — there size is not line-limited.
 
+**Co-location of entity-owned data — lowest common ancestor.** Data used by ONE entity and nothing else
+(its translations, constants, config, schema, styles) lives INSIDE that entity's folder. Shared data rises
+only to the **lowest common ancestor** of its real users — never higher; a global/shared module is only for
+data genuinely reused across the tree (the language catalogue, design tokens). Test: deleting an entity's
+folder leaves ZERO orphaned data. Placement by location:
+- **route** (under `app/`): `foo/page.tsx`, `foo/_components/…`, private data `foo/_shared/…` (the leading
+  `_` is mandatory — Next excludes it from routing).
+- **component** (under `components/`): `foo/foo-menu.tsx`, private data `foo/shared/…` (no `_` needed).
+- A `shared/` subfolder earns its place only at **≥2 internal consumers** — with a single consumer keep the
+  file flat in the entity folder (no empty `shared/`).
+Derive placement from the architecture and apply by default — DO NOT ask where to store entity-private data;
+co-locate it.
+
 **Next.js 16+.** `middleware.ts` is forbidden — use `proxy.ts` as its analog (the `proxy()` function +
 `export const config`).
 

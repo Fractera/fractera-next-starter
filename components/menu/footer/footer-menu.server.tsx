@@ -5,6 +5,7 @@ import { getMenuGroups } from "@/lib/menu/group-menus";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { FooterHomeSections } from "@/components/menu/footer/footer-home-sections.client";
+import { footerLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
@@ -14,11 +15,8 @@ import { LanguageSwitcher } from "@/components/language-switcher.client";
 //   3. company — brand + copyright + social icons + theme toggle + language switcher.
 // The footer is always rendered (site furniture + the always-useful theme/language).
 // UI standard: lucide icons, shadcn controls, theme tokens (light + dark).
-const UI: Record<string, { footerPages: string; pageSections: string; rights: string; system: string; light: string; dark: string }> = {
-  en: { footerPages: "Footer pages", pageSections: "Page sections", rights: "All rights reserved.", system: "Theme: system", light: "Theme: light", dark: "Theme: dark" },
-  es: { footerPages: "Páginas del pie", pageSections: "Secciones de la página", rights: "Todos los derechos reservados.", system: "Tema: sistema", light: "Tema: claro", dark: "Tema: oscuro" },
-  ru: { footerPages: "Страницы футера", pageSections: "Разделы страницы", rights: "Все права защищены.", system: "Тема: системная", light: "Тема: светлая", dark: "Тема: тёмная" },
-};
+// Footer-owned strings live co-located in ./footer-menu.i18n (delete the folder, they go
+// with it); the two headings are translated across the full 82-language catalogue.
 
 function socialLinks(social: { twitter?: string; github?: string; linkedin?: string; facebook?: string } | undefined) {
   if (!social) return [] as { href: string; label: string; Icon: typeof Github }[];
@@ -33,7 +31,7 @@ function socialLinks(social: { twitter?: string; github?: string; linkedin?: str
 export function FooterMenu({ lang }: { lang: string }) {
   const cfg = getAppConfig();
   const groups = getMenuGroups("footer", lang);
-  const ui = UI[lang] ?? UI.en;
+  const ui = footerLabels(lang);
   const socials = socialLinks(cfg.seo?.social);
   const address = cfg.geo?.address;
 

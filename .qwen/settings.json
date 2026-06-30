@@ -17,6 +17,12 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "language-expansion-bridge": {
+      "httpUrl": "http://localhost:3228",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   },
   "hooks": {

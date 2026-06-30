@@ -194,6 +194,13 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       (a request written in Russian does NOT mean the site ships Russian). A language outside the set is
       degraded safely at runtime (the app will not crash — step 149 vaccine) but authoring it wastes work and
       ships dead files; if the owner wants a new language, add it via App Settings FIRST (rebuild), then author.</action>
+    <action>Adding a language to an EXISTING site (many pages/sections) is a DEDICATED capability — the
+      expand-site-language skill / owner_content_add_site_language: it fans the language across every group
+      and post (seeded with the default language so the site is valid instantly, noindex until translated —
+      Doorway guard), updates the 4 menus, and opens one translation step per language; real translation is
+      the separate, non-blocking owner_content_translate_pending runner (no deploy). NEVER add a language by
+      hand-editing, by re-composing, or via manage-content-collections / owner_template_update_group — they
+      cannot add a per-page locale and will break the site.</action>
     <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known; language set known</gate>
   </stage>
 

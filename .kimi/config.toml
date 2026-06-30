@@ -22,3 +22,11 @@ bearer_token_env_var = "HERMES_MCP_SECRET"
 [mcp_servers.content-orchestrator-bridge]
 url = "http://localhost:3227"
 bearer_token_env_var = "HERMES_MCP_SECRET"
+
+# Language Expansion MCP (L2 owner bridge, :3228) — THE only way to add a language to existing
+# content: fan out seeded with the default language (noindex until translated) + one translation
+# step per language; plus the non-blocking translation runner. owner_content_add_site_language +
+# owner_content_translate_pending. Step 163.
+[mcp_servers.language-expansion-bridge]
+url = "http://localhost:3228"
+bearer_token_env_var = "HERMES_MCP_SECRET"

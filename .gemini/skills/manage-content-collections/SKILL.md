@@ -117,6 +117,15 @@ delegate hand-authoring to another agent — a broken tool is repaired, never by
   ```
   For `create group` pass `--store <frozen-templates-dir>` (it delegates to the constructor).
 
+## 🌐 Adding a LANGUAGE to existing content → NOT this tool
+
+If the owner wants to **add a new language to an existing site** ("add Armenian to all pages",
+"make the site multilingual", "translate the whole site") — **do NOT use this tool.** `create page`
+refuses an existing page and `edit page` cannot add a locale or a body. Use the **expand-site-language**
+skill / `owner_content_add_site_language` — it fans the language out across every group and post (seeded
+with the default language, noindex until translated) and opens a translation step. That is the only
+correct path; improvising it here will refuse or leave the site broken.
+
 ## When to use which skill
 
 - **A whole new structure** (news/blog/docs/catalogue) → `create group` here, or the

@@ -79,8 +79,24 @@ function checkLanguages(langs, allowed) {
 }
 // Foreign-script artifacts (rule 4б): CJK / Arabic / Hebrew / Devanagari sneaking into en/ru text.
 const FOREIGN = /[　-鿿؀-ۿ֐-׿ऀ-ॿ가-힯]/
+// Broken/replacement characters (a lossy encoding step): U+FFFD/U+FFFC, C0/C1 control chars
+// (except tab/LF/CR) — e.g. a control byte 0x13 left where an accented letter belonged, rendering a
+// box — and UTF-8-read-as-Latin1 mojibake. Codepoint-based; refused in every authoring path.
+function hasBrokenChar(str) {
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i)
+    if (c === 0xFFFD || c === 0xFFFC) return true
+    if (c <= 0x08 || c === 0x0B || c === 0x0C || (c >= 0x0E && c <= 0x1F)) return true
+    if (c >= 0x7F && c <= 0x9F) return true
+    if ((c === 0xC3 || c === 0xC2) && i + 1 < str.length) { const n = str.charCodeAt(i + 1); if (n >= 0x80 && n <= 0xBF) return true }
+  }
+  return false
+}
 function scanForeign(label, text) {
-  if (typeof text === "string" && FOREIGN.test(text)) fail(`foreign-script characters in ${label} (likely a model artifact, rule 4б): ${JSON.stringify(text.slice(0, 60))}`)
+  if (typeof text === "string") {
+    if (FOREIGN.test(text)) fail(`foreign-script characters in ${label} (likely a model artifact, rule 4б): ${JSON.stringify(text.slice(0, 60))}`)
+    if (hasBrokenChar(text)) fail(`broken/replacement character in ${label} (U+FFFD, a control byte, or mojibake — a lossy-encoding artifact; fix the source text): ${JSON.stringify(text.slice(0, 60))}`)
+  }
   else if (Array.isArray(text)) text.forEach((v, i) => scanForeign(`${label}[${i}]`, v))
   else if (text && typeof text === "object") for (const [k, v] of Object.entries(text)) scanForeign(`${label}.${k}`, v)
 }

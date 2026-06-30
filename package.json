@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check:skills": "node scripts/skill-parity-check.mjs"
+    "check:skills": "node scripts/skill-parity-check.mjs",
+    "check:encoding": "node scripts/scan-broken-characters.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

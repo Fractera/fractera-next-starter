@@ -110,6 +110,20 @@ function refuse(axis, detail) {
   process.exit(2)
 }
 
+// Broken/replacement characters from a lossy encoding step (U+FFFD/U+FFFC, C0/C1 control chars
+// except tab/LF/CR — e.g. a 0x13 byte left where an accented letter belonged, rendering a box —
+// and UTF-8-read-as-Latin1 mojibake). Refused so a corrupted label never gets baked into the site.
+function hasBrokenChar(str) {
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i)
+    if (c === 0xFFFD || c === 0xFFFC) return true
+    if (c <= 0x08 || c === 0x0B || c === 0x0C || (c >= 0x0E && c <= 0x1F)) return true
+    if (c >= 0x7F && c <= 0x9F) return true
+    if ((c === 0xC3 || c === 0xC2) && i + 1 < str.length) { const n = str.charCodeAt(i + 1); if (n >= 0x80 && n <= 0xBF) return true }
+  }
+  return false
+}
+
 // The project role vocabulary (mirrors fractera-next-starter/lib/roles.ts ALL_ROLES).
 // Used to VALIDATE --roles and to expand --roles all.
 const ALL_ROLES = ["guest", "user", "architect", "buyer", "vip_user", "subscriber_lite", "subscriber_standard", "subscriber_max", "manager", "senior_manager", "support_manager", "delivery_manager", "finance", "content_editor", "admin"]
@@ -291,6 +305,7 @@ async function main() {
   const samples = Math.max(0, Math.min(10, parseInt(a.samples ?? "2", 10) || 0))
   const labels = { en: a["label-en"] || pascal(tab) }
   for (const l of languages) { const v = a[`label-${l}`]; if (typeof v === "string") labels[l] = v }
+  for (const [l, v] of Object.entries(labels)) if (hasBrokenChar(v)) return refuse("encoding", `the ${l} label ${JSON.stringify(v)} contains a broken/replacement character (U+FFFD, a control byte, or mojibake — a lossy-encoding artifact). Fix the label text and retry; never bake a corrupted label.`)
   const ver = String(a["engine-version"] || prim.engineVersion || registry.engineVersion || "v1").replace(/[^a-z0-9]/gi, "")
   const rolesOn = rolesArg !== "off"
   const requireGuest = rolesArg === "guest"

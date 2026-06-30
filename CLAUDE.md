@@ -201,6 +201,16 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       the separate, non-blocking owner_content_translate_pending runner (no deploy). NEVER add a language by
       hand-editing, by re-composing, or via manage-content-collections / owner_template_update_group — they
       cannot add a per-page locale and will break the site.</action>
+    <action>ENCODING INTEGRITY (any language). A lossy step — voice dictation, copy-paste, a bad transform —
+      can leave a broken/replacement character (a control byte like 0x13, U+FFFD, or mojibake) where an
+      accented letter belonged; the file still parses so it ships SILENTLY and the live page shows a BOX
+      instead of the letter (the real "Documentación" becomes "Documentaci□n"). Tool: `npm run
+      check:encoding` (script `scripts/scan-broken-characters.mjs`) or MCP owner_content_scan_broken_characters
+      — scans EVERY language/file and reports file:line:codepoint:lang. Run it when authoring multilingual
+      content and before closing a content step. Fix each finding BY HAND with the correct letter for its
+      word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
+      emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
+      the tree (detection).</action>
     <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known; language set known</gate>
   </stage>
 

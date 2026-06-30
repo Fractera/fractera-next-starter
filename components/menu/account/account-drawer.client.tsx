@@ -6,6 +6,7 @@ import { User, LogOut, Info } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
@@ -41,12 +42,8 @@ export function AccountDrawer({ side, labels, email, roles }: {
           {/* Middle — future account links/buttons; intentionally empty this step. */}
           <div className="flex-1 overflow-y-auto" />
 
-          {/* Bottom — fixed: sign out + the identity row. */}
+          {/* Bottom — fixed: identity row on top, sign out below; both left-aligned. */}
           <div className="mt-auto border-t border-border p-3 flex flex-col gap-3">
-            <Link href="/api/auth/signout" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-              <LogOut />{labels.signOut}
-            </Link>
-            <Separator />
             <div className="flex items-center gap-2 min-w-0">
               <TooltipProvider>
                 <Tooltip>
@@ -64,6 +61,10 @@ export function AccountDrawer({ side, labels, email, roles }: {
               </TooltipProvider>
               <span className="text-sm text-foreground truncate">{email}</span>
             </div>
+            <Separator />
+            <Link href="/api/auth/signout" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}>
+              <LogOut />{labels.signOut}
+            </Link>
           </div>
         </SheetContent>
       </Sheet>

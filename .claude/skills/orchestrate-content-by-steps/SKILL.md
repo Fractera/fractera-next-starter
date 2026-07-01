@@ -87,12 +87,26 @@ templates, or turning them into a real project / changing something existing?").
 
 - **MCP (every agent):** `owner_content_orchestrate({ action, topic?, tab?, format?, samples?, languages?, dry_run })`.
   Always `dry_run: true` first.
-- **Compound (multi-group) request → one `plan` (step 167):** `owner_content_orchestrate({ plan: [{ tab, format?,
-  samples?, menus?, roles?, languages?, pages? }, …], dry_run })` — the orchestrator flattens it into fine
-  sub-steps (create-section → set-group menus/roles → add-page) and runs them in order, gated. Use this for
-  "several sections with their menu placement and access" instead of many calls. `roles`: `"public"` / a role
-  or csv like `"user"` / `"off"`; `menus`: `{ top|footer|left|right: { enabled, order } }`. An existing page in
-  `pages` is refused (modify = coding scenario).
+- **Compound (multi-group) request → one `plan` + the ORDER SHEET protocol (step 167).**
+  `owner_content_orchestrate({ plan: [{ tab, format?, samples?, menus?, roles?, languages?, pages?,
+  admin, dashboard }, …], owner_lang, dry_run })` — the orchestrator flattens it into fine sub-steps
+  (create-section → add-page(s) → remove-seed → set-group → set-auth) and runs them in order, gated.
+  The confirmation is MECHANICAL — follow this exact protocol:
+  1. **`admin` and `dashboard` are MANDATORY per group.** Missing → the tool returns `needs_input`
+     with the exact question texts: ask the owner VERBATIM (use `explain` verbatim if they ask what
+     it means), set the booleans, dry_run again. Never guess these answers.
+  2. **dry_run returns an `order_sheet`** — RESOLVED human lines, one per group ("news — Visible to:
+     EVERYONE (no login) — Appears in: top menu, footer — …") plus `implied` lines (e.g. auto-enabling
+     the site login). **Show every line to the owner VERBATIM** — never reword them; the resolved
+     values are the truth ("all" resolves to EVERYONE, a role list to a gate). Edits → change `plan[]`
+     → dry_run again (the id changes).
+  3. **On an explicit yes** — call again (no dry_run) with `approve: "<order_sheet.id>"` from THAT
+     dry_run. A run without the matching token is refused — a changed or unconfirmed plan cannot start.
+  4. **As you start — relay `announce_text` verbatim** (it tells the owner the run takes a while and
+     where to watch live progress).
+  `roles`: `"public"`/`"all"`/`"everyone"` all mean visible to everyone (no gate); `"user"` (or a csv)
+  gates to signed-in holders; `"guest"` = public+guest. `menus`: `{ top|footer|left|right: { enabled,
+  order } }`. An existing page in `pages` is refused (modify = coding scenario).
 - **Standalone (lone agent, no MCP)** — run the orchestrator directly (needs DEPLOY_SECRET +
   DATA_SECRET in env, the sanctioned platform exception):
   ```bash

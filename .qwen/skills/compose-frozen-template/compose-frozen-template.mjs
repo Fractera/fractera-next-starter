@@ -331,9 +331,17 @@ async function main() {
   }
   const childrenAsDropdown = a["children-dropdown"] === "true" || a["children-dropdown"] === true
   const groupRoles = rolesOn ? (requireGuest ? "public+guest" : roleList.join("+")) : "public"
+  // step 167: owner-declared admin/dashboard intents (recorded in the manifest only — building
+  // them is a later capability) + companion tools from the PRIMITIVE's descriptor (never asked).
+  const groupAdmin = a.admin === "true" || a.admin === true
+  const groupDashboard = a.dashboard === "true" || a.dashboard === true
+  const groupTools = Array.isArray(prim.tools) ? prim.tools : []
   Object.assign(tok, {
     "{{GROUP_LANGUAGES}}": JSON.stringify(languages),
     "{{GROUP_ROLES}}": JSON.stringify(groupRoles),
+    "{{GROUP_ADMIN}}": String(groupAdmin),
+    "{{GROUP_DASHBOARD}}": String(groupDashboard),
+    "{{GROUP_TOOLS}}": JSON.stringify(groupTools),
     "{{CHILDREN_AS_DROPDOWN}}": String(childrenAsDropdown),
     "{{MENU_TOP_ENABLED}}": String(menus.top.enabled), "{{MENU_TOP_ORDER}}": String(menus.top.order),
     "{{MENU_FOOTER_ENABLED}}": String(menus.footer.enabled), "{{MENU_FOOTER_ORDER}}": String(menus.footer.order),

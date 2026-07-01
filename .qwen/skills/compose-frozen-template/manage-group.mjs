@@ -51,6 +51,11 @@ function parseManifest(src) {
   const langs = src.match(/languages:\s*(\[[^\]]*\])/); if (langs) { try { m.languages = JSON.parse(langs[1]) } catch { m.languages = [] } }
   const roles = src.match(/roles:\s*"([^"]*)"/); if (roles) m.roles = roles[1]
   const cad = src.match(/childrenAsDropdown:\s*(true|false)/); if (cad) m.childrenAsDropdown = cad[1] === "true"
+  // step 167 declarations — parse defensively (pre-167 manifests lack them) so a rewrite never drops them
+  const adm = src.match(/admin:\s*(true|false)/); m.admin = adm ? adm[1] === "true" : false
+  const dsh = src.match(/dashboard:\s*(true|false)/); m.dashboard = dsh ? dsh[1] === "true" : false
+  const tls = src.match(/tools:\s*(\[[^\]]*\])/); m.tools = []
+  if (tls) { try { m.tools = JSON.parse(tls[1].replace(/'/g, '"')) } catch { /* keep [] */ } }
   const ver = src.match(/@\/lib\/content-([a-z0-9]+)\/group-manifest/); m.ver = ver ? ver[1] : "v1"
   m.menus = {}
   for (const s of MENU_SLOTS) {
@@ -60,7 +65,7 @@ function parseManifest(src) {
   }
   return m
 }
-function renderManifest({ slug, languages, roles, childrenAsDropdown, menus }, ver) {
+function renderManifest({ slug, languages, roles, childrenAsDropdown, menus, admin, dashboard, tools }, ver) {
   const slot = s => `{ enabled: ${menus[s].enabled}, order: ${menus[s].order} }`
   return `import type { GroupManifest } from '@/lib/content-${ver}/group-manifest'
 
@@ -79,6 +84,9 @@ export const group: GroupManifest = {
     left:   ${slot("left")},
     right:  ${slot("right")},
   },
+  admin: ${!!admin},
+  dashboard: ${!!dashboard},
+  tools: ${JSON.stringify(Array.isArray(tools) ? tools : [])},
 }
 `
 }
@@ -183,8 +191,8 @@ async function updateGroup(outRoot, a) {
   const gPath = join(tabDir, "_data", "group.ts")
   let cur, ver = "v1"
   if (await exists(gPath)) { cur = parseManifest(await readFile(gPath, "utf8")); ver = cur.ver }
-  else { const env = await deriveEnvelope(tabDir); cur = { slug: tab, languages: env.languages, roles: env.roles, childrenAsDropdown: false, menus: Object.fromEntries(MENU_SLOTS.map(s => [s, { enabled: false, order: 10 }])) } }
-  const next = { slug: cur.slug || tab, languages: [...cur.languages], roles: cur.roles, childrenAsDropdown: cur.childrenAsDropdown, menus: JSON.parse(JSON.stringify(cur.menus)) }
+  else { const env = await deriveEnvelope(tabDir); cur = { slug: tab, languages: env.languages, roles: env.roles, childrenAsDropdown: false, menus: Object.fromEntries(MENU_SLOTS.map(s => [s, { enabled: false, order: 10 }])), admin: false, dashboard: false, tools: [] } }
+  const next = { slug: cur.slug || tab, languages: [...cur.languages], roles: cur.roles, childrenAsDropdown: cur.childrenAsDropdown, menus: JSON.parse(JSON.stringify(cur.menus)), admin: !!cur.admin, dashboard: !!cur.dashboard, tools: Array.isArray(cur.tools) ? [...cur.tools] : [] }
   const enLabel = labelFrom(await readFile(join(tabDir, "_data", "en.ts"), "utf8").catch(() => ""))
 
   // (4) languages — add/remove UI chrome partials + index, within the slot's declared set
@@ -236,6 +244,11 @@ async function updateGroup(outRoot, a) {
   // (7) children-as-dropdown
   if (a["children-dropdown"] !== undefined) next.childrenAsDropdown = a["children-dropdown"] === "true" || a["children-dropdown"] === true
 
+  // (8) admin / dashboard declarations (step 167) — owner intent flags, recorded only (building
+  // them is a later capability). tools is NOT hand-editable: it comes from the primitive's descriptor.
+  if (a.admin !== undefined) next.admin = a.admin === "true" || a.admin === true
+  if (a.dashboard !== undefined) next.dashboard = a.dashboard === "true" || a.dashboard === true
+
   // (2) slug — rename the group folder (do this LAST: it moves the manifest target)
   let renamedTo = null
   if (typeof a.slug === "string" && a.slug !== tab) {
@@ -254,7 +267,7 @@ async function updateGroup(outRoot, a) {
   // write the manifest (always — single source the menu reads). Creates it if a pre-158 group lacked one.
   const finalGroupPath = join("app", "[lang]", renamedTo || (typeof a.slug === "string" ? next.slug : tab), "_data", "group.ts")
   const manifestBody = renderManifest(next, ver)
-  if (dry) { plan.write.push(finalGroupPath); plan.result = next; out({ ok: true, dryRun: true, plan, confirm_prompt: `Правильно ли я понимаю: обновить группу «${tab}» (${[a.slug && a.slug !== tab ? "путь→" + a.slug : "", a.roles ? "роль→" + next.roles : "", a.languages ? "языки→" + next.languages.join(",") : "", a.menus ? "меню" : "", a["children-dropdown"] !== undefined ? "dropdown→" + next.childrenAsDropdown : ""].filter(Boolean).join(", ") || "без изменений"})? Повторите без dry_run для подтверждения.` }); return }
+  if (dry) { plan.write.push(finalGroupPath); plan.result = next; out({ ok: true, dryRun: true, plan, confirm_prompt: `Правильно ли я понимаю: обновить группу «${tab}» (${[a.slug && a.slug !== tab ? "путь→" + a.slug : "", a.roles ? "роль→" + next.roles : "", a.languages ? "языки→" + next.languages.join(",") : "", a.menus ? "меню" : "", a["children-dropdown"] !== undefined ? "dropdown→" + next.childrenAsDropdown : "", a.admin !== undefined ? "админ-панель→" + (next.admin ? "да" : "нет") : "", a.dashboard !== undefined ? "дашборды→" + (next.dashboard ? "да" : "нет") : ""].filter(Boolean).join(", ") || "без изменений"})? Повторите без dry_run для подтверждения.` }); return }
   await mkdir(dirname(join(outRoot, finalGroupPath)), { recursive: true })
   await writeFile(join(outRoot, finalGroupPath), manifestBody, "utf8")
   out({ ok: true, op: "update", tab, manifest: next, manifest_path: finalGroupPath, next: "REBUILD the slot (owner_deploy_rebuild_slot) so the change is live." })

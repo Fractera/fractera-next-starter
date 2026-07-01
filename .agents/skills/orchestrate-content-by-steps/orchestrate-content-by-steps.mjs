@@ -23,10 +23,13 @@
 //     [--public-url <base>] [--platform hermes] [--model <id>] [--dry-run]
 //   Compound FLAT plan (step 167) — a whole multi-group frozen request in one intent:
 //   node orchestrate-content-by-steps.mjs --out <root> --store <frozen-templates> \
-//     --plan '[{"tab":"news","format":"news","samples":2,"menus":{"top":{"enabled":true,"order":1},"footer":{"enabled":true,"order":1}},"roles":"public"},
-//             {"tab":"documentation","format":"document","samples":2,"menus":{"left":{"enabled":true,"order":1},"top":{"enabled":true,"order":2}},"roles":"user"}]' [--dry-run]
-//   Each group → flat sub-steps create-section → set-group(menus/roles) → add-page(s); operation gate
-//   refuses an existing page (modify = coding scenario). Same env secrets as above.
+//     --plan '[{"tab":"news","menus":{"top":{"enabled":true,"order":1}},"roles":"public","pages":["We added apples"],"admin":false,"dashboard":false}, …]' \
+//     [--owner-lang en|ru] [--dry-run] [--approve os-<token>]
+//   Each group → flat sub-steps create-section(+seed) → add-page(s) → remove-seed → set-group → set-auth.
+//   ORDER SHEET protocol: admin/dashboard are MANDATORY per group (absent → needs_input with the exact
+//   question texts to relay); dry_run returns order_sheet (resolved human lines + implied + announce_text
+//   + the approve token); a real run REQUIRES approve=<that token> — an unshown/changed plan cannot start.
+//   Operation gate refuses an existing page (modify = coding scenario). Same env secrets as above.
 //   Secrets via env: DEPLOY_SECRET (admin :3002), DATA_SECRET (data :3300).
 //
 // Self-sufficient: the MCP bridge spawns this with secrets in env; a lone CLI agent runs it
@@ -36,7 +39,7 @@ import { mkdir, writeFile, readFile, readdir, rename, stat } from "node:fs/promi
 import { join, resolve, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { spawn } from "node:child_process"
-import { randomUUID } from "node:crypto"
+import { randomUUID, createHash } from "node:crypto"
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SKILLS = join(HERE, "..")
@@ -144,6 +147,8 @@ async function execCreateSection(outRoot, opts) {
   const composer = join(SKILLS, "compose-frozen-template", "compose-frozen-template.mjs")
   const args = [composer, "--store", opts.store, "--out", outRoot, "--tab", opts.tab, "--source", "files", "--depth", "1", "--rendering", "static", "--format", opts.format, "--samples", String(opts.samples)]
   if (opts.languages) args.push("--languages", opts.languages)
+  if (opts.admin !== undefined) args.push("--admin", String(!!opts.admin))
+  if (opts.dashboard !== undefined) args.push("--dashboard", String(!!opts.dashboard))
   return spawnP(process.execPath, args, { cwd: outRoot })
 }
 async function execAddPage(outRoot, opts) {
@@ -166,17 +171,23 @@ async function execSetGroup(outRoot, opts) {
   if (opts.menus) args.push("--menus", JSON.stringify(opts.menus))
   if (typeof opts.roles === "string" && opts.roles) args.push("--roles", opts.roles)
   if (opts.childrenDropdown !== undefined) args.push("--children-dropdown", String(!!opts.childrenDropdown))
+  if (opts.admin !== undefined) args.push("--admin", String(!!opts.admin))
+  if (opts.dashboard !== undefined) args.push("--dashboard", String(!!opts.dashboard))
   return spawnP(process.execPath, args, { cwd: outRoot })
 }
 // Operation gate (step 167): a page that ALREADY exists is a MODIFY, not a create — REAL-DEVELOPMENT
 // (coding agents), refused by the frozen pipeline.
 const pageExists = (outRoot, tab, slug) => isDir(join(outRoot, "app", "[lang]", tab, slug))
-// manage-group --roles vocabulary: off|guest|all|<csv>. Plan may say "public" (→ off) or an array.
+// manage-group --roles vocabulary: off|guest|<csv>. Plan may say "public" or an array.
+// BUG-1 fix (step 167 E2E): a model saying "all"/"everyone"/"для всех" MEANS "visible to everyone"
+// = public (no gate). The old reading (all = every named role) EXCLUDED guests — the exact bug that
+// hid news/blog from signed-out visitors. A caller genuinely wanting an every-role gate lists the csv.
 function normalizeRoles(roles) {
   if (roles === undefined || roles === null) return undefined
   if (Array.isArray(roles)) return roles.map(String).join(",")
-  const r = String(roles).trim()
-  return r === "" || r === "public" ? "off" : r
+  const r = String(roles).trim().toLowerCase()
+  if (["", "public", "all", "everyone", "any", "*", "для всех", "всем", "все"].includes(r)) return "off"
+  return String(roles).trim()
 }
 // A group is GATED (needs a login affordance) when it restricts to a real role — anything but off/public.
 const isGated = roles => roles !== undefined && roles !== "off"
@@ -242,6 +253,55 @@ async function reportBlocker(outRoot, a) {
   console.log(JSON.stringify({ ok: true, reportedBlocker: true, step: n, stepFile: opened.rel, message: `Recorded blocker as development step ${pad(n)}. Ask the owner to activate a coding agent to finish it.` }))
 }
 
+// ── ORDER SHEET (наряд-заказ) — the mechanical confirmation layer (step 167) ──
+// The dry-run returns RESOLVED, human-readable lines the model must relay VERBATIM (it never
+// words the confirmation itself — the weak-model lesson: recite ≠ execute). The real run then
+// requires approve:"os-<sha256(normalized plan)>" — a plan that changed, or was never shown,
+// mechanically cannot start. Labels/questions come from the store registry's `confirm` block
+// (template-descriptor-driven — scales to any future template); a lone CLI without a store
+// falls back to the identical built-in copy.
+const CONFIRM_FALLBACK = {
+  labels: {
+    en: { visibility: "Visible to", public: "EVERYONE (no login)", publicGuest: "everyone (guests get an account on first action)", rolesOnly: "ONLY signed-in with role(s)", menus: "Appears in", menuNames: { top: "top menu", footer: "footer", left: "left drawer", right: "right drawer" }, nowhere: "NOWHERE (no menu enabled!)", languages: "Languages", pages: "Pages", stubs: "test stub posts", admin: "Admin panel", dashboard: "User dashboards", tools: "Auto-included tools", yes: "yes", no: "no" },
+    ru: { visibility: "Кому видно", public: "ВСЕМ (без входа)", publicGuest: "всем (гость получает аккаунт при первом действии)", rolesOnly: "ТОЛЬКО вошедшим с ролью", menus: "Появляется в", menuNames: { top: "верхнее меню", footer: "футер", left: "левый ящик", right: "правый ящик" }, nowhere: "НИГДЕ (ни одно меню не включено!)", languages: "Языки", pages: "Страницы", stubs: "тестовых заглушек", admin: "Админ-панель", dashboard: "Пользовательские дашборды", tools: "Автоматически подключается", yes: "да", no: "нет" },
+  },
+  questions: {
+    admin: { en: "Do you plan an ADMIN PANEL for this group of pages (a private, admin-role page for managing its content)? Answer yes/no.", ru: "Предполагаете ли вы АДМИНИСТРАТИВНУЮ ПАНЕЛЬ для этой группы страниц (закрытая страница с ролью администратора для управления её содержимым)? Ответьте да/нет." },
+    dashboard: { en: "Do you plan USER DASHBOARDS for this group of pages (a personal dynamic dashboard/[userId] page per user)? Answer yes/no.", ru: "Предполагаете ли вы ПОЛЬЗОВАТЕЛЬСКИЕ ДАШБОРДЫ для этой группы страниц (персональная динамическая страница dashboard/[userId] для каждого пользователя)? Ответьте да/нет." },
+  },
+  explain: {
+    admin: { en: "An admin panel is a private, role-gated page where the owner/manager maintains this group's content (for a store — its assortment). Building it is a separate later capability; right now the answer is only RECORDED in the group manifest.", ru: "Админ-панель — закрытая страница (роль администратора), где владелец/менеджер управляет содержимым этой группы (у магазина — ассортиментом). Само создание — отдельная будущая разработка; сейчас ответ только ЗАПИСЫВАЕТСЯ в манифест группы." },
+    dashboard: { en: "User dashboards are a dynamic dashboard/[userId]/ layer — a personal page per user for this group. Building it is a separate later capability; the answer is only RECORDED now.", ru: "Пользовательские дашборды — динамический слой dashboard/[userId]/: персональная страница каждого пользователя для этой группы. Само создание — отдельная будущая разработка; сейчас ответ только ЗАПИСЫВАЕТСЯ." },
+  },
+}
+async function loadConfirm(store) {
+  if (store) { try { const r = JSON.parse(await readFile(join(store, "registry.json"), "utf8")); if (r.confirm?.labels) return r.confirm } catch { /* fallback */ } }
+  return CONFIRM_FALLBACK
+}
+const pickLang = l => (l === "ru" ? "ru" : "en")
+function orderSheetId(norm) { return "os-" + createHash("sha256").update(JSON.stringify(norm)).digest("hex").slice(0, 16) }
+// One resolved human line per group — rendered by THIS tool from normalized values, never by the model.
+function renderOrderLine(L, n) {
+  const vis = n.roles === "off" ? L.public : (n.roles === "guest" ? L.publicGuest : `${L.rolesOnly}: ${n.roles}`)
+  const menusOn = Object.entries(n.menus || {}).filter(([, v]) => v && v.enabled).map(([s]) => L.menuNames[s] || s)
+  const parts = [
+    `${n.tab}`,
+    `${L.visibility}: ${vis}`,
+    `${L.menus}: ${menusOn.length ? menusOn.join(", ") : L.nowhere}`,
+    `${L.languages}: ${n.languages.length ? n.languages.join(", ") : "(slot default)"}`,
+    n.pages.length ? `${L.pages}: ${n.pages.join(", ")}` : `${n.samples} ${L.stubs}`,
+    `${L.admin}: ${n.admin ? L.yes : L.no} · ${L.dashboard}: ${n.dashboard ? L.yes : L.no}`,
+  ]
+  if (n.tools.length) parts.push(`${L.tools}: ${n.tools.join(", ")}`)
+  return parts.join(" — ")
+}
+function announceText(lang, base) {
+  const arch = `${base || ""}/architecture`, steps = `${base || ""}/development-steps`
+  return lang === "ru"
+    ? `Ухожу в разработку — она завершится публикацией и может занять время; активность в этом чате будет скрыта. Следите за прогрессом в реальном времени: ${arch} и ${steps}.`
+    : `I'm going into development now — it finishes by publishing and may take a while; activity in this chat will be hidden meanwhile. Watch live progress: ${arch} and ${steps}.`
+}
+
 // ── COMPOUND FLAT PLAN — multi-group frozen assembly (step 167) ───────────────
 // A whole complex frozen request in one intent: an array of group specs, each with its own
 // menu placement / access tier / languages. Decomposed FLAT (no recursion) into the finest
@@ -265,10 +325,15 @@ async function runPlan(outRoot, a) {
   const pageUrl = (tab, slug) => `${publicBase || ""}/en/${tab}${slug ? "/" + slug : ""}`
   const store = a.store
   const authSide = ["left", "right"].includes(a["auth-side"]) ? a["auth-side"] : "left"
+  const ownerLang = pickLang(a["owner-lang"])
+  const confirm = await loadConfirm(store)
+  const L = confirm.labels[ownerLang] || confirm.labels.en
   let anyGated = false
 
-  // BUILD the flat sub-step list across every group (deterministic, by state).
-  const subs = []
+  // BUILD the flat sub-step list across every group (deterministic, by state), collecting the
+  // NORMALIZED per-group record (feeds the order sheet + the approve hash) and any missing
+  // MANDATORY answers (admin/dashboard — the owner must decide per group; needs_input below).
+  const subs = [], norm = [], missing = []
   for (const g of groups) {
     const tab = String(g.tab || "")
     if (!/^[a-z][a-z0-9-]*$/.test(tab)) throw new Error(`group.tab must be kebab-case: ${JSON.stringify(g.tab)}`)
@@ -292,6 +357,19 @@ async function runPlan(outRoot, a) {
     const explicitSamples = g.samples !== undefined
     const samples = explicitSamples ? Math.max(0, Math.min(10, parseInt(g.samples, 10) || 0)) : (pagesList.length ? 0 : 2)
 
+    // resolve access + the MANDATORY owner decisions (step 167). admin/dashboard have no default:
+    // absent → the run cannot proceed; needs_input returns the exact question texts to relay.
+    const roles = normalizeRoles(g.roles) ?? "off"
+    if (isGated(roles)) anyGated = true
+    if (typeof g.admin !== "boolean") missing.push({ tab, field: "admin", question: (confirm.questions.admin || {})[ownerLang] || CONFIRM_FALLBACK.questions.admin[ownerLang], explain: (confirm.explain.admin || {})[ownerLang] || CONFIRM_FALLBACK.explain.admin[ownerLang] })
+    if (typeof g.dashboard !== "boolean") missing.push({ tab, field: "dashboard", question: (confirm.questions.dashboard || {})[ownerLang] || CONFIRM_FALLBACK.questions.dashboard[ownerLang], explain: (confirm.explain.dashboard || {})[ownerLang] || CONFIRM_FALLBACK.explain.dashboard[ownerLang] })
+
+    // normalized record — feeds the order sheet AND the approve hash (fixed key order = stable hash)
+    const menusNorm = {}
+    for (const s of ["top", "footer", "left", "right"]) { const m = g.menus && g.menus[s]; menusNorm[s] = { enabled: !!(m && m.enabled), order: m && Number.isFinite(m.order) ? Math.trunc(m.order) : 10 } }
+    const toolsNorm = [] // filled from the primitive's descriptor at compose time; echoed for future descriptor-driven templates
+    norm.push({ tab, format, roles, languages: languagesCsv ? languagesCsv.split(",") : [], pages: pagesList, samples, menus: menusNorm, admin: g.admin === true, dashboard: g.dashboard === true, tools: toolsNorm, sectionExists })
+
     // create-section (only if the section is missing). SEED: add-page clones a SIBLING stub, so a section
     // with named pages but 0 samples needs one throwaway seed (sample-1) to clone from — removed afterwards.
     let seedSlug = null
@@ -302,7 +380,7 @@ async function runPlan(outRoot, a) {
       if (seedNeeded) seedSlug = "sample-1"
       subs.push({ kind: "create-section", tab, name: `Create ${tab} section`,
         description: `Compose the ${tab} section (${format}, ${createSamples} stub post${createSamples === 1 ? "" : "s"}${seedNeeded ? " — seed for cloning the named pages" : ""}) via the Frozen Template Constructor.`,
-        pageUrl: pageUrl(tab, ""), execute: () => execCreateSection(outRoot, { store, tab, format, samples: createSamples, languages: languagesCsv || undefined }) })
+        pageUrl: pageUrl(tab, ""), execute: () => execCreateSection(outRoot, { store, tab, format, samples: createSamples, languages: languagesCsv || undefined, admin: g.admin === true, dashboard: g.dashboard === true }) })
     }
     // named pages — clone the frozen stub under each English identifier (one post spans all languages, step 166).
     for (const slug of pagesList) {
@@ -316,14 +394,11 @@ async function runPlan(outRoot, a) {
         description: `Delete the throwaway seed stub used only to clone the named pages (no leftover sample post).`,
         pageUrl: pageUrl(tab, ""), execute: () => execDeletePage(outRoot, { tab, slug: seedSlug }) })
     }
-    // set-group: menu placement (158) + access tier (roles). Only when the group declares any.
-    const roles = normalizeRoles(g.roles)
-    if (isGated(roles)) anyGated = true
-    if (g.menus || roles !== undefined || g.childrenDropdown !== undefined) {
-      subs.push({ kind: "set-group", tab, name: `Place ${tab} in menus / set access`,
-        description: `Set ${tab} group manifest: ${[g.menus ? "menus" : "", roles !== undefined ? "roles=" + roles : ""].filter(Boolean).join(", ") || "envelope"}.`,
-        pageUrl: pageUrl(tab, ""), execute: () => execSetGroup(outRoot, { tab, menus: g.menus, roles, childrenDropdown: g.childrenDropdown }) })
-    }
+    // set-group: menu placement (158) + access tier (roles) + owner declarations. Runs for every
+    // group in the plan (the manifest is the order sheet's single source of truth on the slot).
+    subs.push({ kind: "set-group", tab, name: `Place ${tab} in menus / set access`,
+      description: `Set ${tab} group manifest: menus, roles=${roles}, admin=${g.admin === true}, dashboard=${g.dashboard === true}.`,
+      pageUrl: pageUrl(tab, ""), execute: () => execSetGroup(outRoot, { tab, menus: menusNorm, roles, childrenDropdown: g.childrenDropdown, admin: g.admin === true, dashboard: g.dashboard === true }) })
   }
   // IMPLIED REQUIREMENT (step 167): any role-gated group needs the app-shell login turned ON, or the visitor
   // can never sign in to reach it. Add ONE set-auth sub-step (build-time env), the last placement sub-step.
@@ -334,11 +409,50 @@ async function runPlan(outRoot, a) {
   }
   if (!subs.length) throw new Error("plan produced no sub-steps (every section exists and no menus/roles/pages given)")
 
-  // DRY-RUN → the whole flat plan, nothing written.
+  // MANDATORY QUESTIONS GATE (step 167): admin/dashboard are the owner's decisions — a plan
+  // missing them cannot even render an order sheet. The tool hands the model the EXACT question
+  // and explanation texts to relay; the model asks, fills the plan fields, calls dry_run again.
+  if (missing.length) {
+    console.log(JSON.stringify({ ok: false, needs_input: true, missing,
+      instruction: "Ask the owner each question VERBATIM (use `explain` if they ask what it is), set the boolean admin/dashboard fields on those plan groups, then call dry_run again." }))
+    return
+  }
+
+  // ORDER SHEET — resolved human lines + implied requirements + the approve token.
+  const publicBaseForText = publicBase || ""
+  const impliedLines = anyGated ? [{
+    kind: "set-auth",
+    text: ownerLang === "ru"
+      ? `Включаю публичный вход на сайте (ящик аккаунта: ${authSide === "left" ? "слева" : "справа"}) — есть группа, закрытая ролями, иначе посетителю некуда войти.`
+      : `Enabling the public site login (account drawer: ${authSide}) — a role-gated group exists, otherwise a visitor could never sign in to reach it.`,
+  }] : []
+  const sheet = {
+    id: orderSheetId(norm),
+    lines: norm.map((n, i) => ({ n: i + 1, tab: n.tab, resolved: n, text: renderOrderLine(L, n) })),
+    implied: impliedLines,
+    announce_text: announceText(ownerLang, publicBaseForText),
+    confirm_instruction: ownerLang === "ru"
+      ? `Покажи владельцу строки наряд-заказа ДОСЛОВНО (по одной на группу + implied). Правки → измени plan[] и повтори dry_run (id сменится). При явном «да» — вызови БЕЗ dry_run с approve:"${orderSheetId(norm)}" и ПЕРЕДАЙ владельцу announce_text дословно.`
+      : `Show the owner the order-sheet lines VERBATIM (one per group + implied). Edits → change plan[] and re-run dry_run (the id changes). On an explicit "yes" — call WITHOUT dry_run with approve:"${orderSheetId(norm)}" and RELAY announce_text to the owner verbatim.`,
+  }
+
+  // DRY-RUN → the order sheet + the whole flat plan, nothing written.
   if (a["dry-run"]) {
-    console.log(JSON.stringify({ ok: true, dryRun: true, mode: "plan", groups: groups.length,
+    console.log(JSON.stringify({ ok: true, dryRun: true, mode: "plan", groups: groups.length, order_sheet: sheet,
       plan: subs.map(s => ({ kind: s.kind, tab: s.tab, name: s.name, pageUrl: s.pageUrl })),
       note: "FLAT pipeline: each sub-step runs open→execute→deploy→RECORD(GATE)→close, in order; stop at first failure. No recursion." }))
+    return
+  }
+
+  // 🔒 APPROVE TOKEN — the mechanical confirmation bond. A real run REQUIRES the token of the
+  // exact order sheet the owner saw; a changed plan (different hash) or a skipped confirmation
+  // cannot start. This is what makes "show first, then run" physics, not model goodwill.
+  if (a.approve !== sheet.id) {
+    // NEVER leak the expected token here — it is only issued by dry_run, TOGETHER with the order
+    // sheet lines the model must show. Leaking it in the refusal would let a model "approve"
+    // without ever rendering the sheet.
+    console.log(JSON.stringify({ ok: false, gate: "approve", expected_flow: "call with dry_run:true first → show the returned order_sheet lines to the owner verbatim → owner says yes → call again with the approve token from that same dry_run response",
+      detail: a.approve ? `approve token mismatch (the plan changed since it was confirmed — re-run dry_run, re-show, re-confirm)` : `missing approve token (the order sheet was never confirmed)` }))
     return
   }
 
@@ -349,7 +463,7 @@ async function runPlan(outRoot, a) {
     results.push({ ...r, kind: sub.kind })
     if (!r.ok) { console.log(JSON.stringify({ ok: false, mode: "plan", failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, chronology: log, results })); process.exit(3) }
   }
-  console.log(JSON.stringify({ ok: true, mode: "plan", groups: groups.length,
+  console.log(JSON.stringify({ ok: true, mode: "plan", groups: groups.length, order_sheet_id: sheet.id,
     steps: results.map(r => ({ step: r.step, kind: r.kind, deploymentId: r.deploymentId, pageUrl: r.pageUrl, doneRel: r.doneRel })), chronology: log }))
 }
 

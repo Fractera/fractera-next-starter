@@ -28,7 +28,7 @@ export function AccountButton({ lang, side, labels }: { lang: string; side: Auth
   }, []);
 
   if (me && me.userId) {
-    return <AccountDrawer side={side} labels={labels} email={me.email} roles={me.roles} />;
+    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} />;
   }
 
   return (

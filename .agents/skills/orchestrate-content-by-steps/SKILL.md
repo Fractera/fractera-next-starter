@@ -31,12 +31,31 @@ Calling `compose` / `create-page` directly, by hand, is what caused the failure:
 "create section + 3 pages + rebuild" in one chaotic burst and crashed. The fix is to **freeze
 the process**, not just the templates. You stop orchestrating; the pipeline does.
 
+## Which scenario is this? (decide FIRST)
+
+This skill runs the **FROZEN-ASSEMBLY** scenario only: a FLAT, MCP-only pipeline that stands up **new**
+structural stubs from frozen templates. It is NOT the coding pipeline. Confirm the vector before using it:
+- **CREATE-new** stubs (a section that does not exist yet, a new page/stub in a group) → FROZEN — use this.
+- **MODIFY an existing page** or **author real/custom content** (fill a stub with real prose) → that is
+  **REAL-DEVELOPMENT** (coding agents), NOT this skill. Refuse and route it out (a coding agent, or from
+  Hermes `owner_report_blocker_step`); the stub executors already refuse a real body.
+
+The border is the OPERATION, not a time-phase: create-new stub = FROZEN; modify-existing / real content =
+REAL-DEV. If the owner's vector is not explicit, ask ONE question first ("a quick prototype from frozen
+templates, or turning them into a real project / changing something existing?"). Full rule:
+`CRUD-DOCS/workspace-standards/task-scenario-router.md`.
+
 ## The mental model
 
 - **You pass an INTENT, not a plan:**
   - `action: 'add-page'` + `topic` → one page about a topic (e.g. `topic: apple`).
   - `action: 'create-section'` (+ `samples: N`) → a new section / N test posts.
   - optional `tab` (default `news`), `format`, `languages`.
+- **`topic` is ONE language-agnostic concept, named in English.** One `add-page` produces ONE post
+  spanning ALL the slot's languages (the stub carries every language cell). NEVER issue one add-page
+  per language, and NEVER pass a translated title as a topic — a Spanish title would slugify into a
+  second post. Translating an existing post is a SEPARATE path (`owner_content_translate_pending`),
+  not another add-page.
 - **The orchestrator DECOMPOSES by STATE — you do not.** Asked for a page about Apple and the
   news section does not exist? It runs **two** sub-steps: (A) create the section, (B) add the
   page. Section already exists? Just (B). This is deterministic — it checks the slot, it does
@@ -68,12 +87,26 @@ the process**, not just the templates. You stop orchestrating; the pipeline does
 
 - **MCP (every agent):** `owner_content_orchestrate({ action, topic?, tab?, format?, samples?, languages?, dry_run })`.
   Always `dry_run: true` first.
+- **Compound (multi-group) request → one `plan` (step 167):** `owner_content_orchestrate({ plan: [{ tab, format?,
+  samples?, menus?, roles?, languages?, pages? }, …], dry_run })` — the orchestrator flattens it into fine
+  sub-steps (create-section → set-group menus/roles → add-page) and runs them in order, gated. Use this for
+  "several sections with their menu placement and access" instead of many calls. `roles`: `"public"` / a role
+  or csv like `"user"` / `"off"`; `menus`: `{ top|footer|left|right: { enabled, order } }`. An existing page in
+  `pages` is refused (modify = coding scenario).
 - **Standalone (lone agent, no MCP)** — run the orchestrator directly (needs DEPLOY_SECRET +
   DATA_SECRET in env, the sanctioned platform exception):
   ```bash
   node .agents/skills/orchestrate-content-by-steps/orchestrate-content-by-steps.mjs \
     --out . --action add-page --topic apple --tab news --store <frozen-templates-dir> --dry-run
   ```
+
+## Announce the long run (before running, after approval)
+
+A compound `plan` runs many sub-steps, each with a deploy — it takes a while and the chat goes quiet. Once the
+owner approves the plan, tell them plainly (their language): you are going into development, it finishes by
+deploying and may take a while, chat activity will be hidden meanwhile, and they can watch it live at
+`https://<domain>/architecture` and `https://<domain>/development-steps` (or `http://<IP>:<port>` in IP mode).
+Those realtime pages pulse each node as sub-steps open/deploy/close — the progress view while the chat is silent.
 
 ## What it reuses (does not reinvent)
 

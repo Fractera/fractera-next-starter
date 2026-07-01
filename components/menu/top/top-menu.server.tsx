@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups, slotHasGroups } from "@/lib/menu/group-menus";
-import { MenuDropdown } from "@/components/menu/shared/menu-dropdown.client";
+import { DesktopNav } from "@/components/menu/top/desktop-nav.client";
 import { MobileMenu } from "@/components/menu/top/mobile-menu.client";
 import { AccountButton } from "@/components/menu/account/account-button.client";
 import { appShellAuthSide } from "@/components/menu/account/account-config";
@@ -51,16 +51,7 @@ export function TopMenu({ lang }: { lang: string }) {
             <span className="text-sm font-semibold tracking-tight text-foreground">{cfg.short_name}</span>
           </Link>
 
-          {groups.length > 0 && (
-            <>
-              <span className="hidden min-[780px]:block h-5 w-px bg-border" aria-hidden />
-              <nav className="hidden min-[780px]:flex items-center gap-3 flex-wrap">
-                {groups.map((g) => (
-                  <MenuDropdown key={g.slug} lang={lang} slug={g.slug} label={g.label} items={g.children} asDropdown={g.childrenAsDropdown} />
-                ))}
-              </nav>
-            </>
-          )}
+          {groups.length > 0 && <DesktopNav lang={lang} groups={groups} />}
         </div>
 
         <div className="flex items-center gap-2 shrink-0">

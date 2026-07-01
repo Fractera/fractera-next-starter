@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useVisibleGroups } from "@/components/menu/shared/use-visible-groups.client";
 import type { MenuGroup } from "@/lib/menu/group-menus";
 
 // Mobile collapse of the TOP nav (step 160), mirroring FES site-header: below 780px the
@@ -12,7 +13,8 @@ import type { MenuGroup } from "@/lib/menu/group-menus";
 // shadcn Button + lucide Menu/X icons (no inline SVG).
 export function MobileMenu({ lang, groups, label }: { lang: string; groups: MenuGroup[]; label: string }) {
   const [open, setOpen] = useState(false);
-  if (groups.length === 0) return null;
+  const visible = useVisibleGroups(groups);
+  if (visible.length === 0) return null;
 
   return (
     <div className="min-[780px]:hidden">
@@ -23,7 +25,7 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
       {open && (
         <nav className="absolute left-0 right-0 top-14 z-50 border-t border-border bg-background/95 backdrop-blur-sm">
           <div className="flex flex-col px-6 py-2">
-            {groups.map((g) => (
+            {visible.map((g) => (
               <div key={g.slug} className="flex flex-col">
                 <Link
                   href={`/${lang}/${g.slug}`}

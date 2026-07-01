@@ -58,6 +58,19 @@ The per-tab plumbing already exists once in the tab folder and is reused by ever
   (`StandardContentPage`, `PostBody`). A new tab = one line in `lib/parser-fs.mjs`
   `COLLECTIONS` with `typeModule: './_lib/post'`.
 
+## 🔒 One post spans ALL languages — the slug is a language-agnostic identifier
+
+A content item is **ONE post that spans every language**, never one post per language. Its
+`<slug>` is a **stable, language-agnostic identifier chosen ONCE from the base (English) title**
+and reused for every language: `/en/<tab>/<slug>` and `/es/<tab>/<slug>` share the SAME `<slug>` —
+only the language prefix differs. A translation is a `<lang>.ts` cell in the SAME folder — **never
+a second post**. Therefore:
+- **Never slugify a translated title** (a Spanish title must NOT become a second `hemos-…` post).
+- **Never create a post once per language** — one create yields all language cells at once.
+- Creation is always keyed by the **English identifier**; translating is a SEPARATE path (the
+  `expand-site-language` / `owner_content_translate_pending` runner) that writes INTO the cell, it
+  does not create a post.
+
 ## The five rules (do not skip)
 
 1. **`en` is the full base, required.** Every other language is a partial override; any key
@@ -69,9 +82,11 @@ The per-tab plumbing already exists once in the tab folder and is reused by ever
    not a ternary in `_components`.
 4. **Dates via `toLocaleDateString(lang, …)`** — pass `lang` straight through; never map
    `'ru' → 'ru-RU'` by hand.
-5. **SEO/GEO per language.** Each language gets its own URL + `hreflang`, its own SEO surface
-   (title/description/keywords), presented from its own angle (not a word-for-word copy). If
-   the project keeps `llms.txt` / `llms-full.txt` / sitemap, update them in the same change.
+5. **SEO/GEO per language — SAME slug, different prefix.** Every language is served at the SAME
+   `<slug>` under its language prefix (`/en/<slug>`, `/es/<slug>`) with correct `hreflang`; each
+   gets its own SEO surface (title/description/keywords) from its own angle (not a word-for-word
+   copy). This is NEVER a separate post or a translated slug. If the project keeps `llms.txt` /
+   `llms-full.txt` / sitemap, update them in the same change.
 
 ## Confirm before creating (mandatory)
 

@@ -179,9 +179,20 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <law id="realtime-pages">/architecture, /development-steps, /ai-draft-settings, /patterns poll the
     filesystem and highlight (pulse/blink) changed nodes; the architect sees you complete/create sub-steps
     in real time. Every on-disk action = a visible event.</law>
+  <law id="announce-long-run">Before starting a long multi-step run that ends in deploy(s), TELL the owner
+    plainly (their language): you are going into development, it may take a while, chat activity will be hidden
+    meanwhile, and they can watch progress live at https://&lt;domain&gt;/architecture and
+    https://&lt;domain&gt;/development-steps (or http://&lt;IP&gt;:&lt;port&gt; in IP mode). Those realtime pages
+    (see realtime-pages) are the progress view while the chat is silent.</law>
   <law id="multi-cycle">A task may not fit in one cycle — normal. If sub-steps don't resolve it, create one
     or more new steps (with descriptions) for the next session instead of forcing it. One request usually
     spawns 2-3 new steps and/or a dozen sub-steps.</law>
+  <law id="scenario-router">Every complex task belongs to ONE of two scenarios, decided BEFORE decomposing.
+    FROZEN-ASSEMBLY = flat, MCP-only, CREATE-new structural stubs from frozen templates (owner_content_orchestrate
+    / Hermes) — NOT hand-coding. REAL-DEVELOPMENT = this recursive coding pipeline — MODIFY an existing page,
+    author real/custom content, build real features. The border is the OPERATION, not a time-phase: create-new
+    stub = FROZEN; modify-existing or real/custom content = REAL-DEV. If the vector is not explicit, ask ONE
+    clarifying question and wait. Full rule: CRUD-DOCS/workspace-standards/task-scenario-router.md.</law>
 
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
@@ -194,6 +205,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       (a request written in Russian does NOT mean the site ships Russian). A language outside the set is
       degraded safely at runtime (the app will not crash — step 149 vaccine) but authoring it wastes work and
       ships dead files; if the owner wants a new language, add it via App Settings FIRST (rebuild), then author.</action>
+    <action>ONE post spans ALL languages (step 166): a content item is ONE post whose slug is a stable,
+      language-agnostic identifier chosen ONCE from the base (English) title and reused for EVERY language
+      (/en/&lt;slug&gt; and /es/&lt;slug&gt; = same slug, only the prefix differs). A translation is a
+      &lt;lang&gt;.ts cell in the SAME folder — NEVER a second post. Never slugify a translated title; never
+      create/add a post once per language (one create yields all language cells at once); translating is the
+      separate owner_content_translate_pending path that writes INTO the cell, it does not create a post.</action>
     <action>Adding a language to an EXISTING site (many pages/sections) is a DEDICATED capability — the
       expand-site-language skill / owner_content_add_site_language: it fans the language across every group
       and post (seeded with the default language so the site is valid instantly, noindex until translated —

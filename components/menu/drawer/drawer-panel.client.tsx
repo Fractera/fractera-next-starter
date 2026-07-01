@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useDrawer } from "@/providers/drawer-provider.client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useVisibleGroups } from "@/components/menu/shared/use-visible-groups.client";
 import type { MenuGroup } from "@/lib/menu/group-menus";
 
 // Left/right drawer panel (step 160, sub-step 3). UI standard: shadcn Sheet (Radix
@@ -20,6 +21,7 @@ export function DrawerPanel({
 }) {
   const { leftOpen, rightOpen, close } = useDrawer();
   const open = side === "left" ? leftOpen : rightOpen;
+  const visible = useVisibleGroups(groups);
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) close(side); }}>
@@ -30,7 +32,7 @@ export function DrawerPanel({
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-0.5 overflow-y-auto p-2">
-          {groups.map((g) => (
+          {visible.map((g) => (
             <div key={g.slug} className="flex flex-col">
               <Link
                 href={`/${lang}/${g.slug}`}

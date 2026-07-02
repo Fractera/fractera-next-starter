@@ -14,6 +14,7 @@ export type FooterLabels = {
   system: string;
   light: string;
   dark: string;
+  social: string;        // aria-label/title for the mobile social-links hamburger
 };
 
 // The two footer headings — all 82 catalogue languages.
@@ -103,10 +104,10 @@ const HEADINGS: Record<string, { footerPages: string; pageSections: string }> = 
 };
 
 // Copyright + theme-toggle labels. Kept at en/es/ru (English fallback) — extend as needed.
-const CHROME: Record<string, { rights: string; system: string; light: string; dark: string }> = {
-  en: { rights: "All rights reserved.", system: "Theme: system", light: "Theme: light", dark: "Theme: dark" },
-  es: { rights: "Todos los derechos reservados.", system: "Tema: sistema", light: "Tema: claro", dark: "Tema: oscuro" },
-  ru: { rights: "Все права защищены.", system: "Тема: системная", light: "Тема: светлая", dark: "Тема: тёмная" },
+const CHROME: Record<string, { rights: string; system: string; light: string; dark: string; social: string }> = {
+  en: { rights: "All rights reserved.", system: "Theme: system", light: "Theme: light", dark: "Theme: dark", social: "Social links" },
+  es: { rights: "Todos los derechos reservados.", system: "Tema: sistema", light: "Tema: claro", dark: "Tema: oscuro", social: "Redes sociales" },
+  ru: { rights: "Все права защищены.", system: "Тема: системная", light: "Тема: светлая", dark: "Тема: тёмная", social: "Соцсети" },
 };
 
 export function footerLabels(lang: string): FooterLabels {

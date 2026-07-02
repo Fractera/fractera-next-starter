@@ -21,6 +21,9 @@ const UI_LABELS: Record<string, { menu: string; openLeft: string; closeLeft: str
   en: { menu: "Menu", openLeft: "Open left menu", closeLeft: "Close left menu", openRight: "Open right menu", closeRight: "Close right menu" },
   es: { menu: "Menú", openLeft: "Abrir menú izquierdo", closeLeft: "Cerrar menú izquierdo", openRight: "Abrir menú derecho", closeRight: "Cerrar menú derecho" },
   ru: { menu: "Меню", openLeft: "Открыть левое меню", closeLeft: "Закрыть левое меню", openRight: "Открыть правое меню", closeRight: "Закрыть правое меню" },
+  hy: { menu: "Մենյու", openLeft: "Բացել ձախ մենյուն", closeLeft: "Փակել ձախ մենյուն", openRight: "Բացել աջ մենյուն", closeRight: "Փակել աջ մենյուն" },
+  fr: { menu: "Menu", openLeft: "Ouvrir le menu gauche", closeLeft: "Fermer le menu gauche", openRight: "Ouvrir le menu droit", closeRight: "Fermer le menu droit" },
+  de: { menu: "Menü", openLeft: "Linkes Menü öffnen", closeLeft: "Linkes Menü schließen", openRight: "Rechtes Menü öffnen", closeRight: "Rechtes Menü schließen" },
 };
 
 export function TopMenu({ lang }: { lang: string }) {
@@ -56,8 +59,10 @@ export function TopMenu({ lang }: { lang: string }) {
 
         <div className="flex items-center gap-2 shrink-0">
           {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} />}
-          {rightHas && <DrawerToggle side="right" labels={{ open: ui.openRight, close: ui.closeRight }} />}
+          {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
+              the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}
+          {rightHas && <DrawerToggle side="right" labels={{ open: ui.openRight, close: ui.closeRight }} />}
         </div>
       </div>
     </header>

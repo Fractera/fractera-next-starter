@@ -30,8 +30,10 @@ export function AccountDrawer({ lang, side, labels, email, roles }: {
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-        <User />{labels.account}
+      {/* Mobile: avatar only (no "My account" text) — the label stays for ≥ sm and
+          as the accessible name at every width. */}
+      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} aria-label={labels.account} title={labels.account}>
+        <User /><span className="hidden sm:inline">{labels.account}</span>
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>

@@ -18,7 +18,8 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // Owns its OWN open state — DrawerProvider is structurally two-sided (left/right) and must not
 // carry a third drawer. UI standard: shadcn Sheet (Radix) + lucide; trigger = shadcn Button
 // (Base UI, no asChild) driving controlled state.
-export function AccountDrawer({ side, labels, email, roles }: {
+export function AccountDrawer({ lang, side, labels, email, roles }: {
+  lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
   email?: string;
@@ -64,7 +65,10 @@ export function AccountDrawer({ side, labels, email, roles }: {
               <span className="text-sm text-foreground truncate">{email}</span>
             </div>
             <Separator />
-            <Link href="/api/auth/signout" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}>
+            {/* Sign out mirrors sign-in (step 169): a RELATIVE /logout link that proxy.ts
+                (AUTH_FORM_PATHS) redirects to the auth service with an absolute redirectUrl
+                back to this site. Never a bare /api/auth/* path — this app has none (404). */}
+            <Link href={`/logout?lang=${lang}`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}>
               <LogOut />{labels.signOut}
             </Link>
           </div>

@@ -17,10 +17,7 @@ import {
 // screen. This guard rescues any such stray link by redirecting to the auth host
 // (a different host, so there is no redirect loop). See
 // reports/errors/relative-auth-path-langprefix-whitescreen.md.
-// /logout (step 169): the account drawer's sign-out is a relative /logout link, routed to the
-// auth service the same way — the auth service clears the session cookie and redirects back
-// here (Job 0 attaches the absolute redirectUrl, since the auth host can't guess this origin).
-const AUTH_FORM_PATHS = new Set(["/login", "/register", "/guest-login", "/logout"]);
+const AUTH_FORM_PATHS = new Set(["/login", "/register", "/guest-login"]);
 
 // ──────────────────────────────────────────────────────────────────────────
 // This proxy does TWO jobs, branched by path:
@@ -198,19 +195,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (AUTH_FORM_PATHS.has(pathname)) {
     const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
     const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-    const search = new URLSearchParams(request.nextUrl.search);
-    // /logout (step 169): the auth service clears the cookie and then must land the visitor
-    // BACK on this site — but it cannot derive this origin (IP mode: different port; secure
-    // mode: different subdomain). Attach the absolute return URL for it, language-aware.
-    if (pathname === "/logout" && !search.has("redirectUrl") && host) {
-      const lang = search.get("lang")
-        ?? request.cookies.get(LOCALE_COOKIE)?.value
-        ?? DEFAULT_LANGUAGE;
-      const backLang = SUPPORTED_LANGUAGES.includes(lang) ? lang : DEFAULT_LANGUAGE;
-      search.set("redirectUrl", `${proto === "https" ? "https" : "http"}://${host}/${backLang}`);
-    }
-    const qs = search.toString();
-    const target = `${authBaseFromHost(host, proto)}${pathname}${qs ? `?${qs}` : ""}`;
+    const target = `${authBaseFromHost(host, proto)}${pathname}${request.nextUrl.search}`;
     return NextResponse.redirect(target);
   }
 

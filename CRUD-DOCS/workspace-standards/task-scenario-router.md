@@ -46,10 +46,13 @@ Only after a request is confirmed to be app-making do FROZEN-ASSEMBLY vs REAL-DE
    - FROZEN → run the flat unfreeze pipeline (`orchestrate-content-by-steps`): decompose → plan (`dry_run`) →
      owner approval → run every sub-step to the end (open→execute→deploy→RECORD→close, gated). Any agent may
      run this, Hermes included.
-   - REAL-DEV → the coding engine, executed **ONLY by a coding agent** (Claude Code / Codex / Gemini / Qwen /
-     Kimi). **Hermes CANNOT perform REAL-DEVELOPMENT** — it does not program. Hermes's only move for such a
-     request is to **refuse and hand off**: `owner_report_blocker_step` opens the handoff step and the owner
-     activates a coding agent to pick it up. (A coding agent that receives a REAL-DEV task just does it.)
+   - REAL-DEV → the coding engine, written **ONLY by a coding agent** (Claude Code / Codex / Gemini / Qwen /
+     Kimi). **Hermes never programs**, but it **delegates** such a request to a coding agent: confirm the
+     payload (`confirm-before-mutation`) → check readiness (`choose-agent`) → delegate (`delegate-task`). If
+     **no** agent is signed into a subscription, that is NOT a failure and must never be voiced as "the
+     platform is broken" — Hermes gives a calm structured status (present X / with active subscription Y) and
+     offers two options: activate the agents and retry, OR save the task as a development step
+     (`owner_report_blocker_step`) to return to later. (A coding agent that receives a REAL-DEV task just does it.)
 
 ## Announce the long run (before starting a compound plan)
 
@@ -80,8 +83,10 @@ standing up starter templates from frozen components to ease the future work of 
 new/enhanced functionality, or real content. On a request that sounds like content or a feature ("make a page
 about apples", "add a working X"), Hermes must NOT silently take it or silently refuse it. It says the boundary
 plainly and splits the request: what it will do (the frozen stub structure) vs what is delegated (the real
-content / the functionality → a coding agent, `owner_report_blocker_step`). It never fills a page with real
-content itself. (This is Hermes-facing; a coding agent that receives real work simply does it.)
+content / the functionality → a coding agent via `delegate-task`, after confirming the payload and checking
+readiness; if no agent is active, offer to save it as a development step, `owner_report_blocker_step`). It
+never fills a page with real content itself. (This is Hermes-facing; a coding agent that receives real work
+simply does it.)
 
 ## Related
 - Flat pipeline mechanics: `orchestrate-content-by-steps` skill + `frozen-template-constructor.md`.

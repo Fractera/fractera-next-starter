@@ -79,27 +79,55 @@ async function nextStepNumber(outRoot) {
 function renderStep(s) {
   const body = [
     `# ${pad(s.number)} — ${s.name}`, "",
-    `> Development step · importance: ${s.importance}` + (s.status === "completed" && s.completedAt ? ` · completed ${s.completedAt}` : ""), "",
+    `> Development step · importance: ${s.importance}` + (s.status === "completed" && s.completedAt ? ` · completed ${s.completedAt}` : "") + (s.status === "in-progress" ? " · in progress" : ""), "",
     s.description || "_No description yet._", "", "## To-do",
     ...(s.tasks.length ? s.tasks.map(t => `- ${t.body}`) : ["_No tasks._"]), "",
   ].join("\n")
-  const machine = { number: s.number, name: s.name, importance: s.importance, status: s.status, completedAt: s.completedAt, description: s.description, tasks: s.tasks }
+  const machine = { number: s.number, name: s.name, importance: s.importance, status: s.status, completedAt: s.completedAt, description: s.description, tasks: s.tasks, ...(s.plan ? { plan: s.plan } : {}) }
   return `${body}\n<!-- fractera:step\n${JSON.stringify(machine)}\n-->\n`
 }
-async function openStep(outRoot, number, name, description) {
+// `plan` (step 172) — the persisted machine spec tying the file to its order sheet:
+// { sheet, seq, total, kind, tab, pageUrl, args }. args carries EVERYTHING execute needs, so a
+// COLD session can rebuild the runnable queue from the files alone (see execFor / scanPlanSteps).
+async function openStep(outRoot, number, name, description, plan) {
   const rel = `${NEW_DIR}/${pad(number)}-${slugify(name) || "step"}.md`
-  const step = { number, name, importance: "mandatory", status: "new", completedAt: null, description, tasks: [] }
+  const step = { number, name, importance: "mandatory", status: "new", completedAt: null, description, tasks: [], ...(plan ? { plan } : {}) }
   const abs = join(outRoot, STEP_ROOT, rel)
   await mkdir(dirname(abs), { recursive: true })
   await writeFile(abs, renderStep(step), "utf8")
   return { rel, abs, step }
+}
+// status:"in-progress" written in place BEFORE execute — the /development-steps page shows the live
+// step, and after a process death the file itself says exactly where the run stopped (step 172).
+async function markInProgress(opened) {
+  if (opened.step.status === "in-progress") return
+  opened.step = { ...opened.step, status: "in-progress" }
+  await writeFile(opened.abs, renderStep(opened.step), "utf8")
+}
+// Find every step file (both dirs) belonging to ONE order sheet — the persisted plan queue.
+async function scanPlanSteps(outRoot, sheetId) {
+  const found = new Map()
+  for (const [d, done] of [[NEW_DIR, false], [DONE_DIR, true]]) {
+    const dir = join(outRoot, STEP_ROOT, d)
+    let names = []; try { names = await readdir(dir) } catch { continue }
+    for (const name of names) {
+      if (!name.endsWith(".md")) continue
+      try {
+        const m = (await readFile(join(dir, name), "utf8")).match(/<!-- fractera:step\n([\s\S]*?)\n-->/)
+        const st = m && JSON.parse(m[1])
+        if (!st || st.plan?.sheet !== sheetId) continue
+        found.set(String(st.plan.seq), { rel: `${d}/${name}`, abs: join(outRoot, STEP_ROOT, d, name), step: st, done })
+      } catch { /* skip unreadable */ }
+    }
+  }
+  return found
 }
 // GATE: close = move NEW→COMPLETED + status:completed. Callable ONLY after a confirmed record.
 async function closeStep(outRoot, openInfo) {
   const newAbs = openInfo.abs
   const doneRel = openInfo.rel.replace(`${NEW_DIR}/`, `${DONE_DIR}/`)
   const doneAbs = join(outRoot, STEP_ROOT, doneRel)
-  const completed = { ...openInfo.step, status: "completed", completedAt: new Date().toISOString().slice(0, 10) }
+  const completed = { ...openInfo.step, status: "completed", completedAt: new Date().toISOString() }
   await mkdir(dirname(doneAbs), { recursive: true })
   await writeFile(newAbs, renderStep(completed), "utf8")
   await rename(newAbs, doneAbs)
@@ -208,12 +236,29 @@ async function execSetAuth(outRoot, side) {
   try { await writeFile(p, next, "utf8"); return { code: 0, out: `set-auth ${s} → ${rel}` } }
   catch (e) { return { code: 1, out: `set-auth failed: ${String(e?.message ?? e)}` } }
 }
+// Rebuild a sub-step's execute closure from its persisted machine spec (plan.kind + plan.args) —
+// what makes a materialized queue runnable by a COLD session (resume, step 172).
+function execFor(outRoot, store, kind, args = {}) {
+  if (kind === "create-section") return store ? () => execCreateSection(outRoot, { store, ...args }) : () => ({ code: 1, out: "resume: --store is required to re-run a pending create-section step" })
+  if (kind === "add-page") return () => execAddPage(outRoot, { tab: args.tab, slug: args.slug })
+  if (kind === "remove-seed") return () => execDeletePage(outRoot, { tab: args.tab, slug: args.slug })
+  if (kind === "set-group") return () => execSetGroup(outRoot, args)
+  if (kind === "set-auth") return () => execSetAuth(outRoot, args.side)
+  return () => ({ code: 1, out: `resume: unknown sub-step kind '${kind}'` })
+}
 
 // ── one frozen cycle for a sub-step ──────────────────────────────────────────
-async function runCycle(outRoot, env, sub, log) {
-  const n = await nextStepNumber(outRoot)
-  const opened = await openStep(outRoot, n, sub.name, sub.description)
-  log.push(`open-step ${pad(n)} «${sub.name}»`)
+// `opened` (step 172): the pre-materialized step file for this sub — the normal path. Opening
+// lazily here remains only as the fallback for a caller that did not materialize first.
+async function runCycle(outRoot, env, sub, log, opened) {
+  if (!opened) {
+    const n0 = await nextStepNumber(outRoot)
+    opened = await openStep(outRoot, n0, sub.name, sub.description)
+    log.push(`open-step ${pad(n0)} «${sub.name}»`)
+  }
+  const n = opened.step.number
+  await markInProgress(opened)
+  log.push(`step ${pad(n)} «${sub.name}» → in-progress`)
   const ex = await sub.execute()
   if (ex.code !== 0) { log.push(`execute FAILED: ${ex.out.slice(-300)}`); return { ok: false, step: n, stage: "execute", detail: ex.out.slice(-300), keptOpen: opened.rel } }
   log.push(`execute ok`)
@@ -272,6 +317,10 @@ const CONFIRM_FALLBACK = {
   explain: {
     admin: { en: "An admin panel is a private, role-gated page where the owner/manager maintains this group's content (for a store — its assortment). Building it is a separate later capability; right now the answer is only RECORDED in the group manifest.", ru: "Админ-панель — закрытая страница (роль администратора), где владелец/менеджер управляет содержимым этой группы (у магазина — ассортиментом). Само создание — отдельная будущая разработка; сейчас ответ только ЗАПИСЫВАЕТСЯ в манифест группы." },
     dashboard: { en: "User dashboards are a dynamic dashboard/[userId]/ layer — a personal page per user for this group. Building it is a separate later capability; the answer is only RECORDED now.", ru: "Пользовательские дашборды — динамический слой dashboard/[userId]/: персональная страница каждого пользователя для этой группы. Само создание — отдельная будущая разработка; сейчас ответ только ЗАПИСЫВАЕТСЯ." },
+  },
+  boundary: {
+    en: "Content boundary: pages come up as FROZEN PLACEHOLDER STUBS — the names you gave become URL identifiers only; titles and body text are placeholders. Real naming and real content are NOT done in this flow — they are a separate request after assembly.",
+    ru: "Граница по содержимому: страницы поднимаются как ЗАМОРОЖЕННЫЕ ЗАГЛУШКИ — названные вами имена становятся только URL-идентификаторами; заголовки и текст будут плейсхолдерными. Реальное именование и реальное наполнение в этом потоке НЕ делаются — это отдельный запрос после сборки.",
   },
 }
 async function loadConfirm(store) {
@@ -333,7 +382,7 @@ async function runPlan(outRoot, a) {
   // BUILD the flat sub-step list across every group (deterministic, by state), collecting the
   // NORMALIZED per-group record (feeds the order sheet + the approve hash) and any missing
   // MANDATORY answers (admin/dashboard — the owner must decide per group; needs_input below).
-  const subs = [], norm = [], missing = []
+  const subs = [], norm = [], missing = [], gateViolations = []
   for (const g of groups) {
     const tab = String(g.tab || "")
     if (!/^[a-z][a-z0-9-]*$/.test(tab)) throw new Error(`group.tab must be kebab-case: ${JSON.stringify(g.tab)}`)
@@ -343,14 +392,12 @@ async function runPlan(outRoot, a) {
     const sectionExists = await isDir(join(outRoot, "app", "[lang]", tab))
 
     // named pages (kebab). OPERATION GATE: an existing page = MODIFY = coding scenario → refuse.
+    // Violations are COLLECTED (not refused inline): a page created by our own earlier partial run
+    // of this very order sheet is NOT a modify — the resume check below (step 172) needs sheet.id.
     const pagesList = (Array.isArray(g.pages) ? g.pages : []).map(p => slugify(typeof p === "string" ? p : (p?.topic ?? p?.slug ?? "")))
     if (pagesList.some(s => !s)) throw new Error(`group '${tab}': a page entry needs a topic/slug`)
     for (const slug of pagesList) {
-      if (await pageExists(outRoot, tab, slug)) {
-        console.log(JSON.stringify({ ok: false, gate: "operation", scenario: "REAL-DEVELOPMENT", refused: `${tab}/${slug}`,
-          message: "In the current scenario (assembly from frozen templates) this task is not accepted: the page already exists, and modifying an existing page is a separate request handled by coding agents." }))
-        return
-      }
+      if (await pageExists(outRoot, tab, slug)) gateViolations.push({ tab, slug })
     }
 
     // samples: explicit → honored (they're wanted test posts); absent → 0 if named pages given, else 2.
@@ -378,34 +425,36 @@ async function runPlan(outRoot, a) {
       const seedNeeded = pagesList.length > 0 && samples < 1
       const createSamples = seedNeeded ? 1 : samples
       if (seedNeeded) seedSlug = "sample-1"
+      const csArgs = { tab, format, samples: createSamples, languages: languagesCsv || undefined, admin: g.admin === true, dashboard: g.dashboard === true }
       subs.push({ kind: "create-section", tab, name: `Create ${tab} section`,
         description: `Compose the ${tab} section (${format}, ${createSamples} stub post${createSamples === 1 ? "" : "s"}${seedNeeded ? " — seed for cloning the named pages" : ""}) via the Frozen Template Constructor.`,
-        pageUrl: pageUrl(tab, ""), execute: () => execCreateSection(outRoot, { store, tab, format, samples: createSamples, languages: languagesCsv || undefined, admin: g.admin === true, dashboard: g.dashboard === true }) })
+        pageUrl: pageUrl(tab, ""), args: csArgs, execute: execFor(outRoot, store, "create-section", csArgs) })
     }
     // named pages — clone the frozen stub under each English identifier (one post spans all languages, step 166).
     for (const slug of pagesList) {
       subs.push({ kind: "add-page", tab, name: `Add ${tab} page ${slug}`,
         description: `Clone the frozen stub into ${tab}/${slug} (structure taken, not generated).`,
-        pageUrl: pageUrl(tab, slug), execute: () => execAddPage(outRoot, { tab, slug }) })
+        pageUrl: pageUrl(tab, slug), args: { tab, slug }, execute: execFor(outRoot, store, "add-page", { tab, slug }) })
     }
     // remove the throwaway seed stub (only when we added one solely to enable cloning).
     if (seedSlug) {
       subs.push({ kind: "remove-seed", tab, name: `Remove seed stub ${seedSlug} from ${tab}`,
         description: `Delete the throwaway seed stub used only to clone the named pages (no leftover sample post).`,
-        pageUrl: pageUrl(tab, ""), execute: () => execDeletePage(outRoot, { tab, slug: seedSlug }) })
+        pageUrl: pageUrl(tab, ""), args: { tab, slug: seedSlug }, execute: execFor(outRoot, store, "remove-seed", { tab, slug: seedSlug }) })
     }
     // set-group: menu placement (158) + access tier (roles) + owner declarations. Runs for every
     // group in the plan (the manifest is the order sheet's single source of truth on the slot).
+    const sgArgs = { tab, menus: menusNorm, roles, childrenDropdown: g.childrenDropdown, admin: g.admin === true, dashboard: g.dashboard === true }
     subs.push({ kind: "set-group", tab, name: `Place ${tab} in menus / set access`,
       description: `Set ${tab} group manifest: menus, roles=${roles}, admin=${g.admin === true}, dashboard=${g.dashboard === true}.`,
-      pageUrl: pageUrl(tab, ""), execute: () => execSetGroup(outRoot, { tab, menus: menusNorm, roles, childrenDropdown: g.childrenDropdown, admin: g.admin === true, dashboard: g.dashboard === true }) })
+      pageUrl: pageUrl(tab, ""), args: sgArgs, execute: execFor(outRoot, store, "set-group", sgArgs) })
   }
   // IMPLIED REQUIREMENT (step 167): any role-gated group needs the app-shell login turned ON, or the visitor
   // can never sign in to reach it. Add ONE set-auth sub-step (build-time env), the last placement sub-step.
   if (anyGated) {
     subs.push({ kind: "set-auth", tab: "(app-shell)", name: `Enable app-shell login (${authSide})`,
       description: `A role-gated group exists → turn on the visitor login (NEXT_PUBLIC_APP_SHELL_AUTH=${authSide}) so gated content is reachable.`,
-      pageUrl: "", execute: () => execSetAuth(outRoot, authSide) })
+      pageUrl: "", args: { side: authSide }, execute: execFor(outRoot, store, "set-auth", { side: authSide }) })
   }
   if (!subs.length) throw new Error("plan produced no sub-steps (every section exists and no menus/roles/pages given)")
 
@@ -419,6 +468,10 @@ async function runPlan(outRoot, a) {
   }
 
   // ORDER SHEET — resolved human lines + implied requirements + the approve token.
+  // The token hashes the plan MINUS volatile state (sectionExists flips after a partial run):
+  // the SAME approved plan keeps the SAME token across sessions — that is what makes resume
+  // after a process death possible (step 172).
+  const stableId = orderSheetId(norm.map(({ sectionExists: _se, ...r }) => r))
   const publicBaseForText = publicBase || ""
   const impliedLines = anyGated ? [{
     kind: "set-auth",
@@ -427,20 +480,36 @@ async function runPlan(outRoot, a) {
       : `Enabling the public site login (account drawer: ${authSide}) — a role-gated group exists, otherwise a visitor could never sign in to reach it.`,
   }] : []
   const sheet = {
-    id: orderSheetId(norm),
+    id: stableId,
     lines: norm.map((n, i) => ({ n: i + 1, tab: n.tab, resolved: n, text: renderOrderLine(L, n) })),
     implied: impliedLines,
+    content_boundary: (confirm.boundary || CONFIRM_FALLBACK.boundary)[ownerLang] || CONFIRM_FALLBACK.boundary.en,
     announce_text: announceText(ownerLang, publicBaseForText),
     confirm_instruction: ownerLang === "ru"
-      ? `Покажи владельцу строки наряд-заказа ДОСЛОВНО (по одной на группу + implied). Правки → измени plan[] и повтори dry_run (id сменится). При явном «да» — вызови БЕЗ dry_run с approve:"${orderSheetId(norm)}" и ПЕРЕДАЙ владельцу announce_text дословно.`
-      : `Show the owner the order-sheet lines VERBATIM (one per group + implied). Edits → change plan[] and re-run dry_run (the id changes). On an explicit "yes" — call WITHOUT dry_run with approve:"${orderSheetId(norm)}" and RELAY announce_text to the owner verbatim.`,
+      ? `Покажи владельцу строки наряд-заказа ДОСЛОВНО (по одной на группу + implied + content_boundary — отсечка по содержимому обязательна, НЕ обещай реальных заголовков). Правки → измени plan[] и повтори dry_run (id сменится). При явном «да» — вызови БЕЗ dry_run с approve:"${stableId}" и ПЕРЕДАЙ владельцу announce_text дословно.`
+      : `Show the owner the order-sheet lines VERBATIM (one per group + implied + content_boundary — the content boundary is mandatory, do NOT promise real titles). Edits → change plan[] and re-run dry_run (the id changes). On an explicit "yes" — call WITHOUT dry_run with approve:"${stableId}" and RELAY announce_text to the owner verbatim.`,
+  }
+
+  // RESUME DETECTION (step 172): step files for THIS order sheet already on disk = a previous run
+  // of the SAME approved plan died mid-queue. The files ARE the plan history — the queue below is
+  // rebuilt from them (completed → skipped), never re-materialized.
+  const prior = await scanPlanSteps(outRoot, sheet.id)
+
+  // OPERATION GATE (deferred from the group loop): an existing page = MODIFY = coding scenario →
+  // refuse — UNLESS we are resuming this very plan (the page came from our own earlier partial run).
+  if (gateViolations.length && !prior.size) {
+    const v = gateViolations[0]
+    console.log(JSON.stringify({ ok: false, gate: "operation", scenario: "REAL-DEVELOPMENT", refused: `${v.tab}/${v.slug}`,
+      message: "In the current scenario (assembly from frozen templates) this task is not accepted: the page already exists, and modifying an existing page is a separate request handled by coding agents." }))
+    return
   }
 
   // DRY-RUN → the order sheet + the whole flat plan, nothing written.
   if (a["dry-run"]) {
     console.log(JSON.stringify({ ok: true, dryRun: true, mode: "plan", groups: groups.length, order_sheet: sheet,
       plan: subs.map(s => ({ kind: s.kind, tab: s.tab, name: s.name, pageUrl: s.pageUrl })),
-      note: "FLAT pipeline: each sub-step runs open→execute→deploy→RECORD(GATE)→close, in order; stop at first failure. No recursion." }))
+      ...(prior.size ? { resume_available: prior.size, resume_note: "step files for this order sheet already exist — a real run will RESUME them (completed sub-steps skipped)" } : {}),
+      note: "FLAT pipeline: the WHOLE queue is materialized as NEW-STEPS files first, then each sub-step runs in-progress→execute→deploy→RECORD(GATE)→close, in order; stop at first failure (queue stays on disk). No recursion." }))
     return
   }
 
@@ -456,15 +525,51 @@ async function runPlan(outRoot, a) {
     return
   }
 
-  // RUN every sub-step in order; STOP at the first failure (that step stays open).
+  // ── MATERIALIZE-FIRST (step 172) ────────────────────────────────────────────
+  // The approved queue is persisted as NEW-STEPS files BEFORE anything executes. Each file carries
+  // the full machine spec (order-sheet id, seq, kind, args) — the plan history exists on disk from
+  // second one, survives a process death, and a cold session resumes it with the same plan+token.
   const log = [], results = []
-  for (const sub of subs) {
-    const r = await runCycle(outRoot, env, sub, log)
-    results.push({ ...r, kind: sub.kind })
-    if (!r.ok) { console.log(JSON.stringify({ ok: false, mode: "plan", failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, chronology: log, results })); process.exit(3) }
+  let queue
+  if (prior.size) {
+    const items = [...prior.values()].sort((x, y) => x.step.number - y.step.number)
+    queue = items.map(it => ({
+      done: it.done ? it : null,
+      opened: it.done ? null : { rel: it.rel, abs: it.abs, step: it.step },
+      sub: { kind: it.step.plan.kind, tab: it.step.plan.tab, name: it.step.name, pageUrl: it.step.plan.pageUrl || "", execute: execFor(outRoot, store, it.step.plan.kind, it.step.plan.args || {}) },
+    }))
+    log.push(`resume order sheet ${sheet.id}: ${items.filter(i => i.done).length} completed, ${items.filter(i => !i.done).length} pending (queue rebuilt from step files)`)
+  } else {
+    queue = []
+    let n = await nextStepNumber(outRoot)
+    for (let i = 0; i < subs.length; i++) {
+      const sub = subs[i], seq = i + 1
+      const line = sheet.lines.find(l => l.tab === sub.tab)
+      const description = [
+        sub.description, "",
+        `**Order sheet \`${sheet.id}\` — sub-step ${seq}/${subs.length}** · kind: \`${sub.kind}\` · group: \`${sub.tab}\``,
+        line ? `Approved order line: ${line.text}` : "",
+        sub.pageUrl ? `Page URL after deploy: ${sub.pageUrl}` : "",
+        `Pipeline: in-progress → execute → deploy → RECORD (gate) → close. If the run dies, this file IS the plan history: call the orchestrator again with the SAME plan and the SAME approve token — completed sub-steps are skipped, pending ones (this file) re-execute from their machine spec.`,
+      ].filter(Boolean).join("\n")
+      queue.push({ done: null, sub, opened: await openStep(outRoot, n++, sub.name, description, { sheet: sheet.id, seq, total: subs.length, kind: sub.kind, tab: sub.tab, pageUrl: sub.pageUrl, args: sub.args || {} }) })
+    }
+    log.push(`materialized plan ${sheet.id}: ${queue.length} step files in NEW-STEPS (queue persisted before execution)`)
   }
-  console.log(JSON.stringify({ ok: true, mode: "plan", groups: groups.length, order_sheet_id: sheet.id,
-    steps: results.map(r => ({ step: r.step, kind: r.kind, deploymentId: r.deploymentId, pageUrl: r.pageUrl, doneRel: r.doneRel })), chronology: log }))
+  for (let i = 0; i < queue.length; i++) {
+    const q = queue[i]
+    if (q.done) { log.push(`skip ${pad(q.done.step.number)} «${q.sub.name}» (already completed)`); results.push({ ok: true, step: q.done.step.number, kind: q.sub.kind, skipped: "already-completed", doneRel: q.done.rel }); continue }
+    const r = await runCycle(outRoot, env, q.sub, log, q.opened)
+    results.push({ ...r, kind: q.sub.kind })
+    if (!r.ok) {
+      const remaining = queue.slice(i + 1).filter(x => !x.done).map(x => x.opened.rel)
+      console.log(JSON.stringify({ ok: false, mode: "plan", failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, order_sheet_id: sheet.id, queue_persisted: true, remaining,
+        resume: "the queue is on disk (NEW-STEPS) — call again with the SAME plan and the SAME approve token; completed sub-steps are skipped automatically", chronology: log, results }))
+      process.exit(3)
+    }
+  }
+  console.log(JSON.stringify({ ok: true, mode: "plan", ...(prior.size ? { resumed: true } : {}), groups: groups.length, order_sheet_id: sheet.id,
+    steps: results.map(r => ({ step: r.step, kind: r.kind, ...(r.skipped ? { skipped: r.skipped } : {}), deploymentId: r.deploymentId, pageUrl: r.pageUrl, doneRel: r.doneRel })), chronology: log }))
 }
 
 async function main() {
@@ -519,10 +624,15 @@ async function main() {
     return
   }
 
-  // 4) RUN each sub-step through the frozen cycle; STOP at the first failure (keep that step open)
+  // 4) MATERIALIZE-FIRST (step 172), then RUN each sub-step through the frozen cycle;
+  //    STOP at the first failure (that step stays open, later files stay in NEW-STEPS)
   const log = [], results = []
-  for (const sub of subs) {
-    const r = await runCycle(outRoot, env, sub, log)
+  const openeds = []
+  let n = await nextStepNumber(outRoot)
+  for (const sub of subs) openeds.push(await openStep(outRoot, n++, sub.name, sub.description))
+  if (openeds.length > 1) log.push(`materialized ${openeds.length} step files before execution`)
+  for (let i = 0; i < subs.length; i++) {
+    const r = await runCycle(outRoot, env, subs[i], log, openeds[i])
     results.push(r)
     if (!r.ok) { console.log(JSON.stringify({ ok: false, action, tab, topic, failedStage: r.stage, detail: r.detail, stepKeptOpen: r.keptOpen, chronology: log, results })); process.exit(3) }
   }

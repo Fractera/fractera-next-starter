@@ -97,13 +97,24 @@ templates, or turning them into a real project / changing something existing?").
      it means), set the booleans, dry_run again. Never guess these answers.
   2. **dry_run returns an `order_sheet`** — RESOLVED human lines, one per group ("news — Visible to:
      EVERYONE (no login) — Appears in: top menu, footer — …") plus `implied` lines (e.g. auto-enabling
-     the site login). **Show every line to the owner VERBATIM** — never reword them; the resolved
-     values are the truth ("all" resolves to EVERYONE, a role list to a gate). Edits → change `plan[]`
-     → dry_run again (the id changes).
+     the site login) plus **`content_boundary`** — the mandatory disclaimer that pages come up as frozen
+     placeholder stubs (names become URL identifiers only; titles/body are placeholders; real naming and
+     content are a SEPARATE later request). **Show every line AND the content_boundary to the owner
+     VERBATIM** — never reword them, and NEVER promise the owner's real titles will appear (they will
+     not — that promise was the E2E-2 bug). Edits → change `plan[]` → dry_run again (the id changes).
   3. **On an explicit yes** — call again (no dry_run) with `approve: "<order_sheet.id>"` from THAT
      dry_run. A run without the matching token is refused — a changed or unconfirmed plan cannot start.
   4. **As you start — relay `announce_text` verbatim** (it tells the owner the run takes a while and
      where to watch live progress).
+  5. **MATERIALIZE-FIRST + RESUME (step 172).** On approve the orchestrator FIRST writes the WHOLE
+     queue as `NEW-STEPS/` files — every sub-step, each carrying its full machine spec (order-sheet
+     id, seq, kind, args, page URL, the approved order line) — and only then executes them in order
+     (`in-progress → execute → deploy → RECORD gate → close`, `completedAt` = full ISO timestamp).
+     The plan history lives ON DISK before any work: if the process dies mid-queue (timeout, crash,
+     lost session), NOTHING is lost. **To resume — even in a brand-new session — call the tool again
+     with the SAME `plan` and the SAME `approve` token**: completed sub-steps are skipped
+     automatically, pending ones re-execute from their step files. Never re-create the sections by
+     hand and never treat leftover NEW-STEPS files of a died run as garbage — they ARE the queue.
   `roles`: `"public"`/`"all"`/`"everyone"` all mean visible to everyone (no gate); `"user"` (or a csv)
   gates to signed-in holders; `"guest"` = public+guest. `menus`: `{ top|footer|left|right: { enabled,
   order } }`. An existing page in `pages` is refused (modify = coding scenario).

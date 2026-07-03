@@ -278,7 +278,14 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <action>create NEW-STEPS/{NN}-slug.md with the fractera:step block and importance
       (optional|mandatory|critical); exact format in development-steps.md. Describe inputs, planned result,
       intermediate results (decomposition), planned routing-tree changes.</action>
-    <action>create the intermediate sub-steps obvious now (growing more in later cycles is normal)</action>
+    <action>MATERIALIZE-FIRST (step 172, mandatory): write EVERY sub-step known now as its own
+      NEW-STEPS/ file BEFORE executing any of them — each file = a real spec (inputs, planned result,
+      what executes it), not a one-liner. The step chain on disk IS the plan history: a process death
+      loses nothing, and a cold session resumes from the files. Executing work whose future steps
+      exist only in your context/memory is a defect (growing MORE steps in later cycles is normal;
+      starting with an unmaterialized queue is not). The frozen pipeline (owner_content_orchestrate)
+      does this mechanically — persists the whole approved queue, marks the live step in-progress,
+      resumes with the same plan + approve token.</action>
     <action>if needed, change the /architecture tree: a route = _meta.ts (RouteMeta) + README.md (living
       to-do); declare a page/endpoint = create README.md (declared node); tasks via
       /api/project/default/architecture/tasks</action>

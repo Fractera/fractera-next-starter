@@ -39,9 +39,7 @@ mode) and the auth gate (`fractera-auth :3001`).
 
 Environment map (number = nesting depth):
 
-1. **App** — `fractera-app :3000` ← your project, editable
-   - 1.1 Service pages (role architect, dynamic): `/ai-core` · `/architecture` · `/development-steps` ·
-     `/patterns` · `/glossary` · `/documents` · `/ai-draft-settings` · `/debug`
+1. **App** — `fractera-app :3000` ← your project, editable (product content only)
 2. **Data** — `fractera-data :3300` (token-auth)
    - 2.1 SQLite — `app.db` + `media.db` (`products`, `deployment_records`, `projects`, `site_settings`)
    - 2.2 Object Storage / Media — uploads, thumbnails, crop, PWA-icon generation
@@ -55,10 +53,18 @@ Environment map (number = nesting depth):
      - 3.4.2 Chat Web UI `:9120`
      - 3.4.3 Telegram gateway
    - 3.5 Domain settings — domain connection + certificate
+   - 3.6 Service pages (role architect) — `:3002/service/*`: `/service/ai-core` · `/service/architecture` ·
+     `/service/development-steps` · `/service/patterns` · `/service/glossary` · `/service/documents` ·
+     `/service/ai-draft-settings` · `/service/debug`. Moved out of the App slot into Admin in step 170 so
+     they survive a slot rebuild; their filesystem roots still read the SLOT (`slotRoot()`), so you still
+     declare/watch the SAME slot workspace — only the URL/port changed (`:3000/architecture` →
+     `:3002/service/architecture`), and their APIs live at `:3002/api/…` (e.g.
+     `:3002/api/project/default/architecture/tasks`). Opened from the **Service** button in the Admin header.
 
 **Environment calls.** Reach a service by its port/endpoint: memory — `/api/rag/*`, deploy — `/api/deploy`,
-media — `:3300`, orchestration — Hermes `:9119`. Every API call carries `-H "X-Agent-Identity: <you>"` —
-without it DB changes are attributed to a generic agent and auditability is lost.
+media — `:3300`, orchestration — Hermes `:9119`, service pages/their APIs — Admin `:3002/service/*` and
+`:3002/api/…`. Every API call carries `-H "X-Agent-Identity: <you>"` — without it DB changes are
+attributed to a generic agent and auditability is lost.
 
 **Boundary.** App `:3000` is your domain of authority. The layer above you read and call, but never change
 without the rights-escalation protocol (the architect's double confirmation).
@@ -176,14 +182,22 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
 ```xml
 <pipeline name="development" rules="never-deviate; sequential; recursive">
 
-  <law id="realtime-pages">/architecture, /development-steps, /ai-draft-settings, /patterns poll the
-    filesystem and highlight (pulse/blink) changed nodes; the architect sees you complete/create sub-steps
-    in real time. Every on-disk action = a visible event.</law>
+  <law id="service-page-location">SERVICE PAGES MOVED (step 170). The architect service pages named below
+    without a prefix — /architecture, /development-steps, /ai-draft-settings, /ai-core, /patterns, /glossary,
+    /documents, /debug — no longer live in this App slot; they run in the ADMIN app at
+    :3002/service/&lt;name&gt; (opened from the Service button in the Admin header), so they SURVIVE a slot
+    rebuild. Their filesystem roots still read THIS slot (slotRoot()), so you declare/watch the SAME
+    workspace — only the URL/port changed. Their APIs live at :3002/api/… ; an API PATH written below such as
+    /api/project/default/architecture/tasks is unchanged in shape, just served on :3002. Page names appear
+    without the /service prefix in the pipeline below for brevity — read each as :3002/service/&lt;name&gt;.</law>
+  <law id="realtime-pages">/service/architecture, /service/development-steps, /service/ai-draft-settings,
+    /service/patterns (Admin :3002) poll the filesystem and highlight (pulse/blink) changed nodes; the
+    architect sees you complete/create sub-steps in real time. Every on-disk action = a visible event.</law>
   <law id="announce-long-run">Before starting a long multi-step run that ends in deploy(s), TELL the owner
     plainly (their language): you are going into development, it may take a while, chat activity will be hidden
-    meanwhile, and they can watch progress live at https://&lt;domain&gt;/architecture and
-    https://&lt;domain&gt;/development-steps (or http://&lt;IP&gt;:&lt;port&gt; in IP mode). Those realtime pages
-    (see realtime-pages) are the progress view while the chat is silent.</law>
+    meanwhile, and they can watch progress live in the Admin at https://&lt;admin-host&gt;/service/architecture
+    and https://&lt;admin-host&gt;/service/development-steps (or http://&lt;IP&gt;:3002/service/… in IP mode).
+    Those realtime pages (see realtime-pages) are the progress view while the chat is silent.</law>
   <law id="multi-cycle">A task may not fit in one cycle — normal. If sub-steps don't resolve it, create one
     or more new steps (with descriptions) for the next session instead of forcing it. One request usually
     spawns 2-3 new steps and/or a dozen sub-steps.</law>

@@ -31,39 +31,23 @@ const AUTH_FORM_PATHS = new Set(["/login", "/register", "/guest-login", "/logout
 // `export const config`), never `middleware.ts`.
 // ──────────────────────────────────────────────────────────────────────────
 
-// API namespaces behind the admin-only service pages (AI Core, Architecture,
-// Development steps, Patterns, Glossary, Documents, AI Draft Settings, Debug).
-// Calls to these require the admin role. Deliberately EXCLUDED (shared / needed by
-// the public app or non-admin users): /api/health, /api/me, /api/media/*, and the
-// Dashboard's /api/project/default/products. Agents (x-agent-identity) and IP mode
-// (shouldBypassAuth) are always allowed — agents must keep writing these files.
-const ADMIN_API_PREFIXES = [
-  "/api/glossary",
-  "/api/patterns",
-  "/api/development-steps",
-  "/api/ai-draft-settings",
-  "/api/documents",
-  "/api/projects",
-  "/api/project/default/architecture",
-  "/api/project/default/source",
-  "/api/project/default/routing",
-];
+// The architect SERVICE pages and their APIs moved out of this slot into the admin
+// app (:3002/service/*) in step 170 — the slot no longer serves any admin-only API
+// namespace. The APIs that remain here are shared/product ones any signed-in (or IP
+// mode) user reaches: /api/health, /api/me, /api/media/*, the Dashboard's
+// /api/project/default/products, and /api/revalidate. So no path needs the extra
+// architect-role gate; a valid session (or x-agent-identity / IP bypass) is enough.
+const ADMIN_API_PREFIXES: string[] = [];
 
-// Architect service pages — they live at the ROOT and never take a language
-// prefix (a workspace operator visits /architecture, not /en/architecture). The
-// language router below skips any path whose first segment is one of these.
-// Only user-facing CONTENT (the home page and pages the user builds) goes under
-// [lang]. Keep in sync with the app/ service-page folders.
+// Non-content root pages that live at the ROOT and never take a language prefix
+// (an operator visits /dashboard, not /en/dashboard). The language router below
+// skips any path whose first segment is one of these. The architect service pages
+// (architecture, glossary, documents, …) moved to the admin app in step 170; only
+// the Dashboard and per-project workspaces remain rooted in the slot. Only
+// user-facing CONTENT (the home page and pages the user builds) goes under [lang].
+// Keep in sync with the app/(service) folders.
 const SERVICE_ROOTS = new Set([
-  "ai-core",
-  "architecture",
-  "ai-draft-settings",
-  "development-steps",
-  "patterns",
-  "documents",
-  "glossary",
   "dashboard",
-  "debug",
   "project",
 ]);
 

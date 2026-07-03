@@ -227,9 +227,10 @@ COMPLETED-STEPS/, ingest'ит в память. declared→built→live: README d
 
 **Заготовка live-E2E для архитектора (три плоскости, зеркало шага 125):**
 1. **HTTP API** (путь навыка A2, как вызывает агент-кодер):
-   `POST :3000/api/project/default/architecture/requested {title,kind,base,todo}` → `201`, README на диске;
+   `POST :3002/api/project/default/architecture/requested {title,kind,base,todo}` → `201`, README на диске;
    `POST …/architecture/tasks {path,kind:"todo",body}` → `201`;
-   `POST :3000/api/development-steps {bundleArchitecture:true}` → `201 {architected:N}`, один шаг в `NEW-STEPS/`.
+   `POST :3002/api/development-steps {bundleArchitecture:true}` → `201 {architected:N}`, один шаг в `NEW-STEPS/`.
+   (Роуты перенесены в Admin `:3002` шагом 170; ФС-корни по-прежнему читают слот через `slotRoot()`.)
 2. **Файловая система**: declared README создан, после Launch — снят (`removeRouteReadme`); живой
    маршрут — задачи очищены (`clearTasks`); `fractera:step`-блок шага содержит секцию на каждую запись.
 3. **MCP `:3222`** (`Authorization: Bearer $MCP_SECRET`): `tools/list` → `[owner_arch_create_record,

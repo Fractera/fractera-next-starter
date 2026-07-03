@@ -10,7 +10,7 @@ description: >
 
 # declare-architecture-page-or-task
 
-Put a code item on `/architecture` so a later step can pick it up and build it.
+Put a code item on `/service/architecture` so a later step can pick it up and build it.
 This is the entry of the **code development cycle** (`/architecture → development-steps`,
 see `CRUD-DOCS/workspace-standards/architecture-dev-pipeline.md`). You declare the
 work; you do not write the page/endpoint code in this skill.
@@ -50,12 +50,14 @@ Never silently create.
 
 ## Primary path — local HTTP API (works for ANY agent, no Hermes, no MCP)
 
-The page `/architecture` is backed by a plain HTTP API on the local app (`:3000`).
+The page `/service/architecture` is backed by a plain HTTP API on the local admin
+service (`:3002`; the architecture routes moved out of the slot into the admin app in
+step 170, their filesystem roots still resolve to the slot via `slotRoot()`).
 Always send the `X-Agent-Identity` header so the action is attributed to you.
 
 **Declare a page or endpoint:**
 ```bash
-curl -s -X POST http://127.0.0.1:3000/api/project/default/architecture/requested \
+curl -s -X POST http://127.0.0.1:3002/api/project/default/architecture/requested \
   -H "Content-Type: application/json" \
   -H "X-Agent-Identity: <your-agent-id>" \
   -d '{"title":"Feed","kind":"page","base":"/","dynamic":false,
@@ -70,7 +72,7 @@ curl -s -X POST http://127.0.0.1:3000/api/project/default/architecture/requested
 
 **Add a to-do to a live route:**
 ```bash
-curl -s -X POST http://127.0.0.1:3000/api/project/default/architecture/tasks \
+curl -s -X POST http://127.0.0.1:3002/api/project/default/architecture/tasks \
   -H "Content-Type: application/json" \
   -H "X-Agent-Identity: <your-agent-id>" \
   -d '{"path":"/feed","kind":"todo","body":"add pagination"}'
@@ -78,7 +80,7 @@ curl -s -X POST http://127.0.0.1:3000/api/project/default/architecture/tasks \
 
 **File a danger / deletion request:**
 ```bash
-curl -s -X POST http://127.0.0.1:3000/api/project/default/architecture/tasks \
+curl -s -X POST http://127.0.0.1:3002/api/project/default/architecture/tasks \
   -H "Content-Type: application/json" \
   -H "X-Agent-Identity: <your-agent-id>" \
   -d '{"path":"/legacy","kind":"delete","body":"remove route, fold content into /feed"}'
@@ -95,7 +97,7 @@ and must always work.
 ## After declaring
 
 Report to the architect:
-> Declared «<title>» on /architecture (<kind> at <path>). Open the page when ready;
+> Declared «<title>» on /service/architecture (<kind> at <path>). Open the page when ready;
 > a later step (🚀 Launch / `owner_arch_send_to_steps`) collects pending records into
 > one development step that builds them.
 

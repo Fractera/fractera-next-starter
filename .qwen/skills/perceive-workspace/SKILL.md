@@ -5,7 +5,7 @@ description: >
   about EXISTING content or structure — "what do I have", "list my pages", "what news/blog
   posts exist", "is there already a section for X", "change this existing page", "delete X".
   It returns the LIVE filesystem tree of the running site (every section and the real pages
-  inside it, plus declared nodes and open tasks) — the same scan that powers the /architecture
+  inside it, plus declared nodes and open tasks) — the same scan that powers the /service/architecture
   page, NOT the deployment journal. Read-only. Perceive FIRST, then act — never manage, edit or
   delete content you have not first seen in the live scan. Self-sufficient: one read tool, no
   Hermes and no other agent required.
@@ -28,7 +28,7 @@ This skill is **self-sufficient**: one read-only tool, no Hermes required.
 
 It is impossible to manage what you cannot see. An orchestrator that cannot list the real pages
 will hallucinate, recreate what already exists, or "fix" the wrong thing. The eyes already exist:
-the `/architecture` page reads the live filesystem (`scanTree()`), and because the content engine
+the `/service/architecture` page reads the live filesystem (`scanTree()`), and because the content engine
 is static-first — **every post is its own route folder with a `page.tsx`, no dynamic `[slug]`** —
 that scan already enumerates every content page. This skill exposes that same scan as one tool, so
 any agent (and Hermes) perceives the real state before acting.
@@ -56,15 +56,17 @@ record, not one per page. The live scan shows all 5. Always perceive from the sc
 - **Standalone (lone agent, no MCP / no Hermes):** read the same scan directly —
   ```bash
   curl -s -H "X-Agent-Identity: <you>" \
-    http://localhost:3000/api/project/default/architecture/signature
+    http://localhost:3002/api/project/default/architecture/signature
   ```
-  or open the `/architecture` page (it renders the identical tree).
+  or open the `/service/architecture` page (it renders the identical tree).
 
 ## What it reuses (does not reinvent)
 
-The slot's existing `GET /api/project/default/architecture/signature` route →
-`lib/architecture/fs-scan.ts` (`scanTree()`). No new scanner is built; this is a thin read over
-the eyes the workspace already has.
+The admin service `GET /api/project/default/architecture/signature` route →
+`lib/architecture/fs-scan.ts` (`scanTree()`). The route moved from the slot into the admin app
+(:3002) in step 170, but its fs-scan still reads the SLOT filesystem via `slotRoot()`, so it
+enumerates the same tree. No new scanner is built; this is a thin read over the eyes the
+workspace already has.
 
 ## When to use
 

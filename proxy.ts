@@ -49,6 +49,9 @@ const ADMIN_API_PREFIXES: string[] = [];
 const SERVICE_ROOTS = new Set([
   "dashboard",
   "project",
+  // Projects layer (§3.12, step 175): monolingual architect/manager zone at
+  // app/(projects)/projects — /projects/<category>/<slug>, never lang-prefixed.
+  "projects",
 ]);
 
 const LOCALE_COOKIE = "NEXT_LOCALE";

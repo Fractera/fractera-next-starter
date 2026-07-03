@@ -10,7 +10,10 @@
 // Typing lives here (one place); each route's `_meta.ts` imports `RouteMeta`,
 // annotates with it, and fills the standard.
 
-export type Role = "guest" | "user" | "architect"
+// The full role vocabulary (access tiers + business roles) — the Projects layer
+// (§3.12) gates routes on the business role "manager" alongside "architect".
+import type { AppRole } from "@/lib/roles"
+export type Role = AppRole
 export type Rendering = "static" | "dynamic" | "isr"
 export type Runtime = "nodejs" | "edge"
 export type EnforcedBy = "proxy" | "component" | "both"

@@ -5,18 +5,36 @@ import type { ProjectResult } from "../_lib/types";
 
 type SortOrder = "asc" | "desc";
 
+export function getNextSortOrder(sortOrder: SortOrder): SortOrder {
+  return sortOrder === "asc" ? "desc" : "asc";
+}
+
 function getRunTime(result: ProjectResult) {
-  return new Date(result.started_at).getTime();
+  const runTime = new Date(result.started_at).getTime();
+  return Number.isNaN(runTime) ? null : runTime;
+}
+
+export function sortResultsByStartedAt(
+  results: ProjectResult[],
+  sortOrder: SortOrder
+) {
+  return [...results].sort((a, b) => {
+    const aRunTime = getRunTime(a);
+    const bRunTime = getRunTime(b);
+
+    if (aRunTime === null || bRunTime === null) {
+      return 0;
+    }
+
+    const diff = aRunTime - bRunTime;
+    return sortOrder === "asc" ? diff : -diff;
+  });
 }
 
 export function ResultsTable({ results }: { results: ProjectResult[] }) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const sortedResults = useMemo(
-    () =>
-      [...results].sort((a, b) => {
-        const diff = getRunTime(a) - getRunTime(b);
-        return sortOrder === "asc" ? diff : -diff;
-      }),
+    () => sortResultsByStartedAt(results, sortOrder),
     [results, sortOrder]
   );
   const isNewestFirst = sortOrder === "desc";
@@ -32,7 +50,7 @@ export function ResultsTable({ results }: { results: ProjectResult[] }) {
               : "Показать новые результаты сверху"
           }
           aria-pressed={isNewestFirst}
-          onClick={() => setSortOrder(isNewestFirst ? "asc" : "desc")}
+          onClick={() => setSortOrder(getNextSortOrder)}
           className="inline-flex min-h-9 items-center rounded-md border px-3 py-2 text-sm font-medium transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {isNewestFirst ? "Новые сверху" : "Старые сверху"}
@@ -42,11 +60,11 @@ export function ResultsTable({ results }: { results: ProjectResult[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left">
-              <th className="px-4 py-2 font-medium">Started</th>
-              <th className="px-4 py-2 font-medium">Finished</th>
-              <th className="px-4 py-2 font-medium">Notes Collected</th>
-              <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium">Error</th>
+              <th className="px-4 py-2 font-medium">Начато</th>
+              <th className="px-4 py-2 font-medium">Завершено</th>
+              <th className="px-4 py-2 font-medium">Заметок собрано</th>
+              <th className="px-4 py-2 font-medium">Статус</th>
+              <th className="px-4 py-2 font-medium">Ошибка</th>
             </tr>
           </thead>
           <tbody>
@@ -56,7 +74,7 @@ export function ResultsTable({ results }: { results: ProjectResult[] }) {
                   colSpan={5}
                   className="px-4 py-6 text-center text-muted-foreground"
                 >
-                  No results yet - finished runs appear here.
+                  Результатов пока нет - завершенные запуски появятся здесь.
                 </td>
               </tr>
             ) : (

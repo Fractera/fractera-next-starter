@@ -45,6 +45,7 @@ the real call. After **any** mutation the slot needs a **rebuild** (#18) to go l
 |---|---|---|
 | 1 | `owner_template_list_primitives` | see **which kinds of structure can be composed** (the available bricks). Read-only. |
 | 2 | `owner_template_compose_structure` | **create a whole new section** (news/blog/docs) at once — with `samples=N` placeholder posts in one shot. |
+| 2a | `owner_template_compose_project_page` | **create the starter interface of a PROJECT** (Projects layer: a private automation/tool page — description + react-flow diagram + cron-queue/results tables). See §"Project page" below. |
 | 3 | `owner_template_list_groups` | **list every existing page-group** and its settings (languages, access, menu placement). Read-only. |
 | 4 | `owner_template_update_group` · path | **change a group's URL/folder** (rename the section, e.g. `news`→`guides`) + parser-fs. |
 | 5 | `owner_template_update_group` · roles | **restrict a section's access** to roles (or make it public) — rewrites the layout gate. |
@@ -218,6 +219,40 @@ the app set — add an app language via #19 first); `menus` sets visibility+orde
 the dropdown. The manifest is the single surface; edits keep the real artifacts in sync so the echo never lies.
 
 ---
+
+## 8a. Project page: the mount-based primitive (`project-page`)
+
+> Fractera agents do not deliver an automation in final form straight from a request — they build a
+> platform for developing repeatable automations. A project is a finished-cycle tool — **an n8n for one
+> single task**: the owner opens it in the UI, runs it and tracks the result.
+
+The basis holds a second kind of primitive: **mount-based** (category `project`). It is selected
+**explicitly by id** (`--primitive project-page` / `owner_template_compose_project_page`), not by the base
+axes, because it composes OUTSIDE the `[lang]` tab world — into the private Projects zone
+`app/(projects)/projects/<category>/<project>/` (categories: `automation | fractera-pages | personal |
+other`; the category folder must already exist; the project slug is a kebab-case English identifier and the
+folder name IS the registry — after a rebuild the project appears in the account drawer Projects accordion
+automatically).
+
+What it emits (11 files, pure copy + tokens): a thin `page.tsx` + entry, a description card
+(`_data/description.ts`), an interactive **react-flow** process diagram whose shape is DATA
+(`_data/flow.ts`) rendered by one fixed client component, a cron-queue table and a results table (providers
+in `_lib/project-data.ts` return empty lists until the cron infrastructure exists), a full `_meta.ts`, and a
+`README.md` with the `fractera:meta` machine block (visibility/roles + `cron`/`integrations`) so the project
+round-trips through `/service/architecture`.
+
+Differences from a tab structure — read these as HARD rules:
+- **No aspect seams.** Access (`architect`+`manager`) and language (site default, monolingual) are
+  INHERITED from the zone layout; roles/i18n cannot be set, menus do not apply, no engine/parser-fs/sitemap.
+- **Declared npm dependency.** The primitive declares `dependencies` (`@xyflow/react`); the composer
+  VERIFIES it in the slot's `package.json` and refuses honestly (`axis: dependencies`) if missing — it never
+  installs packages.
+- **`cron`/`integrations` are declaration-only.** They are recorded in the README machine block; env keys
+  are materialized later via the env setter + rebuild; execution is the cron infrastructure (a later
+  capability).
+- **Finishing = coding-agent handoff.** The composed page is a starter (placeholder description, generic
+  4-node diagram, empty tables). Shaping the real diagram/description/tables edits `_data/*` and `_lib/*` —
+  DATA, never the template or the fixed components.
 
 ## 9. Engine versioning: side-by-side, pinned
 

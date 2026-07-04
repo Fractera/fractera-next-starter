@@ -6,9 +6,12 @@
 // step 161 hit exactly that: a skill landed in a stray components/.gemini/ instead of the canon,
 // and one skill was missing from .gemini. This script asserts the invariant so it can't recur.
 //
-// INVARIANT: the four CODER skill sets are IDENTICAL —
-//   .agents/skills  (canon; codex + kimi read it directly)
-//   .claude/skills · .gemini/skills · .qwen/skills  (per-agent copies)
+// INVARIANT: the three CODER skill sets are IDENTICAL —
+//   .agents/skills  (canon; codex + kimi + gemini read it directly)
+//   .claude/skills · .qwen/skills  (per-agent copies for CLIs that read only their own folder)
+// .gemini/skills must stay EMPTY: gemini-cli natively reads .agents/skills and it takes precedence
+// over .gemini/skills (docs/platforms/gemini-cli/agent-skills.md), so a copy there is dead weight
+// that only produces "Skill conflict detected" warnings at startup (step 182.5).
 // Each skill = a folder containing SKILL.md. A skill's sidecar files (e.g. *.mjs) must match too.
 // Stray ".gemini" (or other agent) dirs anywhere but the slot root are flagged (never read/shipped).
 // The Hermes substrate (../ai-workspace/services/hermes-skills) is a CURATED set, checked as a
@@ -22,7 +25,7 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const CODER_DIRS = [".agents", ".claude", ".gemini", ".qwen"];
+const CODER_DIRS = [".agents", ".claude", ".qwen"];
 let failed = false;
 const fail = (m) => { failed = true; console.error("  ✗ " + m); };
 
@@ -65,7 +68,13 @@ for (const d of CODER_DIRS) {
     if (!canonNames.has(n)) fail(`'${n}' present in ${d} but absent from .agents canon`);
   }
 }
-if (!failed) console.log("  ✓ all four coder skill sets identical");
+if (!failed) console.log("  ✓ all three coder skill sets identical");
+
+// 1b) .gemini/skills must hold no skill copies — gemini reads the .agents canon natively;
+// a copy here only triggers startup "Skill conflict detected" warnings (step 182.5).
+const geminiCopies = readSkills(".gemini");
+if (geminiCopies.size) fail(`.gemini/skills has ${geminiCopies.size} skill copies (gemini reads .agents natively — delete them): ${[...geminiCopies.keys()].join(", ")}`);
+else console.log("  ✓ .gemini/skills empty (gemini reads .agents canon natively)");
 
 // 2) Sidecar (e.g. .mjs) parity per skill across dirs that have the skill.
 console.log("\n2) Sidecar-file parity per skill");

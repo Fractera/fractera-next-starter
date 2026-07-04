@@ -66,14 +66,16 @@ metadata:
 | Агент | Где лежит открываемая форма навыка |
 |---|---|
 | claude-code | `.claude/skills/<name>/SKILL.md` (копия канона) |
-| gemini-cli | `.gemini/skills/<name>/SKILL.md` (копия) |
 | qwen-code | `.qwen/skills/<name>/SKILL.md` (копия) |
-| codex, kimi-code | читают канон `.agents/skills/<name>/SKILL.md` напрямую |
+| codex, kimi-code, gemini-cli | читают канон `.agents/skills/<name>/SKILL.md` напрямую |
 | **Hermes** | `services/hermes-skills/<name>/SKILL.md` (субстрат) → bootstrap `cp -r` → `/root/.hermes/skills/<name>/SKILL.md` |
 
 > **Канон-источник для пяти кодеров — `.agents/skills/<name>/SKILL.md`**; копии/симлинки в
-> `.claude/.gemini/.qwen/skills` обслуживают тех, кто читает свою папку. На Windows симлинки хрупки →
-> **копии надёжнее.** **Hermes держит СВОЮ копию** в субстрате (`services/hermes-skills/`), потому что
+> `.claude/.qwen/skills` обслуживают тех, кто читает только свою папку. На Windows симлинки хрупки →
+> **копии надёжнее.** **В `.gemini/skills` копий НЕ держать:** gemini-cli читает `.agents/skills`
+> нативно, и канон имеет приоритет над `.gemini/skills` (docs/platforms/gemini-cli/agent-skills.md) —
+> копия там лишь порождает предупреждения «Skill conflict detected» на старте (шаг 182.5;
+> `npm run check:skills` следит, чтобы папка была пуста). **Hermes держит СВОЮ копию** в субстрате (`services/hermes-skills/`), потому что
 > слот `app/` сменный — субстрат не может зависеть от файлов гостя.
 
 ### MCP — мост-сервер + регистрация в КАЖДОМ агенте + реестр

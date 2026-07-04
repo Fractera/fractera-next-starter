@@ -41,6 +41,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "projects-router-bridge": {
+      "type": "http",
+      "url": "http://localhost:3229",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

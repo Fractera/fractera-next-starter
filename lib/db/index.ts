@@ -37,6 +37,36 @@ const SCHEMA = `
     created_at     TEXT NOT NULL DEFAULT (datetime('now')),
     created_by     TEXT NOT NULL DEFAULT 'system'
   );
+  -- Cron journal (Projects layer). The substrate runner (fractera-cron) carries the SAME
+  -- two CREATE TABLE statements so an empty slot still gets the tables — keep the DDL
+  -- textually identical in both places when changing it.
+  CREATE TABLE IF NOT EXISTS project_cron_jobs (
+    id          TEXT PRIMARY KEY NOT NULL,
+    category    TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    job_id      TEXT NOT NULL,
+    title       TEXT NOT NULL DEFAULT '',
+    schedule    TEXT NOT NULL,
+    action      TEXT NOT NULL,
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    last_run_at TEXT,
+    last_status TEXT,
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS project_cron_runs (
+    id          TEXT PRIMARY KEY NOT NULL,
+    job_key     TEXT NOT NULL,
+    category    TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    process     TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'in-progress',
+    started_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    finished_at TEXT,
+    result_title TEXT,
+    result_url  TEXT,
+    error       TEXT,
+    created_by  TEXT NOT NULL DEFAULT 'fractera-cron'
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

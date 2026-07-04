@@ -48,6 +48,13 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
+    },
+    "doc-transfer-bridge": {
+      "type": "http",
+      "url": "http://localhost:3230",
+      "headers": {
+        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
+      }
     }
   }
 }

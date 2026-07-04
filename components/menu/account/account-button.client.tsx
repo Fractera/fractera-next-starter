@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { AccountDrawer } from "@/components/menu/account/account-drawer.client";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
+import type { ProjectsManifest } from "@/app/(projects)/projects/_shared/projects-manifest";
 
 // Public app-shell account control (step 161). Rendered ONLY when public auth is enabled
 // (NEXT_PUBLIC_APP_SHELL_AUTH = left|right). Client island: reads identity from /api/me (the
@@ -15,7 +16,12 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // the entry point too. UI standard: shadcn Button/buttonVariants + lucide icons.
 type Me = { userId?: string; email?: string; roles?: string[] } | null;
 
-export function AccountButton({ lang, side, labels }: { lang: string; side: AuthShellSide; labels: AccountLabels }) {
+export function AccountButton({ lang, side, labels, projects }: {
+  lang: string;
+  side: AuthShellSide;
+  labels: AccountLabels;
+  projects?: ProjectsManifest;
+}) {
   const [me, setMe] = useState<Me>(undefined as unknown as Me);
 
   useEffect(() => {
@@ -28,7 +34,7 @@ export function AccountButton({ lang, side, labels }: { lang: string; side: Auth
   }, []);
 
   if (me && me.userId) {
-    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} />;
+    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} projects={projects} />;
   }
 
   return (

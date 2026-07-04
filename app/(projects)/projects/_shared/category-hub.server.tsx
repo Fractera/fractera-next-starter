@@ -1,25 +1,12 @@
-import { readdir } from "fs/promises";
-import { join } from "path";
 import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 import { PROJECT_CATEGORIES, type ProjectCategorySlug } from "./categories";
+import { listProjectSlugs } from "./projects-manifest";
 
 // Hub page of one Projects-layer category: lists the projects that exist as
 // folders under app/(projects)/projects/<category>/. The folder IS the registry —
 // a project's slug is its folder name (source of truth, §3.12); no DB read.
-// Folders starting with "_" are private (co-located data), not projects.
-async function listProjectSlugs(category: ProjectCategorySlug): Promise<string[]> {
-  try {
-    const dir = join(process.cwd(), "app", "(projects)", "projects", category);
-    const entries = await readdir(dir, { withFileTypes: true });
-    return entries
-      .filter((e) => e.isDirectory() && !e.name.startsWith("_"))
-      .map((e) => e.name)
-      .sort();
-  } catch {
-    return [];
-  }
-}
+// The scan lives in projects-manifest.ts (shared with the account drawer, step 177).
 
 export async function CategoryHub({ slug }: { slug: ProjectCategorySlug }) {
   const category = PROJECT_CATEGORIES.find((c) => c.slug === slug)!;

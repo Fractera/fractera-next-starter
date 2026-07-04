@@ -36,12 +36,14 @@
 // Self-sufficient: a lone CLI agent runs it directly (a project may have only Codex, no Hermes);
 // the MCP bridge (D5) will spawn it with the same contract. Deterministic; in D1.1 it writes NOTHING.
 
-import { readFile, stat } from "node:fs/promises"
-import { resolve } from "node:path"
+import { mkdir, writeFile, readFile, readdir, rename, stat } from "node:fs/promises"
+import { resolve, join, dirname } from "node:path"
 import { createHash } from "node:crypto"
 
 const KINDS = ["trigger", "action", "transform"]
 const README_SECTIONS = ["purpose", "efficiency", "reuse", "result"] // §4.1 minus the graph-derived "how it works"
+const STEP_ROOT = "DEVELOPMENT-STEPS", NEW_DIR = "NEW-STEPS", DONE_DIR = "COMPLETED-STEPS"
+const pad = n => String(n).padStart(2, "0")
 
 function parseArgs(argv) {
   const a = {}
@@ -186,6 +188,73 @@ function renderNodeLine(seq, n) {
   return parts.join(" · ")
 }
 
+// ── 5. MATERIALIZE (D1.2) — development-step file lifecycle for project nodes ──
+// Same on-disk format as the content engine (fractera:step machine block) so the /service/
+// development-steps page renders these too — but a DIFFERENT payload: each file is a rich per-node
+// SPEC a coder opens later (§4.2), never an execute-then-deploy sub-step. No deploy, no record, no
+// auto-close — the engine PLANS the queue; a coding agent develops and closes each node in D3.
+async function nextStepNumber(outRoot) {
+  let max = 0
+  for (const d of [NEW_DIR, DONE_DIR]) {
+    let names = []; try { names = await readdir(join(outRoot, STEP_ROOT, d)) } catch { /* none */ }
+    for (const n of names) { const m = n.match(/^(\d+)-/); if (m) max = Math.max(max, Number(m[1])) }
+  }
+  return max + 1
+}
+// The rich per-node spec file (§4.2 — ×5 richer than the content engine's renderStep). The FIRST body
+// instruction is to read the project readme (owner requirement, step 184). `plan` carries the whole node
+// so a COLD session rebuilds the queue from the files alone (resume) — the machine block is the source.
+function renderNodeStep(number, node, ctx, status = "new", completedAt = null) {
+  const toolLines = node.tools.length ? node.tools.map(t => `- ${t}`) : ["_No external tools._"]
+  const keyLines = node.envKeys.length
+    ? [...node.envKeys.map(k => `- \`${k}\``), "_Materialize each via the `persist-env-var-with-rebuild` skill — never hardcode a secret._"]
+    : ["_No environment keys._"]
+  const depLines = node.dependsOn.length ? node.dependsOn.map(d => `- \`${d}\` (must be completed first)`) : ["_No dependencies (root node)._"]
+  const todoLines = node.todo.length ? node.todo.map(t => `- [ ] ${t}`) : ["- [ ] _No acceptance criteria — spec is incomplete._"]
+  const body = [
+    `# ${pad(number)} — ${node.title}`, "",
+    `> Project sub-step · node \`${node.id}\` · kind: ${node.kind} · importance: mandatory · order sheet \`${ctx.sheet}\` (${ctx.seq}/${ctx.total})` + (status === "completed" && completedAt ? ` · completed ${completedAt}` : "") + (status === "in-progress" ? " · in progress" : ""), "",
+    `**Before anything else, read \`${ctx.readmeRel}\`** — the project overview (why / how it works / efficiency / reuse / result). Then read this whole spec before writing any code.`, "",
+    "## Task", node.task || "_No task._", "",
+    "## Tools", ...toolLines, "",
+    "## Environment keys", ...keyLines, "",
+    "## Inputs / outputs", `- **In:** ${JSON.stringify(node.io.in)}`, `- **Out:** ${JSON.stringify(node.io.out)}`, "",
+    "## Depends on", ...depLines, "",
+    "## To-do / acceptance criteria", ...todoLines, "",
+  ].join("\n")
+  const machine = {
+    number, name: node.title, importance: "mandatory", status, completedAt,
+    description: node.description,
+    tasks: node.todo.map(t => ({ body: t })),
+    plan: { sheet: ctx.sheet, seq: ctx.seq, total: ctx.total, kind: "project-node", category: ctx.category, slug: ctx.slug, readmeRel: ctx.readmeRel, node: { id: node.id, title: node.title, kind: node.kind, task: node.task, description: node.description, tools: node.tools, envKeys: node.envKeys, io: node.io, dependsOn: node.dependsOn, todo: node.todo } },
+  }
+  return `${body}\n<!-- fractera:step\n${JSON.stringify(machine)}\n-->\n`
+}
+async function openNodeStep(outRoot, number, node, ctx) {
+  const rel = `${NEW_DIR}/${pad(number)}-${node.id || "node"}.md`
+  const abs = join(outRoot, STEP_ROOT, rel)
+  await mkdir(dirname(abs), { recursive: true })
+  await writeFile(abs, renderNodeStep(number, node, ctx), "utf8")
+  return { rel, abs }
+}
+// Find every project-node step file (both dirs) for ONE order sheet — the persisted queue (resume, 172).
+async function scanPlanSteps(outRoot, sheetId) {
+  const found = new Map()
+  for (const [d, done] of [[NEW_DIR, false], [DONE_DIR, true]]) {
+    let names = []; try { names = await readdir(join(outRoot, STEP_ROOT, d)) } catch { continue }
+    for (const name of names) {
+      if (!name.endsWith(".md")) continue
+      try {
+        const m = (await readFile(join(outRoot, STEP_ROOT, d, name), "utf8")).match(/<!-- fractera:step\n([\s\S]*?)\n-->/)
+        const st = m && JSON.parse(m[1])
+        if (!st || st.plan?.sheet !== sheetId) continue
+        found.set(String(st.plan.seq), { rel: `${d}/${name}`, abs: join(outRoot, STEP_ROOT, d, name), step: st, done })
+      } catch { /* skip unreadable */ }
+    }
+  }
+  return found
+}
+
 async function main() {
   const a = parseArgs(process.argv.slice(2))
   const outRoot = resolve(a.out || "")
@@ -219,29 +288,57 @@ async function main() {
   // Ordered plan (topological) — the queue D1.2 will materialize as NEW-STEPS spec files.
   const byId = new Map(graph.nodes.map(n => [n.id, n]))
   const ordered = dag.order.map((id, i) => { const n = byId.get(id); return { seq: i + 1, id: n.id, title: n.title, kind: n.kind, dependsOn: n.dependsOn } })
+  // Where the coder-facing project readme will live (D2 writes it); each step file points here.
+  const readmeRel = `projects/${graph.category}/${graph.slug}/readme.md`
   const sheet = {
     id: sheetId,
     category: graph.category,
     slug: graph.slug,
     readme_plan: { ...graph.project },
+    readme_path: readmeRel,
     nodes: dag.order.map((id, i) => ({ n: i + 1, id, text: renderNodeLine(i + 1, byId.get(id)) })),
   }
 
-  // DRY-RUN — the full decomposition plan, nothing written. (D1.1 is dry-run-only; a real run reports
-  // that materialization lands in D1.2 rather than silently doing nothing.)
+  // Resume detection (172): step files for THIS order sheet already on disk = a prior run of the SAME
+  // approved plan. The files ARE the queue — existing ones are skipped, only missing seq are (re)written.
+  const prior = await scanPlanSteps(outRoot, sheetId)
+
+  // DRY-RUN — the full decomposition plan, nothing written.
   const slotSeen = await exists(outRoot)
   if (a["dry-run"]) {
     console.log(JSON.stringify({ ok: true, dryRun: true, mode: "project-plan", category: graph.category, slug: graph.slug,
       nodes: graph.nodes.length, ...(graph.duplicates ? { deduped: graph.duplicates } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
       order_sheet: sheet, plan: ordered, out_exists: slotSeen,
-      note: "D1.1: NORMALIZE→VALIDATE(DAG+SPEC gate)→ORDER SHEET only. Materialization of NEW-STEPS spec files + project readme.md is D1.2; nothing written yet." }))
+      ...(prior.size ? { resume_available: prior.size, resume_note: "step files for this order sheet already exist — a real run RESUMES (existing sub-steps kept, only missing ones written)" } : {}),
+      note: "MATERIALIZE (D1.2): a real run writes one NEW-STEPS spec file per node (materialize-first) before any development. Project readme.md (D2) and coder-handoff steps (D1.3) are not emitted yet." }))
     return
   }
 
-  // Real run — validations passed; materialization is not yet implemented (D1.2).
-  console.log(JSON.stringify({ ok: true, mode: "project-plan", ready_to_materialize: true, category: graph.category, slug: graph.slug,
-    nodes: graph.nodes.length, order_sheet_id: sheetId, ...(spec.warnings ? { warnings: spec.warnings } : {}),
-    note: "Spec gate passed. Materialization + resume are implemented in D1.2 — re-run with --dry-run to inspect the plan for now." }))
+  // 🔒 APPROVE TOKEN — a materializing run writes real files, so it REQUIRES the token of the exact
+  // order sheet the owner saw (issued only by dry-run). A changed/unshown plan cannot start. (The full
+  // human-facing confirm/announce protocol + coder-handoff steps complete in D1.3.)
+  if (a.approve !== sheetId) {
+    console.log(JSON.stringify({ ok: false, gate: "approve",
+      expected_flow: "call with --dry-run first → show the returned order_sheet lines to the owner verbatim → owner says yes → call again with --approve <order_sheet.id>",
+      detail: a.approve ? "approve token mismatch (the plan changed since it was confirmed — re-run dry-run, re-show, re-confirm)" : "missing approve token (the order sheet was never confirmed)" }))
+    return
+  }
+
+  // MATERIALIZE-FIRST (172): persist the WHOLE queue as NEW-STEPS spec files in topological order,
+  // BEFORE any development. A cold re-run with the same plan+token skips files already on disk.
+  const materialized = [], skipped = []
+  let n = await nextStepNumber(outRoot)
+  for (let i = 0; i < ordered.length; i++) {
+    const seq = i + 1, node = byId.get(ordered[i].id)
+    const ex = prior.get(String(seq))
+    if (ex) { skipped.push({ seq, id: node.id, rel: ex.rel, status: ex.done ? "completed" : "pending" }); continue }
+    const opened = await openNodeStep(outRoot, n, node, { sheet: sheetId, seq, total: ordered.length, category: graph.category, slug: graph.slug, readmeRel })
+    materialized.push({ seq, step: n, id: node.id, rel: opened.rel }); n++
+  }
+  console.log(JSON.stringify({ ok: true, mode: "project-plan", ...(prior.size ? { resumed: true } : {}), category: graph.category, slug: graph.slug,
+    order_sheet_id: sheetId, nodes: graph.nodes.length, readme_path: readmeRel,
+    materialized, ...(skipped.length ? { skipped } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
+    note: `Materialized ${materialized.length} node spec file(s) in ${STEP_ROOT}/${NEW_DIR}${skipped.length ? `, skipped ${skipped.length} already on disk` : ""}. Each file's first instruction is to read ${readmeRel}. Coder develops & closes each node later (D3). Project readme.md is D2.` }))
 }
 
 main().catch(e => { console.error("orchestrate-project-by-steps:", e.message); process.exit(1) })

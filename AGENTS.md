@@ -174,6 +174,22 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     or more new steps (with descriptions) for the next session instead of forcing it. One request usually
     spawns 2-3 new steps and/or a dozen sub-steps.</law>
 
+  <law id="agent-feedback">Coder-to-orchestrator feedback channel (owner contract 184 R10): if, across
+    delegated steps of the same task type, the orchestrator's handed-over instructions are SYSTEMATICALLY
+    incomplete about something AND one of YOUR OWN skills covers exactly that gap, you MAY materialize ONE
+    service feedback step addressed to the orchestrator:
+    DEVELOPMENT-STEPS/NEW-STEPS/&lt;NN&gt;-agent-feedback-&lt;your-agent&gt;-&lt;topic&gt;.md (NN = next free
+    number across NEW-STEPS + COMPLETED-STEPS), an ordinary step file ending with the standard fractera:step
+    machine block whose plan carries { "kind": "agent-feedback", "from": "&lt;your-agent&gt;", "to":
+    "orchestrator", "taskType": "&lt;X&gt;", "skill": "&lt;skill-name&gt;" }. Body skeleton (keep this intent
+    verbatim): "Service message from coding agent &lt;you&gt; to the orchestrator: while working on tasks of
+    type &lt;X&gt;, the instructions you hand over describe &lt;what&gt; insufficiently. Among my own skills I
+    found: &lt;skill — what it does&gt;. The orchestrator is advised to study this skill and, if it does not
+    conflict with the orchestra's other skills, use it for further interaction with my entity." Limits: one
+    step per SYSTEMATIC gap (never per task); it NEVER blocks, replaces or delays the delegated work itself;
+    the orchestrator reads it, evaluates the skill, adopts it if conflict-free and closes the step with a
+    report.</law>
+
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>

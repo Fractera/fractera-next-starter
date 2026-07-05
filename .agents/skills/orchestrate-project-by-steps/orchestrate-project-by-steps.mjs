@@ -9,18 +9,23 @@
 // development of each node is done LATER by a coding agent in its own session. So there is NO per-node
 // deploy and NO deployment_records gate here — the gate is SPEC COMPLETENESS (design D1, step 184).
 //
-// Pipeline (this file grows across sub-sessions D1.1 → D1.2 → D1.3):
+// Pipeline (built across sub-sessions D1.1 → D1.2 → D1.3):
 //   proposed node graph (--plan) ──►
 //     1. NORMALIZE     — slug ids (rule 166), UPPER_SNAKE envKeys, kind defaults, dedup
 //     2. VALIDATE DAG  — dependsOn resolve to real nodes, no cycles, a root exists
 //     3. VALIDATE SPEC — GATE: every node has task+description+todo, io declared, keys well-formed,
 //                        and the readme plan carries all mandatory sections. Incomplete → needs_spec.
-//     4. ORDER SHEET   — resolved human node lines + stable approve token os-<hash(graph)>
-//     [D1.2] 5. MATERIALIZE — the whole queue of NEW-STEPS/<NN>-<slug>.md spec files + project readme.md
-//     [D1.2] 6. RESUME       — stable token; a cold re-run skips finished sub-steps
+//     4. ORDER SHEET   — resolved human node lines + stable approve token os-<hash(graph)>,
+//                        plus announce_text + confirm_instruction (the model relays these VERBATIM)
+//     5. MATERIALIZE   — the whole queue on disk BEFORE any work: one rich NEW-STEPS/<NN>-<slug>.md
+//                        SPEC file per node + one NEW-STEPS/<NN>-coder-handoff-<slug>.md per coder-built
+//                        node (§4.3). The project readme.md itself is written by D2.
+//     6. RESUME        — stable token; a cold re-run skips finished sub-steps (composite key <kind>:<seq>)
 //
-// D1.1 scope (THIS sub-session): steps 1–4 + --dry-run (plan only, writes NOTHING). Materialization
-// (5) and resume (6) arrive in D1.2. The SPEC GATE already fires in both dry-run and a real run.
+// A real (materializing) run REQUIRES --approve <order_sheet.id> — the token issued by --dry-run for the
+// exact plan the owner confirmed. --dry-run writes NOTHING. The SPEC GATE fires in both modes. This engine
+// never deploys or executes a node — it PLANS / VALIDATES / DOCUMENTS / MATERIALIZES; a coder builds each
+// node later in its own session (D3). D1.3 added the coder-handoff step + the human approve/announce protocol.
 //
 // Node contract (WDK-neutral seam — D6 fills `io` with the real Vercel Workflow schema, step 183):
 //   node: { id, title, kind, description, task, tools[], envKeys[], io{in,out}, todo[], dependsOn[] }
@@ -93,6 +98,7 @@ function normalizeGraph(raw, cliCategory, cliSlug) {
       io: { in: io.in ?? null, out: io.out ?? null },
       todo: arr(n.todo).map(str).filter(Boolean),
       dependsOn: [...new Set(arr(n.dependsOn).map(slugify).filter(Boolean))],
+      needsCoder: n.needsCoder === false ? false : true, // every node is coder-built unless opted out
     })
   }
   const proj = (g.project && typeof g.project === "object") ? g.project : {}
@@ -237,7 +243,9 @@ async function openNodeStep(outRoot, number, node, ctx) {
   await writeFile(abs, renderNodeStep(number, node, ctx), "utf8")
   return { rel, abs }
 }
-// Find every project-node step file (both dirs) for ONE order sheet — the persisted queue (resume, 172).
+// Find every step file (both dirs) for ONE order sheet — the persisted queue (resume, 172). A node
+// yields up to TWO files that share its topo `seq` — the spec (`project-node`) and the coder handoff
+// (`coder-handoff`) — so the resume key is COMPOSITE `<kind>:<seq>`, never seq alone (they'd collide).
 async function scanPlanSteps(outRoot, sheetId) {
   const found = new Map()
   for (const [d, done] of [[NEW_DIR, false], [DONE_DIR, true]]) {
@@ -248,11 +256,58 @@ async function scanPlanSteps(outRoot, sheetId) {
         const m = (await readFile(join(outRoot, STEP_ROOT, d, name), "utf8")).match(/<!-- fractera:step\n([\s\S]*?)\n-->/)
         const st = m && JSON.parse(m[1])
         if (!st || st.plan?.sheet !== sheetId) continue
-        found.set(String(st.plan.seq), { rel: `${d}/${name}`, abs: join(outRoot, STEP_ROOT, d, name), step: st, done })
+        found.set(`${st.plan.kind}:${st.plan.seq}`, { rel: `${d}/${name}`, abs: join(outRoot, STEP_ROOT, d, name), step: st, done })
       } catch { /* skip unreadable */ }
     }
   }
   return found
+}
+
+// ── 6. CODER HANDOFF (D1.3, §4.3) — "calling the coder is its own step" ────────
+// The owner's rule: any delegation to a coding agent is a SEPARATE materialized step. Hermes does not
+// program; it hands a coder ONLY this step number, and everything they need is here + in the spec step
+// it points to. First two coder actions are fixed: read the project readme, then open the spec step.
+// (D1.3 = skeleton; D3 deepens it with the SOUL delegation edge + delegate-task skill.)
+function renderCoderHandoff(number, node, ctx, status = "new", completedAt = null) {
+  const body = [
+    `# ${pad(number)} — Call a coding agent: ${node.title}`, "",
+    `> Coder handoff · node \`${node.id}\` · order sheet \`${ctx.sheet}\` (${ctx.seq}/${ctx.total}) · spec step ${pad(ctx.specStep)}` + (status === "completed" && completedAt ? ` · completed ${completedAt}` : "") + (status === "in-progress" ? " · in progress" : ""), "",
+    "I am the orchestrator; I do not program. Activate a coding agent (Claude Code / Codex / Gemini / Qwen / Kimi) to build this node.", "",
+    "**The coder's first two actions, in order:**",
+    `1. Read \`${ctx.readmeRel}\` — the whole project overview (why / how / efficiency / reuse / result).`,
+    `2. Open step ${pad(ctx.specStep)} (\`${ctx.specRel}\`) — the exhaustive spec for node \`${node.id}\`.`, "",
+    `**Deliver:** ${node.title}${node.description ? " — " + node.description : ""}`, "",
+    "**Acceptance criteria:**",
+    ...(node.todo.length ? node.todo.map(t => `- [ ] ${t}`) : ["- [ ] (see the spec step)"]), "",
+    "This step IS the delegation record. Hand a coding agent ONLY this step number — everything they need is here and in the spec step it points to.", "",
+  ].join("\n")
+  const machine = {
+    number, name: `Call a coding agent: ${node.title}`, importance: "mandatory", status, completedAt,
+    description: `Delegate node ${node.id} to a coding agent (read readme + spec step ${pad(ctx.specStep)}).`,
+    tasks: node.todo.map(t => ({ body: t })),
+    plan: { sheet: ctx.sheet, seq: ctx.seq, total: ctx.total, kind: "coder-handoff", category: ctx.category, slug: ctx.slug, readmeRel: ctx.readmeRel, nodeId: node.id, specStep: ctx.specStep, specSeq: ctx.specSeq },
+  }
+  return `${body}\n<!-- fractera:step\n${JSON.stringify(machine)}\n-->\n`
+}
+async function openHandoffStep(outRoot, number, node, ctx) {
+  const rel = `${NEW_DIR}/${pad(number)}-coder-handoff-${node.id || "node"}.md`
+  const abs = join(outRoot, STEP_ROOT, rel)
+  await mkdir(dirname(abs), { recursive: true })
+  await writeFile(abs, renderCoderHandoff(number, node, ctx), "utf8")
+  return { rel, abs }
+}
+
+// Order-sheet human protocol (§8): the model relays these VERBATIM — it never words the confirmation
+// or the announcement itself (the weak-model lesson: recite ≠ execute).
+function announceText(lang) {
+  return lang === "ru"
+    ? "Ухожу в разработку проекта — сначала разложу его на под-шаги и материализую очередь, затем узлы разрабатывает кодер. Активность в этом чате будет скрыта; следите за прогрессом на /service/development-steps и /service/architecture."
+    : "I'm going into project development — first I decompose it into sub-steps and materialize the queue, then a coding agent builds each node. Activity in this chat will be hidden; watch progress on /service/development-steps and /service/architecture."
+}
+function confirmInstruction(lang, token) {
+  return lang === "ru"
+    ? `Покажи владельцу строки наряд-заказа ДОСЛОВНО (по одной на узел + план readme). Правки → измени граф и повтори --dry-run (id сменится). При явном «да» — вызови БЕЗ --dry-run с --approve ${token} и ПЕРЕДАЙ владельцу announce_text дословно.`
+    : `Show the owner the order-sheet lines VERBATIM (one per node + the readme plan). Edits → change the graph and re-run --dry-run (the id changes). On an explicit "yes" — call WITHOUT --dry-run with --approve ${token} and RELAY announce_text to the owner verbatim.`
 }
 
 async function main() {
@@ -290,6 +345,7 @@ async function main() {
   const ordered = dag.order.map((id, i) => { const n = byId.get(id); return { seq: i + 1, id: n.id, title: n.title, kind: n.kind, dependsOn: n.dependsOn } })
   // Where the coder-facing project readme will live (D2 writes it); each step file points here.
   const readmeRel = `projects/${graph.category}/${graph.slug}/readme.md`
+  const ownerLang = a["owner-lang"] === "ru" ? "ru" : "en"
   const sheet = {
     id: sheetId,
     category: graph.category,
@@ -297,6 +353,8 @@ async function main() {
     readme_plan: { ...graph.project },
     readme_path: readmeRel,
     nodes: dag.order.map((id, i) => ({ n: i + 1, id, text: renderNodeLine(i + 1, byId.get(id)) })),
+    announce_text: announceText(ownerLang),
+    confirm_instruction: confirmInstruction(ownerLang, sheetId),
   }
 
   // Resume detection (172): step files for THIS order sheet already on disk = a prior run of the SAME
@@ -310,7 +368,7 @@ async function main() {
       nodes: graph.nodes.length, ...(graph.duplicates ? { deduped: graph.duplicates } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
       order_sheet: sheet, plan: ordered, out_exists: slotSeen,
       ...(prior.size ? { resume_available: prior.size, resume_note: "step files for this order sheet already exist — a real run RESUMES (existing sub-steps kept, only missing ones written)" } : {}),
-      note: "MATERIALIZE (D1.2): a real run writes one NEW-STEPS spec file per node (materialize-first) before any development. Project readme.md (D2) and coder-handoff steps (D1.3) are not emitted yet." }))
+      note: "MATERIALIZE (real run): one NEW-STEPS spec file per node + one coder-handoff step per coder-built node (materialize-first) before any development. The project readme.md itself is written by D2." }))
     return
   }
 
@@ -324,21 +382,43 @@ async function main() {
     return
   }
 
-  // MATERIALIZE-FIRST (172): persist the WHOLE queue as NEW-STEPS spec files in topological order,
-  // BEFORE any development. A cold re-run with the same plan+token skips files already on disk.
+  // MATERIALIZE-FIRST (172): persist the WHOLE queue as NEW-STEPS files in topological order, BEFORE any
+  // development. Each node yields (a) a rich per-node SPEC step and (b) — when the node is coder-built —
+  // a CODER-HANDOFF step that points at that spec's number (§4.3: "calling the coder is its own step").
+  // A cold re-run with the same plan+token skips whatever is already on disk (composite key <kind>:<seq>).
   const materialized = [], skipped = []
   let n = await nextStepNumber(outRoot)
   for (let i = 0; i < ordered.length; i++) {
     const seq = i + 1, node = byId.get(ordered[i].id)
-    const ex = prior.get(String(seq))
-    if (ex) { skipped.push({ seq, id: node.id, rel: ex.rel, status: ex.done ? "completed" : "pending" }); continue }
-    const opened = await openNodeStep(outRoot, n, node, { sheet: sheetId, seq, total: ordered.length, category: graph.category, slug: graph.slug, readmeRel })
-    materialized.push({ seq, step: n, id: node.id, rel: opened.rel }); n++
+    const baseCtx = { sheet: sheetId, seq, total: ordered.length, category: graph.category, slug: graph.slug, readmeRel }
+    // (a) the per-node spec step — the coder opens this to build the node
+    let specStep, specRel
+    const exSpec = prior.get(`project-node:${seq}`)
+    if (exSpec) {
+      specStep = exSpec.step.number; specRel = exSpec.rel
+      skipped.push({ seq, id: node.id, kind: "project-node", rel: exSpec.rel, status: exSpec.done ? "completed" : "pending" })
+    } else {
+      const opened = await openNodeStep(outRoot, n, node, baseCtx)
+      specStep = n; specRel = opened.rel
+      materialized.push({ seq, step: n, id: node.id, kind: "project-node", rel: opened.rel }); n++
+    }
+    // (b) the coder-handoff step — separate materialized step, references the spec by number (§4.3)
+    if (node.needsCoder) {
+      const exHand = prior.get(`coder-handoff:${seq}`)
+      if (exHand) {
+        skipped.push({ seq, id: node.id, kind: "coder-handoff", rel: exHand.rel, status: exHand.done ? "completed" : "pending" })
+      } else {
+        const opened = await openHandoffStep(outRoot, n, node, { ...baseCtx, specStep, specSeq: seq, specRel })
+        materialized.push({ seq, step: n, id: node.id, kind: "coder-handoff", rel: opened.rel }); n++
+      }
+    }
   }
+  const specCount = materialized.filter(m => m.kind === "project-node").length
+  const handCount = materialized.filter(m => m.kind === "coder-handoff").length
   console.log(JSON.stringify({ ok: true, mode: "project-plan", ...(prior.size ? { resumed: true } : {}), category: graph.category, slug: graph.slug,
     order_sheet_id: sheetId, nodes: graph.nodes.length, readme_path: readmeRel,
     materialized, ...(skipped.length ? { skipped } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
-    note: `Materialized ${materialized.length} node spec file(s) in ${STEP_ROOT}/${NEW_DIR}${skipped.length ? `, skipped ${skipped.length} already on disk` : ""}. Each file's first instruction is to read ${readmeRel}. Coder develops & closes each node later (D3). Project readme.md is D2.` }))
+    note: `Materialized ${specCount} node spec file(s) + ${handCount} coder-handoff step(s) in ${STEP_ROOT}/${NEW_DIR}${skipped.length ? `, skipped ${skipped.length} already on disk` : ""}. Each file's first instruction is to read ${readmeRel}. A coder develops & closes each node later (D3). Project readme.md is D2.` }))
 }
 
 main().catch(e => { console.error("orchestrate-project-by-steps:", e.message); process.exit(1) })

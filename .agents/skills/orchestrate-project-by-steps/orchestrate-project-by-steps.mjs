@@ -272,29 +272,50 @@ async function scanPlanSteps(outRoot, sheetId) {
   return found
 }
 
-// ── 6. CODER HANDOFF (D1.3, §4.3) — "calling the coder is its own step" ────────
-// The owner's rule: any delegation to a coding agent is a SEPARATE materialized step. Hermes does not
-// program; it hands a coder ONLY this step number, and everything they need is here + in the spec step
-// it points to. First two coder actions are fixed: read the project readme, then open the spec step.
-// (D1.3 = skeleton; D3 deepens it with the SOUL delegation edge + delegate-task skill.)
+// ── 6. CODER HANDOFF (§4.3) — "calling the coder is its own step" ──────────────
+// The owner's rule (step 184 §4): any delegation to a coding agent is a SEPARATE materialized step with
+// EXHAUSTIVE requirements. The orchestrator (Hermes, or any planning agent) does not program — it hands a
+// coder ONLY this step number, and everything they need is right here + in the spec step it points to.
+// So this file must stand on its own: the fixed opening actions, the deliverable, the node-at-a-glance
+// context (kind / tools / keys / depends / io), the offline-documentation reminder, the acceptance
+// criteria, and the finish protocol (deploy → record → close). It mirrors the SOUL delegation edge and
+// the delegate-task / prepare-automation-knowledge skills (D3). D1.3 shipped the skeleton; D3 deepens it.
 function renderCoderHandoff(number, node, ctx, status = "new", completedAt = null) {
+  const toolLine = node.tools.length ? `${node.tools.join(", ")} — search for a ready skill / MCP connector before building one` : "none"
+  const keyLine = node.envKeys.length
+    ? `${node.envKeys.map(k => `\`${k}\``).join(", ")} — materialize EACH via the \`persist-env-var-with-rebuild\` skill (write to the slot \`app/.env.local\` → rebuild); never hardcode a secret`
+    : "none"
+  const depLine = node.dependsOn.length ? `${node.dependsOn.map(d => `\`${d}\``).join(", ")} — those sub-steps must be closed first` : "none — this is a root node"
   const body = [
     `# ${pad(number)} — Call a coding agent: ${node.title}`, "",
-    `> Coder handoff · node \`${node.id}\` · order sheet \`${ctx.sheet}\` (${ctx.seq}/${ctx.total}) · spec step ${pad(ctx.specStep)}` + (status === "completed" && completedAt ? ` · completed ${completedAt}` : "") + (status === "in-progress" ? " · in progress" : ""), "",
-    "I am the orchestrator; I do not program. Activate a coding agent (Claude Code / Codex / Gemini / Qwen / Kimi) to build this node.", "",
-    "**The coder's first two actions, in order:**",
-    `1. Read \`${ctx.readmeRel}\` — the whole project overview (why / how / efficiency / reuse / result).`,
-    `2. Open step ${pad(ctx.specStep)} (\`${ctx.specRel}\`) — the exhaustive spec for node \`${node.id}\`.`, "",
+    `> Coder handoff · node \`${node.id}\` · kind: ${node.kind} · order sheet \`${ctx.sheet}\` (${ctx.seq}/${ctx.total}) · spec step ${pad(ctx.specStep)}` + (status === "completed" && completedAt ? ` · completed ${completedAt}` : "") + (status === "in-progress" ? " · in progress" : ""), "",
+    "I am the orchestrator; I do not program. Hand a coding agent (Claude Code / Codex / Gemini / Qwen / Kimi) ONLY this step number — everything they need is here and in the spec step it points to. This step IS the delegation record.", "",
+    "## The coder's first actions, in order",
+    `1. Read \`${ctx.readmeRel}\` — the whole project overview (why / how it works / efficiency / reuse / result).`,
+    `2. Open step ${pad(ctx.specStep)} (\`${ctx.specRel}\`) — the exhaustive spec for node \`${node.id}\` (task, inputs/outputs, to-do).`,
+    "3. Obey your own workspace instructions (`CLAUDE.md` / `AGENTS.md`): the static-first canon, `.client`/`.server` naming, ≤200-line components, and the full development pipeline (open → build → verify → deploy → record → close).", "",
     `**Deliver:** ${node.title}${node.description ? " — " + node.description : ""}`, "",
-    "**Acceptance criteria:**",
-    ...(node.todo.length ? node.todo.map(t => `- [ ] ${t}`) : ["- [ ] (see the spec step)"]), "",
-    "This step IS the delegation record. Hand a coding agent ONLY this step number — everything they need is here and in the spec step it points to.", "",
+    "## Node at a glance",
+    `- **Kind:** ${node.kind}`,
+    `- **Tools / integrations:** ${toolLine}`,
+    `- **Environment keys:** ${keyLine}`,
+    `- **Depends on:** ${depLine}`,
+    `- **Inputs → outputs:** ${JSON.stringify(node.io.in)} → ${JSON.stringify(node.io.out)}`, "",
+    "## Documentation is already on disk (assume no internet)",
+    "Any external reference this node needs is transferred to `CRUD-DOCS/external/…` and Company Memory before this handoff (the `prepare-automation-knowledge` doc-transfer). Read the local files or query Company Memory — do not assume internet access. If a needed document is missing, say so in the step; never guess an API.", "",
+    "## Acceptance criteria",
+    ...(node.todo.length ? node.todo.map(t => `- [ ] ${t}`) : ["- [ ] (see the spec step)"]),
+    `_(Full detail, inputs/outputs and to-do live in spec step ${pad(ctx.specStep)}.)_`, "",
+    "## When done",
+    `Deploy, then record the deployment (platform, model, tokens, page URL), and close BOTH this handoff step and spec step ${pad(ctx.specStep)} into \`COMPLETED-STEPS/\`.`, "",
+    "The orchestrator relays only the number — do not wait for more context in chat; it is all here and in the spec step.", "",
   ].join("\n")
   const machine = {
     number, name: `Call a coding agent: ${node.title}`, importance: "mandatory", status, completedAt,
     description: `Delegate node ${node.id} to a coding agent (read readme + spec step ${pad(ctx.specStep)}).`,
     tasks: node.todo.map(t => ({ body: t })),
-    plan: { sheet: ctx.sheet, seq: ctx.seq, total: ctx.total, kind: "coder-handoff", category: ctx.category, slug: ctx.slug, readmeRel: ctx.readmeRel, nodeId: node.id, specStep: ctx.specStep, specSeq: ctx.specSeq },
+    plan: { sheet: ctx.sheet, seq: ctx.seq, total: ctx.total, kind: "coder-handoff", category: ctx.category, slug: ctx.slug, readmeRel: ctx.readmeRel, nodeId: node.id, specStep: ctx.specStep, specSeq: ctx.specSeq,
+      node: { id: node.id, title: node.title, kind: node.kind, tools: node.tools, envKeys: node.envKeys, io: node.io, dependsOn: node.dependsOn, todo: node.todo } },
   }
   return `${body}\n<!-- fractera:step\n${JSON.stringify(machine)}\n-->\n`
 }

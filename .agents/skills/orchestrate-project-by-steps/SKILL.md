@@ -11,7 +11,7 @@ description: >
   plus one coder-handoff step per node — BEFORE any development. It does NOT deploy, does NOT
   execute a node, does NOT write code: a coding agent builds each node LATER from its step
   file. The gate is SPEC COMPLETENESS, not a deployment record.
-version: 0.3.0
+version: 0.4.0
 metadata:
   hermes:
     tags: [project, automation, orchestrate, decompose, steps, node, dag, materialize, coder-handoff, workflow, cron, tool]
@@ -70,9 +70,14 @@ the owner wants "a news page / a blog / documentation", that is content — stop
   template), then into `DEVELOPMENT-STEPS/NEW-STEPS/`: one rich **spec step** per node
   (`<NN>-<slug>.md`, §4.2 — its first instruction is "read the project README") plus one
   **coder-handoff step** per coder-built node (`<NN>-coder-handoff-<slug>.md`, §4.3).
-- **"Calling the coder is its own step" (owner rule).** The handoff is a SEPARATE materialized step:
-  Hermes hands a coding agent ONLY its step number — everything they need (read the readme, open spec
-  step NN, deliver, acceptance criteria) is already in the file.
+- **"Calling the coder is its own step" (owner rule).** The handoff is a SEPARATE materialized step, and
+  it is EXHAUSTIVE — the orchestrator hands a coding agent ONLY its step number. The file carries the fixed
+  first actions (read the project README → open spec step NN → obey your own workspace instructions), the
+  deliverable, the node-at-a-glance (kind / tools / env keys / depends / io), an offline-documentation
+  reminder (external docs are on disk under `CRUD-DOCS/external/`, no internet), the acceptance criteria,
+  and the finish protocol (deploy → record → close both steps). This mirrors the SOUL delegation edge and
+  the `delegate-task` / `prepare-automation-knowledge` skills: real code is always DELEGATED, never written
+  by the orchestrator, and delegation is a numbered step, not an ad-hoc chat prompt.
 - **No content/code generation here.** The engine plans, validates, documents, materializes (the queue +
   the project `README.md`). A coding agent develops each node later (D3).
 
@@ -136,7 +141,8 @@ Self-sufficient project skill: shipped to every agent (`.agents` + `.claude/.gem
 the ×6 copies land in D5). It does not depend on Hermes — any single agent can run the frozen project
 process on its own.
 
-<!-- Draft (D1.3). D2 writes the project readme.md; D3 deepens the coder-handoff (SOUL delegation edge +
-delegate-task); D4 wires the README into every frozen template + all 6 agent instructions; D5 adds the MCP
-tool + the ×6 self-sufficiency copies + MCP-REGISTRY + FES docs; D6 fills `io` with the real WDK schema.
-Version bumps as those land. -->
+<!-- Draft (D3). D1.1–D1.3 built the engine; D2 writes the project README.md; D3 deepened the coder-handoff
+step (exhaustive, hand-only-the-number) and wired the SOUL delegation edge + the delegate-task /
+prepare-automation-knowledge skills. D4 wires the README into every frozen template + all 6 agent
+instructions; D5 adds the MCP tool + the ×6 self-sufficiency copies + MCP-REGISTRY + FES docs; D6 fills `io`
+with the real WDK schema. Version bumps as those land. -->

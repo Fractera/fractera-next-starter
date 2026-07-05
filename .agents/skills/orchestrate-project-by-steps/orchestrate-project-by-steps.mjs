@@ -19,7 +19,7 @@
 //                        plus announce_text + confirm_instruction (the model relays these VERBATIM)
 //     5. MATERIALIZE   — the whole queue on disk BEFORE any work: one rich NEW-STEPS/<NN>-<slug>.md
 //                        SPEC file per node + one NEW-STEPS/<NN>-coder-handoff-<slug>.md per coder-built
-//                        node (§4.3). The project readme.md itself is written by D2.
+//                        node (§4.3) + the project-root README.md GENERATED from the graph (§4.1, D2).
 //     6. RESUME        — stable token; a cold re-run skips finished sub-steps (composite key <kind>:<seq>)
 //
 // A real (materializing) run REQUIRES --approve <order_sheet.id> — the token issued by --dry-run for the
@@ -66,6 +66,14 @@ const slugify = s => String(s ?? "").toLowerCase().trim().replace(/[^a-z0-9]+/g,
 const upperSnake = s => String(s ?? "").trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "")
 const str = s => (typeof s === "string" ? s.trim() : "")
 const arr = v => (Array.isArray(v) ? v : (v == null ? [] : [v]))
+// Human title fallback from a slug id ("publish-daily" → "Publish daily"). Table cells must not break
+// the markdown pipe grid — escape pipes, flatten newlines, clip long values.
+const humanize = s => String(s ?? "").replace(/-/g, " ").replace(/^\w/, c => c.toUpperCase()).trim()
+const mdCell = s => String(s ?? "").replace(/\|/g, "\\|").replace(/\s*\n+\s*/g, " ").trim()
+const clip = (s, n) => { const c = mdCell(s); return c.length > n ? c.slice(0, n - 1) + "…" : c }
+// The project-root README lives at the frozen project-page primitive's mount (step 178) — the SAME file,
+// now BORN from the decomposition rather than a static stub. Casing README.md is preserved (convention 178).
+const projectReadmeRel = (category, slug) => `app/(projects)/projects/${category}/${slug}/README.md`
 
 // ── 1. NORMALIZE ─────────────────────────────────────────────────────────────
 // Turn a loosely-proposed graph (model output) into the canonical node contract. Never invents
@@ -103,6 +111,7 @@ function normalizeGraph(raw, cliCategory, cliSlug) {
   }
   const proj = (g.project && typeof g.project === "object") ? g.project : {}
   const project = {
+    title: str(proj.title),          // optional human name; README falls back to a humanized slug
     purpose: str(proj.purpose),
     efficiency: str(proj.efficiency),
     reuse: str(proj.reuse),
@@ -297,6 +306,54 @@ async function openHandoffStep(outRoot, number, node, ctx) {
   return { rel, abs }
 }
 
+// ── 7. PROJECT README (D2, §4.1) — the project-root overview, GENERATED from the graph ────────
+// Develops the static README.md.tpl (step 178) into a document BORN from the decomposition, not a stub:
+// why the project exists, HOW IT WORKS (an auto-table of the node graph in topological order), how it
+// wins efficiency, how to reuse it, the end result — plus a fractera:project machine block (the whole
+// graph, the source for validation & cold resume). Every coder reads THIS first at the start of every
+// sub-step (every spec/handoff step file points here). A lean WORKING doc for the model, never design-lore
+// (memory emitted-artifacts-lean-no-narrative): no marketing manifesto. Casing README.md preserved (178).
+function renderProjectReadme(graph, ordered, ctx) {
+  const p = graph.project
+  const title = p.title || humanize(graph.slug) || "Project"
+  const rows = ordered.map((n, i) => {
+    const tools = n.tools.length ? clip(n.tools.join(", "), 40) : "—"
+    const keys = n.envKeys.length ? n.envKeys.map(k => `\`${k}\``).join(", ") : "—"
+    const deps = n.dependsOn.length ? n.dependsOn.map(d => `\`${d}\``).join(", ") : "—"
+    return `| ${i + 1} | \`${n.id}\` | ${n.kind} | ${clip(n.task, 70)} | ${tools} | ${keys} | ${deps} |`
+  })
+  const body = [
+    `# ${title}`, "",
+    `> Project overview · category \`${graph.category}\` · slug \`${graph.slug}\` · ${ordered.length} node(s) · order sheet \`${ctx.sheet}\``, "",
+    "**Read this first at the start of EVERY sub-step** — it is generated from the decomposition graph and is the single source of truth for what this project is and how its nodes fit together.", "",
+    "## Why", p.purpose, "",
+    "## How it works",
+    "The project is decomposed into nodes; each node is a sub-step a coding agent builds later. Nodes run in the topological order below (a node runs after everything it depends on):", "",
+    "| # | node | kind | task | tools | keys | depends on |",
+    "|---|---|---|---|---|---|---|",
+    ...rows, "",
+    "## Efficiency", p.efficiency, "",
+    "## Reuse", p.reuse, "",
+    "## Result", p.result, "",
+  ].join("\n")
+  const machine = {
+    kind: "project", sheet: ctx.sheet, category: graph.category, slug: graph.slug, title,
+    project: p,
+    nodes: ordered.map(n => ({ id: n.id, title: n.title, kind: n.kind, description: n.description, task: n.task, tools: n.tools, envKeys: n.envKeys, io: n.io, dependsOn: n.dependsOn, todo: n.todo })),
+    order: ordered.map(n => n.id),
+  }
+  return `${body}\n<!-- fractera:project\n${JSON.stringify(machine)}\n-->\n`
+}
+// Write (or refresh) the project-root README. It is DERIVED from the approved graph, so a real run — even a
+// cold resume — rewrites it deterministically (same graph → identical bytes). mkdir -p handles the fresh
+// project folder (decomposition runs before the project-page primitive is composed).
+async function writeProjectReadme(outRoot, graph, ordered, ctx) {
+  const abs = join(outRoot, ctx.readmeRel)
+  await mkdir(dirname(abs), { recursive: true })
+  await writeFile(abs, renderProjectReadme(graph, ordered, ctx), "utf8")
+  return { rel: ctx.readmeRel, abs }
+}
+
 // Order-sheet human protocol (§8): the model relays these VERBATIM — it never words the confirmation
 // or the announcement itself (the weak-model lesson: recite ≠ execute).
 function announceText(lang) {
@@ -343,8 +400,9 @@ async function main() {
   // Ordered plan (topological) — the queue D1.2 will materialize as NEW-STEPS spec files.
   const byId = new Map(graph.nodes.map(n => [n.id, n]))
   const ordered = dag.order.map((id, i) => { const n = byId.get(id); return { seq: i + 1, id: n.id, title: n.title, kind: n.kind, dependsOn: n.dependsOn } })
-  // Where the coder-facing project readme will live (D2 writes it); each step file points here.
-  const readmeRel = `projects/${graph.category}/${graph.slug}/readme.md`
+  const orderedNodes = dag.order.map(id => byId.get(id)) // full nodes in topo order — for the README table
+  // The coder-facing project-root README (D2 writes it, §4.1) — the frozen project-page mount; each step points here.
+  const readmeRel = projectReadmeRel(graph.category, graph.slug)
   const ownerLang = a["owner-lang"] === "ru" ? "ru" : "en"
   const sheet = {
     id: sheetId,
@@ -366,9 +424,9 @@ async function main() {
   if (a["dry-run"]) {
     console.log(JSON.stringify({ ok: true, dryRun: true, mode: "project-plan", category: graph.category, slug: graph.slug,
       nodes: graph.nodes.length, ...(graph.duplicates ? { deduped: graph.duplicates } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
-      order_sheet: sheet, plan: ordered, out_exists: slotSeen,
+      order_sheet: sheet, plan: ordered, out_exists: slotSeen, readme_path: readmeRel,
       ...(prior.size ? { resume_available: prior.size, resume_note: "step files for this order sheet already exist — a real run RESUMES (existing sub-steps kept, only missing ones written)" } : {}),
-      note: "MATERIALIZE (real run): one NEW-STEPS spec file per node + one coder-handoff step per coder-built node (materialize-first) before any development. The project readme.md itself is written by D2." }))
+      note: `MATERIALIZE (real run): the project-root README (${readmeRel}) generated from the graph + one NEW-STEPS spec file per node + one coder-handoff step per coder-built node (materialize-first) before any development.` }))
     return
   }
 
@@ -382,10 +440,12 @@ async function main() {
     return
   }
 
-  // MATERIALIZE-FIRST (172): persist the WHOLE queue as NEW-STEPS files in topological order, BEFORE any
-  // development. Each node yields (a) a rich per-node SPEC step and (b) — when the node is coder-built —
-  // a CODER-HANDOFF step that points at that spec's number (§4.3: "calling the coder is its own step").
-  // A cold re-run with the same plan+token skips whatever is already on disk (composite key <kind>:<seq>).
+  // MATERIALIZE-FIRST (172): persist the WHOLE queue on disk BEFORE any development. First the project-root
+  // README generated from the graph (§4.1, D2) — the overview every sub-step reads — then each node yields
+  // (a) a rich per-node SPEC step and (b) — when the node is coder-built — a CODER-HANDOFF step that points
+  // at that spec's number (§4.3). The README is derived, so a cold resume rewrites it deterministically;
+  // the step files are keyed by composite <kind>:<seq> so a re-run skips whatever is already on disk.
+  const readmeFile = await writeProjectReadme(outRoot, graph, orderedNodes, { sheet: sheetId, category: graph.category, slug: graph.slug, readmeRel })
   const materialized = [], skipped = []
   let n = await nextStepNumber(outRoot)
   for (let i = 0; i < ordered.length; i++) {
@@ -416,9 +476,9 @@ async function main() {
   const specCount = materialized.filter(m => m.kind === "project-node").length
   const handCount = materialized.filter(m => m.kind === "coder-handoff").length
   console.log(JSON.stringify({ ok: true, mode: "project-plan", ...(prior.size ? { resumed: true } : {}), category: graph.category, slug: graph.slug,
-    order_sheet_id: sheetId, nodes: graph.nodes.length, readme_path: readmeRel,
+    order_sheet_id: sheetId, nodes: graph.nodes.length, readme_path: readmeRel, readme: readmeFile.rel,
     materialized, ...(skipped.length ? { skipped } : {}), ...(spec.warnings ? { warnings: spec.warnings } : {}),
-    note: `Materialized ${specCount} node spec file(s) + ${handCount} coder-handoff step(s) in ${STEP_ROOT}/${NEW_DIR}${skipped.length ? `, skipped ${skipped.length} already on disk` : ""}. Each file's first instruction is to read ${readmeRel}. A coder develops & closes each node later (D3). Project readme.md is D2.` }))
+    note: `Wrote the project-root README (${readmeFile.rel}) from the graph + materialized ${specCount} node spec file(s) + ${handCount} coder-handoff step(s) in ${STEP_ROOT}/${NEW_DIR}${skipped.length ? `, skipped ${skipped.length} already on disk` : ""}. Each step file's first instruction is to read that README. A coder develops & closes each node later (D3).` }))
 }
 
 main().catch(e => { console.error("orchestrate-project-by-steps:", e.message); process.exit(1) })

@@ -63,15 +63,18 @@ the owner wants "a news page / a blog / documentation", that is content — stop
      `reuse` / `result`. Incomplete → `needs_spec` lists exactly what to fill; **nothing is materialized.**
 - **🔒 The gate is SPEC COMPLETENESS, not a deployment record.** Unlike content, this engine deploys
   nothing and executes no node. "Done" for a node = a coder closed it, not "a deploy row".
-- **MATERIALIZE-FIRST (step 172).** On approval the engine writes the WHOLE queue to
-  `DEVELOPMENT-STEPS/NEW-STEPS/` BEFORE any development: one rich **spec step** per node
-  (`<NN>-<slug>.md`, §4.2 — its first instruction is "read the project readme") plus one
+- **MATERIALIZE-FIRST (step 172).** On approval the engine writes the WHOLE queue BEFORE any development:
+  first the **project-root `README.md`** generated from the graph (§4.1 — why / how it works as an
+  auto-table of the nodes / efficiency / reuse / result + a `fractera:project` machine block; at the
+  frozen `project-page` mount `app/(projects)/projects/<cat>/<slug>/README.md`, developing the step-178
+  template), then into `DEVELOPMENT-STEPS/NEW-STEPS/`: one rich **spec step** per node
+  (`<NN>-<slug>.md`, §4.2 — its first instruction is "read the project README") plus one
   **coder-handoff step** per coder-built node (`<NN>-coder-handoff-<slug>.md`, §4.3).
 - **"Calling the coder is its own step" (owner rule).** The handoff is a SEPARATE materialized step:
   Hermes hands a coding agent ONLY its step number — everything they need (read the readme, open spec
   step NN, deliver, acceptance criteria) is already in the file.
-- **No content/code generation here.** The engine plans, validates, documents, materializes. A coding
-  agent develops each node later (D3); the project `readme.md` itself is written by D2.
+- **No content/code generation here.** The engine plans, validates, documents, materializes (the queue +
+  the project `README.md`). A coding agent develops each node later (D3).
 
 ## Decision flow (do exactly this)
 
@@ -129,9 +132,11 @@ the queue.
 - Writing a node's actual code → that is the coding agent opening the materialized spec step (D3), not
   this engine. This engine stands up the decomposed, validated, materialized queue; it does not develop.
 
-Self-sufficient project skill: shipped to every agent (`.agents` + `.claude/.gemini/.qwen/.kimi` + Hermes).
-It does not depend on Hermes — any single agent can run the frozen project process on its own.
+Self-sufficient project skill: shipped to every agent (`.agents` + `.claude/.gemini/.qwen/.kimi` + Hermes —
+the ×6 copies land in D5). It does not depend on Hermes — any single agent can run the frozen project
+process on its own.
 
 <!-- Draft (D1.3). D2 writes the project readme.md; D3 deepens the coder-handoff (SOUL delegation edge +
-delegate-task); D5 adds the MCP tool + the ×6 self-sufficiency copies + MCP-REGISTRY + FES docs; D6 fills
-`io` with the real WDK schema. Version bumps as those land. -->
+delegate-task); D4 wires the README into every frozen template + all 6 agent instructions; D5 adds the MCP
+tool + the ×6 self-sufficiency copies + MCP-REGISTRY + FES docs; D6 fills `io` with the real WDK schema.
+Version bumps as those land. -->

@@ -5,6 +5,7 @@ import { ThemeInit } from "@/components/theme-init";
 import { bodyFontClass } from "@/lib/fonts";
 import { DEFAULT_LANGUAGE } from "@/config/translations/translations.config";
 import { requireRole } from "@/lib/auth/require-role";
+import { ProjectsZoneHeader } from "@/app/(projects)/_components/projects-zone-header.server";
 
 // Root layout of the Projects layer (§3.12, step 175). Projects are independent
 // application levels for PRIVATE use by the architect or a project administrator —
@@ -32,6 +33,7 @@ export default async function ProjectsLayout({
       </head>
       <body className={bodyFontClass}>
         <ThemeProvider>
+          <ProjectsZoneHeader />
           {children}
           <Toaster position="bottom-right" richColors closeButton />
         </ThemeProvider>

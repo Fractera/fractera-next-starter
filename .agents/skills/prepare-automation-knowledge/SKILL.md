@@ -13,7 +13,7 @@ version: 1.0.0
 metadata:
   hermes:
     tags: [automation, project, knowledge, documentation, transfer, ingest, rag, memory, external, api, exa, youtube, delegate, spec, specification, internet, offline, courier]
-    related_skills: [route-project-or-pages-request, delegate-task, persist-env-var-with-rebuild, propose-new-agent-skill-or-mcp]
+    related_skills: [route-project-or-pages-request, orchestrate-project-by-steps, delegate-task, persist-env-var-with-rebuild, propose-new-agent-skill-or-mcp]
 ---
 
 # prepare-automation-knowledge
@@ -35,11 +35,15 @@ Run this at the **planning stage of every automation/project** (after the
    published on the internet** — search for an existing one before anyone builds a new one. Every
    chosen integration becomes an env key materialized ONLY via the `persist-env-var-with-rebuild`
    channel (setter → `app/.env.local` → rebuild). Never hardcode keys.
-2. **Delegation is the default.** The planner (Hermes or any orchestrating agent) works in tandem
-   with a usually MORE CAPABLE coding agent. Instead of building the automation yourself, hand it
-   off with the **fullest possible specification file**: the goal, the flow, the external tools
-   and their env keys, the cron intents, acceptance criteria, and the LOCAL paths of every
-   document the coder needs. The spec file is the planner's main deliverable.
+2. **Delegation is the default — and the spec file is a MATERIALIZED step, not a chat prompt.** The
+   planner (Hermes or any orchestrating agent) works in tandem with a usually MORE CAPABLE coding agent.
+   Instead of building the automation yourself, decompose it with `orchestrate-project-by-steps` — that
+   engine materializes, per node, a **rich spec step** plus an EXHAUSTIVE **coder-handoff step** (read the
+   project `README.md` → open the spec step → tools / env keys / acceptance / finish protocol). Those step
+   files ARE the fullest-possible specification: the goal, the flow, the external tools and their env keys,
+   the cron intents, acceptance criteria, and the LOCAL paths of every document the coder needs. Then you
+   hand the coding agent **only the step number** (`delegate-task`). The materialized spec is the planner's
+   main deliverable; the code is the coder's.
 3. **The coder usually has NO internet.** Whatever external documentation the build depends on
    must be ON DISK before the handoff — that is the doc-transfer below. Apply it whenever
    possible when creating automations.
@@ -62,9 +66,10 @@ Run this at the **planning stage of every automation/project** (after the
    text to Company Memory (LightRAG `POST /documents/text`) so the coder can also find it by a
    semantic query. If LightRAG is unreachable the file is still saved — activate it later from
    the `/documents` page.
-5. **Reference** the saved LOCAL paths in the coder's specification file: "read
-   `CRUD-DOCS/external/<slug>.md` (source: <url>)". The coder finds everything on its own
-   filesystem or via a Company Memory query — no internet needed.
+5. **Reference** the saved LOCAL paths inside the node's spec step (and it surfaces in the coder-handoff
+   step's offline-documentation reminder): "read `CRUD-DOCS/external/<slug>.md` (source: <url>)". The coder,
+   handed only the step number, finds everything on its own filesystem or via a Company Memory query — no
+   internet needed.
 
 ## Without Hermes / without the bridge (lone CLI agent)
 

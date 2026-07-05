@@ -208,10 +208,32 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     stub = FROZEN; modify-existing or real/custom content = REAL-DEV. If the vector is not explicit, ask ONE
     clarifying question and wait. Full rule: CRUD-DOCS/workspace-standards/task-scenario-router.md.</law>
 
+  <law id="agent-feedback">Coder-to-orchestrator feedback channel (owner contract 184 R10): if, across
+    delegated steps of the same task type, the orchestrator's handed-over instructions are SYSTEMATICALLY
+    incomplete about something AND one of YOUR OWN skills covers exactly that gap, you MAY materialize ONE
+    service feedback step addressed to the orchestrator:
+    DEVELOPMENT-STEPS/NEW-STEPS/&lt;NN&gt;-agent-feedback-&lt;your-agent&gt;-&lt;topic&gt;.md (NN = next free
+    number across NEW-STEPS + COMPLETED-STEPS), an ordinary step file ending with the standard fractera:step
+    machine block whose plan carries { "kind": "agent-feedback", "from": "&lt;your-agent&gt;", "to":
+    "orchestrator", "taskType": "&lt;X&gt;", "skill": "&lt;skill-name&gt;" }. Body skeleton (keep this intent
+    verbatim): "Service message from coding agent &lt;you&gt; to the orchestrator: while working on tasks of
+    type &lt;X&gt;, the instructions you hand over describe &lt;what&gt; insufficiently. Among my own skills I
+    found: &lt;skill — what it does&gt;. The orchestrator is advised to study this skill and, if it does not
+    conflict with the orchestra's other skills, use it for further interaction with my entity." Limits: one
+    step per SYSTEMATIC gap (never per task); it NEVER blocks, replaces or delays the delegated work itself;
+    the orchestrator reads it, evaluates the skill, adopts it if conflict-free and closes the step with a
+    report.</law>
+
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read GLOSSARY.md (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
+      (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
+      decomposition-born overview at app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
+      works / efficiency / reuse / result + the fractera:project graph) — ALONGSIDE the completed/current
+      sub-steps, on EVERY step. It is the single source of truth for what the project is and how its nodes
+      fit together; every spec/handoff step file points to it. Never build a project node without it.</action>
     <action>Check memory: GET /api/rag/status; offline -> work from files on disk.</action>
     <action>Read the LANGUAGE SET before authoring ANY content (step 150): the languages in
       NEXT_PUBLIC_SUPPORTED_LANGUAGES (the slot's .env.local — a plain file read, NO API). It is the ONE
@@ -242,7 +264,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known; language set known</gate>
+    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

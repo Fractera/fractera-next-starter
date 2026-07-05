@@ -178,6 +178,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read GLOSSARY.md (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
+      (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
+      decomposition-born overview at app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
+      works / efficiency / reuse / result + the fractera:project graph) — ALONGSIDE the completed/current
+      sub-steps, on EVERY step. It is the single source of truth for what the project is and how its nodes
+      fit together; every spec/handoff step file points to it. Never build a project node without it.</action>
     <action>Check memory: GET /api/rag/status; offline -> work from files on disk.</action>
     <action>Read the LANGUAGE SET before authoring ANY content (step 150): the languages in
       NEXT_PUBLIC_SUPPORTED_LANGUAGES (the slot's .env.local — a plain file read, NO API). It is the ONE
@@ -202,7 +208,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read; rag status known; language set known</gate>
+    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

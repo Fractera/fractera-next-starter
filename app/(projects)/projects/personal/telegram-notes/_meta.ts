@@ -48,9 +48,15 @@ const meta: RouteMeta = {
   entryIsClient: false,
   localComponents: [
     "index",
+    "about-accordion.client",
+    "status-indicator.client",
     "process-flow.client",
-    "process-queue-table.server",
-    "results-table.server",
+    "run-panel.client",
+    "next-run-countdown.client",
+    "hooks-panel.client",
+    "cron-jobs-table.server",
+    "missing-keys-modal.client",
+    "project-footer.client",
   ],
   sharedComponents: [],
 

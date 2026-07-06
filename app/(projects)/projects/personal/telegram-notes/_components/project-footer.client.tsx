@@ -9,8 +9,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { adminBase } from "@/lib/runtime-urls";
+import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { REQUIRED_ENV_KEYS } from "../_data/required-keys";
 import { projectTabStrings } from "../_data/tab-i18n";
+
+// Day/night theme labels for the footer toggle (English — the Projects zone is monolingual).
+const THEME_LABELS = { system: "System theme", light: "Light theme", dark: "Dark theme" };
 
 // Per-project footer (step 186.2): brand on the left, two deep-link icon actions on
 // the right. The admin base is derived from window.location (adminBase) so both IP and
@@ -62,6 +66,7 @@ export function ProjectFooter({ shortName, lang }: { shortName: string; lang: st
             </TooltipTrigger>
             <TooltipContent>{t.envVars}</TooltipContent>
           </Tooltip>
+          <ThemeToggle labels={THEME_LABELS} />
         </div>
       </TooltipProvider>
     </footer>

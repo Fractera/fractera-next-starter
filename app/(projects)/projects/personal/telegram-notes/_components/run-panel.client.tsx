@@ -4,12 +4,14 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { NextRunCountdown } from "./next-run-countdown.client";
 
-// Admin launch panel (contract R9): accepts the run input and starts the
-// project's durable workflow through its trigger route. The started run
-// journals itself into project_cron_runs, so it appears in the processes /
-// results tables below on the next page load.
-export function RunPanel() {
+// Admin launch panel (contract R9): shows the countdown to the next scheduled run
+// and accepts a manual run input to start the project's durable workflow through its
+// trigger route. The started run journals itself into project_cron_runs, so it
+// appears in the results table below on the next page load. `periodSec`/`enabled`
+// come from the co-located cron.json (Phase 2).
+export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: number; enabled?: boolean }) {
   const [input, setInput] = useState("");
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -38,6 +40,10 @@ export function RunPanel() {
 
   return (
     <div className="space-y-3 rounded-lg border p-4">
+      <NextRunCountdown periodSec={periodSec} enabled={enabled} />
+      <div className="border-t pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Run manually (test)
+      </div>
       <Textarea
         value={input}
         onChange={(event) => setInput(event.target.value)}

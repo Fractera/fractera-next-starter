@@ -67,6 +67,22 @@ const SCHEMA = `
     error       TEXT,
     created_by  TEXT NOT NULL DEFAULT 'fractera-cron'
   );
+  -- Automation hooks (step 187): a spoken trigger phrase → an action, bound to a
+  -- project. normalized_phrase is UNIQUE across the WHOLE table (GLOBAL uniqueness):
+  -- the chat/Telegram router matches one phrase to exactly one project action, so a
+  -- duplicate or near-duplicate phrase in ANY project is refused (owner contract 187).
+  CREATE TABLE IF NOT EXISTS project_hooks (
+    id                TEXT PRIMARY KEY NOT NULL,
+    category          TEXT NOT NULL,
+    project           TEXT NOT NULL,
+    phrase            TEXT NOT NULL,
+    normalized_phrase TEXT NOT NULL UNIQUE,
+    action            TEXT NOT NULL DEFAULT 'custom',
+    lang              TEXT NOT NULL DEFAULT 'en',
+    description       TEXT NOT NULL DEFAULT '',
+    created_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by        TEXT NOT NULL DEFAULT 'system'
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

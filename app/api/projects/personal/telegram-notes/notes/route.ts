@@ -24,6 +24,8 @@ const SORTS: Record<string, string> = {
 type Row = {
   id: number;
   hook_action: string;
+  hook_phrase: string;
+  condition: string | null;
   summary: string;
   reminder_due: number | null;
   delivered: number;
@@ -55,7 +57,7 @@ export async function GET(req: NextRequest) {
     const whereSql = where.join(" AND ");
     const rows = (await db
       .prepare(
-        `SELECT id, hook_action, summary, reminder_due, delivered, created_at
+        `SELECT id, hook_action, hook_phrase, condition, summary, reminder_due, delivered, created_at
            FROM telegram_notes WHERE ${whereSql}
           ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
       )
@@ -68,6 +70,9 @@ export async function GET(req: NextRequest) {
       rows: rows.map((r) => ({
         id: String(r.id),
         type: noteType(r.hook_action),
+        action: r.hook_action,
+        hookPhrase: r.hook_phrase ?? "",
+        condition: r.condition,
         summary: r.summary,
         reminderDue: r.reminder_due,
         delivered: Boolean(r.delivered),

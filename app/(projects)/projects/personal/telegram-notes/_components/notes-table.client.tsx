@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { NOTE_TYPE_LABEL, type NoteType } from "../_lib/note-type";
+import { projectAction } from "../_data/actions";
 import type { NoteRow } from "../_lib/types";
 
 // The single unified results table (step 188 Phase 3) — replaces the two removed
@@ -32,11 +32,18 @@ import type { NoteRow } from "../_lib/types";
 const PAGE = 20;
 const API = "/api/projects/personal/telegram-notes/notes";
 
-const TYPE_STYLE: Record<NoteType, string> = {
-  record: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-transparent",
-  reminder: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-transparent",
-  request: "bg-green-500/15 text-green-600 dark:text-green-400 border-transparent",
-  other: "bg-muted text-muted-foreground border-transparent",
+// Theme-aware badge classes per action color token (the palette the engine assigns in the
+// actions registry). Unknown colors fall back to neutral.
+const COLOR_STYLE: Record<string, string> = {
+  blue: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-transparent",
+  amber: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-transparent",
+  green: "bg-green-500/15 text-green-600 dark:text-green-400 border-transparent",
+  violet: "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-transparent",
+  rose: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-transparent",
+  cyan: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-transparent",
+  orange: "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-transparent",
+  teal: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-transparent",
+  neutral: "bg-muted text-muted-foreground border-transparent",
 };
 
 const SORTS = [
@@ -148,8 +155,10 @@ export function NotesTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left">
-              <th className="px-3 py-2 font-medium">Type</th>
+              <th className="px-3 py-2 font-medium">Action</th>
+              <th className="px-3 py-2 font-medium">Hook</th>
               <th className="px-3 py-2 font-medium">Summary</th>
+              <th className="px-3 py-2 font-medium">Condition</th>
               <th className="px-3 py-2 font-medium">Reminder</th>
               <th className="px-3 py-2 font-medium">Created</th>
               <th className="px-3 py-2" />
@@ -158,7 +167,7 @@ export function NotesTable({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
                   No records yet — send a hook phrase in Telegram to create one.
                 </td>
               </tr>
@@ -167,10 +176,18 @@ export function NotesTable({
                 const open = expanded === r.id;
                 const dueMs = r.reminderDue ? r.reminderDue * 1000 : null;
                 const past = dueMs !== null && dueMs < now;
+                const action = projectAction(r.action);
                 return (
                   <tr key={r.id} className="border-b align-top last:border-0">
                     <td className="px-3 py-2">
-                      <Badge className={TYPE_STYLE[r.type]}>{NOTE_TYPE_LABEL[r.type]}</Badge>
+                      <Badge className={COLOR_STYLE[action.color] ?? COLOR_STYLE.neutral}>
+                        {action.title}
+                      </Badge>
+                    </td>
+                    <td className="max-w-40 px-3 py-2 text-muted-foreground">
+                      <span className="line-clamp-1" title={r.hookPhrase}>
+                        {r.hookPhrase || "—"}
+                      </span>
                     </td>
                     <td className="px-3 py-2">
                       <button
@@ -181,6 +198,11 @@ export function NotesTable({
                       >
                         {r.summary || "—"}
                       </button>
+                    </td>
+                    <td className="max-w-40 px-3 py-2 text-muted-foreground">
+                      <span className="line-clamp-2" title={r.condition ?? ""}>
+                        {r.condition || "—"}
+                      </span>
                     </td>
                     <td
                       className={

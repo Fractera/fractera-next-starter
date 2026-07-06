@@ -38,6 +38,9 @@ import type { NoteType } from "./note-type";
 export type NoteRow = {
   id: string;
   type: NoteType;
+  action: string; // the Action id (save|remind|recall) — the ontology entity (188-R)
+  hookPhrase: string; // the exact hook phrase that fired (empty if none)
+  condition: string | null; // the declared-guard outcome (e.g. date-parsed / needs-date)
   summary: string;
   reminderDue: number | null;
   delivered: boolean;

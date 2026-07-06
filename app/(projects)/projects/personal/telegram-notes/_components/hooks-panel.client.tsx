@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_HOOKS } from "../_data/hooks";
+import { PROJECT_ACTIONS } from "../_data/actions";
 import type { Hook } from "../_lib/types";
 
 // Hooks layer of the project page (step 187.4): the spoken trigger phrases that drive
@@ -23,25 +24,18 @@ import type { Hook } from "../_lib/types";
 const CATEGORY = "personal";
 const PROJECT = "telegram-notes";
 
-const ACTION_LABEL: Record<string, string> = {
-  save: "add a note",
-  remind: "add a reminder",
-  recall: "activate search",
-  custom: "custom action",
-};
-
-// The action a new hook is bound to (owner, step 188): the user picks one when adding a
-// phrase. "custom" is kept for hooks whose behavior a coder wires later.
-const ACTION_OPTIONS = [
-  { v: "save", label: "Add a note" },
-  { v: "remind", label: "Add a reminder" },
-  { v: "recall", label: "Activate search" },
-] as const;
+// Action labels + options come from the project's ACTIONS registry (_data/actions.ts, derived
+// from the automation graph — 188-R). A hook binds a phrase to one of THESE typed actions, never
+// an abstract verb; adding a new action means extending the automation's diagram, not this panel.
+const ACTION_LABEL: Record<string, string> = Object.fromEntries(
+  PROJECT_ACTIONS.map((a) => [a.id, a.title]),
+);
+const ACTION_OPTIONS = PROJECT_ACTIONS.map((a) => ({ v: a.id, label: a.title, hint: a.description }));
 
 export function HooksPanel({ initialHooks }: { initialHooks: Hook[] }) {
   const [hooks, setHooks] = useState<Hook[]>(initialHooks);
   const [phrase, setPhrase] = useState("");
-  const [action, setAction] = useState<string>("save");
+  const [action, setAction] = useState<string>(ACTION_OPTIONS[0]?.v ?? "save");
   const [busy, setBusy] = useState(false);
 
   // Refresh from the server on mount so the list reflects hooks other sessions added.
@@ -186,7 +180,9 @@ export function HooksPanel({ initialHooks }: { initialHooks: Hook[] }) {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Stored as lowercase without punctuation — e.g. &ldquo;Remind me…&rdquo; → &ldquo;remind me&rdquo;.
+          Actions are defined by the automation&apos;s diagram — to add a new one, extend the
+          automation. The phrase is stored lowercase without punctuation — e.g. &ldquo;Remind
+          me…&rdquo; → &ldquo;remind me&rdquo;.
         </p>
       </div>
     </div>

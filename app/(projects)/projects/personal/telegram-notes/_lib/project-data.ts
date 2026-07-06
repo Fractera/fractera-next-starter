@@ -14,7 +14,7 @@ export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: nu
   try {
     const rows = await db
       .prepare(
-        `SELECT id, hook_action, summary, reminder_due, delivered, created_at
+        `SELECT id, hook_action, hook_phrase, condition, summary, reminder_due, delivered, created_at
            FROM telegram_notes WHERE project_slug = ?
           ORDER BY created_at DESC, id DESC LIMIT ?`,
       )
@@ -26,6 +26,9 @@ export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: nu
       rows: rows.map((r) => ({
         id: String(r.id),
         type: noteType(String(r.hook_action)),
+        action: String(r.hook_action),
+        hookPhrase: String(r.hook_phrase ?? ""),
+        condition: r.condition === null || r.condition === undefined ? null : String(r.condition),
         summary: String(r.summary ?? ""),
         reminderDue: r.reminder_due === null ? null : Number(r.reminder_due),
         delivered: Boolean(r.delivered),

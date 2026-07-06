@@ -4,9 +4,12 @@ export const PROJECT_DESCRIPTION = {
   title: "Telegram Notes",
   category: "personal",
   // Why this project exists.
-  purpose: "Личные заметки и напоминания в Telegram через произнесённые фразы-хуки",
+  purpose:
+    "Free-form personal notes and reminders in Telegram through spoken hook phrases: one phrase turns a message into a saved memory, a date reminder, or an answer recalled from memory.",
   // What is automated.
-  automation: "Placeholder — describe what this project automates (edit _data/description.ts).",
+  automation:
+    "Captures your Telegram messages that begin with a registered hook phrase and, without any manual bookkeeping, files each one as a note, a scheduled reminder, or a memory lookup — then replies in the chat.",
   // How the automation works.
-  how: "Placeholder — describe how the automation works (edit _data/description.ts).",
+  how:
+    "A hook phrase you send in Telegram is detected from its first words, summarized by a cheap model, and saved to the project database plus LightRAG vector memory; \"remind me …\" schedules a date push, and \"what did I save about …\" runs a semantic search — each outcome is answered back in the same chat.",
 } as const;

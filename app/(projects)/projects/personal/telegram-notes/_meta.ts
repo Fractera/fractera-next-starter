@@ -51,6 +51,7 @@ const meta: RouteMeta = {
     "about-accordion.client",
     "status-indicator.client",
     "process-flow.client",
+    "node-key-check.client",
     "run-panel.client",
     "next-run-countdown.client",
     "settings-accordion.client",

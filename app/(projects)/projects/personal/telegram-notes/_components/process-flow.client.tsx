@@ -11,22 +11,46 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Info, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { FLOW_EDGES, FLOW_NODES, type FlowNode } from "../_data/flow";
+import { useEffect, useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { FLOW_EDGES, FLOW_NODES, type FlowNode as GeneratedFlowNode } from "../_data/flow";
+import { projectAction } from "../_data/actions";
+import { NodeKeyCheck } from "./node-key-check.client";
+
+// Local augmentation: the diagram data is derived (never hand-edited), but this component
+// annotates each node at runtime with `alert` (a needed key is missing → red background).
+type FlowNode = GeneratedFlowNode & { data: GeneratedFlowNode["data"] & { alert?: boolean } };
+
+// Action color → a left-accent hex the node border uses (matches the registry palette).
+const ACTION_ACCENT: Record<string, string> = {
+  blue: "#3b82f6", amber: "#f59e0b", green: "#22c55e", violet: "#8b5cf6",
+  rose: "#f43f5e", cyan: "#06b6d4", orange: "#f97316", teal: "#14b8a6",
+};
+
+// The action ids flowing through a node → the accent to tint its border. A single action =
+// that action's color; a trunk ("all") or multi-action node stays neutral (shown via badges).
+function nodeAccent(actions: FlowNode["data"]["info"]["actions"]): string | undefined {
+  if (!Array.isArray(actions) || actions.length !== 1) return undefined;
+  return ACTION_ACCENT[projectAction(actions[0]).color];
+}
 
 // Interactive process diagram (react-flow). Its shape is DATA in _data/flow.ts —
 // the project's EXECUTION SCHEMA (contract R6): reshape the diagram there, never
-// in this component. Nodes are movable and edges follow them, but the canvas
-// cannot create or delete anything: the data file stays the single source of
-// truth of the diagram. Clicking a node opens the info panel with EVERYTHING the
-// node is (kind, task, processes, tools, env keys, io, connections) — R8.
+// in this component. Clicking a node opens the info panel with EVERYTHING the node
+// is (kind, actions, condition, task, tools, env keys, io, connections) — R8. Each
+// node is tinted by its Action color; a node that needs a key it does not have gets
+// a light-red background (188-R).
 function ProcessNode({ data, selected }: NodeProps<FlowNode>) {
+  const accent = nodeAccent(data.info.actions);
+  const needsKey = Boolean(data.alert);
   return (
     <div
       className={
-        "flex max-w-56 items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm shadow-sm " +
-        (selected ? "border-primary" : "border-border")
+        "flex max-w-56 items-center gap-2 rounded-md border px-3 py-2 text-sm shadow-sm " +
+        (needsKey ? "bg-red-500/10 border-red-500/50 " : "bg-background ") +
+        (selected ? "border-primary" : needsKey ? "" : "border-border")
       }
+      style={accent && !needsKey ? { borderLeft: `3px solid ${accent}` } : undefined}
     >
       <Handle type="target" position={Position.Left} />
       <span>{data.label}</span>
@@ -54,9 +78,50 @@ function PanelList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
+// Which of the node's env keys we can probe presence for (the check-key targets). A node that
+// declares one of these but has it absent gets the red alert. TELEGRAM_ALLOWED_CHAT_ID is
+// optional (empty = all chats) so it never raises an alert.
+const PRESENCE_KEYS = ["TELEGRAM_BOT_TOKEN", "OPENAI_API_KEY"];
+
 export function ProcessFlow() {
-  const [nodes, , onNodesChange] = useNodesState<FlowNode>(FLOW_NODES);
+  const [nodes, setNodes, onNodesChange] = useNodesState<FlowNode>(FLOW_NODES);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Fetch key presence once, then flag every node that needs an absent key (red background).
+  // OpenAI "inconclusive" (auth/gateway hiccup) never flags — no false alarm (187.9).
+  useEffect(() => {
+    let alive = true;
+    async function loadPresence() {
+      const present: Record<string, boolean> = {};
+      try {
+        const r = await fetch("/api/project-config/env?keys=TELEGRAM_BOT_TOKEN", { cache: "no-store" });
+        const d = r.ok ? ((await r.json()) as { present?: Record<string, boolean> }) : null;
+        present.TELEGRAM_BOT_TOKEN = d ? Boolean(d.present?.TELEGRAM_BOT_TOKEN) : true;
+      } catch {
+        present.TELEGRAM_BOT_TOKEN = true;
+      }
+      try {
+        const r = await fetch("/api/project-config/openai-key", { cache: "no-store" });
+        const d = r.ok ? ((await r.json()) as { configured?: boolean; inconclusive?: boolean }) : null;
+        present.OPENAI_API_KEY = d ? Boolean(d.configured) || Boolean(d.inconclusive) : true;
+      } catch {
+        present.OPENAI_API_KEY = true;
+      }
+      if (!alive) return;
+      setNodes((prev) =>
+        prev.map((n) => {
+          const missing = (n.data.info.envKeys ?? []).some(
+            (k) => PRESENCE_KEYS.includes(k) && present[k] === false,
+          );
+          return { ...n, data: { ...n.data, alert: missing } };
+        }),
+      );
+    }
+    loadPresence();
+    return () => {
+      alive = false;
+    };
+  }, [setNodes]);
 
   const active = activeId
     ? nodes.find((node) => node.id === activeId)
@@ -116,6 +181,31 @@ export function ProcessFlow() {
             </button>
           </div>
           <p className="text-muted-foreground">{info.summary}</p>
+          {/* Which Action branches flow through this node (188-R). */}
+          {info.actions && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Actions:</span>
+              {info.actions === "all" ? (
+                <Badge variant="outline">all</Badge>
+              ) : (
+                info.actions.map((id) => {
+                  const a = projectAction(id);
+                  const accent = ACTION_ACCENT[a.color];
+                  return (
+                    <Badge key={id} variant="outline" style={accent ? { borderColor: accent, color: accent } : undefined}>
+                      {a.title}
+                    </Badge>
+                  );
+                })
+              )}
+            </div>
+          )}
+          {info.condition && (
+            <div className="space-y-1">
+              <h4 className="font-medium">Condition</h4>
+              <p className="text-muted-foreground">{info.condition}</p>
+            </div>
+          )}
           {info.task && (
             <div className="space-y-1">
               <h4 className="font-medium">Task</h4>
@@ -126,7 +216,8 @@ export function ProcessFlow() {
           )}
           <PanelList title="Processes" items={info.processes} />
           <PanelList title="Tools" items={info.tools} />
-          <PanelList title="Environment keys" items={info.envKeys} />
+          {/* Third place a key can be set: an input + live "Check key / API" per env key. */}
+          <NodeKeyCheck envKeys={info.envKeys} />
           {info.io && (
             <div className="space-y-1">
               <h4 className="font-medium">Inputs → outputs</h4>

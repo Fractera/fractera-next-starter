@@ -54,6 +54,7 @@ const meta: RouteMeta = {
     "run-panel.client",
     "next-run-countdown.client",
     "hooks-panel.client",
+    "notes-table.client",
     "cron-jobs-table.server",
     "missing-keys-modal.client",
     "project-footer.client",

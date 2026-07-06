@@ -30,3 +30,16 @@ export type Hook = {
   lang: string;
   description: string;
 };
+
+// One row of the unified results table (step 188 Phase 3), read from the
+// telegram_notes table. `reminderDue`/`createdAt` are unix seconds; `reminderDue`
+// is set only for reminders. `full_text` is fetched lazily by the "Full text" modal.
+import type { NoteType } from "./note-type";
+export type NoteRow = {
+  id: string;
+  type: NoteType;
+  summary: string;
+  reminderDue: number | null;
+  delivered: boolean;
+  createdAt: number;
+};

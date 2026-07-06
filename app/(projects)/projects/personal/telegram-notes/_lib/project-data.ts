@@ -1,59 +1,40 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { db } from "@/lib/db";
-import type { CronJob, Hook, ProcessRun, ProjectResult } from "./types";
+import type { CronJob, Hook, NoteRow } from "./types";
+import { noteType } from "./note-type";
 
 const CATEGORY = "personal";
 const PROJECT = "telegram-notes";
-const LIMIT = 50;
 
-// Providers for the tables of the project page. Run rows are written by the
-// substrate cron runner (fractera-cron) and the durable workflow into the
-// shared app DB; the scheduled-runs queue is read from the co-located
-// cron.json (see README, Finishing).
-export async function getProcessQueue(): Promise<ProcessRun[]> {
+// Server-rendered first page of the unified results table (step 188 Phase 3): the
+// newest telegram_notes rows + the total count. The client table then handles search /
+// sort / load-more via /api/projects/personal/telegram-notes/notes.
+export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: number }> {
   try {
     const rows = await db
       .prepare(
-        `SELECT id, process, status, started_at, finished_at
-           FROM project_cron_runs
-          WHERE category = ? AND project = ?
-          ORDER BY started_at DESC
-          LIMIT ${LIMIT}`,
+        `SELECT id, hook_action, summary, reminder_due, delivered, created_at
+           FROM telegram_notes WHERE project_slug = ?
+          ORDER BY created_at DESC, id DESC LIMIT ?`,
       )
-      .all(CATEGORY, PROJECT);
-    return rows.map((r) => ({
-      id: String(r.id),
-      process: String(r.process),
-      status: r.status as ProcessRun["status"],
-      startedAt: String(r.started_at),
-      finishedAt: r.finished_at === null ? null : String(r.finished_at),
-    }));
+      .all(PROJECT, limit);
+    const totalRow = (await db
+      .prepare(`SELECT COUNT(*) AS n FROM telegram_notes WHERE project_slug = ?`)
+      .get(PROJECT)) as { n: number } | null;
+    return {
+      rows: rows.map((r) => ({
+        id: String(r.id),
+        type: noteType(String(r.hook_action)),
+        summary: String(r.summary ?? ""),
+        reminderDue: r.reminder_due === null ? null : Number(r.reminder_due),
+        delivered: Boolean(r.delivered),
+        createdAt: Number(r.created_at),
+      })),
+      total: totalRow?.n ?? 0,
+    };
   } catch {
-    return []; // table not created yet (runner has not ticked) — empty queue
-  }
-}
-
-export async function getResults(): Promise<ProjectResult[]> {
-  try {
-    const rows = await db
-      .prepare(
-        `SELECT id, result_title, result_url, finished_at
-           FROM project_cron_runs
-          WHERE category = ? AND project = ?
-            AND status = 'completed' AND result_title IS NOT NULL
-          ORDER BY finished_at DESC
-          LIMIT ${LIMIT}`,
-      )
-      .all(CATEGORY, PROJECT);
-    return rows.map((r) => ({
-      id: String(r.id),
-      title: String(r.result_title),
-      artifactUrl: r.result_url === null ? "" : String(r.result_url),
-      producedAt: String(r.finished_at),
-    }));
-  } catch {
-    return [];
+    return { rows: [], total: 0 }; // table not created yet — empty feed
   }
 }
 

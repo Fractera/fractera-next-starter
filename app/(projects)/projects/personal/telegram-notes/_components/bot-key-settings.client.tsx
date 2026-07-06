@@ -1,31 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  refreshAutomationStatus,
+  setAutomationEnabled,
+  useAutomationStatus,
+} from "../_lib/automation-status";
 
 // Bot-API track settings (step 188 Phase 4): replace the Telegram bot token and turn the
 // automation on/off. The token goes to the slot env setter (runtime var + restart, rule
 // 143); the on/off flag flips the co-located cron.json `enabled` (fractera-cron re-reads
-// it live). Turning it off makes this track "broken" — the page status pill goes red.
+// it live). Turning it off makes this track "broken" — the shared store updates so the
+// page status pill AND this tab's dot go red INSTANTLY (Phase 4.1, no reload).
 export function BotKeySettings() {
-  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const status = useAutomationStatus();
+  const enabled = status.loaded ? status.enabled : null;
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/projects/personal/telegram-notes/settings", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { enabled?: boolean } | null) => {
-        if (d) setEnabled(d.enabled !== false);
-      })
-      .catch(() => setEnabled(true));
-  }, []);
 
   async function toggle() {
     const next = !(enabled ?? true);
     setBusy(true);
+    setAutomationEnabled(next); // optimistic — pill + dot react immediately
     try {
       const r = await fetch("/api/projects/personal/telegram-notes/settings", {
         method: "POST",
@@ -33,12 +32,13 @@ export function BotKeySettings() {
         body: JSON.stringify({ enabled: next }),
       });
       if (!r.ok) {
+        setAutomationEnabled(!next); // revert on failure
         toast.error(`Could not update (HTTP ${r.status})`);
         return;
       }
-      setEnabled(next);
       toast.success(next ? "Automation activated" : "Automation deactivated");
     } catch {
+      setAutomationEnabled(!next);
       toast.error("Could not update (network error)");
     } finally {
       setBusy(false);
@@ -61,6 +61,7 @@ export function BotKeySettings() {
         return;
       }
       setToken("");
+      void refreshAutomationStatus(); // reflect the new key in the pill/dots
       toast.success("Bot token saved — applying (a brief restart)");
     } catch {
       toast.error("Could not save the token (network error)");

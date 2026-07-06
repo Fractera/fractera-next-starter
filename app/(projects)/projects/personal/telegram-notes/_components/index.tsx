@@ -60,8 +60,8 @@ export default async function TelegramNotesProjectEntry() {
           </Link>
           <h1 className="mt-2 text-3xl font-semibold">{d.title}</h1>
         </div>
-        {/* Running / degraded / broken pill on the breadcrumb row. */}
-        <StatusIndicator cronEnabled={cronEnabled} />
+        {/* Running / degraded / broken pill on the breadcrumb row (shared store). */}
+        <StatusIndicator />
       </div>
 
       <section className="space-y-3">

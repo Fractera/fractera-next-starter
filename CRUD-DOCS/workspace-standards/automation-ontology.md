@@ -27,7 +27,8 @@ step" hand-added in code. What is not on the diagram does not exist.
 - **What it solves:** turns a repeated manual behavior into a self-running, observable unit with
   one page of truth.
 - **Schema:** the graph root `{ category, slug, project{purpose,efficiency,reuse,result},
-  actions[], state[], nodes[] }`.
+  actions[], state[], nodes[], record{table,fields[]} }` (the optional `record` block declares the
+  universal records table's columns — see entity 12).
 
 ### 2. Trigger
 - **What it is:** the event source that starts a run: an incoming message, a schedule (cron), a
@@ -142,6 +143,25 @@ step" hand-added in code. What is not on the diagram does not exist.
   swept later — the owner is never blocked. A `DELETE /api/projects/<cat>/<slug>/notes/[id]`
   endpoint (role-gated) performs both deletions. This is the standard, reusable Record contract
   every automation inherits.
+- **Columns are CONFIG-DRIVEN (the table is universal, never hand-coded):** the automation DECLARES
+  which columns the records table shows — it does NOT hand-write a bespoke table component. The graph
+  root carries an optional `record` block; the engine GENERATES `_data/columns.ts` from it (marker
+  `// fractera:columns`, a re-run rewrites it — exactly like `_data/actions.ts`). The frozen primitive
+  ships ONE universal `RecordsTable` that renders whatever `columns.ts` declares, through a CLOSED set
+  of typed renderers; adding a column = extend the GRAPH and re-run, never edit a component.
+  - **Schema:** `record: { table, fields: [{ id, header, type, source, defaultVisible?, attr?, options? }] }`.
+    - `attr?` — the ontology entity this column surfaces (`action|hook|condition|channel|state|…`); the
+      column picker labels the checkbox by it (with a tooltip) from the shared attribute vocabulary.
+    - `table` — the DB table the rows come from (declared in `state[]`; a column can only show data the
+      automation actually persists — a checkbox reveals an existing field, it never invents one).
+    - `type ∈ { badge | text | longtext | date | link | actions }` — the closed renderer set (`badge`
+      tints via `options.colorFrom`; `longtext` expands on click; `date` may `emphasizeIfFuture`;
+      `actions` renders row actions `detail`/`delete`).
+    - `source` — the `table` column feeding the cell. `defaultVisible` — shown before the user toggles.
+  - **Two layers, never conflated:** the AUTOMATION declares which columns EXIST + are default-visible
+    (config, per-automation — the "3 columns vs 6" scaling); the USER toggles VISIBILITY among them via
+    a checkbox picker (personal, `localStorage`, horizontal scroll when many). The picker labels each
+    column by its ontology entity from the shared attribute vocabulary.
 
 ## Standardized attributes (fields, not entities)
 
@@ -163,6 +183,11 @@ step" hand-added in code. What is not on the diagram does not exist.
 6. Every `state` id referenced by a step's task exists in the registry.
 7. Isomorphism (R6): diagram nodes ↔ `// node:<id>` workflow markers; kept workflow files are
    validated, never overwritten.
+8. Records columns (when a `record` block is present): `record.table` is an id-safe identifier (the
+   SQLite table the rows come from — typically the table a `state` entry persists to); there is ≥1
+   field; every `field.type` ∈ the closed set `{badge|text|longtext|date|link|actions}`; every
+   `field.source` is an id-safe column identifier; at least one field is `defaultVisible`. A broken
+   type, a non-identifier table/source, or an empty field set → the engine refuses the graph.
 
 ## Worked example — telegram-notes (3 actions)
 
@@ -175,3 +200,7 @@ step" hand-added in code. What is not on the diagram does not exist.
   deliver-due-reminders serves `remind` (off the cron trigger).
 - State: `telegram-cursor` (SQLite, dedup of getUpdates), `notes-memory` (LightRAG, semantic
   recall). Records: one row per save / remind / recall with hook_phrase + condition outcome.
+- Record columns (`record.table: telegram_notes`): `Action` (badge, colorFrom the action) · `Hook`
+  (text) · `Summary` (longtext, expands) · `Condition` (text) · `Reminder` (date, emphasizeIfFuture) ·
+  `Created` (date) · `Full text` (actions detail) · Delete (actions delete). The engine emits these
+  into `_data/columns.ts`; the universal `RecordsTable` renders them — no bespoke table component.

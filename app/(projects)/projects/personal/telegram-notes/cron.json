@@ -2,7 +2,7 @@
   "jobs": [
     {
       "id": "telegram-notes-poll",
-      "title": "Telegram Notes: опрос бота раз в минуту",
+      "title": "Telegram Notes: poll the bot every minute",
       "schedule": "* * * * *",
       "action": {
         "type": "http",

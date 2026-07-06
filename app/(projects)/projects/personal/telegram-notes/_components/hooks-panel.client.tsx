@@ -5,6 +5,13 @@ import { toast } from "sonner";
 import { Plus, Trash2, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DEFAULT_HOOKS } from "../_data/hooks";
 import type { Hook } from "../_lib/types";
 
@@ -17,15 +24,24 @@ const CATEGORY = "personal";
 const PROJECT = "telegram-notes";
 
 const ACTION_LABEL: Record<string, string> = {
-  save: "save to memory",
-  remind: "schedule a reminder",
-  recall: "search memory",
+  save: "add a note",
+  remind: "add a reminder",
+  recall: "activate search",
   custom: "custom action",
 };
+
+// The action a new hook is bound to (owner, step 188): the user picks one when adding a
+// phrase. "custom" is kept for hooks whose behavior a coder wires later.
+const ACTION_OPTIONS = [
+  { v: "save", label: "Add a note" },
+  { v: "remind", label: "Add a reminder" },
+  { v: "recall", label: "Activate search" },
+] as const;
 
 export function HooksPanel({ initialHooks }: { initialHooks: Hook[] }) {
   const [hooks, setHooks] = useState<Hook[]>(initialHooks);
   const [phrase, setPhrase] = useState("");
+  const [action, setAction] = useState<string>("save");
   const [busy, setBusy] = useState(false);
 
   // Refresh from the server on mount so the list reflects hooks other sessions added.
@@ -141,17 +157,37 @@ export function HooksPanel({ initialHooks }: { initialHooks: Hook[] }) {
         </div>
       )}
 
-      {/* Free-form add (registers as a custom action) */}
-      <div className="flex gap-2 border-t pt-3">
-        <Input
-          value={phrase}
-          onChange={(e) => setPhrase(e.target.value)}
-          placeholder="Add your own trigger phrase…"
-          onKeyDown={(e) => e.key === "Enter" && register(phrase, "custom", "", "en")}
-        />
-        <Button onClick={() => register(phrase, "custom", "", "en")} disabled={busy || !phrase.trim()}>
-          Add
-        </Button>
+      {/* Free-form add — pick the action the phrase triggers. Whatever you type is
+          stored as simple lowercase text (punctuation/case dropped), so any Telegram
+          message is matched on meaning, not an exact phrase. */}
+      <div className="space-y-2 border-t pt-3">
+        <div className="flex flex-wrap gap-2">
+          <Select value={action} onValueChange={setAction}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTION_OPTIONS.map((o) => (
+                <SelectItem key={o.v} value={o.v}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            value={phrase}
+            onChange={(e) => setPhrase(e.target.value)}
+            placeholder="Add your own trigger phrase…"
+            className="min-w-48 flex-1"
+            onKeyDown={(e) => e.key === "Enter" && register(phrase, action, "", "en")}
+          />
+          <Button onClick={() => register(phrase, action, "", "en")} disabled={busy || !phrase.trim()}>
+            Add
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Stored as lowercase without punctuation — e.g. &ldquo;Remind me…&rdquo; → &ldquo;remind me&rdquo;.
+        </p>
       </div>
     </div>
   );

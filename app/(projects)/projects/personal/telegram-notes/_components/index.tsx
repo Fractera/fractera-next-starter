@@ -1,17 +1,16 @@
 import Link from "next/link";
 import { getAppConfig } from "@/config/app-config";
 import { PROJECT_DESCRIPTION } from "../_data/description";
-import { DEFAULT_HOOKS } from "../_data/hooks";
 import { projectTabStrings } from "../_data/tab-i18n";
 import { getCronJobs, getHooks, getNotes } from "../_lib/project-data";
 import { AboutAccordion } from "./about-accordion.client";
 import { CronJobsTable } from "./cron-jobs-table.server";
-import { HooksPanel } from "./hooks-panel.client";
 import { MissingKeysModal } from "./missing-keys-modal.client";
 import { NotesTable } from "./notes-table.client";
 import { ProcessFlow } from "./process-flow.client";
 import { ProjectFooter } from "./project-footer.client";
 import { RunPanel } from "./run-panel.client";
+import { SettingsAccordion } from "./settings-accordion.client";
 import { StatusIndicator } from "./status-indicator.client";
 
 // The Projects zone renders in English for now (owner, step 188 — multilingual is a
@@ -38,8 +37,6 @@ export default async function TelegramNotesProjectEntry() {
     getHooks(),
     getNotes(20),
   ]);
-  // The Hooks layer (187.4) shows only for automations that use spoken triggers.
-  const showHooks = DEFAULT_HOOKS.length > 0 || hooks.length > 0;
   const d = PROJECT_DESCRIPTION;
   const t = projectTabStrings(LANG);
   const enabledJob = cronJobs.find((j) => j.enabled);
@@ -82,12 +79,10 @@ export default async function TelegramNotesProjectEntry() {
         <RunPanel periodSec={periodSec} enabled={cronEnabled} />
       </section>
 
-      {showHooks && (
-        <section className="space-y-3">
-          <h2 className="text-xl font-medium">{t.hooks}</h2>
-          <HooksPanel initialHooks={hooks} />
-        </section>
-      )}
+      <section className="space-y-3">
+        <h2 className="text-xl font-medium">Settings</h2>
+        <SettingsAccordion initialHooks={hooks} />
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-xl font-medium">Records &amp; requests</h2>

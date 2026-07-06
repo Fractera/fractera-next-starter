@@ -89,14 +89,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "phrase has no usable content" }, { status: 422 })
   }
 
-  // GLOBAL near-duplicate guard: compare against every existing hook, not just this
-  // project's. A conflict returns 409 naming the colliding hook so the UI can explain.
+  // Global near-duplicate guard (step 187), relaxed per step 193 so the SAME project can
+  // register several intentionally-different actions that share a command prefix
+  // (e.g. "…remember this" save vs "…remind me" remind — near-dups by prefix but distinct
+  // intents the detector tells apart). Rules:
+  //   - an EXACT normalized match is always a conflict (the UNIQUE constraint enforces it too);
+  //   - a near-dup with a DIFFERENT project is a conflict (cross-project routing collision);
+  //   - a near-dup within the SAME project is a conflict ONLY when the action is the same
+  //     (a genuine ambiguity); different action in the same project is allowed.
   const existing = (await db
     .prepare("SELECT * FROM project_hooks")
     .all()) as unknown as HookRow[]
-  const clash = existing.find(
-    (h) => h.normalized_phrase === normalized || isNearDuplicate(phrase, h.phrase),
-  )
+  const clash = existing.find((h) => {
+    if (h.normalized_phrase === normalized) return true
+    if (!isNearDuplicate(phrase, h.phrase)) return false
+    const sameProject = h.category === category && h.project === project
+    return sameProject ? h.action === action : true
+  })
   if (clash) {
     return NextResponse.json(
       {
@@ -115,11 +124,14 @@ export async function POST(req: NextRequest) {
   const session = await getSession(req)
   const id = crypto.randomUUID()
   try {
+    // Store the NORMALIZED phrase as the phrase itself (step 188): whatever the user typed
+    // — commas, periods, capitals — is saved as simple lowercase text, so any Telegram
+    // message is matched on meaning, not exact punctuation/case.
     await db
       .prepare(
         "INSERT INTO project_hooks (id, category, project, phrase, normalized_phrase, action, lang, description, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       )
-      .run(id, category, project, phrase, normalized, action, lang, description, session?.email ?? "unknown")
+      .run(id, category, project, normalized, normalized, action, lang, description, session?.email ?? "unknown")
   } catch (e) {
     // The UNIQUE(normalized_phrase) constraint is the last-line global guard against a
     // race between the read above and this insert.

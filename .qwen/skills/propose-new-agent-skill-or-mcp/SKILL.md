@@ -18,11 +18,22 @@ This skill is **self-sufficient**: it works with nothing but the local HTTP API.
 It does NOT depend on Hermes, on memory, or on any other agent existing. If you are
 the only agent in this project, you can still create a draft.
 
+## FIRST — check Hermes' native arsenal (do not reinvent)
+
+Before proposing a NEW skill or MCP whose domain overlaps Hermes' native tools — web search/extract, a
+browser, image generation, TTS, memory/RAG, scheduling/cron, delegation — **consult the native-capability
+catalog `CRUD-DOCS/workspace-standards/hermes-native-capabilities.md` FIRST**. If Hermes already provides it
+natively (it ships ~70 tools + the Nous Tool Gateway), do NOT propose building it from scratch — enable the
+native capability in Hermes' config, or hand it back to the orchestrator via a `native-capability-appeal`
+step (see the `prefer-hermes-native` law in your root instruction). Propose a new capability only when it is
+genuinely new / slot-specific and NOT covered natively. (This mirrors the `agent-feedback` channel in the
+opposite direction — step 192.)
+
 ## When to use
 
-- You spot a repeating manual pattern an agent skill could automate.
+- You spot a repeating manual pattern an agent skill could automate **and Hermes has no native tool for it**.
 - The architect says "document this as a skill" or "add this MCP connector".
-- You finish a task and notice a reusable pattern worth capturing.
+- You finish a task and notice a reusable pattern worth capturing (not already native to Hermes).
 
 ## Primary path — local HTTP API (works for ANY agent, no Hermes, no MCP)
 

@@ -224,6 +224,30 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     the orchestrator reads it, evaluates the skill, adopts it if conflict-free and closes the step with a
     report.</law>
 
+  <law id="prefer-hermes-native">Prefer Hermes' NATIVE capability over building from scratch (owner, step 192
+    — the mirror of agent-feedback). Coding agents often do not know that the orchestrator Hermes already
+    ships ~70 native tools (web_search/web_extract, 10 browser tools, image_generate, text_to_speech, memory,
+    session_search, cronjob, delegate_task, execute_code, vision) plus the Nous Tool Gateway (one subscription
+    = web/browser/image/TTS). BEFORE you build OR propose any capability (an MCP bridge / skill / tool) whose
+    domain overlaps that arsenal — web search or extraction, a browser, image generation, TTS, memory/RAG,
+    scheduling/cron, delegation — you MUST first consult the native-capability catalog
+    CRUD-DOCS/workspace-standards/hermes-native-capabilities.md. If Hermes already provides it natively, DO
+    NOT reinvent it: either (a) enable the native capability in Hermes' config, or (b) hand it back to the
+    orchestrator by materializing ONE appeal step:
+    DEVELOPMENT-STEPS/NEW-STEPS/&lt;NN&gt;-native-capability-appeal-&lt;your-agent&gt;-&lt;topic&gt;.md (NN =
+    next free number across NEW-STEPS + COMPLETED-STEPS), an ordinary step file ending with the standard
+    fractera:step machine block whose plan carries { "kind": "native-capability-appeal", "from":
+    "&lt;your-agent&gt;", "to": "orchestrator", "nativeTool": "&lt;the native tool / Tool Gateway&gt;", "task":
+    "&lt;what you were about to build&gt;" }. Body skeleton (keep this intent verbatim): "Service message from
+    coding agent &lt;you&gt; to the orchestrator: I was about to solve &lt;task&gt; by building &lt;Y&gt; from
+    scratch, but Hermes provides this NATIVELY — &lt;nativeTool&gt;. Recommendation: do not build from scratch;
+    reformulate the spec to use Hermes' native capability, or enable it in config." Limits: it NEVER blocks the
+    delegated work; the orchestrator reads it, and per SOUL R13 reforms the spec / enables the native tool
+    instead of a from-scratch build, then closes the step. Graceful degrade: a project WITHOUT Hermes has no
+    native arsenal to defer to — use your own tools; the catalog still keeps you from reinventing what you
+    already have. This is the OPPOSITE direction of agent-feedback (there: your skill flows UP to the
+    orchestrator; here: you defer DOWN to Hermes' native capability).</law>
+
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>

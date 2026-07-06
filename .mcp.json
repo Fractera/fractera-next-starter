@@ -55,13 +55,6 @@
       "headers": {
         "Authorization": "Bearer ${HERMES_MCP_SECRET}"
       }
-    },
-    "web-search-bridge": {
-      "type": "http",
-      "url": "http://localhost:3231",
-      "headers": {
-        "Authorization": "Bearer ${HERMES_MCP_SECRET}"
-      }
     }
   }
 }

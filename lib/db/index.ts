@@ -83,6 +83,27 @@ const SCHEMA = `
     created_at        TEXT NOT NULL DEFAULT (datetime('now')),
     created_by        TEXT NOT NULL DEFAULT 'system'
   );
+  -- telegram-notes automation (step 188). Key/value cursor store for the Telegram
+  -- getUpdates poller (last_update_id) — one row per key, self-sufficient (no Hermes).
+  CREATE TABLE IF NOT EXISTS telegram_notes_state (
+    key   TEXT PRIMARY KEY NOT NULL,
+    value TEXT
+  );
+  -- telegram-notes records (step 188): one row per saved note / date-reminder. summary
+  -- feeds the project-page results table; reminder_due (unix seconds) is set only for
+  -- date reminders (type 1) and delivered flips to 1 once the push is sent.
+  CREATE TABLE IF NOT EXISTS telegram_notes (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_slug TEXT NOT NULL DEFAULT 'telegram-notes',
+    hook_action  TEXT NOT NULL,
+    chat_id      TEXT NOT NULL,
+    msg_date     INTEGER,
+    reminder_due INTEGER,
+    delivered    INTEGER NOT NULL DEFAULT 0,
+    full_text    TEXT NOT NULL DEFAULT '',
+    summary      TEXT NOT NULL DEFAULT '',
+    created_at   INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

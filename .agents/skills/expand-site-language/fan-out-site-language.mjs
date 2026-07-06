@@ -170,6 +170,11 @@ async function seedGroupUi(outRoot, tab, L, def, plan) {
     src = src.replace(new RegExp(`export const ${lang}:`), `export const ${L}:`)
   }
   src = rewriteLangLinks(src, lang, L)
+  // Queue marker for the translation runner (COMMENT — the Partial<...Ui> type has no such field,
+  // a real field would fail tsc). The runner's pendingPages greps for it; the translated rewrite
+  // drops it. Without this the tab CHROME (menu button labels + index page strings) stayed an
+  // English seed forever — the "router pages and menu buttons not translated" bug.
+  src = src.replace(/(export const \w+:\s*Partial<\w+Ui>\s*=\s*\{)/, `$1\n  // needsTranslation: true`)
   await writeOut(outRoot, join(relData, `${L}.ts`), src, plan)
   return true
 }
@@ -264,6 +269,24 @@ ${list}
   return rel
 }
 
+// The fan-out's own COMPLETED step — the language addition itself must show in the work log.
+async function writeFanoutStep(outRoot, L, def, groups, pages) {
+  const dir = join("DEVELOPMENT-STEPS", "COMPLETED-STEPS")
+  const absDir = join(outRoot, dir)
+  await mkdir(absDir, { recursive: true }).catch(() => {})
+  let max = 0
+  for (const d of ["NEW-STEPS", "COMPLETED-STEPS"]) {
+    try { for (const f of await readdir(join(outRoot, "DEVELOPMENT-STEPS", d))) { const m = f.match(/^(\d+)-/); if (m) max = Math.max(max, +m[1]) } } catch { /* none */ }
+  }
+  const n = max + 1, nn = String(n).padStart(2, "0")
+  const today = new Date().toISOString().slice(0, 10)
+  const name = `Add language ${L} to the site`
+  const description = `Fanned out '${L}' across ${groups} group(s) / ${pages} unit(s), seeded with '${def}' content (noindex until translated). Translation queued as its own open step.`
+  const machine = { number: n, name, importance: "mandatory", status: "completed", completedAt: today, description, tasks: [] }
+  const body = `# ${nn} — ${name}\n\n> Development step · importance: mandatory · completed ${today}\n\n${description}\n\n## To-do\n_No tasks._\n\n<!-- fractera:step\n${JSON.stringify(machine)}\n-->\n`
+  await writeOut(outRoot, join(dir, `${nn}-add-language-${L}.md`), body, null)
+}
+
 // ── main ────────────────────────────────────────────────────────────────────
 async function main() {
   const a = parseArgs(process.argv.slice(2))
@@ -284,11 +307,14 @@ async function main() {
   let groupsTouched = 0
 
   for (const tab of groups) {
-    await seedGroupUi(outRoot, tab, L, def, plan)
+    const chromeSeeded = await seedGroupUi(outRoot, tab, L, def, plan)
     await patchGroupIndex(outRoot, tab, L, plan)
     await patchGroupManifest(outRoot, tab, L, plan)
     await patchPostMapper(outRoot, tab, plan)
     groupsTouched++
+    // The tab CHROME (menu button label + index-page strings) is a translation unit too —
+    // list it in the step so the runner covers it (the router/menu-buttons-stayed-English bug).
+    if (chromeSeeded || plan) seededPages.push(`/${L}/${tab} (menu & index labels)`)
     for (const slug of await listPosts(outRoot, tab)) {
       const seeded = await seedPostOverride(outRoot, tab, slug, L, def, plan)
       await patchPostIndex(outRoot, tab, slug, L, plan)
@@ -299,6 +325,9 @@ async function main() {
   // Write the open translation step only when something was actually seeded this run
   // (an idempotent rerun that seeds nothing must not spawn a duplicate empty step).
   const stepFile = (plan || seededPages.length > 0) ? await writeTranslationStep(outRoot, L, seededPages, plan) : null
+  // Materialize the fan-out itself as a COMPLETED step (the owner watches /development-steps —
+  // adding a language must appear in the work log, not happen invisibly).
+  if (!plan && seededPages.length > 0) await writeFanoutStep(outRoot, L, def, groupsTouched, seededPages.length).catch(() => {})
   const brokenSources = [...new Set(brokenWarnings)]
   done(plan, {
     lang: L, default: def, groups: groupsTouched, pages: seededPages.length,

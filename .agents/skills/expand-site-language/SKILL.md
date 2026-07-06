@@ -63,12 +63,18 @@ If you are tempted to reach for one of those to add a language: **stop and use t
    confirm, §8.2), then for real. **REBUILD** (`owner_deploy_rebuild_slot`) to publish the new routes
    (seeded, noindex). The menus (header / footer / left / right) update automatically.
 3. **Translate later (non-blocking), when you choose.** `owner_content_translate_pending { lang }` in a
-   loop: it returns the next pending page → you translate the **strings only** (keep the block kinds and
-   order, keep the root anchor and `/<lang>/` links) → call again with `{ op:"write", tab, slug,
-   translations }`. Repeat until `remaining: 0`. Honor any owner notes on the dev-step (e.g. "focus on
-   Spanish law, link real statutes") for regional value.
-4. **The runner does NOT deploy.** When translations are written, tell the owner: *press **Deploy** in
-   the footer* to publish — the translated pages then flip from noindex to indexable.
+   loop: it returns the next pending unit — a POST or a tab's **`_chrome`** (the menu button label +
+   index-page strings; translating it is what makes the MENUS and the router/index pages switch
+   language) → you translate the **strings only** (keep the block kinds and order, keep the root anchor
+   and `/<lang>/` links; **the title/seoTitle too** — an untranslated title is refused) → call again with
+   `{ op:"write", … }`. Repeat until `remaining: 0`. Honor any owner notes on the dev-step (e.g. "focus
+   on Spanish law, link real statutes") for regional value.
+   **🔒 ONE confirmation covers the WHOLE run.** Ask the owner once — "translate all N pending units for
+   '<lang>'?" — then loop next→write **silently to the end**. NEVER pause after each page to ask "continue?"
+   — that drags the owner into hours of clicking (the live-run bug). Stop early only on a tool ERROR.
+4. **The runner does NOT deploy.** It ticks each unit off in the translation step and **closes the step
+   itself** when the last unit is written. When done, tell the owner: *press **Deploy** in the footer* to
+   publish — the translated pages then flip from noindex to indexable.
 
 ## Confirm before mutating (§8.2)
 

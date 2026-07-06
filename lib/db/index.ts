@@ -83,6 +83,42 @@ const SCHEMA = `
     created_at        TEXT NOT NULL DEFAULT (datetime('now')),
     created_by        TEXT NOT NULL DEFAULT 'system'
   );
+  -- Inter-automation orchestration (ontology entity 13 + §D pub/sub, step 195). The substrate
+  -- runner (fractera-cron) carries the SAME three CREATE TABLE statements — keep the DDL textually
+  -- identical in both places when changing it.
+  -- subjects: the shared long-lived object several automations act on (blogger/lead/customer).
+  -- One stable id + a status state machine + free-form attributes; owner_automation names the
+  -- automation currently driving it.
+  CREATE TABLE IF NOT EXISTS subjects (
+    id               TEXT PRIMARY KEY NOT NULL,
+    kind             TEXT NOT NULL,
+    status           TEXT NOT NULL DEFAULT '',
+    owner_automation TEXT NOT NULL DEFAULT '',
+    attributes       TEXT NOT NULL DEFAULT '{}',
+    created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  -- subject_events: the append-only history of everything that ever touched a subject —
+  -- one query on subject_id gives the whole timeline (no per-state table hopping).
+  CREATE TABLE IF NOT EXISTS subject_events (
+    id           TEXT PRIMARY KEY NOT NULL,
+    subject_id   TEXT NOT NULL,
+    event        TEXT NOT NULL,
+    from_automation TEXT NOT NULL DEFAULT '',
+    payload      TEXT NOT NULL DEFAULT '{}',
+    created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  -- automation_events: the pub/sub queue the dispatcher drains. An Action's emit inserts a row;
+  -- the substrate runner finds every subscriber and POSTs its /run, then marks dispatched.
+  CREATE TABLE IF NOT EXISTS automation_events (
+    id            TEXT PRIMARY KEY NOT NULL,
+    event         TEXT NOT NULL,
+    subject_id    TEXT NOT NULL DEFAULT '',
+    from_automation TEXT NOT NULL DEFAULT '',
+    payload       TEXT NOT NULL DEFAULT '{}',
+    published_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    dispatched    INTEGER NOT NULL DEFAULT 0
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

@@ -61,7 +61,7 @@ const meta: RouteMeta = {
 
   methods: [],
 
-  description: "Личные заметки и напоминания в Telegram через произнесённые фразы-хуки",
+  description: "Free-form personal notes and reminders in Telegram through spoken hook phrases",
   dataDependencies: [
     "_data/description.ts + _data/flow.ts (declarative page data)",
     "_lib/project-data.ts (cron queue + results — substrate tables, empty until wired)",

@@ -78,8 +78,12 @@ export function MissingKeysModal({ lang }: { lang: string }) {
       if (NEEDS_OPENAI) {
         try {
           const res = await fetch("/api/project-config/openai-key", { cache: "no-store" });
-          const data = res.ok ? ((await res.json()) as { configured?: boolean }) : null;
-          openAiAbsent = !data?.configured;
+          const data = res.ok
+            ? ((await res.json()) as { configured?: boolean; inconclusive?: boolean })
+            : null;
+          // Only nag when the key is DEFINITIVELY absent. `inconclusive` (Admin
+          // non-OK/unreachable) must not force the modal (187.9 false-nag bug).
+          openAiAbsent = Boolean(data) && !data!.configured && !data!.inconclusive;
         } catch {
           /* forwarder unreachable — leave openAiAbsent false */
         }

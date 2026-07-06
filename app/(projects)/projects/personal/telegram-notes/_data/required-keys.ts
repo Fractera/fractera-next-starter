@@ -8,6 +8,12 @@ export type ProjectIntegration = { name: string; envKeys: string[] };
 
 export const PROJECT_INTEGRATIONS: ProjectIntegration[] = [{"name":"Telegram","envKeys":["TELEGRAM_BOT_TOKEN","TELEGRAM_ALLOWED_CHAT_ID"]},{"name":"Fractera AI (OpenAI)","envKeys":["OPENAI_API_KEY"]}];
 
+// Keys that are OPTIONAL — declared for discoverability but not needed for the
+// automation to run, so an empty value must NOT trigger the missing-keys modal.
+// TELEGRAM_ALLOWED_CHAT_ID empty = accept all chats (the default), not "missing".
+export const OPTIONAL_ENV_KEYS: Set<string> = new Set(["TELEGRAM_ALLOWED_CHAT_ID"]);
+
+// The keys whose absence genuinely blocks the automation — the modal checks these.
 export const REQUIRED_ENV_KEYS: string[] = Array.from(
   new Set(PROJECT_INTEGRATIONS.flatMap((integration) => integration.envKeys ?? [])),
-);
+).filter((key) => !OPTIONAL_ENV_KEYS.has(key));

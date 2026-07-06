@@ -28,12 +28,15 @@ export async function GET(req: NextRequest) {
       headers: { cookie: req.headers.get("cookie") ?? "" },
       cache: "no-store",
     })
-    if (!res.ok) return NextResponse.json({ configured: false }, { status: 200 })
+    // A non-OK response (auth glitch, Admin restarting) is NOT proof the key is
+    // absent — return `inconclusive` so the modal does not falsely nag (187.9 bug:
+    // the modal reappeared on every page load though the key was set).
+    if (!res.ok) return NextResponse.json({ configured: false, inconclusive: true }, { status: 200 })
     const data = (await res.json()) as { configured?: boolean }
     return NextResponse.json({ configured: Boolean(data.configured) })
   } catch {
-    // Admin unreachable (e.g. Hermes not installed) — report not configured, don't crash.
-    return NextResponse.json({ configured: false }, { status: 200 })
+    // Admin unreachable (e.g. Hermes not installed) — inconclusive, don't nag.
+    return NextResponse.json({ configured: false, inconclusive: true }, { status: 200 })
   }
 }
 

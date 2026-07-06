@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SquarePen, KeyRound } from "lucide-react";
+import { Settings2, KeyRound } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -45,7 +45,7 @@ export function ProjectFooter({ shortName, lang }: { shortName: string; lang: st
                 className="flex size-8 items-center justify-center rounded-md hover:bg-muted hover:text-foreground transition-colors"
                 aria-label={t.continueDev}
               >
-                <SquarePen className="size-4" />
+                <Settings2 className="size-4" />
               </a>
             </TooltipTrigger>
             <TooltipContent>{t.continueDev}</TooltipContent>

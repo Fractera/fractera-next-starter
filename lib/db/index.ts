@@ -119,6 +119,34 @@ const SCHEMA = `
     published_at  TEXT NOT NULL DEFAULT (datetime('now')),
     dispatched    INTEGER NOT NULL DEFAULT 0
   );
+  -- telegram-notes automation (step 188) — the DEFAULT automation shipped with the starter.
+  -- Key/value cursor store for the Telegram getUpdates poller (last_update_id) — one row per
+  -- key, self-sufficient (no Hermes).
+  CREATE TABLE IF NOT EXISTS telegram_notes_state (
+    key   TEXT PRIMARY KEY NOT NULL,
+    value TEXT
+  );
+  -- telegram-notes records (step 188): one row per saved note / date-reminder / recall request.
+  -- summary feeds the project-page results table; reminder_due (unix seconds) is set only for
+  -- date reminders and delivered flips to 1 once the push is sent. hook_action = the Action id
+  -- (save|remind|recall); hook_phrase = the exact phrase that fired; condition = the declared-guard
+  -- outcome (automation-ontology trace, 188-R). memory_track_id holds the LightRAG track id from
+  -- ingest so delete removes BOTH stores (SQLite row + vector document).
+  CREATE TABLE IF NOT EXISTS telegram_notes (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_slug    TEXT NOT NULL DEFAULT 'telegram-notes',
+    hook_action     TEXT NOT NULL,
+    hook_phrase     TEXT NOT NULL DEFAULT '',
+    condition       TEXT,
+    chat_id         TEXT NOT NULL,
+    msg_date        INTEGER,
+    reminder_due    INTEGER,
+    delivered       INTEGER NOT NULL DEFAULT 0,
+    full_text       TEXT NOT NULL DEFAULT '',
+    summary         TEXT NOT NULL DEFAULT '',
+    memory_track_id TEXT,
+    created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks
@@ -165,6 +193,14 @@ function makeLocalDb() {
     (sqlite.prepare('PRAGMA table_info(deployment_records)').all() as Array<{ name: string }>).map(c => c.name)
   )
   if (depCols.size && !depCols.has('step')) safeAddColumn(sqlite, `ALTER TABLE deployment_records ADD COLUMN step TEXT`)
+  // telegram_notes.hook_phrase / condition / memory_track_id (automation ontology 188-R + delete
+  // contract) — added after the table shipped, so a live DB (rows already saved) needs them via ALTER.
+  const tnCols = new Set(
+    (sqlite.prepare('PRAGMA table_info(telegram_notes)').all() as Array<{ name: string }>).map(c => c.name)
+  )
+  if (tnCols.size && !tnCols.has('hook_phrase'))     safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN hook_phrase TEXT NOT NULL DEFAULT ''`)
+  if (tnCols.size && !tnCols.has('condition'))       safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN condition TEXT`)
+  if (tnCols.size && !tnCols.has('memory_track_id')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN memory_track_id TEXT`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

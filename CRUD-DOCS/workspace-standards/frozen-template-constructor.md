@@ -97,7 +97,7 @@ Every property of a structure lives in **exactly one of two slots — never inte
 
 | Slot | Holds | Examples |
 |---|---|---|
-| **A. List provider** (data) | *where the children come from* | filesystem scan · DB-at-build · (future) runtime |
+| **A. List provider** (data) | *where the children come from* | filesystem scan · DB-at-build · **runtime = the automation⇄page gateway** (§8b) |
 | **B. Uniform aspect** (layout) | *a cross-cutting rule applied identically at every level* | i18n · roles/access · (future) theme |
 
 > A property is either a **list provider** or a **uniform aspect**. There is no third slot. A uniform aspect is
@@ -254,6 +254,53 @@ Differences from a tab structure — read these as HARD rules:
   4-node diagram, empty tables). Shaping the real diagram/description/tables edits `_data/*` and `_lib/*` —
   DATA, never the template or the fixed components.
 
+## 8b. Page-type capability manifest: the two-section entity (the gateway seam)
+
+> A page-type declares **what an automation may do to it at runtime** as a **two-section capability manifest**
+> — a new **declared entity of a page-type**, sitting beside the envelope axes (§6). It is the concrete form
+> of Slot A's `runtime` list-provider (§3/§4): the manifest is exactly what the **automation⇄page gateway**
+> introspects and calls. Full standard: `automation-page-gateway.md`.
+
+The §4 basis answers "what shape is composed"; this entity answers "**once composed, what can drive it at
+runtime**". Every page-type carries a manifest with **two sections**, split by intent × access (never one
+create-vs-mutate axis):
+
+| Section | Verbs (declared) | Who calls | Present for |
+|---|---|---|---|
+| **management / provision** | create · configure · **moderate** · provision (born once) | privileged — owner + automation-**as-builder** | **EVERY** page-type |
+| **interaction** | runtime verbs over the surface's entities (`addCard`/`moveCard`/`submit`) | end-users + automation-**as-participant**, role-gated | **ONLY stateful** page-types |
+
+Each verb is a declared triple `{ verb, args (JSON schema), role }` — **never a bespoke endpoint**. The
+gateway validates `args` against the schema and gates by `role` before dispatch; it is **introspectable** (an
+automation reads the manifest and selects a verb). One manifest per page-type routed by `{ page-type, verb }`
+— Open/Closed, **no gateway-per-type, no N²** (the same discipline as the Two-Slot Law and the config-driven
+records table, step 194).
+
+> **🔒 The presence law — interaction ⇔ State ⇔ the static↔dynamic axis (§4/§6).** The interaction section
+> exists **only** for a page-type that carries **State** — i.e. one that sits on the **dynamic** side of the
+> §4 spectrum / the §6 `static vs dynamic` axis. A **blog** (static, files × depth-1) has **management only**;
+> its lack of an interaction section is **correct, not a gap**. A **Kanban** (stateful — a view + operations
+> over a declared status-bearing State table: cards = rows, a column = a status field, `moveCard` = update
+> status) carries a **rich** interaction section. The page-type's position on the static↔dynamic axis **is**
+> the test for whether the section exists — never bolt an operate API onto static content (it breaks
+> static-first).
+
+The manifest is **registration/contract metadata**, exactly like the group manifest (§8) — it is **NOT a
+third composition slot** (the Two-Slot Law still governs internal composition; this governs the runtime
+contract). It is also **bidirectional**: it carries the **callback** direction (page → automation, port I5 in
+the ontology §E) — an autonomous page (a quiz) is an output when created and an input when submitted.
+
+> **🔒 Default preset — ship a working reference, never an empty stub (owner req, 2026-07-07).** When these
+> two sections enter the **frozen starter template config**, the composed `project-page` starter (§8a) MUST
+> come with a **live DEFAULT preset**, following this doc's own "freeze a reference primitive, not a guess"
+> discipline (§10). By default a freshly composed automation carries: a default **`interface`** block (a
+> sensible personal automation — channel in → channel + store out; ontology §E), a default **records table**
+> (the `record` block — already config-driven since step 194), and a default **two-section manifest** with a
+> **reference stateful page-type = Kanban** (view + operations over a declared status State). A future session
+> then **extends the graph**, never hand-builds the section — it never has to reinvent what does not exist.
+> The composing/introspection **RUNTIME** (the gateway endpoints + the Kanban primitive materialization) is
+> **step 198**; this section declares the entity + the preset requirement.
+
 ## 9. Engine versioning: side-by-side, pinned
 
 - **An installed engine version is immutable.** A breaking major ships **beside** the old in its own namespace:
@@ -334,6 +381,10 @@ with the Two-Slot Law and the bridge contract, or it breaks in production under 
 - **Versioning side-by-side, pinned; identity never versioned.**
 - **Group manifest = registration metadata, never a slot:** menu placement (`_data/group.ts`) surfaces the
   group in the shell; do not fold it into composition or invent a "third slot".
+- **Page-type capability manifest (§8b) = the runtime contract, never a slot:** two declared sections
+  (management always · interaction only for stateful types — the presence law), `{verb, schema, role}` triples
+  the gateway introspects; no gateway-per-type (no N²); ship a working **default preset**, never an empty stub.
+  Runtime = step 198.
 - **Harvest discipline:** freeze a proven, repeating, cleanly-parameterisable shape — never a guess.
 - **Bridge contract (§11):** single-line JSON · store↔composer one version · rebuild after every mutation ·
   language default = slot authority · lean emitted artifacts.

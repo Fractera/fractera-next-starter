@@ -1,5 +1,12 @@
 # Task scenario router — pick the vector FIRST (two scenarios, one explicit fork)
 
+> **Above this router sits the CHANNEL router (step 200, `agent-channel-routing.md`).** Routing to the handling
+> SYSTEM — the brain (Hermes) vs a coding agent vs the automations runtime — is decided **deterministically by the
+> messaging channel the request arrived on** (one Telegram bot per role), NOT by classifying intent. So this
+> scenario router is a fork **WITHIN a coding-agent build channel**: the channel has already fixed the *actor* (a
+> coding agent), and Level-0 "is this app-making?" is answered by which bot received the message. FROZEN-ASSEMBLY vs
+> REAL-DEVELOPMENT below decides *how* that build agent proceeds.
+
 The authoritative rule for **how any complex task enters work**. It is an architectural invariant, not a
 heuristic: before decomposing or doing anything, the agent decides **which of two scenarios** the request
 belongs to. If the vector is not explicit, the agent **asks ONE clarifying question** and waits for an

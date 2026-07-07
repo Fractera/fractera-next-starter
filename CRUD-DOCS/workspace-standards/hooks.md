@@ -1,9 +1,14 @@
 # Automation hooks — the spoken-trigger standard for projects
 
 **Standard (step 187).** A personal automation is not run by clicking a button — it is run by
-**saying a phrase**. A **Hook** is that spoken trigger: a phrase (in Telegram or the Hermes chat)
-bound to an action of a project. Hooks are a first-class **layer of a project**, alongside the
-description, the process diagram, the admin run panel and the runs dashboard.
+**saying a phrase**. A **Hook** is that spoken trigger: a phrase bound to an action of a project.
+Hooks are a first-class **layer of a project**, alongside the description, the process diagram, the
+admin run panel and the runs dashboard.
+
+> **Where a hook is heard (step 200).** A hook is received on the **automations channel**
+> (`@fractera_auto`), NOT on the Hermes chat bot. The `project_hooks` registry below is precisely
+> the **deterministic dispatch key** the automations listener uses: a normalized phrase → exactly
+> one `{ project, action }`, a table lookup, not an LLM guess. See `agent-channel-routing.md`.
 
 Agent-facing skill: `manage-automation-hooks`.
 

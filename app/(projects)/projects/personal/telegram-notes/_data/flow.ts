@@ -351,6 +351,44 @@ export const FLOW_NODES: FlowNode[] = [
     }
   },
   {
+    "id": "parse-document",
+    "type": "process",
+    "position": {
+      "x": 1040,
+      "y": 160
+    },
+    "data": {
+      "label": "Digitize a receipt / voice finance note into a money record",
+      "info": {
+        "summary": "Step 205 §E: a photo (receipt/document) is saved to the media store and read by a vision-capable per-project model; a voice/text finance note is read by the cheap model. Either way it becomes a money movement (income or expense) auto-segmented into one of the automation's finance types (≤10 per kind), stored with income/expense/fin_type/image_url.",
+        "processes": [
+          "photo → media store (media service :3300) → image_url",
+          "vision (photo) or cheap model (text) → {kind, amount, typeGuess, summary}",
+          "auto-segment to a finance type (≤10 income + ≤10 expense)",
+          "persist income/expense/fin_type/image_url row"
+        ],
+        "kind": "step",
+        "actions": ["finance"],
+        "condition": null,
+        "task": "Digitize a receipt/document photo or a voice finance note into a money record. Photo: getFile → download → upload to the media service (:3300) for image_url, then a VISION-capable per-project model reads {kind: income|expense, amount, typeGuess, summary}. Text/voice: the cheap model extracts the same. Resolve the type against automation_finance_types (≤10 per kind; auto-add if under the cap, else reuse an existing one). Persist income/expense/fin_type/image_url to telegram_notes. Reply confirms what was recorded. One global OPENAI_API_KEY; the model is per automation.",
+        "tools": [
+          "Telegram getFile + file download",
+          "media service :3300 /media/upload",
+          "vision model + cheap model via OPENAI_API_KEY",
+          "automation_finance_types via @/lib/db"
+        ],
+        "envKeys": [
+          "OPENAI_API_KEY",
+          "TELEGRAM_NOTES_VISION_MODEL"
+        ],
+        "io": {
+          "in": "classified finance items {payload, photoFileId, chatId}",
+          "out": "finance rows {dbId, kind, amount, finType, imageUrl, summary}"
+        }
+      }
+    }
+  },
+  {
     "id": "reply-in-telegram",
     "type": "process",
     "position": {
@@ -413,6 +451,16 @@ export const FLOW_EDGES: Edge[] = [
     "id": "e-classify-message-search-memory-recall",
     "source": "classify-message",
     "target": "search-memory-recall"
+  },
+  {
+    "id": "e-classify-message-parse-document",
+    "source": "classify-message",
+    "target": "parse-document"
+  },
+  {
+    "id": "e-parse-document-reply-in-telegram",
+    "source": "parse-document",
+    "target": "reply-in-telegram"
   },
   {
     "id": "e-summarize-message-persist-note-to-db",

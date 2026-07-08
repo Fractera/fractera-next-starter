@@ -19,12 +19,20 @@ import { db } from "@/lib/db";
 const TG_API = "https://api.telegram.org";
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const CHEAP_MODEL = process.env.TELEGRAM_NOTES_MODEL ?? "gpt-4o-mini";
+// Vision model for receipt/document digitization (step 205 §E). Per-project model; MUST be vision-capable.
+// Defaults to the per-project model (gpt-4o-mini supports vision) so a project without a separate vision
+// model still works. One global OPENAI_API_KEY; the model is chosen per automation.
+const VISION_MODEL = process.env.TELEGRAM_NOTES_VISION_MODEL ?? CHEAP_MODEL;
 const RAG_URL = (process.env.LIGHTRAG_URL ?? "http://localhost:9621").replace(/\/+$/, "");
 const RAG_KEY = process.env.LIGHTRAG_API_KEY ?? "";
+const DATA_URL = (process.env.REMOTE_DATA_URL ?? "http://localhost:3300").replace(/\/+$/, "");
+const DATA_SECRET = process.env.DATA_API_KEY ?? "";
+const OPENAI_KEY = () => process.env.OPENAI_API_KEY ?? "";
 const PROJECT_SLUG = "telegram-notes";
+const MAX_FIN_TYPES = 10; // ≤10 income + ≤10 expense types per automation (step 205 §E)
 
-type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent };
-type Intent = "save" | "remind" | "recall" | "ignore";
+type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string };
+type Intent = "save" | "remind" | "recall" | "finance" | "ignore";
 type Classified = {
   intent: Intent;
   projectSlug: string | null;
@@ -35,7 +43,7 @@ type Classified = {
 };
 // hookPhrase = legacy trace field, kept for the DB column (hook_phrase); step 205 removed hooks, so
 // classify-message leaves it "". Retained (backward-compatible) so the persisted schema is unchanged.
-type Classified2 = Classified & { hookPhrase: string; unclear?: boolean };
+type Classified2 = Classified & { hookPhrase: string; unclear?: boolean; photoFileId?: string };
 type WithSummary = Classified2 & { summary: string };
 type Persisted = {
   dbId: number | null;
@@ -160,6 +168,127 @@ async function loadPending(id: string): Promise<{ text: string; chatId: string }
   return null;
 }
 
+// ── Finance / document digitization helpers (step 205 §E) ──
+type FinanceExtract = { kind: "income" | "expense"; amount: number; typeGuess: string; summary: string };
+
+// Download a Telegram photo (getFile → file_path → download) and return its bytes + a data URL.
+async function fetchTelegramPhoto(fileId: string): Promise<{ bytes: Uint8Array; dataUrl: string } | null> {
+  try {
+    const gf = await fetch(`${TG_API}/bot${botToken()}/getFile?file_id=${encodeURIComponent(fileId)}`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    const meta = (await gf.json()) as { ok?: boolean; result?: { file_path?: string } };
+    const path = meta?.result?.file_path;
+    if (!path) return null;
+    const dl = await fetch(`${TG_API}/file/bot${botToken()}/${path}`, { signal: AbortSignal.timeout(30000) });
+    if (!dl.ok) return null;
+    const buf = new Uint8Array(await dl.arrayBuffer());
+    const mime = path.endsWith(".png") ? "image/png" : "image/jpeg";
+    const b64 = Buffer.from(buf).toString("base64");
+    return { bytes: buf, dataUrl: `data:${mime};base64,${b64}` };
+  } catch {
+    return null;
+  }
+}
+
+// Save the photo bytes to the media store (reuse the platform media service :3300) → a stable URL.
+async function uploadToMedia(bytes: Uint8Array): Promise<string | null> {
+  try {
+    const form = new FormData();
+    const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    form.append("file", new Blob([ab], { type: "image/jpeg" }), "receipt.jpg");
+    const headers: Record<string, string> = {};
+    if (DATA_SECRET) headers["X-Data-Secret"] = DATA_SECRET;
+    const r = await fetch(`${DATA_URL}/media/upload`, { method: "POST", headers, body: form, signal: AbortSignal.timeout(30000) });
+    const data = (await r.json()) as { ok?: boolean; item?: { id?: string; url?: string } };
+    if (data?.ok && data.item) return data.item.url ?? (data.item.id ? `/api/media/${data.item.id}/file` : null);
+  } catch { /* media store unavailable — record still saved without an image link */ }
+  return null;
+}
+
+// Vision extraction: read a receipt/document image → a money movement (kind/amount/type/summary).
+async function visionExtractFinance(dataUrl: string, caption: string): Promise<FinanceExtract | null> {
+  const key = OPENAI_KEY();
+  if (!key) return null;
+  try {
+    const r = await fetch(OPENAI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: VISION_MODEL,
+        temperature: 0,
+        max_tokens: 200,
+        messages: [
+          { role: "system", content:
+            "You read a receipt or financial document image and output ONE JSON object, no prose: " +
+            '{"kind":"income|expense","amount":<number>,"typeGuess":"<short category, 1-2 words>","summary":"<one line>"}. ' +
+            "A receipt/purchase is an expense; a payment/salary received is income." },
+          { role: "user", content: [
+            { type: "text", text: caption ? `Caption: ${caption}` : "Digitize this document." },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ] },
+        ],
+      }),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!r.ok) return null;
+    const data = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    return parseFinanceJson(data.choices?.[0]?.message?.content ?? "");
+  } catch {
+    return null;
+  }
+}
+
+// Text/voice extraction: "got paid 1000", "bought ice cream for 2 euro" → a money movement.
+async function textExtractFinance(text: string): Promise<FinanceExtract | null> {
+  const out = await cheapModel(
+    "Extract ONE money movement from the user's note as a JSON object, no prose: " +
+      '{"kind":"income|expense","amount":<number>,"typeGuess":"<short category, 1-2 words>","summary":"<one line>"}. ' +
+      "Money spent/bought = expense; money received/earned = income.",
+    text.slice(0, 500),
+    120,
+  );
+  return parseFinanceJson(out);
+}
+
+function parseFinanceJson(raw: string): FinanceExtract | null {
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    const o = JSON.parse(m[0]) as { kind?: string; amount?: unknown; typeGuess?: unknown; summary?: unknown };
+    const kind = o.kind === "income" ? "income" : "expense";
+    const amount = Number(o.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    return { kind, amount, typeGuess: String(o.typeGuess ?? "other").slice(0, 40), summary: String(o.summary ?? "").slice(0, 200) };
+  } catch {
+    return null;
+  }
+}
+
+// Resolve the finance type against the automation's existing types (≤10 per kind). Auto-segment: if the
+// guessed type already exists use it; if it's new AND under the cap, add it; otherwise fall back to the
+// first existing type (cap reached — no silent 11th type). New types beyond the cap need an explicit ask.
+async function resolveFinanceType(kind: "income" | "expense", typeGuess: string): Promise<string> {
+  const guess = typeGuess.trim().toLowerCase() || "other";
+  try {
+    const rows = (await db
+      .prepare("SELECT name FROM automation_finance_types WHERE project = ? AND kind = ? ORDER BY created_at")
+      .all(PROJECT_SLUG, kind)) as Array<{ name: string }>;
+    const names = rows.map((r) => String(r.name));
+    const existing = names.find((n) => n.toLowerCase() === guess);
+    if (existing) return existing;
+    if (names.length < MAX_FIN_TYPES) {
+      await db
+        .prepare("INSERT OR IGNORE INTO automation_finance_types (id, project, kind, name) VALUES (?, ?, ?, ?)")
+        .run(crypto.randomUUID(), PROJECT_SLUG, kind, guess);
+      return guess;
+    }
+    return names[0] ?? guess; // cap reached — reuse an existing type rather than exceed 10
+  } catch {
+    return guess;
+  }
+}
+
 export async function runProject(input?: string) {
   "use workflow";
 
@@ -171,6 +300,7 @@ export async function runProject(input?: string) {
     artifacts["classify-message"] = await classifyMessage(artifacts);
     artifacts["summarize-message"] = await summarizeMessage(artifacts);
     artifacts["search-memory-recall"] = await searchMemoryRecall(artifacts);
+    artifacts["parse-document"] = await parseDocument(artifacts);
     artifacts["persist-note-to-db"] = await persistNoteToDb(artifacts);
     artifacts["ingest-note-to-memory"] = await ingestNoteToMemory(artifacts);
     const outcome = (await replyInTelegram(artifacts)) as {
@@ -178,11 +308,12 @@ export async function runProject(input?: string) {
       saved: number;
       reminded: number;
       answered: number;
+      finance: number;
       errors: string[];
     };
     artifacts["reply-in-telegram"] = outcome;
     const title =
-      `processed ${outcome.processed} · saved ${outcome.saved} · reminded ${outcome.reminded} · answered ${outcome.answered}` +
+      `processed ${outcome.processed} · saved ${outcome.saved} · reminded ${outcome.reminded} · answered ${outcome.answered} · finance ${outcome.finance}` +
       (outcome.errors.length ? ` · ${outcome.errors.length} error(s)` : "");
     await closeRun(journalId, { ok: true, resultTitle: title });
     return { journalId, status: "completed" };
@@ -238,7 +369,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
   try {
     const env = JSON.parse(raw) as {
       source?: string; kind?: string; data?: unknown; callbackQueryId?: unknown;
-      chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown;
+      chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown; photoFileId?: unknown;
     };
     // Callback from an inline button (step 205 §D): the user picked an action for an earlier "unclear"
     // message. Resolve the pending text + forced action, ack the tap, and feed it back into the pipeline.
@@ -260,7 +391,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
         { chatId: pending.chatId, messageId: 0, text: pending.text, date: Math.floor(Date.now() / 1000), forcedAction: act },
       ] satisfies TgMessage[];
     }
-    if (env && env.source === "telegram" && typeof env.text === "string") {
+    if (env && env.source === "telegram" && (typeof env.text === "string" || typeof env.photoFileId === "string")) {
       const chatId = String(env.chatId ?? "");
       if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
       const finalChat = chatId || allowedChat || "0";
@@ -275,8 +406,9 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
         {
           chatId: finalChat,
           messageId: Number(env.messageId ?? 0),
-          text: env.text,
+          text: typeof env.text === "string" ? env.text : "",
           date: Number(env.date ?? Math.floor(Date.now() / 1000)),
+          photoFileId: typeof env.photoFileId === "string" ? env.photoFileId : undefined,
         },
       ] satisfies TgMessage[];
     }
@@ -338,19 +470,24 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       out.push({ intent: msg.forcedAction, projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
       continue;
     }
+    // A photo always goes to document digitization (step 205 §E): a receipt / document → finance record.
+    if (msg.photoFileId) {
+      out.push({ intent: "finance", projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date, photoFileId: msg.photoFileId });
+      continue;
+    }
     const text = msg.text.trim();
     let intent: Intent = "ignore";
     let unclear = false;
     if (text) {
       const ans = await cheapModel(
         "You route one message of a personal-notes assistant to a single action. Reply with ONLY one word: " +
-          "save (the user states a fact/note to remember), remind (the user wants a time-based reminder), " +
-          "recall (the user asks to find/retrieve something they saved), or unclear (none clearly applies). " +
-          "No other text.",
+          "save (states a fact/note to remember), remind (wants a time-based reminder), " +
+          "recall (asks to find/retrieve something saved), finance (a money movement — income or expense, " +
+          "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), or unclear (none clearly applies). No other text.",
         text.slice(0, 1000),
         4,
       );
-      const word = (ans.toLowerCase().match(/save|remind|recall|unclear/) ?? ["unclear"])[0];
+      const word = (ans.toLowerCase().match(/save|remind|recall|finance|unclear/) ?? ["unclear"])[0];
       if (word === "unclear") { intent = "ignore"; unclear = true; }
       else intent = word as Intent;
     }
@@ -419,6 +556,51 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
     } catch (e) {
       out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: "Memory is temporarily unavailable, please try again later.", error: e instanceof Error ? e.message : String(e) });
     }
+  }
+  return out;
+}
+
+// node:parse-document — Digitize a receipt/document or a voice finance note into a money record [step]
+// Step 205 §E: a photo → save to media store + vision-transcribe; a finance text → cheap-model extract.
+// Auto-segment into an income/expense type (≤10 per kind), persist income/expense/fin_type/image_url,
+// and reply with what was recorded. The goal is a usable voice/photo finance ledger, not perfect books.
+type FinanceRow = { dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; finType: string; summary: string; imageUrl: string | null };
+async function parseDocument(artifacts: Record<string, unknown>): Promise<unknown> {
+  "use step";
+
+  const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
+  const out: FinanceRow[] = [];
+  for (const c of classified) {
+    if (c.intent !== "finance") continue;
+
+    let imageUrl: string | null = null;
+    let extract: FinanceExtract | null = null;
+    if (c.photoFileId) {
+      const photo = await fetchTelegramPhoto(c.photoFileId);
+      if (photo) {
+        imageUrl = await uploadToMedia(photo.bytes);
+        extract = await visionExtractFinance(photo.dataUrl, c.payload);
+      }
+    } else {
+      extract = await textExtractFinance(c.payload);
+    }
+    if (!extract) {
+      // Could not read a money movement — record nothing here; reply-in-telegram surfaces the miss.
+      out.push({ dbId: null, chatId: c.chatId, kind: "expense", amount: 0, finType: "", summary: "", imageUrl });
+      continue;
+    }
+
+    const finType = await resolveFinanceType(extract.kind, extract.typeGuess);
+    const income = extract.kind === "income" ? extract.amount : null;
+    const expense = extract.kind === "expense" ? extract.amount : null;
+    const res = await db
+      .prepare(
+        "INSERT INTO telegram_notes (project_slug, hook_action, chat_id, msg_date, full_text, summary, income, expense, fin_type, image_url) " +
+          "VALUES (?, 'finance', ?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(PROJECT_SLUG, c.chatId, c.date, c.payload || extract.summary, extract.summary, income, expense, finType, imageUrl);
+    const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
+    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, finType, summary: extract.summary, imageUrl });
   }
   return out;
 }
@@ -538,12 +720,14 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   const ingested = (artifacts["ingest-note-to-memory"] as Ingested[]) ?? [];
   const recalls = (artifacts["search-memory-recall"] as RecallAnswer[]) ?? [];
   const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
+  const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
   const ingestById = new Map(ingested.map((i) => [i.dbId, i]));
 
   const errors: string[] = [];
   let saved = 0;
   let reminded = 0;
   let answered = 0;
+  let finance = 0;
 
   for (const p of persisted) {
     try {
@@ -580,6 +764,21 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
+  // Finance records (step 205 §E): confirm what was digitized (or that nothing readable was found).
+  for (const f of finances) {
+    try {
+      if (f.dbId == null) {
+        await tgSend(f.chatId, "I couldn't read a clear amount from that. Try a clearer photo, or tell me the amount.");
+        continue;
+      }
+      const sign = f.kind === "income" ? "+" : "−";
+      await tgSend(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${f.finType}: ${f.summary}`);
+      finance++;
+    } catch (e) {
+      errors.push(`finance reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   // Unclear messages (step 205 §D): offer action buttons instead of silently ignoring. The tap comes
   // back as a callback (handled in fetch-telegram-updates) carrying a forced action.
   let prompted = 0;
@@ -599,5 +798,5 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length + prompted, saved, reminded, answered, errors };
+  return { processed: persisted.length + recalls.length + prompted + finance, saved, reminded, answered, finance, errors };
 }

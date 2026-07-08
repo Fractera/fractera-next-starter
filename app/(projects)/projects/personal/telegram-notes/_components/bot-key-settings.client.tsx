@@ -60,6 +60,15 @@ export function BotKeySettings() {
         toast.error(info?.error ?? `Save failed (HTTP ${r.status})`);
         return;
       }
+      // Register this bot with the substrate listener so it starts polling (one bot per automation,
+      // step 205). Best-effort — the env token is saved regardless; the listener reconciles on its tick.
+      try {
+        await fetch("/api/project-config/register-bot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: "personal", project: "telegram-notes", token: value }),
+        });
+      } catch { /* best-effort */ }
       setToken("");
       void refreshAutomationStatus(); // reflect the new key in the pill/dots
       toast.success("Bot token saved — applying (a brief restart)");
@@ -70,12 +79,31 @@ export function BotKeySettings() {
     }
   }
 
+  async function testBot() {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/projects/personal/telegram-notes/test-bot", { method: "POST" });
+      const data = (await r.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (data?.ok) toast.success("Sent a test message to your Telegram");
+      else toast.error(data?.error ?? "Could not send a test message");
+    } catch {
+      toast.error("Could not reach the bot");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        The bot token connects your Telegram bot (from @BotFather). Example: message
-        @BotFather, run <code>/newbot</code>, and paste the token it gives you. The
-        automation reads your messages to that bot and replies there.
+        Give this automation its OWN Telegram bot (each automation needs a separate one). In Telegram,
+        message{" "}
+        <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="underline">
+          @BotFather
+        </a>
+        , run <code>/newbot</code>, pick a name ending in <code>_bot</code> (for example{" "}
+        <code>my_notes_bot</code>), and paste the token it gives you below. The automation reads your
+        messages to that bot and replies there.
       </p>
 
       {/* Activate / deactivate */}
@@ -118,6 +146,12 @@ export function BotKeySettings() {
           </Button>
         </div>
       </div>
+
+      {/* Send a test message so you can confirm the bot works. Message your bot once first —
+          a bot cannot start a chat on its own. */}
+      <Button variant="outline" size="sm" disabled={busy} onClick={testBot}>
+        Test bot
+      </Button>
     </div>
   );
 }

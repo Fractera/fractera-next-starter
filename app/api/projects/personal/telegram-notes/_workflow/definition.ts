@@ -190,9 +190,17 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
     if (env && env.source === "telegram" && typeof env.text === "string") {
       const chatId = String(env.chatId ?? "");
       if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
+      const finalChat = chatId || allowedChat || "0";
+      // Remember the owner's chat so the "Test bot" button can send them a message (a bot cannot
+      // initiate a chat — it needs a chat the owner has already talked to). Best-effort (step 205).
+      try {
+        db.prepare(
+          "INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES ('last_chat_id', ?)",
+        ).run(finalChat);
+      } catch { /* state table optional */ }
       return [
         {
-          chatId: chatId || allowedChat || "0",
+          chatId: finalChat,
           messageId: Number(env.messageId ?? 0),
           text: env.text,
           date: Number(env.date ?? Math.floor(Date.now() / 1000)),

@@ -79,8 +79,7 @@ export function setBotKeyOk(v: boolean) {
   set({ botKeyOk: v });
 }
 
-// Derived overall health for the pill. The userbot track is optional/not-yet-enabled, so
-// it does not count as broken here — only the active bot track and the keys do.
+// Derived overall health for the pill — the active bot track and the keys are what count.
 export type Health = "loading" | "running" | "degraded" | "broken";
 export function healthOf(s: AutomationStatus): { health: Health; label: string } {
   if (!s.loaded) return { health: "loading", label: "Checking…" };

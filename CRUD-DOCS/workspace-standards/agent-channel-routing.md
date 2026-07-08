@@ -124,6 +124,12 @@ Hermes is scoped **down** to what it is genuinely good at and cheap at:
 
 - **Keeps:** free-form chat, **one-off / rare** actions via its **native** capabilities (web_search / browser /
   image / memory / cron for its own one-offs), and the always-on runtime-brain role.
+- **Knows (knowledge, not a skill).** Removing our routing *skill* from Hermes must NOT remove the routing
+  *knowledge* — Hermes's instruction (SOUL) still holds Fractera's **two automation levels**, or it improvises durable
+  tasks natively again: **(1) the `fractera_auto_bot` level** = cheap management + execution of ALREADY-created durable
+  automation projects — a request that is (or should be) a recurring / long-term pipeline belongs here, Hermes defers
+  to it; **(2) Hermes-native** = only tasks that should NOT be a long-term pipeline (genuinely one-off), otherwise use
+  `fractera_auto_bot`. (The step-190 recurrence criterion, as Hermes's self-knowledge of its place.)
 - **Loses:** **building**. Hermes does not write code, does not author real content, and (owner decision, this step's
   successor **S4**) does not run frozen-template assembly either — building goes to a coding-agent channel. Inserting a
   weak orchestrator in front of a strong builder only adds a lossy layer (it loses and distorts intent — evidenced all

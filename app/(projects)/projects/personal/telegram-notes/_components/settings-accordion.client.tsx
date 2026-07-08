@@ -28,16 +28,9 @@ function Dot({ tone, title }: { tone: Tone; title: string }) {
 }
 
 // Settings accordion (step 188 Phase 4): each tab has a title + a "what this is for"
-// description. Hooks (spoken triggers + action), the Bot-API track (token + on/off), the
-// advanced userbot track (a guided setup checklist — validated once the listener lands in
-// Phase 6), and the cron interval. Ordered from the most common to the most advanced.
-const USERBOT_STEPS = [
-  "Get an API ID and API hash at my.telegram.org (under API development tools).",
-  "Enter them in this workspace so the automation can sign in as you.",
-  "Confirm the login code Telegram sends to your account.",
-  "The session is saved — the automation now reads your hook phrases in any chat.",
-];
-
+// description. Hooks (spoken triggers + action), the bot track (token + on/off), and the
+// cron interval. (The userbot / any-chat track was removed in step 201 — reception is the
+// dedicated @fractera_auto bot; the automation is not a standard place to read every chat.)
 function SettingTitle({ title, hint, tone, toneTitle }: { title: string; hint: string; tone: Tone; toneTitle: string }) {
   return (
     <span className="flex items-center gap-2.5 text-left">
@@ -82,7 +75,7 @@ export function SettingsAccordion({ initialHooks }: { initialHooks: Hook[] }) {
       <AccordionItem value="bot" className={botBroken ? "-mx-4 border-l-2 border-l-red-500 pl-[calc(1rem-2px)] pr-4" : ""}>
         <AccordionTrigger>
           <SettingTitle
-            title="Bot chat (simple track)"
+            title="Bot chat"
             hint="Connect your Telegram bot and turn the automation on or off."
             tone={botTone}
             toneTitle={botTitle}
@@ -90,34 +83,6 @@ export function SettingsAccordion({ initialHooks }: { initialHooks: Hook[] }) {
         </AccordionTrigger>
         <AccordionContent>
           <BotKeySettings />
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="userbot">
-        <AccordionTrigger>
-          <SettingTitle
-            title="Any chat (advanced track)"
-            hint="Trigger the automation from any chat, not only the bot — reads your hooks as you."
-            tone="muted"
-            toneTitle="Optional — not set up yet"
-          />
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              The advanced track signs in as your own Telegram account (a userbot) so a hook
-              phrase works in any conversation, and your bot replies. Follow these steps —
-              each turns green once complete. Setup is enabled in a later step.
-            </p>
-            <ol className="space-y-2">
-              {USERBOT_STEPS.map((step, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
-                  <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground/50" />
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
         </AccordionContent>
       </AccordionItem>
 

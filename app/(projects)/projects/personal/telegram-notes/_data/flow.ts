@@ -96,42 +96,6 @@ export const FLOW_NODES: FlowNode[] = [
     }
   },
   {
-    "id": "userbot-reception-trigger",
-    "type": "process",
-    "position": {
-      "x": 0,
-      "y": 200
-    },
-    "data": {
-      "label": "Any-chat reception (userbot, advanced track)",
-      "info": {
-        "summary": "The advanced reception track: an always-on MTProto userbot signed in as the owner reads hook phrases in ANY chat (not only the bot chat) and feeds them into the same pipeline; the bot replies. Configured in Settings > Any chat (API ID/hash + one-time phone auth = session string). Built in Phase 6.",
-        "processes": [
-          "MTProto auth from env (no hardcoded secrets)",
-          "hook-phrase prefilter before invoking the pipeline",
-          "inert-until-configured (no errors when keys are absent)"
-        ],
-        "kind": "trigger",
-        "actions": "all",
-        "condition": null,
-        "task": "Own the any-chat wake-up (Phase 6). The substrate listener service authenticates via MTProto (TELEGRAM_API_ID + TELEGRAM_API_HASH + TELEGRAM_SESSION), subscribes to all dialogs, and on any message containing a registered hook phrase invokes the run route with that message. Until Phase 6 wires it, the track is inert (the settings tab shows the setup checklist).",
-        "tools": [
-          "MTProto client (gramjs) in the substrate listener service",
-          "run route POST /api/projects/personal/telegram-notes/run"
-        ],
-        "envKeys": [
-          "TELEGRAM_API_ID",
-          "TELEGRAM_API_HASH",
-          "TELEGRAM_SESSION"
-        ],
-        "io": {
-          "in": "a message in ANY chat of the owner containing a hook phrase",
-          "out": "a pipeline run carrying that message"
-        }
-      }
-    }
-  },
-  {
     "id": "fetch-telegram-updates",
     "type": "process",
     "position": {
@@ -201,42 +165,6 @@ export const FLOW_NODES: FlowNode[] = [
         "io": {
           "in": "cron tick (checks due on every run)",
           "out": "{delivered: n, errors[]} — the reminders sent"
-        }
-      }
-    }
-  },
-  {
-    "id": "userbot-fetch-messages",
-    "type": "process",
-    "position": {
-      "x": 260,
-      "y": 200
-    },
-    "data": {
-      "label": "Receive any-chat messages (userbot)",
-      "info": {
-        "summary": "The reception step of the advanced track: normalizes messages arriving from the userbot listener into the same {chatId, messageId, text, date} shape the bot-chat fetch produces. Graceful no-op while the track is not configured.",
-        "processes": [
-          "absent keys mean [] (inert, no errors)",
-          "normalize to the shared message shape",
-          "replies stay on the bot track"
-        ],
-        "kind": "step",
-        "actions": "all",
-        "condition": null,
-        "task": "Implement the userbot reception step body. (1) If TELEGRAM_API_ID/TELEGRAM_API_HASH/TELEGRAM_SESSION are absent, return [] (the track is off; never error). (2) When the Phase-6 listener passes a userbot-sourced message in the run input, normalize it to {chatId, messageId, text, date, source: userbot}. (3) Replies always go through the BOT (sendMessage) — the userbot only reads. Keep this step a thin normalizer; the always-on listening itself lives in the substrate service (its trigger node).",
-        "tools": [
-          "substrate listener service (Phase 6)",
-          "@/lib/db (shared shapes)"
-        ],
-        "envKeys": [
-          "TELEGRAM_API_ID",
-          "TELEGRAM_API_HASH",
-          "TELEGRAM_SESSION"
-        ],
-        "io": {
-          "in": "a userbot-sourced message from the listener (or nothing while unconfigured)",
-          "out": "array of normalized messages {chatId, messageId, text, date, source}"
         }
       }
     }
@@ -475,19 +403,8 @@ export const FLOW_EDGES: Edge[] = [
     "animated": true
   },
   {
-    "id": "e-userbot-reception-trigger-userbot-fetch-messages",
-    "source": "userbot-reception-trigger",
-    "target": "userbot-fetch-messages",
-    "animated": true
-  },
-  {
     "id": "e-fetch-telegram-updates-detect-hook",
     "source": "fetch-telegram-updates",
-    "target": "detect-hook"
-  },
-  {
-    "id": "e-userbot-fetch-messages-detect-hook",
-    "source": "userbot-fetch-messages",
     "target": "detect-hook"
   },
   {

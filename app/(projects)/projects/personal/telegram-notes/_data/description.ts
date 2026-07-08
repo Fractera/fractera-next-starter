@@ -33,9 +33,9 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   },
   {
     id: "types",
-    title: "Automation types",
-    summary: "Two ways to trigger it: in the bot chat, or from any chat.",
-    body: "1) In the bot chat — you write directly to your bot; every message is scanned for a hook phrase.\n2) From any chat (advanced) — a userbot reads your hook phrases in any conversation you are in, and the bot replies. You configure one of the two in Settings.",
+    title: "How you trigger it",
+    summary: "Message your automations bot with a hook phrase.",
+    body: "You write to your automations bot (@fractera_auto); every message is scanned for a registered hook phrase, and the matching action runs and replies. Manage the phrases and the bot token in Settings.",
   },
   {
     id: "benefit",

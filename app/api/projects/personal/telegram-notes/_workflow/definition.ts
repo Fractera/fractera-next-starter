@@ -116,7 +116,6 @@ export async function runProject(input?: string) {
   const artifacts: Record<string, unknown> = { input };
   try {
     artifacts["fetch-telegram-updates"] = await fetchTelegramUpdates(artifacts);
-    artifacts["userbot-fetch-messages"] = await userbotFetchMessages(artifacts);
     artifacts["deliver-due-reminders"] = await deliverDueReminders(artifacts);
     artifacts["detect-hook"] = await detectHook(artifacts);
     artifacts["summarize-message"] = await summarizeMessage(artifacts);
@@ -241,32 +240,13 @@ async function deliverDueReminders(artifacts: Record<string, unknown>): Promise<
   return { delivered, errors };
 }
 
-// node:userbot-fetch-messages — Receive any-chat messages (userbot) [step]
-// The advanced any-chat track (188-R). Inert until Phase 6 wires the MTProto listener: with
-// no API creds it returns [] and never errors. When the Phase-6 substrate listener passes a
-// userbot-sourced message via the run input, this normalizes it to the shared message shape.
-async function userbotFetchMessages(artifacts: Record<string, unknown>): Promise<unknown> {
-  "use step";
-  void artifacts;
-
-  const configured =
-    Boolean(process.env.TELEGRAM_API_ID) &&
-    Boolean(process.env.TELEGRAM_API_HASH) &&
-    Boolean(process.env.TELEGRAM_SESSION);
-  if (!configured) return [] satisfies TgMessage[]; // track off — no errors
-  // Phase 6 wires the real listener here; until then, nothing arrives on this path.
-  return [] satisfies TgMessage[];
-}
-
 // node:detect-hook — Detect the hook from the first words (single entry point) [router]
 async function detectHook(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
-  // Single entry point: merge both reception tracks (bot chat + any-chat userbot).
-  const messages = [
-    ...((artifacts["fetch-telegram-updates"] as TgMessage[]) ?? []),
-    ...((artifacts["userbot-fetch-messages"] as TgMessage[]) ?? []),
-  ];
+  // Reception: messages delivered by the @fractera_auto listener (step 201). The former
+  // any-chat userbot track was removed — this automation is bot-only.
+  const messages = ((artifacts["fetch-telegram-updates"] as TgMessage[]) ?? []);
   if (!messages.length) return [] satisfies Classified2[];
 
   // Active hooks from the GLOBAL project_hooks table (step 187).

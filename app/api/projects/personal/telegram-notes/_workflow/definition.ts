@@ -23,7 +23,7 @@ const RAG_URL = (process.env.LIGHTRAG_URL ?? "http://localhost:9621").replace(/\
 const RAG_KEY = process.env.LIGHTRAG_API_KEY ?? "";
 const PROJECT_SLUG = "telegram-notes";
 
-type TgMessage = { chatId: string; messageId: number; text: string; date: number };
+type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent };
 type Intent = "save" | "remind" | "recall" | "ignore";
 type Classified = {
   intent: Intent;
@@ -35,7 +35,7 @@ type Classified = {
 };
 // hookPhrase = legacy trace field, kept for the DB column (hook_phrase); step 205 removed hooks, so
 // classify-message leaves it "". Retained (backward-compatible) so the persisted schema is unchanged.
-type Classified2 = Classified & { hookPhrase: string };
+type Classified2 = Classified & { hookPhrase: string; unclear?: boolean };
 type WithSummary = Classified2 & { summary: string };
 type Persisted = {
   dbId: number | null;
@@ -106,6 +106,58 @@ async function cheapModel(system: string, user: string, maxTokens = 400): Promis
   } catch {
     return "";
   }
+}
+
+// ── Inline-button fallback helpers (step 205 §D): when classify-message is unsure, the bot offers
+// action buttons; the user's tap comes back as a callback the listener forwards here. ──
+async function tgAnswerCallback(callbackQueryId: string): Promise<void> {
+  if (!callbackQueryId) return;
+  try {
+    await fetch(`${TG_API}/bot${botToken()}/answerCallbackQuery`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callback_query_id: callbackQueryId }),
+    });
+  } catch { /* best-effort */ }
+}
+
+async function tgSendButtons(
+  chatId: string,
+  text: string,
+  buttons: Array<{ text: string; data: string }>,
+): Promise<void> {
+  try {
+    await fetch(`${TG_API}/bot${botToken()}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        reply_markup: { inline_keyboard: buttons.map((b) => [{ text: b.text, callback_data: b.data }]) },
+      }),
+    });
+  } catch { /* best-effort */ }
+}
+
+// Pending store: the original message text held under a short id while the user picks an action from the
+// buttons (callback_data is limited to 64 bytes, so we key the text, not carry it).
+async function storePending(text: string, chatId: string): Promise<string> {
+  const id = crypto.randomUUID().slice(0, 8);
+  try {
+    await db
+      .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
+      .run(`pending:${id}`, JSON.stringify({ text, chatId }));
+  } catch { /* state table optional */ }
+  return id;
+}
+async function loadPending(id: string): Promise<{ text: string; chatId: string } | null> {
+  try {
+    const row = (await db
+      .prepare("SELECT value FROM telegram_notes_state WHERE key = ?")
+      .get(`pending:${id}`)) as { value?: string } | null;
+    if (row?.value) return JSON.parse(row.value) as { text: string; chatId: string };
+  } catch { /* missing/parse */ }
+  return null;
 }
 
 export async function runProject(input?: string) {
@@ -185,8 +237,29 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
   // automation's own bot here — no hook matching; the bot identity already selected this automation.
   try {
     const env = JSON.parse(raw) as {
-      source?: string; chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown;
+      source?: string; kind?: string; data?: unknown; callbackQueryId?: unknown;
+      chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown;
     };
+    // Callback from an inline button (step 205 §D): the user picked an action for an earlier "unclear"
+    // message. Resolve the pending text + forced action, ack the tap, and feed it back into the pipeline.
+    if (env && env.source === "telegram" && env.kind === "callback" && typeof env.data === "string") {
+      const cbChat = String(env.chatId ?? "");
+      if (allowedChat && cbChat && cbChat !== allowedChat) return [] satisfies TgMessage[];
+      await tgAnswerCallback(String(env.callbackQueryId ?? ""));
+      const sep = env.data.indexOf(":");
+      const pid = sep >= 0 ? env.data.slice(0, sep) : "";
+      const action = sep >= 0 ? env.data.slice(sep + 1) : "ignore";
+      const pending = await loadPending(pid);
+      if (!pending) return [] satisfies TgMessage[];
+      const act = (["save", "remind", "recall", "ignore"].includes(action) ? action : "ignore") as Intent;
+      if (act === "ignore") {
+        await tgSend(pending.chatId, "Okay — ignored.");
+        return [] satisfies TgMessage[];
+      }
+      return [
+        { chatId: pending.chatId, messageId: 0, text: pending.text, date: Math.floor(Date.now() / 1000), forcedAction: act },
+      ] satisfies TgMessage[];
+    }
     if (env && env.source === "telegram" && typeof env.text === "string") {
       const chatId = String(env.chatId ?? "");
       if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
@@ -260,8 +333,14 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
 
   const out: Classified2[] = [];
   for (const msg of messages) {
+    // A button tap (callback) carries a forced action — skip the model, honor the user's choice.
+    if (msg.forcedAction) {
+      out.push({ intent: msg.forcedAction, projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
+      continue;
+    }
     const text = msg.text.trim();
     let intent: Intent = "ignore";
+    let unclear = false;
     if (text) {
       const ans = await cheapModel(
         "You route one message of a personal-notes assistant to a single action. Reply with ONLY one word: " +
@@ -272,13 +351,16 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
         4,
       );
       const word = (ans.toLowerCase().match(/save|remind|recall|unclear/) ?? ["unclear"])[0];
-      intent = (word === "unclear" ? "ignore" : word) as Intent;
+      if (word === "unclear") { intent = "ignore"; unclear = true; }
+      else intent = word as Intent;
     }
     out.push({
       intent,
       projectSlug: PROJECT_SLUG,
-      payload: intent === "ignore" ? "" : text,
+      // unclear keeps the text so reply-in-telegram can offer buttons; a plain empty message stays "".
+      payload: intent === "ignore" ? (unclear ? text : "") : text,
       hookPhrase: "",
+      unclear,
       chatId: msg.chatId,
       messageId: msg.messageId,
       date: msg.date,
@@ -455,6 +537,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
   const ingested = (artifacts["ingest-note-to-memory"] as Ingested[]) ?? [];
   const recalls = (artifacts["search-memory-recall"] as RecallAnswer[]) ?? [];
+  const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
   const ingestById = new Map(ingested.map((i) => [i.dbId, i]));
 
   const errors: string[] = [];
@@ -497,5 +580,24 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length, saved, reminded, answered, errors };
+  // Unclear messages (step 205 §D): offer action buttons instead of silently ignoring. The tap comes
+  // back as a callback (handled in fetch-telegram-updates) carrying a forced action.
+  let prompted = 0;
+  for (const c of classified) {
+    if (!c.unclear || !c.payload) continue;
+    try {
+      const pid = await storePending(c.payload, c.chatId);
+      await tgSendButtons(c.chatId, "I'm not sure what to do with that — pick one:", [
+        { text: "💾 Save it", data: `${pid}:save` },
+        { text: "⏰ Remind me", data: `${pid}:remind` },
+        { text: "🔎 Find it", data: `${pid}:recall` },
+        { text: "✖ Sent by mistake", data: `${pid}:ignore` },
+      ]);
+      prompted++;
+    } catch (e) {
+      errors.push(`prompt: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  return { processed: persisted.length + recalls.length + prompted, saved, reminded, answered, errors };
 }

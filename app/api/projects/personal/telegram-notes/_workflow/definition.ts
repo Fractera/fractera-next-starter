@@ -46,8 +46,9 @@ const CATEGORY_GUIDE =
 const ALL_CATEGORY_IDS = new Set([...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].map((c) => c.id));
 
 type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string };
-// finance = a money movement to RECORD; finance-query = a QUESTION about money already recorded (step 207.8).
-type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "help" | "ignore";
+// finance = a money movement to RECORD; finance-query = a QUESTION about money already recorded (step 207.8);
+// photo = send back the receipt image of a finance record (step 207.10, /photo <id>).
+type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "help" | "ignore";
 
 // Bot capability blurb (step 205 §I) — the /help reply + the start message.
 const CAPABILITIES =
@@ -56,6 +57,8 @@ const CAPABILITIES =
   "• a time-based reminder → I remind you at the right time\n" +
   "• a question about what you saved → I search your notes\n" +
   "• a photo of a receipt → I digitize it into your records\n" +
+  "• a money question (how much did I spend on food this week) → I add it up\n" +
+  "• /photo <number> → I send back the receipt image of that finance record\n" +
   "If I'm not sure, I'll show you buttons to choose.";
 
 // Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
@@ -71,6 +74,7 @@ function parseSlashCommand(text: string): { intent: Intent; payload: string } | 
     case "remember": return { intent: "save", payload: rest };
     case "remind":   return { intent: "remind", payload: rest };
     case "recall":   return { intent: "recall", payload: rest };
+    case "photo":    return { intent: "photo", payload: rest };
     case "digitize": return { intent: "help", payload: "Send me a photo of the receipt or document and I'll digitize it into your records." };
     default:         return null;
   }
@@ -131,6 +135,30 @@ async function tgSend(chatId: string, text: string): Promise<void> {
       // plain text on purpose — free-form notes must not break on Markdown specials.
       body: JSON.stringify({ chat_id: chatId, text: chunk }),
     }).catch(() => undefined);
+  }
+}
+
+// Send a stored receipt image back to the chat (step 207.10). The media URL may be absolute or a relative
+// app path (/api/media/…); relative paths are resolved against the app base. We fetch the bytes and upload
+// them as multipart so Telegram never has to reach an internal/relative URL itself. Best-effort → boolean.
+const APP_BASE = (process.env.APP_BASE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+async function tgSendPhotoByUrl(chatId: string, imageUrl: string, caption: string): Promise<boolean> {
+  try {
+    const abs = /^https?:\/\//.test(imageUrl)
+      ? imageUrl
+      : `${APP_BASE}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+    const img = await fetch(abs, { signal: AbortSignal.timeout(30000) });
+    if (!img.ok) return false;
+    const bytes = new Uint8Array(await img.arrayBuffer());
+    const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    const form = new FormData();
+    form.append("chat_id", chatId);
+    if (caption) form.append("caption", caption.slice(0, 1024));
+    form.append("photo", new Blob([ab], { type: "image/jpeg" }), "record.jpg");
+    const r = await fetch(`${TG_API}/bot${botToken()}/sendPhoto`, { method: "POST", body: form, signal: AbortSignal.timeout(30000) });
+    return r.ok;
+  } catch {
+    return false;
   }
 }
 
@@ -970,6 +998,34 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       helped++;
     } catch (e) {
       errors.push(`help reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  // Photo return (step 207.10): "/photo <id>" → send the receipt image of that finance record back to the
+  // chat. Look the row up in the SEPARATE automation_finance ledger, scoped to this project.
+  for (const c of classified) {
+    if (c.intent !== "photo") continue;
+    try {
+      const id = Number((c.payload.match(/\d+/) ?? [])[0]);
+      if (!Number.isFinite(id) || id <= 0) {
+        await tgSend(c.chatId, "Which record? Send /photo followed by the finance record number (for example: /photo 12).");
+        continue;
+      }
+      const row = (await db
+        .prepare("SELECT image_url, summary FROM automation_finance WHERE id = ? AND project = ?")
+        .get(id, PROJECT_SLUG)) as { image_url?: string; summary?: string } | null;
+      if (!row) {
+        await tgSend(c.chatId, `I couldn't find finance record #${id}.`);
+        continue;
+      }
+      if (!row.image_url) {
+        await tgSend(c.chatId, `Finance record #${id} has no photo attached.`);
+        continue;
+      }
+      const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `Record #${id}: ${row.summary ?? ""}`.trim());
+      if (!sent) await tgSend(c.chatId, `I couldn't send the photo for record #${id} right now.`);
+    } catch (e) {
+      errors.push(`photo reply: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 

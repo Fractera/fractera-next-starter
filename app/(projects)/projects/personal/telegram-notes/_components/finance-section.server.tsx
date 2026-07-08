@@ -1,6 +1,7 @@
 import { FINANCE_COLUMNS, type FinanceColumn } from "../_data/finance-columns";
 import { categoryLabel } from "../_data/finance-categories";
 import type { FinanceRecord } from "../_lib/project-data";
+import { FinanceImageCell } from "./finance-image-cell.client";
 
 // Finance section (step 207) — a SEPARATE ledger table from the universal records table (owner decision).
 // Server-rendered (static-first, zero client JS): the money movements the automation digitized from voice
@@ -46,9 +47,7 @@ function Cell({ col, row }: { col: FinanceColumn; row: FinanceRecord }) {
       return <span>{row.summary || "—"}</span>;
     case "image":
       return row.imageUrl ? (
-        <a href={row.imageUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-          Open
-        </a>
+        <FinanceImageCell url={row.imageUrl} />
       ) : (
         <span className="text-muted-foreground">—</span>
       );

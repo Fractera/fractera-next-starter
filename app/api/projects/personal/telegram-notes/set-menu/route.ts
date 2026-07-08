@@ -12,6 +12,7 @@ const COMMANDS = [
   { command: "remind", description: "Set a date reminder" },
   { command: "digitize", description: "Digitize a receipt / document" },
   { command: "recall", description: "Find something you saved" },
+  { command: "photo", description: "Send back the receipt of a finance record" },
 ]
 
 export async function POST() {

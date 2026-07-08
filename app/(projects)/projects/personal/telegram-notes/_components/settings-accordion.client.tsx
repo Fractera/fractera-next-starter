@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { useAutomationStatus } from "../_lib/automation-status";
 import { BotKeySettings } from "./bot-key-settings.client";
+import { ConnectorSettings } from "./connector-settings.client";
 import { IntervalSettings } from "./interval-settings.client";
 import { ModelSettings } from "./model-settings.client";
 
@@ -94,6 +95,20 @@ export function SettingsAccordion() {
         </AccordionTrigger>
         <AccordionContent>
           <IntervalSettings />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="connectors">
+        <AccordionTrigger>
+          <SettingTitle
+            title="Connectors"
+            hint="Mirror reminders to an external Google Calendar (optional)."
+            tone="muted"
+            toneTitle="External calendar connector"
+          />
+        </AccordionTrigger>
+        <AccordionContent>
+          <ConnectorSettings />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

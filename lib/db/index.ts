@@ -151,6 +151,10 @@ const SCHEMA = `
     -- Reminder as EVENT + REMINDER (step 207): reminder_due = when to notify; event_at = when the
     -- thing actually happens (unix seconds). One message can yield several such rows.
     event_at        INTEGER,
+    -- External calendar sync (step 207 Phase F): the Google Calendar event id created for this reminder
+    -- (idempotency — sync/delete the same external event instead of duplicating). NULL until pushed;
+    -- inert when the calendar connector has no creds/token.
+    external_event_id TEXT,
     created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
   -- Finance ledger (step 207) — a SEPARATE table from telegram_notes (owner decision). One row per
@@ -169,6 +173,18 @@ const SCHEMA = `
     chat_id      TEXT NOT NULL DEFAULT '',
     msg_date     INTEGER,
     created_at   INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+  -- External calendar OAuth tokens (step 207 Phase F) — per-project Google Calendar connection. One row
+  -- per project; refresh_token drives long-lived access, access_token/expiry are the short-lived pair.
+  -- Inert without GOOGLE_OAUTH_CLIENT_ID/SECRET (self-sufficiency): no row → the connector is "not
+  -- connected" and the reminder push is a no-op.
+  CREATE TABLE IF NOT EXISTS automation_calendar_tokens (
+    project       TEXT PRIMARY KEY NOT NULL,
+    provider      TEXT NOT NULL DEFAULT 'google',
+    access_token  TEXT,
+    refresh_token TEXT,
+    expiry        INTEGER,
+    created_at    INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 `
 
@@ -234,6 +250,8 @@ function makeLocalDb() {
   if (tnCols.size && !tnCols.has('image_url')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN image_url TEXT`)
   // telegram_notes.event_at (step 207 — reminder as event+reminder) — live DBs get it via ALTER.
   if (tnCols.size && !tnCols.has('event_at'))  safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN event_at INTEGER`)
+  // telegram_notes.external_event_id (step 207 Phase F — external calendar sync) — live DBs get it via ALTER.
+  if (tnCols.size && !tnCols.has('external_event_id')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN external_event_id TEXT`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

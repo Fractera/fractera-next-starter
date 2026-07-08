@@ -52,9 +52,12 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {/* Left: month calendar */}
-      <div className="rounded-lg border p-3" style={{ height: 300 }}>
+    // Left column: a FIXED 300px-wide calendar on desktop (never stretches with the viewport); full
+    // width on mobile with the events column dropping below. Height is DYNAMIC — the calendar sizes to
+    // its own weeks (5-6 rows) so the last date rows never overflow (step 205 calendar fix).
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      {/* Left: month calendar — 300px wide, height fits content */}
+      <div className="w-full rounded-lg border p-3 sm:w-[300px] sm:shrink-0">
         <div className="mb-2 flex items-center justify-between">
           <button type="button" onClick={() => shift(-1)} className="rounded p-1 hover:bg-muted" aria-label="Previous month">
             <ChevronLeft className="size-4" />
@@ -91,8 +94,8 @@ export function CalendarSection({ events }: { events: CalendarEvent[] }) {
         </div>
       </div>
 
-      {/* Right: events of the selected date */}
-      <div className="overflow-y-auto rounded-lg border p-3" style={{ height: 300 }}>
+      {/* Right: events of the selected date — takes the remaining width; height grows with content. */}
+      <div className="w-full rounded-lg border p-3 sm:flex-1">
         <p className="mb-2 text-sm font-medium">{selected ?? "Pick a date"}</p>
         {selectedEvents.length === 0 ? (
           <p className="text-xs text-muted-foreground">No events on this date.</p>

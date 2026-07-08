@@ -4,12 +4,13 @@ import { PROJECT_DESCRIPTION } from "../_data/description";
 import { PROJECT_INTERFACE } from "../_data/interface";
 import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
-import { getCronJobs, getRecords } from "../_lib/project-data";
+import { getCronJobs, getRecords, getCalendarEvents } from "../_lib/project-data";
 import { AboutAccordion } from "./about-accordion.client";
+import { CalendarSection } from "./calendar-section.client";
 import { CronJobsTable } from "./cron-jobs-table.server";
 import { MissingKeysModal } from "./missing-keys-modal.client";
 import { RecordsTable } from "./records-table.client";
-import { ProcessFlow } from "./process-flow.client";
+import { DiagramAccordion } from "./diagram-accordion.client";
 import { ProjectFooter } from "./project-footer.client";
 import { RunPanel } from "./run-panel.client";
 import { SettingsAccordion } from "./settings-accordion.client";
@@ -34,9 +35,10 @@ function schedulePeriodSec(schedule: string): number {
 // countdown to the next scheduled run, the Hooks layer, and the scheduled-runs queue.
 // The two repetitive process/results tables are replaced by one unified table in Phase 3.
 export default async function TelegramNotesProjectEntry() {
-  const [cronJobs, records] = await Promise.all([
+  const [cronJobs, records, calendarEvents] = await Promise.all([
     getCronJobs(),
     getRecords(),
+    getCalendarEvents(),
   ]);
   const d = PROJECT_DESCRIPTION;
   const t = projectTabStrings(LANG);
@@ -89,14 +91,12 @@ export default async function TelegramNotesProjectEntry() {
         </div>
       )}
 
+      {/* Process diagram — collapsed accordion at the top (step 205 §G). */}
+      <DiagramAccordion label={t.diagram} />
+
       <section className="space-y-3">
         <h2 className="text-xl font-medium">{t.about}</h2>
         <AboutAccordion />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">{t.diagram}</h2>
-        <ProcessFlow />
       </section>
 
       <section className="space-y-3">
@@ -107,6 +107,13 @@ export default async function TelegramNotesProjectEntry() {
       <section className="space-y-3">
         <h2 className="text-xl font-medium">Settings</h2>
         <SettingsAccordion />
+      </section>
+
+      {/* Calendar (step 205 §H): time-based automations put reminders on dates; the calendar marks
+          them and lists the selected date's events. The records table follows below. */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-medium">Calendar</h2>
+        <CalendarSection events={calendarEvents} />
       </section>
 
       <section className="space-y-3">

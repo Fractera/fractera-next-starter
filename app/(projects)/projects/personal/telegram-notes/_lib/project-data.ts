@@ -70,6 +70,36 @@ export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: nu
   }
 }
 
+// Calendar events (step 205 §H): reminders have a due date/time → one event per reminder, keyed by the
+// local YYYY-MM-DD of reminder_due. The calendar marks these dates; clicking a date lists its events.
+export type CalendarEvent = { date: string; time: string; title: string };
+export async function getCalendarEvents(): Promise<CalendarEvent[]> {
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT reminder_due, summary, full_text FROM telegram_notes
+          WHERE project_slug = ? AND reminder_due IS NOT NULL
+          ORDER BY reminder_due DESC LIMIT 500`,
+      )
+      .all(PROJECT);
+    return rows.map((r) => {
+      const when = new Date(Number(r.reminder_due) * 1000);
+      const y = when.getFullYear();
+      const m = String(when.getMonth() + 1).padStart(2, "0");
+      const d = String(when.getDate()).padStart(2, "0");
+      const hh = String(when.getHours()).padStart(2, "0");
+      const mm = String(when.getMinutes()).padStart(2, "0");
+      return {
+        date: `${y}-${m}-${d}`,
+        time: `${hh}:${mm}`,
+        title: String(r.summary || r.full_text || "").slice(0, 200),
+      };
+    });
+  } catch {
+    return []; // table not created yet — no events
+  }
+}
+
 export async function getCronJobs(): Promise<CronJob[]> {
   try {
     const raw = await readFile(

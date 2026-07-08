@@ -10,6 +10,7 @@ import {
 import { useAutomationStatus } from "../_lib/automation-status";
 import { BotKeySettings } from "./bot-key-settings.client";
 import { IntervalSettings } from "./interval-settings.client";
+import { ModelSettings } from "./model-settings.client";
 
 // Attention dot shown left of each settings tab (step 188 Phase 4.1) so the user sees at
 // a glance WHICH tab needs action — red = broken/needs action, amber = incomplete, green
@@ -65,6 +66,20 @@ export function SettingsAccordion() {
         </AccordionTrigger>
         <AccordionContent>
           <BotKeySettings />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="model">
+        <AccordionTrigger>
+          <SettingTitle
+            title="AI model"
+            hint="Which OpenAI model this automation uses (one key, a model per automation)."
+            tone="muted"
+            toneTitle="Model preference"
+          />
+        </AccordionTrigger>
+        <AccordionContent>
+          <ModelSettings />
         </AccordionContent>
       </AccordionItem>
 

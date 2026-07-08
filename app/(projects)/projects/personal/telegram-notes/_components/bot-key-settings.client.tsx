@@ -69,6 +69,11 @@ export function BotKeySettings() {
           body: JSON.stringify({ category: "personal", project: "telegram-notes", token: value }),
         });
       } catch { /* best-effort */ }
+      // Set the bot's command menu (Help / remember / remind / digitize / recall) — best-effort; the
+      // token restart is async so a first failure is harmless (re-saving re-sets it).
+      try {
+        await fetch("/api/projects/personal/telegram-notes/set-menu", { method: "POST" });
+      } catch { /* best-effort */ }
       setToken("");
       void refreshAutomationStatus(); // reflect the new key in the pill/dots
       toast.success("Bot token saved — applying (a brief restart)");

@@ -32,7 +32,34 @@ const PROJECT_SLUG = "telegram-notes";
 const MAX_FIN_TYPES = 10; // ≤10 income + ≤10 expense types per automation (step 205 §E)
 
 type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string };
-type Intent = "save" | "remind" | "recall" | "finance" | "ignore";
+type Intent = "save" | "remind" | "recall" | "finance" | "help" | "ignore";
+
+// Bot capability blurb (step 205 §I) — the /help reply + the start message.
+const CAPABILITIES =
+  "I'm your personal notes automation. Just message me and I sort it automatically:\n" +
+  "• a fact to remember → I save it\n" +
+  "• a time-based reminder → I remind you at the right time\n" +
+  "• a question about what you saved → I search your notes\n" +
+  "• a photo of a receipt → I digitize it into your records\n" +
+  "If I'm not sure, I'll show you buttons to choose.";
+
+// Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
+// non-command message (routed by the model instead).
+function parseSlashCommand(text: string): { intent: Intent; payload: string } | null {
+  const m = /^\/([a-z]+)(?:@\w+)?\s*([\s\S]*)$/i.exec(text.trim());
+  if (!m) return null;
+  const cmd = m[1].toLowerCase();
+  const rest = m[2].trim();
+  switch (cmd) {
+    case "help":     return { intent: "help", payload: "" };
+    case "start":    return { intent: "help", payload: "" };
+    case "remember": return { intent: "save", payload: rest };
+    case "remind":   return { intent: "remind", payload: rest };
+    case "recall":   return { intent: "recall", payload: rest };
+    case "digitize": return { intent: "help", payload: "Send me a photo of the receipt or document and I'll digitize it into your records." };
+    default:         return null;
+  }
+}
 type Classified = {
   intent: Intent;
   projectSlug: string | null;
@@ -475,6 +502,12 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       out.push({ intent: "finance", projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date, photoFileId: msg.photoFileId });
       continue;
     }
+    // A slash command (the bot menu, step 205 §I) maps deterministically — no model call.
+    const slash = parseSlashCommand(msg.text);
+    if (slash) {
+      out.push({ intent: slash.intent, projectSlug: PROJECT_SLUG, payload: slash.payload, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
+      continue;
+    }
     const text = msg.text.trim();
     let intent: Intent = "ignore";
     let unclear = false;
@@ -779,6 +812,18 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
+  // Help / start / digitize-hint (step 205 §I): reply with the capability blurb or the command's hint.
+  let helped = 0;
+  for (const c of classified) {
+    if (c.intent !== "help") continue;
+    try {
+      await tgSend(c.chatId, c.payload || CAPABILITIES);
+      helped++;
+    } catch (e) {
+      errors.push(`help reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   // Unclear messages (step 205 §D): offer action buttons instead of silently ignoring. The tap comes
   // back as a callback (handled in fetch-telegram-updates) carrying a forced action.
   let prompted = 0;
@@ -798,5 +843,5 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length + prompted + finance, saved, reminded, answered, finance, errors };
+  return { processed: persisted.length + recalls.length + prompted + finance + helped, saved, reminded, answered, finance, errors };
 }

@@ -148,7 +148,27 @@ const SCHEMA = `
     expense         REAL,
     fin_type        TEXT,
     image_url       TEXT,
+    -- Reminder as EVENT + REMINDER (step 207): reminder_due = when to notify; event_at = when the
+    -- thing actually happens (unix seconds). One message can yield several such rows.
+    event_at        INTEGER,
     created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+  -- Finance ledger (step 207) — a SEPARATE table from telegram_notes (owner decision). One row per
+  -- money movement. kind = income|expense; amount = the sum; categories = a JSON array of preset
+  -- category ids (multi-flag, from _data/finance-categories.ts); image_url = the receipt photo link.
+  -- (The telegram_notes.income/expense/fin_type columns from step 205 are deprecated — finance now
+  -- lives here; the old columns stay for backward-compat but are no longer written.)
+  CREATE TABLE IF NOT EXISTS automation_finance (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    project      TEXT NOT NULL DEFAULT 'telegram-notes',
+    kind         TEXT NOT NULL,          -- 'income' | 'expense'
+    amount       REAL NOT NULL DEFAULT 0,
+    categories   TEXT NOT NULL DEFAULT '[]',  -- JSON array of preset category ids (multi-flag)
+    summary      TEXT NOT NULL DEFAULT '',
+    image_url    TEXT,
+    chat_id      TEXT NOT NULL DEFAULT '',
+    msg_date     INTEGER,
+    created_at   INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 `
 
@@ -212,6 +232,8 @@ function makeLocalDb() {
   if (tnCols.size && !tnCols.has('expense'))   safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN expense REAL`)
   if (tnCols.size && !tnCols.has('fin_type'))  safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN fin_type TEXT`)
   if (tnCols.size && !tnCols.has('image_url')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN image_url TEXT`)
+  // telegram_notes.event_at (step 207 — reminder as event+reminder) — live DBs get it via ALTER.
+  if (tnCols.size && !tnCols.has('event_at'))  safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN event_at INTEGER`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

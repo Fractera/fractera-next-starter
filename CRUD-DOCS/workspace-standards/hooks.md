@@ -1,5 +1,12 @@
 # Automation hooks — the spoken-trigger standard for projects
 
+> ⛔ **DEPRECATED (step 205). Hooks are removed.** This standard described a single shared bot routed by a
+> global `project_hooks` phrase registry. The model changed to **one Telegram bot per automation**
+> (`agent-channel-routing.md`): the bot's identity selects the automation, and the action inside it is
+> decided by a per-automation `classify-message` node with an inline-button fallback — there is no phrase
+> registry, no `project_hooks` table, no Hooks panel, and no `manage-automation-hooks` skill. This file is
+> retained only as historical context; do NOT build against it.
+
 **Standard (step 187).** A personal automation is not run by clicking a button — it is run by
 **saying a phrase**. A **Hook** is that spoken trigger: a phrase bound to an action of a project.
 Hooks are a first-class **layer of a project**, alongside the description, the process diagram, the

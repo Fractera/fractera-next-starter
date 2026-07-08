@@ -360,22 +360,22 @@ export const FLOW_NODES: FlowNode[] = [
     "data": {
       "label": "Digitize a receipt / voice finance note into a money record",
       "info": {
-        "summary": "Step 205 §E: a photo (receipt/document) is saved to the media store and read by a vision-capable per-project model; a voice/text finance note is read by the cheap model. Either way it becomes a money movement (income or expense) auto-segmented into one of the automation's finance types (≤10 per kind), stored with income/expense/fin_type/image_url.",
+        "summary": "Step 205 §E (finance table + presets, step 207): a photo (receipt/document) is saved to the media store and read by a vision-capable per-project model; a voice/text finance note is read by the cheap model. Either way it becomes a money movement (income or expense) segmented into one or more of the FIXED preset categories (multi-flag, _data/finance-categories.ts), stored in the SEPARATE automation_finance ledger with kind/amount/categories/summary/image_url.",
         "processes": [
           "photo → media store (media service :3300) → image_url",
-          "vision (photo) or cheap model (text) → {kind, amount, typeGuess, summary}",
-          "auto-segment to a finance type (≤10 income + ≤10 expense)",
-          "persist income/expense/fin_type/image_url row"
+          "vision (photo) or cheap model (text) → {kind, amount, categories[], summary}",
+          "validate categories against the fixed preset (multi-flag; empty → other_*)",
+          "persist a row to automation_finance (telegram_notes finance columns deprecated)"
         ],
         "kind": "step",
         "actions": ["finance"],
         "condition": null,
-        "task": "Digitize a receipt/document photo or a voice finance note into a money record. Photo: getFile → download → upload to the media service (:3300) for image_url, then a VISION-capable per-project model reads {kind: income|expense, amount, typeGuess, summary}. Text/voice: the cheap model extracts the same. Resolve the type against automation_finance_types (≤10 per kind; auto-add if under the cap, else reuse an existing one). Persist income/expense/fin_type/image_url to telegram_notes. Reply confirms what was recorded. One global OPENAI_API_KEY; the model is per automation.",
+        "task": "Digitize a receipt/document photo or a voice finance note into a money record. Photo: getFile → download → upload to the media service (:3300) for image_url, then a VISION-capable per-project model reads {kind: income|expense, amount, categories, summary}. Text/voice: the cheap model extracts the same. categories = one or more ids from the FIXED preset (multi-flag); validate with normalizeCategories (empty → the kind's other_*). Persist kind/amount/categories(JSON)/summary/image_url to the SEPARATE automation_finance table (the telegram_notes finance columns from step 205 are deprecated). Reply confirms what was recorded. One global OPENAI_API_KEY; the model is per automation.",
         "tools": [
           "Telegram getFile + file download",
           "media service :3300 /media/upload",
           "vision model + cheap model via OPENAI_API_KEY",
-          "automation_finance_types via @/lib/db"
+          "automation_finance + finance-categories preset via @/lib/db"
         ],
         "envKeys": [
           "OPENAI_API_KEY",
@@ -383,7 +383,41 @@ export const FLOW_NODES: FlowNode[] = [
         ],
         "io": {
           "in": "classified finance items {payload, photoFileId, chatId}",
-          "out": "finance rows {dbId, kind, amount, finType, imageUrl, summary}"
+          "out": "finance rows {dbId, kind, amount, categories, imageUrl, summary}"
+        }
+      }
+    }
+  },
+  {
+    "id": "answer-finance-query",
+    "type": "process",
+    "position": {
+      "x": 1300,
+      "y": 160
+    },
+    "data": {
+      "label": "Answer a finance question from the ledger",
+      "info": {
+        "summary": "Step 207.8: a finance-query message (a QUESTION about money already recorded, e.g. 'how much did I spend on food this week') is turned into structured filters (kind / preset categories / look-back window) and aggregated over the SEPARATE automation_finance ledger, then answered in plain text back to the chat.",
+        "processes": [
+          "cheap model parses the question → {kind, categories[], sinceDays}",
+          "SUM over automation_finance with the filters (category filter in the app layer — categories is a JSON multi-flag array)",
+          "plain-text answer with the total, count, category labels and period"
+        ],
+        "kind": "step",
+        "actions": ["finance-query"],
+        "condition": null,
+        "task": "Aggregate the finance ledger to answer a money question. (1) The cheap model turns the question into {kind: income|expense|null, categories: preset ids, sinceDays: window}. (2) SELECT kind/amount/categories from automation_finance filtered by project + kind + created_at window; filter by category in the app layer (multi-flag JSON). (3) SUM the amounts and reply with the total, the record count, the category labels and the period. One global OPENAI_API_KEY; the model is per automation.",
+        "tools": [
+          "cheap model via OPENAI_API_KEY",
+          "automation_finance via @/lib/db"
+        ],
+        "envKeys": [
+          "OPENAI_API_KEY"
+        ],
+        "io": {
+          "in": "classified finance-query items {payload, chatId}",
+          "out": "finance answers {chatId, answer}"
         }
       }
     }
@@ -460,6 +494,16 @@ export const FLOW_EDGES: Edge[] = [
   {
     "id": "e-parse-document-reply-in-telegram",
     "source": "parse-document",
+    "target": "reply-in-telegram"
+  },
+  {
+    "id": "e-classify-message-answer-finance-query",
+    "source": "classify-message",
+    "target": "answer-finance-query"
+  },
+  {
+    "id": "e-answer-finance-query-reply-in-telegram",
+    "source": "answer-finance-query",
     "target": "reply-in-telegram"
   },
   {

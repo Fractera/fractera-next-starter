@@ -70,33 +70,86 @@ export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: nu
   }
 }
 
-// Calendar events (step 205 §H): reminders have a due date/time → one event per reminder, keyed by the
-// local YYYY-MM-DD of reminder_due. The calendar marks these dates; clicking a date lists its events.
-export type CalendarEvent = { date: string; time: string; title: string };
+// Calendar entries (step 207 event+reminder model): a telegram_notes row can carry a reminder_due (when to
+// NOTIFY) and/or an event_at (when the thing HAPPENS). Each of those two times becomes ITS OWN calendar
+// entry, tagged type:'reminder'|'event', both sharing the row `id` so the UI can relate them (the reminder
+// that belongs to which event). Keyed by the local YYYY-MM-DD; the calendar marks these dates and the right
+// column lists the day's entries (step 207.5 timeline + filters + colors).
+export type CalendarEvent = { id: string; date: string; time: string; title: string; type: "event" | "reminder" };
+function toDateTime(unix: number): { date: string; time: string } {
+  const when = new Date(unix * 1000);
+  const y = when.getFullYear();
+  const m = String(when.getMonth() + 1).padStart(2, "0");
+  const d = String(when.getDate()).padStart(2, "0");
+  const hh = String(when.getHours()).padStart(2, "0");
+  const mm = String(when.getMinutes()).padStart(2, "0");
+  return { date: `${y}-${m}-${d}`, time: `${hh}:${mm}` };
+}
 export async function getCalendarEvents(): Promise<CalendarEvent[]> {
   try {
     const rows = await db
       .prepare(
-        `SELECT reminder_due, summary, full_text FROM telegram_notes
-          WHERE project_slug = ? AND reminder_due IS NOT NULL
-          ORDER BY reminder_due DESC LIMIT 500`,
+        `SELECT id, reminder_due, event_at, summary, full_text FROM telegram_notes
+          WHERE project_slug = ? AND (reminder_due IS NOT NULL OR event_at IS NOT NULL)
+          ORDER BY COALESCE(event_at, reminder_due) DESC LIMIT 500`,
       )
       .all(PROJECT);
-    return rows.map((r) => {
-      const when = new Date(Number(r.reminder_due) * 1000);
-      const y = when.getFullYear();
-      const m = String(when.getMonth() + 1).padStart(2, "0");
-      const d = String(when.getDate()).padStart(2, "0");
-      const hh = String(when.getHours()).padStart(2, "0");
-      const mm = String(when.getMinutes()).padStart(2, "0");
-      return {
-        date: `${y}-${m}-${d}`,
-        time: `${hh}:${mm}`,
-        title: String(r.summary || r.full_text || "").slice(0, 200),
-      };
-    });
+    const out: CalendarEvent[] = [];
+    for (const r of rows) {
+      const id = String(r.id);
+      const title = String(r.summary || r.full_text || "").slice(0, 200);
+      if (r.event_at !== null && r.event_at !== undefined) {
+        out.push({ id, ...toDateTime(Number(r.event_at)), title, type: "event" });
+      }
+      if (r.reminder_due !== null && r.reminder_due !== undefined) {
+        out.push({ id, ...toDateTime(Number(r.reminder_due)), title, type: "reminder" });
+      }
+    }
+    return out;
   } catch {
     return []; // table not created yet — no events
+  }
+}
+
+// Finance ledger rows (step 207) — from the SEPARATE automation_finance table, sorted by kind (income
+// first, then expense) so the section groups money in vs money out. categories is a JSON array of preset
+// ids; parsed defensively (a bad value degrades to an empty list, never throws).
+export type FinanceRecord = {
+  id: string;
+  kind: "income" | "expense";
+  amount: number;
+  categories: string[];
+  summary: string;
+  imageUrl: string | null;
+  createdAt: number;
+};
+function parseCategoryIds(raw: unknown): string[] {
+  try {
+    const arr = JSON.parse(String(raw ?? "[]"));
+    return Array.isArray(arr) ? arr.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+export async function getFinanceRecords(limit = 50): Promise<FinanceRecord[]> {
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT id, kind, amount, categories, summary, image_url, created_at FROM automation_finance
+          WHERE project = ? ORDER BY kind DESC, created_at DESC LIMIT ?`,
+      )
+      .all(PROJECT, limit);
+    return rows.map((r) => ({
+      id: String(r.id),
+      kind: r.kind === "income" ? "income" : "expense",
+      amount: Number(r.amount),
+      categories: parseCategoryIds(r.categories),
+      summary: String(r.summary ?? ""),
+      imageUrl: r.image_url ? String(r.image_url) : null,
+      createdAt: Number(r.created_at),
+    })) as FinanceRecord[];
+  } catch {
+    return []; // table not created yet — no finance rows
   }
 }
 

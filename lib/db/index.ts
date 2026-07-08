@@ -67,21 +67,17 @@ const SCHEMA = `
     error       TEXT,
     created_by  TEXT NOT NULL DEFAULT 'fractera-cron'
   );
-  -- Automation hooks (step 187): a spoken trigger phrase → an action, bound to a
-  -- project. normalized_phrase is UNIQUE across the WHOLE table (GLOBAL uniqueness):
-  -- the chat/Telegram router matches one phrase to exactly one project action, so a
-  -- duplicate or near-duplicate phrase in ANY project is refused (owner contract 187).
-  CREATE TABLE IF NOT EXISTS project_hooks (
-    id                TEXT PRIMARY KEY NOT NULL,
-    category          TEXT NOT NULL,
-    project           TEXT NOT NULL,
-    phrase            TEXT NOT NULL,
-    normalized_phrase TEXT NOT NULL UNIQUE,
-    action            TEXT NOT NULL DEFAULT 'custom',
-    lang              TEXT NOT NULL DEFAULT 'en',
-    description       TEXT NOT NULL DEFAULT '',
-    created_at        TEXT NOT NULL DEFAULT (datetime('now')),
-    created_by        TEXT NOT NULL DEFAULT 'system'
+  -- Automation finance types (step 205, §E): the per-automation income/expense categories the
+  -- document-parsing / voice finance action segments a record into. Capped at ≤10 per (project,kind)
+  -- in the app layer (not a schema constraint); UNIQUE(project,kind,name) prevents duplicates. Replaces
+  -- the removed project_hooks table — hooks are gone (one bot per automation, agent-channel-routing.md §8).
+  CREATE TABLE IF NOT EXISTS automation_finance_types (
+    id         TEXT PRIMARY KEY NOT NULL,
+    project    TEXT NOT NULL,
+    kind       TEXT NOT NULL,          -- 'income' | 'expense'
+    name       TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(project, kind, name)
   );
   -- Inter-automation orchestration (ontology entity 13 + §D pub/sub, step 195). The substrate
   -- runner (fractera-cron) carries the SAME three CREATE TABLE statements — keep the DDL textually
@@ -145,6 +141,13 @@ const SCHEMA = `
     full_text       TEXT NOT NULL DEFAULT '',
     summary         TEXT NOT NULL DEFAULT '',
     memory_track_id TEXT,
+    -- Finance / document-parsing action (step 205, §E): a parsed receipt or a voice finance note
+    -- writes a money movement here. income/expense are amounts (one is set per record); fin_type is
+    -- one of automation_finance_types.name; image_url is the media-storage link to the original photo.
+    income          REAL,
+    expense         REAL,
+    fin_type        TEXT,
+    image_url       TEXT,
     created_at      INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 `
@@ -156,6 +159,9 @@ const DROP_LEGACY = `
   DROP TABLE IF EXISTS projects;
   DROP TABLE IF EXISTS requested_routes;
   DROP TABLE IF EXISTS route_tasks;
+  -- step 205 §C: hooks removed (one bot per automation). Drop the global phrase registry so no
+  -- stale hook rows survive on an upgraded server; routing no longer reads this table.
+  DROP TABLE IF EXISTS project_hooks;
 `
 
 // ALTER TABLE ADD COLUMN must tolerate the "duplicate column" error: during
@@ -201,6 +207,11 @@ function makeLocalDb() {
   if (tnCols.size && !tnCols.has('hook_phrase'))     safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN hook_phrase TEXT NOT NULL DEFAULT ''`)
   if (tnCols.size && !tnCols.has('condition'))       safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN condition TEXT`)
   if (tnCols.size && !tnCols.has('memory_track_id')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN memory_track_id TEXT`)
+  // telegram_notes finance columns (step 205 §E) — live DBs get them via ALTER.
+  if (tnCols.size && !tnCols.has('income'))    safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN income REAL`)
+  if (tnCols.size && !tnCols.has('expense'))   safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN expense REAL`)
+  if (tnCols.size && !tnCols.has('fin_type'))  safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN fin_type TEXT`)
+  if (tnCols.size && !tnCols.has('image_url')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN image_url TEXT`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

@@ -7,9 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { Hook } from "../_lib/types";
 import { useAutomationStatus } from "../_lib/automation-status";
-import { HooksPanel } from "./hooks-panel.client";
 import { BotKeySettings } from "./bot-key-settings.client";
 import { IntervalSettings } from "./interval-settings.client";
 
@@ -43,11 +41,9 @@ function SettingTitle({ title, hint, tone, toneTitle }: { title: string; hint: s
   );
 }
 
-export function SettingsAccordion({ initialHooks }: { initialHooks: Hook[] }) {
+export function SettingsAccordion() {
   const status = useAutomationStatus();
   // Per-tab attention (Phase 4.1). Until the store has loaded, show muted (no false alarm).
-  const hooksTone: Tone = !status.loaded ? "muted" : initialHooks.length === 0 ? "amber" : "green";
-  const hooksTitle = initialHooks.length === 0 ? "No hooks registered yet" : "Hooks registered";
   const botBroken = status.loaded && (!status.enabled || !status.botKeyOk);
   const botTone: Tone = !status.loaded ? "muted" : botBroken ? "red" : "green";
   const botTitle = !status.enabled
@@ -58,20 +54,6 @@ export function SettingsAccordion({ initialHooks }: { initialHooks: Hook[] }) {
 
   return (
     <Accordion type="single" collapsible className="rounded-lg border px-4">
-      <AccordionItem value="hooks">
-        <AccordionTrigger>
-          <SettingTitle
-            title="Trigger phrases (hooks)"
-            hint="The spoken phrases that start the automation, and what each one does."
-            tone={hooksTone}
-            toneTitle={hooksTitle}
-          />
-        </AccordionTrigger>
-        <AccordionContent>
-          <HooksPanel initialHooks={initialHooks} />
-        </AccordionContent>
-      </AccordionItem>
-
       <AccordionItem value="bot" className={botBroken ? "-mx-4 border-l-2 border-l-red-500 pl-[calc(1rem-2px)] pr-4" : ""}>
         <AccordionTrigger>
           <SettingTitle

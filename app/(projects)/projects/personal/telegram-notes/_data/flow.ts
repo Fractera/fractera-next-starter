@@ -170,31 +170,28 @@ export const FLOW_NODES: FlowNode[] = [
     }
   },
   {
-    "id": "detect-hook",
+    "id": "classify-message",
     "type": "process",
     "position": {
       "x": 520,
       "y": 0
     },
     "data": {
-      "label": "Detect the hook from the first words (single entry point)",
+      "label": "Classify the message into an action",
       "info": {
-        "summary": "The single entry point of the spoken command mode: it extracts the first ~20 words of a message, uses a cheap model to determine whether the message contains one of the registered hooks from the global project_hooks table (step 187), and classifies the intent. Shared infrastructure — not just for notes.",
+        "summary": "This automation has its OWN Telegram bot (step 205), so there is NO cross-automation hook registry. The node classifies each incoming message into one of THIS automation's actions with the per-project cheap model — save / remind / recall (parse-doc is added in Phase E) — or unclear. Clear → that action runs; unclear → the reply offers action buttons (fallback, step 205.10).",
         "processes": [
-          "read active hooks from project_hooks (187) + normalize.ts",
-          "first ~20 words → cheap model → action/projectSlug or ignore",
-          "payload = the tail after the phrase; empty → ignore",
-          "compact classifier prompt (token efficiency)",
-          "return { actionId, hookPhrase } per matched message (hook trace)"
+          "per-project model classifies the message → one action or unclear",
+          "clear → route to that action; unclear → button fallback",
+          "payload = the whole message (no hook phrase to strip)",
+          "compact classifier prompt (token efficiency)"
         ],
         "kind": "router",
         "actions": "all",
         "condition": null,
-        "task": "Implement the hook detector. (1) Read the active hooks from the project_hooks table (187) via @/lib/db (normalized phrases + action save/remind/recall + the owning projectSlug). (2) For each message: take the first ~20 words and run them through a cheap model via OPENAI_API_KEY with a classifier prompt \"does the text contain one of these hooks; return action and projectSlug or ignore\" (normalize case, ё/е, and extra whitespace via lib/hooks/normalize.ts from step 187). (3) payload = the text AFTER the hook phrase; empty payload → ignore. (4) Return an array of {intent: save|remind|recall|ignore, projectSlug, payload, chatId, messageId, date}. Messages without a hook → ignore and go no further. A cheap model with no heavy instructions — minimal cost (the token-efficiency thesis). ALSO return, for every matched message, the MATCHED HOOK PHRASE itself ({ actionId, hookPhrase }) — the persist step records it so every table row shows which hook fired (the trace: what the user said, what matched, what ran).",
+        "task": "Classify the message into one of this automation's actions with the per-project model (<PROJECT>_MODEL, one global OPENAI_API_KEY). Reply with ONE word: save (states a fact to remember), remind (wants a time-based reminder), recall (asks to find something saved), or unclear. Clear → return that intent with payload = the WHOLE message; unclear → intent=ignore for now (step 205.10 replaces this with action buttons). NO project_hooks, NO phrase matching — the bot identity already selected the automation.",
         "tools": [
-          "project_hooks (table, step 187) via @/lib/db",
-          "lib/hooks/normalize.ts (187)",
-          "cheap model via OPENAI_API_KEY",
+          "per-project cheap model via OPENAI_API_KEY",
           "fetch"
         ],
         "envKeys": [
@@ -229,7 +226,7 @@ export const FLOW_NODES: FlowNode[] = [
           "remind"
         ],
         "condition": null,
-        "task": "Implement the inline summary. For each intent in {save, remind}: (1) POST to a cheap model via OPENAI_API_KEY (the same key as detect-hook; NOT a separate skill — an inline call) with the prompt \"produce a concise but complete summary of this message, preserving key facts and dates\". (2) Cap the input/output length (token thrift). (3) Return {messageId, summary} alongside the original fields. A summary failure must NOT crash the run: summary = the first N characters of the original text (graceful degradation).",
+        "task": "Implement the inline summary. For each intent in {save, remind}: (1) POST to a cheap model via OPENAI_API_KEY (the same key as classify-message; NOT a separate skill — an inline call) with the prompt \"produce a concise but complete summary of this message, preserving key facts and dates\". (2) Cap the input/output length (token thrift). (3) Return {messageId, summary} alongside the original fields. A summary failure must NOT crash the run: summary = the first N characters of the original text (graceful degradation).",
         "tools": [
           "cheap model via OPENAI_API_KEY",
           "fetch"
@@ -303,7 +300,7 @@ export const FLOW_NODES: FlowNode[] = [
           "recall"
         ],
         "condition": "for remind: a date/time is parsed from the payload, then reminder_due is set; otherwise the row is marked needs_when and the reply asks when",
-        "task": "Implement the DB write. (1) Declare in SCHEMA the table telegram_notes (id INTEGER PRIMARY KEY AUTOINCREMENT, project_slug TEXT, hook_action TEXT, chat_id TEXT, msg_date INTEGER, reminder_due INTEGER NULL, full_text TEXT, summary TEXT, created_at INTEGER). (2) For intent=save: reminder_due=NULL (a note, type 2). (3) For intent=remind: extract the date/time from payload with the cheap model (or from detect-hook); if there is no date, mark needs_when=true (the reply node will ask \"when?\") and do not create a row with reminder_due yet; if there is a date, reminder_due = unix time (type 1, date push). (4) Return {dbId, intent, reminder_due, needs_when, chatId, summary} — dbId is needed for memory and the reply. New tables ONLY in SCHEMA (they appear in both environments). ONTOLOGY EXTENSIONS (188-R): (5) also write hook_phrase (the matched phrase from detect-hook) and condition (the guard outcome, e.g. date-parsed / needs-date, NULL for save) into each row — SCHEMA gains both columns. (6) RECALL IS ALSO A RECORD: for every intent=recall write a row (hook_action=recall, full_text=the question, summary=the question plus a short digest of the answer, hook_phrase) so requests appear in the universal records table.",
+        "task": "Implement the DB write. (1) Declare in SCHEMA the table telegram_notes (id INTEGER PRIMARY KEY AUTOINCREMENT, project_slug TEXT, hook_action TEXT, chat_id TEXT, msg_date INTEGER, reminder_due INTEGER NULL, full_text TEXT, summary TEXT, created_at INTEGER). (2) For intent=save: reminder_due=NULL (a note, type 2). (3) For intent=remind: extract the date/time from payload with the cheap model (or from classify-message); if there is no date, mark needs_when=true (the reply node will ask \"when?\") and do not create a row with reminder_due yet; if there is a date, reminder_due = unix time (type 1, date push). (4) Return {dbId, intent, reminder_due, needs_when, chatId, summary} — dbId is needed for memory and the reply. New tables ONLY in SCHEMA (they appear in both environments). ONTOLOGY EXTENSIONS (188-R): (5) also write hook_phrase (the matched phrase from classify-message) and condition (the guard outcome, e.g. date-parsed / needs-date, NULL for save) into each row — SCHEMA gains both columns. (6) RECALL IS ALSO A RECORD: for every intent=recall write a row (hook_action=recall, full_text=the question, summary=the question plus a short digest of the answer, hook_phrase) so requests appear in the universal records table.",
         "tools": [
           "SQLite via @/lib/db (SCHEMA)",
           "cheap model via OPENAI_API_KEY (date parsing)"
@@ -403,18 +400,18 @@ export const FLOW_EDGES: Edge[] = [
     "animated": true
   },
   {
-    "id": "e-fetch-telegram-updates-detect-hook",
+    "id": "e-fetch-telegram-updates-classify-message",
     "source": "fetch-telegram-updates",
-    "target": "detect-hook"
+    "target": "classify-message"
   },
   {
-    "id": "e-detect-hook-summarize-message",
-    "source": "detect-hook",
+    "id": "e-classify-message-summarize-message",
+    "source": "classify-message",
     "target": "summarize-message"
   },
   {
-    "id": "e-detect-hook-search-memory-recall",
-    "source": "detect-hook",
+    "id": "e-classify-message-search-memory-recall",
+    "source": "classify-message",
     "target": "search-memory-recall"
   },
   {

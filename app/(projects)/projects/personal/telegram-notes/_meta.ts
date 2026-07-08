@@ -55,7 +55,6 @@ const meta: RouteMeta = {
     "run-panel.client",
     "next-run-countdown.client",
     "settings-accordion.client",
-    "hooks-panel.client",
     "bot-key-settings.client",
     "interval-settings.client",
     "records-table.client",

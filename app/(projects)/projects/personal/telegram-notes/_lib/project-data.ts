@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { db } from "@/lib/db";
 import { PROJECT_COLUMNS, RECORD_TABLE } from "../_data/columns";
-import type { CronJob, Hook, NoteRow, RecordRow } from "./types";
+import type { CronJob, NoteRow, RecordRow } from "./types";
 import { noteType } from "./note-type";
 
 const CATEGORY = "personal";
@@ -67,31 +67,6 @@ export async function getNotes(limit = 20): Promise<{ rows: NoteRow[]; total: nu
     };
   } catch {
     return { rows: [], total: 0 }; // table not created yet — empty feed
-  }
-}
-
-// Hooks registered for this project (step 187): rows of the GLOBAL project_hooks
-// table filtered to this category/project. The server-rendered table shows what
-// spoken phrases already drive this automation; the client panel adds/removes them.
-export async function getHooks(): Promise<Hook[]> {
-  try {
-    const rows = await db
-      .prepare(
-        `SELECT id, phrase, action, lang, description
-           FROM project_hooks
-          WHERE category = ? AND project = ?
-          ORDER BY created_at`,
-      )
-      .all(CATEGORY, PROJECT);
-    return rows.map((r) => ({
-      id: String(r.id),
-      phrase: String(r.phrase),
-      action: r.action as Hook["action"],
-      lang: String(r.lang),
-      description: String(r.description ?? ""),
-    }));
-  } catch {
-    return []; // table not created yet — no hooks
   }
 }
 

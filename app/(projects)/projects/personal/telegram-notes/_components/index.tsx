@@ -4,7 +4,7 @@ import { PROJECT_DESCRIPTION } from "../_data/description";
 import { PROJECT_INTERFACE } from "../_data/interface";
 import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
-import { getCronJobs, getHooks, getRecords } from "../_lib/project-data";
+import { getCronJobs, getRecords } from "../_lib/project-data";
 import { AboutAccordion } from "./about-accordion.client";
 import { CronJobsTable } from "./cron-jobs-table.server";
 import { MissingKeysModal } from "./missing-keys-modal.client";
@@ -34,9 +34,8 @@ function schedulePeriodSec(schedule: string): number {
 // countdown to the next scheduled run, the Hooks layer, and the scheduled-runs queue.
 // The two repetitive process/results tables are replaced by one unified table in Phase 3.
 export default async function TelegramNotesProjectEntry() {
-  const [cronJobs, hooks, records] = await Promise.all([
+  const [cronJobs, records] = await Promise.all([
     getCronJobs(),
-    getHooks(),
     getRecords(),
   ]);
   const d = PROJECT_DESCRIPTION;
@@ -107,7 +106,7 @@ export default async function TelegramNotesProjectEntry() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-medium">Settings</h2>
-        <SettingsAccordion initialHooks={hooks} />
+        <SettingsAccordion />
       </section>
 
       <section className="space-y-3">

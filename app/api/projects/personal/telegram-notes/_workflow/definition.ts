@@ -167,61 +167,48 @@ async function closeRun(
 
 // ── Diagram-mirror steps (one per non-trigger node, topological order) ──
 
-// node:fetch-telegram-updates — Fetch new messages from Telegram (getUpdates) [step]
+// node:fetch-telegram-updates — Reception from the @fractera_auto listener [step]
+// Step 201 (agent-channel-routing.md §3): reception is now delivered by the substrate
+// fractera-automations listener, NOT self-polled. This automation MUST NOT call getUpdates
+// itself — a second consumer of the bot re-creates the message-stealing collision (the whole
+// reason the listener exists). Input arrives as the listener's JSON envelope; a plain string
+// remains supported as the run-panel manual test (simulateMessage).
 async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
   const allowedChat = process.env.TELEGRAM_ALLOWED_CHAT_ID ?? "";
+  const raw = typeof artifacts.input === "string" ? (artifacts.input as string).trim() : "";
 
-  // Run-panel / manual test branch: a simulateMessage string is treated as a single
-  // incoming message from the allowed chat — Telegram is NOT polled.
-  const sim = typeof artifacts.input === "string" ? (artifacts.input as string).trim() : "";
-  if (sim) {
-    return [
-      { chatId: allowedChat || "0", messageId: 0, text: sim, date: Math.floor(Date.now() / 1000) },
-    ] satisfies TgMessage[];
-  }
+  // Empty input = a scheduled /run tick (reminder delivery) or a bare trigger — NO message to
+  // process, and we never poll. deliver-due-reminders still runs on the tick.
+  if (!raw) return [] satisfies TgMessage[];
 
-  // Persistent cursor: only fetch updates after the last one we processed.
-  const cursorRow = (await db
-    .prepare("SELECT value FROM telegram_notes_state WHERE key = 'last_update_id'")
-    .get()) as { value?: string } | null;
-  const lastUpdateId = cursorRow?.value ? Number(cursorRow.value) : 0;
-
-  const url =
-    `${TG_API}/bot${botToken()}/getUpdates?timeout=0` +
-    (lastUpdateId ? `&offset=${lastUpdateId + 1}` : "");
-  let updates: Array<{ update_id: number; message?: { chat?: { id: number }; message_id: number; text?: string; date: number } }> = [];
+  // Listener envelope: the fractera-automations service already matched this message against the
+  // global project_hooks registry (deterministic) and POSTs it here.
   try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(20_000) });
-    const data = (await r.json()) as { ok: boolean; result?: typeof updates };
-    if (data.ok && Array.isArray(data.result)) updates = data.result;
+    const env = JSON.parse(raw) as {
+      source?: string; chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown;
+    };
+    if (env && env.source === "telegram" && typeof env.text === "string") {
+      const chatId = String(env.chatId ?? "");
+      if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
+      return [
+        {
+          chatId: chatId || allowedChat || "0",
+          messageId: Number(env.messageId ?? 0),
+          text: env.text,
+          date: Number(env.date ?? Math.floor(Date.now() / 1000)),
+        },
+      ] satisfies TgMessage[];
+    }
   } catch {
-    return [] satisfies TgMessage[];
+    // not JSON → fall through to the plain-string manual-test branch
   }
 
-  const messages: TgMessage[] = [];
-  let maxUpdateId = lastUpdateId;
-  for (const u of updates) {
-    if (u.update_id > maxUpdateId) maxUpdateId = u.update_id;
-    const m = u.message;
-    if (!m || typeof m.text !== "string" || !m.text.trim()) continue;
-    const chatId = String(m.chat?.id ?? "");
-    if (allowedChat && chatId !== allowedChat) continue; // personal automation
-    messages.push({ chatId, messageId: m.message_id, text: m.text, date: m.date });
-  }
-
-  // Advance the cursor IMMEDIATELY after reading — a failure further down the pipeline
-  // must not cause the same update to be reprocessed on the next tick.
-  if (maxUpdateId > lastUpdateId) {
-    await db
-      .prepare(
-        "INSERT INTO telegram_notes_state (key, value) VALUES ('last_update_id', ?) " +
-          "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-      )
-      .run(String(maxUpdateId));
-  }
-  return messages;
+  // Run-panel manual test branch: a plain string is a single message from the allowed chat.
+  return [
+    { chatId: allowedChat || "0", messageId: 0, text: raw, date: Math.floor(Date.now() / 1000) },
+  ] satisfies TgMessage[];
 }
 
 // node:deliver-due-reminders — Deliver due reminders (date push) [step]

@@ -1,8 +1,8 @@
 {
   "jobs": [
     {
-      "id": "telegram-notes-poll",
-      "title": "Telegram Notes: poll the bot every minute",
+      "id": "telegram-notes-reminder-tick",
+      "title": "Telegram Notes: deliver due reminders (reception is via the @fractera_auto listener, step 201)",
       "schedule": "*/5 * * * *",
       "action": {
         "type": "http",

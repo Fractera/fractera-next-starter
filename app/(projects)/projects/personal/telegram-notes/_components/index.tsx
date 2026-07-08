@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAppConfig } from "@/config/app-config";
 import { PROJECT_DESCRIPTION } from "../_data/description";
+import { PROJECT_INTERFACE } from "../_data/interface";
 import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
 import { getCronJobs, getHooks, getRecords } from "../_lib/project-data";
@@ -64,6 +65,30 @@ export default async function TelegramNotesProjectEntry() {
         {/* Running / degraded / broken pill on the breadcrumb row (shared store). */}
         <StatusIndicator />
       </div>
+
+      {/* I/O boundary (§E, ontology entity 14 Port): the automation's typed Inputs → Outputs,
+          shown in the header so the contract is visible at a glance. From _data/interface.ts. */}
+      {(PROJECT_INTERFACE.inputs.length > 0 || PROJECT_INTERFACE.outputs.length > 0) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+          <span className="font-medium text-muted-foreground">Inputs</span>
+          {PROJECT_INTERFACE.inputs.map((p, i) => (
+            <span key={`in-${i}`} className="rounded border px-2 py-0.5 font-mono text-xs">
+              {p.type}
+              {p.endpoint ? ` · ${p.endpoint}` : ""}
+            </span>
+          ))}
+          <span className="text-muted-foreground">→</span>
+          <span className="font-medium text-muted-foreground">Outputs</span>
+          {PROJECT_INTERFACE.outputs.map((p, i) => (
+            <span key={`out-${i}`} className="rounded border px-2 py-0.5 font-mono text-xs">
+              {p.type}
+              {p.endpoint ? ` · ${p.endpoint}` : ""}
+              {p.external ? " · external" : ""}
+              {p.autonomous ? " · autonomous" : ""}
+            </span>
+          ))}
+        </div>
+      )}
 
       <section className="space-y-3">
         <h2 className="text-xl font-medium">{t.about}</h2>

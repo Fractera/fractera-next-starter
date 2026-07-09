@@ -1,4 +1,5 @@
 import { journalRunStart, journalRunFinish } from "./journal";
+import { readFileSync } from "node:fs";
 import { db } from "@/lib/db";
 // Finance presets (step 207): FIXED 10 income + 10 expense categories (multi-flag). The model segments a
 // money movement into one or more of these ids; normalizeCategories validates against the preset.
@@ -38,7 +39,30 @@ const RAG_URL = (process.env.LIGHTRAG_URL ?? "http://localhost:9621").replace(/\
 const RAG_KEY = process.env.LIGHTRAG_API_KEY ?? "";
 const DATA_URL = (process.env.REMOTE_DATA_URL ?? "http://localhost:3300").replace(/\/+$/, "");
 const DATA_SECRET = process.env.DATA_API_KEY ?? "";
-const OPENAI_KEY = () => process.env.OPENAI_API_KEY ?? "";
+// The workflow's steps ("use step") may execute in a context where process.env lacks the runtime-loaded
+// slot vars (proven live, step 207.16 round 2: OPENAI_API_KEY was invisible at call time while the
+// module-load RAG vars worked, and @next/env loads the file fine in a fresh process). Fallback: read
+// .env.local DIRECTLY — the steps already read app.db from disk, so fs is always available. Cached 60s.
+// This also makes the key survive ANY pm2/env quirk — self-sufficiency (and the fix that matters for
+// every language: with the key alive, the language-agnostic model routes; the RU/EN keyword fallback is
+// only the seatbelt for outages).
+let envLocalCache: { at: number; vars: Record<string, string> } | null = null;
+function slotEnvFallback(name: string): string {
+  const now = Date.now();
+  if (!envLocalCache || now - envLocalCache.at > 60_000) {
+    const vars: Record<string, string> = {};
+    try {
+      const raw = readFileSync(`${process.cwd()}/.env.local`, "utf-8");
+      for (const line of raw.split("\n")) {
+        const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+        if (m) vars[m[1]] = m[2].trim();
+      }
+    } catch { /* no file — fallback stays empty */ }
+    envLocalCache = { at: now, vars };
+  }
+  return envLocalCache.vars[name] ?? "";
+}
+const OPENAI_KEY = () => process.env.OPENAI_API_KEY || slotEnvFallback("OPENAI_API_KEY");
 const PROJECT_SLUG = "telegram-notes";
 // Duplicate guard (step 207.x): the soft near-duplicate window. A record matching a recent one from the
 // same chat WITHIN this window triggers a "keep both / remove duplicate" confirmation. Tunable per slot.
@@ -79,6 +103,10 @@ const CAPABILITIES =
 function heuristicIntent(text: string): Intent | null {
   const t = text.toLowerCase().trim();
   if (/^(запомни|запиши|сохрани|remember|save\b|note\b)/i.test(t)) return "save";
+  // «повтори/переведи…» = a follow-up about the previous answer → meta (answered with history, 207.16).
+  if (/^(?:(?:а|и|ну)\s+)?(повтори|переведи|repeat|translate)/i.test(t)) return "meta";
+  // «напомни …» about money movements is a ledger question, not a timed reminder (owner Round-3 test).
+  if (/^напомни/i.test(t) && /(движени|финанс|деньг|трат|расход|доход)/i.test(t)) return "finance-query";
   if (/^(напомни|напоминание|remind)/i.test(t) || /напомни (мне|нам)/i.test(t)) return "remind";
   // photo = an image noun anywhere + a view/send verb anywhere ("покажи…картинку", "загружал картинку…
   // хочу посмотреть", "пришли чек"). Checked before recall so an image ask wins over a generic question.
@@ -168,6 +196,9 @@ async function tgSend(chatId: string, text: string): Promise<void> {
       body: JSON.stringify({ chat_id: chatId, text: chunk }),
     }).catch(() => undefined);
   }
+  // Conversation history (step 207.16): every outgoing reply is the bot's side of the thread. tgSend is
+  // the choke point for all text replies (sendLocalized routes here too); button prompts are not recorded.
+  await appendHistory(chatId, "bot", text);
 }
 
 // Send a stored receipt image back to the chat (step 207.10). The media URL may be absolute or a relative
@@ -277,6 +308,43 @@ async function loadPending(id: string): Promise<{ text: string; chatId: string }
 // ── Language (step 207.10, P1): reply in the user's language. Detect once per real message, persist
 // per chat, and translate fixed replies on demand (cached by a stable hash) so the automation stays
 // self-sufficient (only the OpenAI key). Model-generated answers instead get "reply in <lang>". ──
+// ── Per-chat short conversation history (step 207.16, owner decision): the last ~10 messages feed the
+// classifier and the meta-replies so follow-ups («а повтори на русском ответ») make sense. A pause longer
+// than HIST_GAP_SEC cuts the thread — stale context is ignored, not spent on (cache/cost discipline:
+// history is small, capped, and clear-cut; unambiguous prefixes skip the model entirely). ──
+const HIST_MAX = 10;
+const HIST_GAP_SEC = 900; // 15 min
+type HistEntry = { role: "user" | "bot"; text: string; ts: number };
+async function loadHistory(chatId: string): Promise<HistEntry[]> {
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`hist:${chatId}`)) as { value?: string } | null;
+    const arr = row?.value ? (JSON.parse(row.value) as HistEntry[]) : [];
+    // TTL: a gap > HIST_GAP_SEC inside the log starts a fresh thread; a stale tail drops everything.
+    let seg: HistEntry[] = [];
+    for (const e of arr) {
+      if (seg.length && e.ts - seg[seg.length - 1].ts > HIST_GAP_SEC) seg = [];
+      seg.push(e);
+    }
+    if (seg.length && Math.floor(Date.now() / 1000) - seg[seg.length - 1].ts > HIST_GAP_SEC) seg = [];
+    return seg.slice(-HIST_MAX);
+  } catch { return []; }
+}
+async function appendHistory(chatId: string, role: "user" | "bot", text: string): Promise<void> {
+  if (!text) return;
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`hist:${chatId}`)) as { value?: string } | null;
+    const arr = row?.value ? (JSON.parse(row.value) as HistEntry[]) : [];
+    arr.push({ role, text: text.slice(0, 300), ts: Math.floor(Date.now() / 1000) });
+    await db
+      .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
+      .run(`hist:${chatId}`, JSON.stringify(arr.slice(-HIST_MAX)));
+  } catch { /* state table optional */ }
+}
+function historyBlock(hist: HistEntry[]): string {
+  if (!hist.length) return "";
+  return "Recent conversation (oldest first):\n" + hist.map((e) => `${e.role}: ${e.text.slice(0, 160)}`).join("\n") + "\n\n";
+}
+
 async function getLang(chatId: string): Promise<string> {
   try {
     const row = (await db
@@ -1124,8 +1192,16 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
     let intent: Intent = "ignore";
     let unclear = false;
     if (text) {
-      const ans = await cheapModel(
-        "You route one message of a personal-notes assistant to a single action. Reply with ONLY one word: " +
+      // Conversation history (step 207.16, owner decision): load the thread BEFORE recording the new
+      // message, feed it to the classifier so follow-ups («а повтори на русском ответ») route correctly.
+      // Cost discipline: an unambiguous save-prefix skips the model call entirely.
+      const hist = await loadHistory(msg.chatId);
+      await appendHistory(msg.chatId, "user", text);
+      const pre = /^\s*(запомни|запиши|сохрани|remember)/i.test(text) ? "save" : null;
+      const ans = pre ?? await cheapModel(
+        "You route the NEW MESSAGE of a personal-notes assistant to a single action. Recent conversation " +
+          "may be included for context — classify ONLY the NEW MESSAGE; a follow-up about a previous " +
+          "answer (asking to repeat / translate / clarify it) = meta. Reply with ONLY one word: " +
           "save (states a fact/note to remember), remind (wants a time-based reminder), " +
           "recall (asks to find/retrieve something saved), finance (a money movement to RECORD — income or expense, " +
           "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), finance-query (a QUESTION about money already " +
@@ -1138,7 +1214,7 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "something — a feature request / 'can you also do X' / 'this should also…' / 'I want it to…' beyond notes, " +
           "reminders and finance), " +
           "or unclear (a real note/request whose action is genuinely ambiguous). No other text.",
-        text.slice(0, 1000),
+        `${historyBlock(hist)}NEW MESSAGE: ${text.slice(0, 1000)}`,
         6,
       );
       // finance-query BEFORE finance so the longer token wins the match.
@@ -1448,6 +1524,14 @@ async function answerFinanceQuery(artifacts: Record<string, unknown>): Promise<u
     // Reconciliation / break-even question (step 207.10 P2): open the button-driven wizard instead of a
     // naive one-shot sum. The wizard sends its own messages; produce no FinanceAnswer for this message.
     if (q.reconcile) { await reconAskPeriod(c.chatId); continue; }
+    // Point lookup FIRST (step 207.16): «Петя возвращал долг?» / «сколько стоила курица» names specific
+    // records — keyword-match the ledger and answer with the actual rows, not a blind aggregate.
+    const hits = await searchFinanceLedger(c.payload, 5);
+    if (hits.length) {
+      const lang = await getLang(c.chatId);
+      out.push({ chatId: c.chatId, answer: await toLang(formatFinanceHits(hits), lang) });
+      continue;
+    }
     try {
       const clauses = ["project = ?"];
       const params: Array<string | number> = [PROJECT_SLUG];
@@ -1687,9 +1771,12 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     if (c.intent !== "meta") continue;
     try {
       const lang = await getLang(c.chatId);
+      // History (step 207.16): a follow-up like «а повтори на русском ответ» can only be answered with
+      // the previous exchange in front of the model — feed the recent thread alongside the message.
+      const hist = await loadHistory(c.chatId);
       const answer = await cheapModel(
-        `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message. Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly.`,
-        c.payload.slice(0, 500), 200,
+        `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message (possibly a follow-up about the previous answer — use the recent conversation to repeat/translate/clarify it). Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly.`,
+        `${historyBlock(hist)}NEW MESSAGE: ${c.payload.slice(0, 500)}`, 300,
       );
       await tgSend(
         c.chatId,

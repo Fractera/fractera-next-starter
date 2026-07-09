@@ -564,7 +564,9 @@ function parseFinanceJson(raw: string): FinanceExtract | null {
 }
 
 // ── Finance analytics (step 207.8): a voice/text QUESTION about the ledger → filters, then aggregate ──
-type FinanceQuery = { kind: "income" | "expense" | null; categories: string[]; sinceDays: number | null };
+// reconcile (step 207.10 P2) = the question wants income vs expense balanced / a break-even figure / a
+// summary over both sides, not a single naive sum — it opens the reconciliation wizard instead.
+type FinanceQuery = { kind: "income" | "expense" | null; categories: string[]; sinceDays: number | null; reconcile: boolean };
 
 // Keep only real preset ids (either kind); dedupe. A finance-query category may be of unknown kind.
 function validCategoryIds(ids: unknown): string[] {
@@ -582,26 +584,154 @@ function parseCategoryIds(raw: unknown): string[] {
 
 // Ask the cheap model to turn the analytics question into structured filters (kind / categories / window).
 async function parseFinanceQuery(text: string): Promise<FinanceQuery> {
+  // Heuristic reconcile signal (any language) — the model may miss break-even phrasing, so we OR it with
+  // keyword detection across the languages the owner tests in (RU + EN).
+  const reconcileHeuristic =
+    /break.?even|reconcile|net\b|balance|свести|св[её]л|в ноль|в нуль|выйти в ноль|ноль|итог|баланс|сколько.*(остал|нужно|над[оа]|заработать|не хватает|хватит)/i.test(text);
   const raw = await cheapModel(
     "The user asks an analytics question about their money ledger. Output ONE JSON object, no prose: " +
-      '{"kind":"income|expense|null","categories":["<id>", ...],"sinceDays":<number|null>}. ' +
+      '{"kind":"income|expense|null","categories":["<id>", ...],"sinceDays":<number|null>,"reconcile":true|false}. ' +
       "kind = whether they ask about income, expense, or null for both. categories = preset ids that match the " +
       "question (multi; [] if none). sinceDays = the look-back window in days (today=1, this week=7, this month=30, " +
-      "null = all time). " + CATEGORY_GUIDE,
+      "null = all time). reconcile = true when they want income vs expense balanced, a break-even figure, a summary " +
+      "across BOTH sides, or 'how much more must I earn / to reach zero'; false for a plain single-sided lookup. " +
+      CATEGORY_GUIDE,
     text.slice(0, 500),
-    120,
+    140,
   );
   try {
     const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) return { kind: null, categories: [], sinceDays: null };
-    const o = JSON.parse(m[0]) as { kind?: unknown; categories?: unknown; sinceDays?: unknown };
+    if (!m) return { kind: null, categories: [], sinceDays: null, reconcile: reconcileHeuristic };
+    const o = JSON.parse(m[0]) as { kind?: unknown; categories?: unknown; sinceDays?: unknown; reconcile?: unknown };
     const kind = o.kind === "income" ? "income" : o.kind === "expense" ? "expense" : null;
     const days = Number(o.sinceDays);
     const sinceDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : null;
-    return { kind, categories: validCategoryIds(o.categories), sinceDays };
+    return { kind, categories: validCategoryIds(o.categories), sinceDays, reconcile: o.reconcile === true || reconcileHeuristic };
   } catch {
-    return { kind: null, categories: [], sinceDays: null };
+    return { kind: null, categories: [], sinceDays: null, reconcile: reconcileHeuristic };
   }
+}
+
+// ── Finance reconciliation wizard (step 207.10 P2): a break-even / income-vs-expense question opens a
+// short, fully button-driven dialog — period → categories → confirm → compute. State lives per chat in
+// telegram_notes_state (recon:<chatId>). Because every answer is an inline-button tap, a reconciliation
+// reply is routed through the callback path (fetch-telegram-updates) and NEVER re-classified as a fresh
+// message. Reuses tgSendButtons / translateCached / toLang so it speaks the user's language. ──
+type ReconState = { stage: "period" | "categories" | "confirm"; sinceDays: number | null; categories: string[]; ts: number };
+const RECON_TTL_SEC = 1800; // a half-hour-stale wizard is abandoned (a tap after that says "expired")
+
+async function loadRecon(chatId: string): Promise<ReconState | null> {
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`recon:${chatId}`)) as { value?: string } | null;
+    if (row?.value) {
+      const s = JSON.parse(row.value) as ReconState;
+      if (s.ts && Math.floor(Date.now() / 1000) - s.ts <= RECON_TTL_SEC) return s;
+    }
+  } catch { /* none */ }
+  return null;
+}
+async function saveRecon(chatId: string, s: ReconState): Promise<void> {
+  try {
+    await db
+      .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
+      .run(`recon:${chatId}`, JSON.stringify({ ...s, ts: Math.floor(Date.now() / 1000) }));
+  } catch { /* state table optional */ }
+}
+async function clearRecon(chatId: string): Promise<void> {
+  try { await db.prepare("DELETE FROM telegram_notes_state WHERE key = ?").run(`recon:${chatId}`); } catch { /* best-effort */ }
+}
+function langCodeOf(lang: string): "ru" | "en" { return /^russian$/i.test(lang) ? "ru" : "en"; }
+
+// Step 1 — ask the period (buttons). Starts a fresh wizard.
+async function reconAskPeriod(chatId: string): Promise<void> {
+  const lang = await getLang(chatId);
+  await saveRecon(chatId, { stage: "period", sinceDays: null, categories: [], ts: 0 });
+  await tgSendButtons(chatId, await translateCached("Let's balance your income and expenses. Which period?", lang), [
+    { text: await translateCached("Today", lang), data: "recon:period:1" },
+    { text: await translateCached("This week", lang), data: "recon:period:7" },
+    { text: await translateCached("This month", lang), data: "recon:period:30" },
+    { text: await translateCached("All time", lang), data: "recon:period:0" },
+  ]);
+}
+
+// Step 2 — ask which categories to include (toggle buttons for the categories PRESENT in the chosen
+// period). No records in range → skip straight to confirm with "all categories".
+async function reconAskCategories(chatId: string, state: ReconState): Promise<void> {
+  const lang = await getLang(chatId);
+  const params: Array<string | number> = [PROJECT_SLUG];
+  let where = "project = ?";
+  if (state.sinceDays) { where += " AND created_at >= ?"; params.push(Math.floor(Date.now() / 1000) - state.sinceDays * 86400); }
+  let present: string[] = [];
+  try {
+    const rows = (await db.prepare(`SELECT categories FROM automation_finance WHERE ${where}`).all(...params)) as Array<{ categories: string }>;
+    const set = new Set<string>();
+    for (const r of rows) for (const id of parseCategoryIds(r.categories)) if (ALL_CATEGORY_IDS.has(id)) set.add(id);
+    present = [...set].slice(0, 10);
+  } catch { /* fall through to no-categories */ }
+  if (!present.length) { state.stage = "confirm"; state.categories = []; await saveRecon(chatId, state); await reconConfirm(chatId, state); return; }
+  const lc = langCodeOf(lang);
+  const buttons = present.map((id) => ({ text: `${state.categories.includes(id) ? "✓ " : ""}${categoryLabel(id, lc)}`, data: `recon:cat:${id}` }));
+  buttons.push({ text: await translateCached("✅ Include all", lang), data: "recon:catall" });
+  buttons.push({ text: await translateCached("▶ Continue", lang), data: "recon:catdone" });
+  await tgSendButtons(chatId, await translateCached("Which categories to include? Tap to toggle, then Continue (or Include all).", lang), buttons);
+}
+
+// Step 3 — restate the spec and ask for Yes/No confirmation.
+async function reconConfirm(chatId: string, state: ReconState): Promise<void> {
+  const lang = await getLang(chatId);
+  state.stage = "confirm";
+  await saveRecon(chatId, state);
+  const periodTxt = state.sinceDays ? `the last ${state.sinceDays} day(s)` : "all time";
+  const catTxt = state.categories.length ? state.categories.map((id) => categoryLabel(id, "en")).join(", ") : "all categories";
+  await tgSendButtons(
+    chatId,
+    await translateCached(`Do I understand correctly — balance income and expenses for ${periodTxt}, categories: ${catTxt}?`, lang),
+    [
+      { text: await translateCached("Yes", lang), data: "recon:go" },
+      { text: await translateCached("No", lang), data: "recon:cancel" },
+    ],
+  );
+}
+
+// Step 4 — compute the reconciliation: a date-ordered checklist of movements + income/expense/net totals
+// and the break-even line. Built in English, then rewritten into the user's language (numbers preserved).
+async function reconCompute(chatId: string, state: ReconState): Promise<void> {
+  const lang = await getLang(chatId);
+  const params: Array<string | number> = [PROJECT_SLUG];
+  let where = "project = ?";
+  if (state.sinceDays) { where += " AND created_at >= ?"; params.push(Math.floor(Date.now() / 1000) - state.sinceDays * 86400); }
+  let rows: Array<{ kind: string; amount: number; categories: string; summary: string; created_at: number }> = [];
+  try {
+    rows = (await db
+      .prepare(`SELECT kind, amount, categories, summary, created_at FROM automation_finance WHERE ${where} ORDER BY created_at ASC`)
+      .all(...params)) as typeof rows;
+  } catch {
+    await clearRecon(chatId);
+    await sendLocalized(chatId, "I couldn't read your finance ledger just now — please try again.");
+    return;
+  }
+  const filtered = state.categories.length
+    ? rows.filter((r) => parseCategoryIds(r.categories).some((id) => state.categories.includes(id)))
+    : rows;
+  await clearRecon(chatId);
+  if (!filtered.length) { await sendLocalized(chatId, "There are no finance records for that period and selection."); return; }
+  let income = 0;
+  let expense = 0;
+  const lines: string[] = [];
+  for (const r of filtered) {
+    const d = new Date(r.created_at * 1000);
+    const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const amt = Number(r.amount || 0);
+    if (r.kind === "income") income += amt; else expense += amt;
+    const sign = r.kind === "income" ? "+" : "−";
+    const cats = parseCategoryIds(r.categories).map((id) => categoryLabel(id, "en")).join(", ");
+    lines.push(`• ${day}  ${sign}${amt}  ${cats}${r.summary ? ` — ${r.summary}` : ""}`);
+  }
+  const net = income - expense;
+  const periodTxt = state.sinceDays ? `the last ${state.sinceDays} day(s)` : "all time";
+  let msg = `Reconciliation for ${periodTxt}:\n${lines.join("\n")}\n\nIncome: ${income} · Expense: ${expense} · Net: ${net}.`;
+  msg += net < 0 ? `\nTo break even you need ${Math.abs(net)} more income.` : `\nYou are ${net} above break-even.`;
+  await tgSend(chatId, await toLang(msg, lang));
 }
 
 // Convert an ISO-8601 datetime string to unix seconds, or null if invalid/absent.
@@ -751,6 +881,34 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
       if (env.data.startsWith("dupdel:")) {
         const parts = env.data.split(":");
         await removeDuplicateRecord(parts[1] ?? "", Number(parts[2]), cbChatFinal);
+        return [] satisfies TgMessage[];
+      }
+      // Reconciliation-wizard callbacks (step 207.10 P2): period → categories(toggle) → confirm → compute.
+      // Every step is a tap handled here and short-circuits the pipeline (returns no message to classify).
+      if (env.data.startsWith("recon:")) {
+        const parts = env.data.split(":"); // recon:period:7 | recon:cat:food | recon:catall | recon:catdone | recon:go | recon:cancel
+        const sub = parts[1] ?? "";
+        if (sub === "cancel") { await clearRecon(cbChatFinal); await sendLocalized(cbChatFinal, "Okay, cancelled."); return [] satisfies TgMessage[]; }
+        const st = await loadRecon(cbChatFinal);
+        if (!st) { await clearRecon(cbChatFinal); await sendLocalized(cbChatFinal, "This dialog has expired — ask your money question again."); return [] satisfies TgMessage[]; }
+        if (sub === "period") {
+          const days = Number(parts[2] ?? 0);
+          st.sinceDays = days > 0 ? days : null;
+          st.stage = "categories";
+          await saveRecon(cbChatFinal, st);
+          await reconAskCategories(cbChatFinal, st);
+        } else if (sub === "cat") {
+          const id = parts[2] ?? "";
+          if (id) { const i = st.categories.indexOf(id); if (i >= 0) st.categories.splice(i, 1); else st.categories.push(id); await saveRecon(cbChatFinal, st); }
+          await reconAskCategories(cbChatFinal, st);
+        } else if (sub === "catall") {
+          st.categories = [];
+          await reconConfirm(cbChatFinal, st);
+        } else if (sub === "catdone") {
+          await reconConfirm(cbChatFinal, st);
+        } else if (sub === "go") {
+          await reconCompute(cbChatFinal, st);
+        }
         return [] satisfies TgMessage[];
       }
       const sep = env.data.indexOf(":");
@@ -1159,6 +1317,9 @@ async function answerFinanceQuery(artifacts: Record<string, unknown>): Promise<u
   for (const c of classified) {
     if (c.intent !== "finance-query") continue;
     const q = await parseFinanceQuery(c.payload);
+    // Reconciliation / break-even question (step 207.10 P2): open the button-driven wizard instead of a
+    // naive one-shot sum. The wizard sends its own messages; produce no FinanceAnswer for this message.
+    if (q.reconcile) { await reconAskPeriod(c.chatId); continue; }
     try {
       const clauses = ["project = ?"];
       const params: Array<string | number> = [PROJECT_SLUG];

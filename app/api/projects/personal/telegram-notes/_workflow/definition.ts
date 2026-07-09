@@ -73,6 +73,25 @@ const CAPABILITIES =
 
 // Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
 // non-command message (routed by the model instead).
+// Keyword routing for obvious phrasings (step 207.16) — the classifier's safety net. Used when the cheap
+// model fails (API outage → "") or answers "unclear": an explicit "запомни/напомни/покажи/сколько…" must
+// NEVER fall into the buttons picker. Order matters (most specific first). Returns null when truly unsure.
+function heuristicIntent(text: string): Intent | null {
+  const t = text.toLowerCase().trim();
+  if (/^(запомни|запиши|сохрани|remember|save\b|note\b)/i.test(t)) return "save";
+  if (/^(напомни|напоминание|remind)/i.test(t) || /напомни (мне|нам)/i.test(t)) return "remind";
+  // photo = an image noun anywhere + a view/send verb anywhere ("покажи…картинку", "загружал картинку…
+  // хочу посмотреть", "пришли чек"). Checked before recall so an image ask wins over a generic question.
+  if (/(фото|картин|изображ|чек|photo|image|picture|receipt)/i.test(t)
+    && /(покажи|пришли|скинь|отправь|посмотр|выгляд|загружал|show|send|see|look)/i.test(t)) return "photo";
+  if (/(сколько|цен[аеу]|стоил|потратил|заработал|баланс|итог|how much|balance|spent|earned)/i.test(t)
+    && /(куп|трат|плат|долг|деньг|расход|доход|стоил|финанс|евро|€|руб|доллар|bought|paid|spent|money|debt|cost)/i.test(t)) return "finance-query";
+  // NOTE: no \b after Cyrillic — JS \b is ASCII-only, so "купил " would silently never match with it.
+  if (/(куп(ил|ила|лен)|потратил|заплатил|получил|вернул долг|оплатил|bought|paid|got paid|received)/i.test(t) && /\d/.test(t)) return "finance";
+  if (/^(?:(?:а|и|ну|так|and|so|but)\s+)?(что|кто|когда|где|как(ой|ая|ое|ие)|вспомни|найди|покажи|расскажи|подскажи|скажи|what|when|who|where|which|find|show|recall)/i.test(t) || /\?\s*$/.test(t)) return "recall";
+  return null;
+}
+
 function parseSlashCommand(text: string): { intent: Intent; payload: string } | null {
   const m = /^\/([a-z]+)(?:@\w+)?\s*([\s\S]*)$/i.exec(text.trim());
   if (!m) return null;
@@ -118,7 +137,8 @@ type Persisted = {
 type ReminderSpec = { eventISO: string | null; reminderISO: string | null; summary: string };
 type Ingested = { dbId: number | null; chatId: string; ingestOk: boolean; summary: string; error?: string };
 // recall answers carry the query + the db row id so the reply and the record line up (188-R).
-type RecallAnswer = { chatId: string; answer: string; query: string; hookPhrase: string; error?: string };
+// photoUrls (step 207.16): receipt images of matched finance rows when the question asks to SEE them.
+type RecallAnswer = { chatId: string; answer: string; query: string; hookPhrase: string; error?: string; photoUrls?: string[] };
 
 // ── Small helpers (plain functions — no "use step") ──
 
@@ -646,6 +666,51 @@ async function parseFinanceQuery(text: string): Promise<FinanceQuery> {
   }
 }
 
+// ── Finance ledger keyword search (step 207.16): free-text questions about money ("did Petya return the
+// debt?", "how much was the chicken?") are routed to recall, but the vector memory NEVER holds finance
+// rows (they live only in automation_finance) — so recall answered "nothing found" while the data sat in
+// the DB. This bridge lets recall SEE the ledger: tokenize the question, match summary words / category
+// labels / exact amounts over the recent rows, and return the hits for the answer (and their photos).
+type FinanceHit = { id: number; kind: string; amount: number; categories: string[]; summary: string; imageUrl: string | null; createdAt: number };
+async function searchFinanceLedger(query: string, limit = 5): Promise<FinanceHit[]> {
+  const tokens = (query.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}.,]{2,}/gu) ?? [])
+    .map((t) => t.replace(/[.,]+$/, ""))
+    .filter((t) => t.length >= 3);
+  const amounts = (query.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => Number(n.replace(",", "."))).filter((n) => Number.isFinite(n) && n > 0);
+  if (!tokens.length && !amounts.length) return [];
+  let rows: Array<{ id: number; kind: string; amount: number; categories: string; summary: string; image_url: string | null; created_at: number }> = [];
+  try {
+    rows = (await db
+      .prepare("SELECT id, kind, amount, categories, summary, image_url, created_at FROM automation_finance WHERE project = ? ORDER BY created_at DESC LIMIT 200")
+      .all(PROJECT_SLUG)) as typeof rows;
+  } catch { return []; }
+  const hits: FinanceHit[] = [];
+  for (const r of rows) {
+    const cats = parseCategoryIds(r.categories);
+    const hay = `${r.summary} ${cats.map((id) => `${categoryLabel(id, "en")} ${categoryLabel(id, "ru")}`).join(" ")}`.toLowerCase();
+    // A word hit = a query token appears in the summary/labels by prefix (stems survive RU inflection:
+    // "курицу" → "куриц" won't prefix-match "chicken", but "принтер" matches "принтер(а)"; EN matches EN).
+    const wordHit = tokens.some((t) => hay.includes(t) || hay.includes(t.slice(0, Math.max(4, t.length - 2))));
+    const amountHit = amounts.some((a) => Math.abs(Number(r.amount) - a) < 0.005);
+    if (wordHit || amountHit) {
+      hits.push({ id: r.id, kind: r.kind, amount: Number(r.amount), categories: cats, summary: r.summary, imageUrl: r.image_url, createdAt: r.created_at });
+      if (hits.length >= limit) break;
+    }
+  }
+  return hits;
+}
+
+function formatFinanceHits(hits: FinanceHit[]): string {
+  const lines = hits.map((h) => {
+    const d = new Date(h.createdAt * 1000);
+    const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const sign = h.kind === "income" ? "+" : "−";
+    const cats = h.categories.map((id) => categoryLabel(id, "en")).join(", ");
+    return `• #${h.id} ${day} ${sign}${h.amount}${cats ? ` (${cats})` : ""} — ${h.summary}${h.imageUrl ? " 📷 (photo attached — /photo " + h.id + ")" : ""}`;
+  });
+  return `Finance records that match:\n${lines.join("\n")}`;
+}
+
 // ── Finance reconciliation wizard (step 207.10 P2): a break-even / income-vs-expense question opens a
 // short, fully button-driven dialog — period → categories → confirm → compute. State lives per chat in
 // telegram_notes_state (recon:<chatId>). Because every answer is an inline-button tap, a reconciliation
@@ -1065,6 +1130,7 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "recall (asks to find/retrieve something saved), finance (a money movement to RECORD — income or expense, " +
           "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), finance-query (a QUESTION about money already " +
           "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), " +
+          "photo (asks to SEE / send back a previously saved receipt photo or image), " +
           "meta (a conversational message, a complaint, a follow-up ABOUT the assistant or a previous answer, or a " +
           "request about how the bot works — e.g. 'answer in Russian', 'did you save it?', 'why didn't you reply', " +
           "'what is it called in the database'), " +
@@ -1076,8 +1142,16 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
         6,
       );
       // finance-query BEFORE finance so the longer token wins the match.
-      const word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|escalate|meta|unclear/) ?? ["unclear"])[0];
-      if (word === "unclear") { intent = "ignore"; unclear = true; }
+      let word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|escalate|meta|photo|unclear/) ?? [""])[0];
+      // Heuristic fallback (step 207.16): an OpenAI outage used to turn EVERY message — including a
+      // crystal-clear "запомни…" — into the unclear-buttons picker (owner test, 19:57–23:01). When the
+      // model failed ("" = API error) or shrugged, route obvious phrasings by keyword instead; only a
+      // genuinely ambiguous message still gets the picker. Works with the key down (self-sufficiency).
+      if (!word || word === "unclear") {
+        const h = heuristicIntent(text);
+        if (h) word = h;
+      }
+      if (!word || word === "unclear") { intent = "ignore"; unclear = true; }
       else intent = word as Intent;
     }
     out.push({
@@ -1123,6 +1197,12 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
   const out: RecallAnswer[] = [];
   for (const c of classified) {
     if (c.intent !== "recall") continue;
+    // Finance-ledger bridge (step 207.16): the vector memory never holds money rows, so BEFORE asking
+    // LightRAG also match the question against automation_finance — a recall that mentions a purchase,
+    // a person who returned money, or an exact amount gets the real ledger rows in the answer.
+    const finHits = await searchFinanceLedger(c.payload);
+    const wantsImage = /фото|картин|изображ|покажи|чек|receipt|photo|image|picture|show/i.test(c.payload);
+    const photoUrls = wantsImage ? finHits.map((h) => h.imageUrl).filter((u): u is string => !!u).slice(0, 2) : [];
     try {
       const r = await fetch(`${RAG_URL}/query`, {
         method: "POST",
@@ -1132,7 +1212,10 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
       });
       const lang = await getLang(c.chatId);
       if (!r.ok) {
-        out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await translateCached("Memory is temporarily unavailable, please try again later.", lang), error: `HTTP ${r.status}` });
+        const fallback = finHits.length
+          ? formatFinanceHits(finHits)
+          : "Memory is temporarily unavailable, please try again later.";
+        out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await toLang(fallback, lang), error: `HTTP ${r.status}`, photoUrls });
         continue;
       }
       const data = (await r.json()) as { response?: string };
@@ -1145,15 +1228,23 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
         .replace(/^\s*[-*]?\s*\**(Проект|Project|Хук|Hook|Запись|Record)\**\s*[:#].*$/gim, "")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
-      const clean = answer || `Nothing found in your notes for: ${c.payload}`;
+      // A "nothing found" memory answer is REPLACED by the ledger hits; a real answer gets them appended.
+      const ragEmpty = !answer || /no relevant context|не найдено релевант|nothing found|недостаточно информации|нет информации/i.test(answer);
+      let clean: string;
+      if (finHits.length && ragEmpty) clean = formatFinanceHits(finHits);
+      else if (finHits.length) clean = `${answer}\n\n${formatFinanceHits(finHits)}`;
+      else clean = answer || `Nothing found in your notes for: ${c.payload}`;
       out.push({
         chatId: c.chatId,
         query: c.payload,
         hookPhrase: c.hookPhrase,
         answer: await toLang(clean, lang),
+        photoUrls,
       });
     } catch (e) {
-      out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await translateCached("Memory is temporarily unavailable, please try again later.", await getLang(c.chatId)), error: e instanceof Error ? e.message : String(e) });
+      const lang = await getLang(c.chatId);
+      const fallback = finHits.length ? formatFinanceHits(finHits) : "Memory is temporarily unavailable, please try again later.";
+      out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await toLang(fallback, lang), error: e instanceof Error ? e.message : String(e), photoUrls });
     }
   }
   return out;
@@ -1369,13 +1460,23 @@ async function answerFinanceQuery(artifacts: Record<string, unknown>): Promise<u
       const filtered = q.categories.length
         ? rows.filter((r) => parseCategoryIds(r.categories).some((id) => q.categories.includes(id)))
         : rows;
-      const total = filtered.reduce((s, r) => s + Number(r.amount || 0), 0);
       const catLabel = q.categories.map((id) => categoryLabel(id, "en")).join(", ");
       const kindLabel = q.kind ?? "money";
       const periodLabel = q.sinceDays ? `in the last ${q.sinceDays} day(s)` : "in total";
-      const answer = filtered.length
-        ? `${kindLabel}${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}: ${total} across ${filtered.length} record(s).`
-        : `No ${kindLabel} records${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}.`;
+      // Honest arithmetic (step 207.16): a single-sided question sums that side; a BOTH-sides question
+      // must never add income and expense together into one number ("158.5 total" bug) — it reports
+      // income / expense / net separately.
+      let answer: string;
+      if (!filtered.length) {
+        answer = `No ${kindLabel} records${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}.`;
+      } else if (q.kind) {
+        const total = filtered.reduce((s, r) => s + Number(r.amount || 0), 0);
+        answer = `${kindLabel}${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}: ${total} across ${filtered.length} record(s).`;
+      } else {
+        const income = filtered.filter((r) => r.kind === "income").reduce((s, r) => s + Number(r.amount || 0), 0);
+        const expense = filtered.filter((r) => r.kind !== "income").reduce((s, r) => s + Number(r.amount || 0), 0);
+        answer = `Money${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}: income ${income} · expense ${expense} · net ${income - expense}, across ${filtered.length} record(s).`;
+      }
       const lang = await getLang(c.chatId);
       out.push({ chatId: c.chatId, answer: await translateCached(answer.charAt(0).toUpperCase() + answer.slice(1), lang) });
     } catch {
@@ -1441,6 +1542,11 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   for (const rc of recalls) {
     try {
       await tgSend(rc.chatId, rc.answer);
+      // Finance-ledger bridge (step 207.16): the question asked to SEE a receipt and matched rows carry
+      // photos → send them right after the text answer (best-effort, the answer already went out).
+      for (const u of rc.photoUrls ?? []) {
+        try { await tgSendPhotoByUrl(rc.chatId, u, ""); } catch { /* best-effort */ }
+      }
       answered++;
     } catch (e) {
       errors.push(`recall reply: ${e instanceof Error ? e.message : String(e)}`);
@@ -1495,23 +1601,40 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     if (c.intent !== "photo") continue;
     try {
       const id = Number((c.payload.match(/\d+/) ?? [])[0]);
-      if (!Number.isFinite(id) || id <= 0) {
-        await sendLocalized(c.chatId, "Which record? Send /photo followed by the finance record number (for example: /photo 12).");
-        continue;
+      let found: { id: number; image_url: string; summary: string } | null = null;
+      if (Number.isFinite(id) && id > 0) {
+        const row = (await db
+          .prepare("SELECT image_url, summary FROM automation_finance WHERE id = ? AND project = ?")
+          .get(id, PROJECT_SLUG)) as { image_url?: string; summary?: string } | null;
+        if (!row) {
+          await sendLocalized(c.chatId, `I couldn't find finance record #${id}.`);
+          continue;
+        }
+        if (!row.image_url) {
+          await sendLocalized(c.chatId, `Finance record #${id} has no photo attached.`);
+          continue;
+        }
+        found = { id, image_url: row.image_url, summary: row.summary ?? "" };
+      } else {
+        // Natural-language photo request (step 207.16): "покажи курицу / пришли чек" — no number. Match
+        // the words against the ledger (only rows WITH a photo); nothing matches → the most recent photo.
+        const hits = (await searchFinanceLedger(c.payload, 10)).filter((h) => h.imageUrl);
+        if (hits.length) {
+          found = { id: hits[0].id, image_url: hits[0].imageUrl as string, summary: hits[0].summary };
+        } else {
+          const last = (await db
+            .prepare("SELECT id, image_url, summary FROM automation_finance WHERE project = ? AND image_url IS NOT NULL ORDER BY created_at DESC LIMIT 1")
+            .get(PROJECT_SLUG)) as { id?: number; image_url?: string; summary?: string } | null;
+          if (last?.image_url) found = { id: Number(last.id), image_url: last.image_url, summary: last.summary ?? "" };
+        }
+        if (!found) {
+          await sendLocalized(c.chatId, "I have no saved photos yet. Photos of receipts you send me are attached to their finance records.");
+          continue;
+        }
       }
-      const row = (await db
-        .prepare("SELECT image_url, summary FROM automation_finance WHERE id = ? AND project = ?")
-        .get(id, PROJECT_SLUG)) as { image_url?: string; summary?: string } | null;
-      if (!row) {
-        await sendLocalized(c.chatId, `I couldn't find finance record #${id}.`);
-        continue;
-      }
-      if (!row.image_url) {
-        await sendLocalized(c.chatId, `Finance record #${id} has no photo attached.`);
-        continue;
-      }
-      const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `Record #${id}: ${row.summary ?? ""}`.trim());
-      if (!sent) await sendLocalized(c.chatId, `I couldn't send the photo for record #${id} right now.`);
+      const row = { image_url: found.image_url, summary: found.summary };
+      const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `Record #${found.id}: ${row.summary ?? ""}`.trim());
+      if (!sent) await sendLocalized(c.chatId, `I couldn't send the photo for record #${found.id} right now.`);
       // Public link (step 207.10 P6): also send a clickable link on the real domain, verified live — the
       // localized prefix is translated (cached), the raw URL is appended untouched (never localhost).
       const link = publicMediaUrl(row.image_url);

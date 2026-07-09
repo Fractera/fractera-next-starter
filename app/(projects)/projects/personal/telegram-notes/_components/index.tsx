@@ -6,6 +6,7 @@ import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
 import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords } from "../_lib/project-data";
 import { AboutAccordion } from "./about-accordion.client";
+import { AutoRefresh } from "./auto-refresh.client";
 import { CalendarSection } from "./calendar-section.client";
 import { FinanceSection } from "./finance-section.server";
 import { CronJobsTable } from "./cron-jobs-table.server";
@@ -52,6 +53,10 @@ export default async function TelegramNotesProjectEntry() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-8">
+      {/* Live cockpit (step 207.x — item 9): periodic router.refresh() re-runs the (now
+          force-dynamic) server components so records / finances / calendar update without a
+          manual reload. Renders nothing. */}
+      <AutoRefresh intervalMs={8000} />
       {/* Native missing-keys modal (186.3): prompts for any declared integration
           key absent from the runtime env; renders nothing when none are required. */}
       <MissingKeysModal lang={LANG} />

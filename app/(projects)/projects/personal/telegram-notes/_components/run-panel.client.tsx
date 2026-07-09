@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +13,7 @@ import { NextRunCountdown } from "./next-run-countdown.client";
 // appears in the results table below on the next page load. `periodSec`/`enabled`
 // come from the co-located cron.json (Phase 2).
 export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: number; enabled?: boolean }) {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,6 +33,9 @@ export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: numbe
       const data = (await res.json()) as { runId?: string };
       setLastRunId(data.runId ?? null);
       toast.success("Workflow run started");
+      // The run journals + writes asynchronously; give it a moment, then refresh the (dynamic)
+      // server components so records / finances / calendar reflect the result without a reload.
+      setTimeout(() => router.refresh(), 1500);
     } catch {
       toast.error("Run did not start (network error)");
     } finally {
@@ -56,8 +61,7 @@ export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: numbe
         </Button>
         {lastRunId && (
           <span className="text-sm text-muted-foreground">
-            Started run <code>{lastRunId}</code> — reload the page to see it in
-            the tables.
+            Started run <code>{lastRunId}</code> — the tables update automatically.
           </span>
         )}
       </div>

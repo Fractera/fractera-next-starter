@@ -56,7 +56,9 @@ type TgMessage = { chatId: string; messageId: number; text: string; date: number
 // photo = send back the receipt image of a finance record (step 207.10, /photo <id>).
 // note = return a saved note's content to chat (/note <id>, step 207.10 P5); meta = a conversational /
 // follow-up / complaint message (step 207.10 P3) — answered helpfully instead of the unclear-buttons fallback.
-type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "note" | "meta" | "help" | "ignore";
+// escalate = the user wants a capability BEYOND this automation's current settings (step 207.10 P3/10.3) →
+// answered with the coder-escalation script (open the architecture cockpit, write steps, launch the rocket).
+type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "note" | "meta" | "escalate" | "help" | "ignore";
 
 // Bot capability blurb (step 205 §I) — the /help reply + the start message.
 const CAPABILITIES =
@@ -335,6 +337,38 @@ async function urlIsLive(url: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// ── Coder-escalation (step 207.10 P3/10.3): a request for a capability BEYOND this automation's settings
+// is answered with a script pointing at the Admin architecture cockpit (:3002/service/*). Derive the
+// cockpit base from the deploy shape: explicit NEXT_PUBLIC_ADMIN_URL wins; a domain deploy fronts it at
+// admin.<domain> (the platform's nginx convention); an IP deploy exposes it at <ip>:3002. Unknown → null
+// (the script then describes the in-Admin navigation, never a wrong/localhost link). ──
+function architectureBase(): string | null {
+  const explicit = (process.env.NEXT_PUBLIC_ADMIN_URL ?? "").replace(/\/+$/, "");
+  if (explicit) return explicit;
+  const app = (process.env.APP_BASE_URL ?? "").replace(/\/+$/, "");
+  const m = /^(https?):\/\/([^/:]+)(?::\d+)?$/.exec(app);
+  if (!m) return null;
+  const host = m[2];
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) return `http://${host}:3002`;       // IP mode → :3002
+  if (/localhost|127\.0\.0\.1/.test(host)) return null;                      // dev → describe only
+  return `https://admin.${host.replace(/^www\./, "")}`;                     // domain mode → admin.<host>
+}
+// The English escalation script (localized on send). With a known cockpit base, the two service URLs are
+// inlined; without one, the user is told to open Admin → Service → Architecture / Development Steps.
+function escalationScript(): string {
+  const base = architectureBase();
+  const archRef = base ? `${base}/service/architecture` : "your Admin workspace → Service → Architecture";
+  const stepsRef = base ? `${base}/service/development-steps` : "the Development Steps tab (Admin → Service → Development Steps)";
+  return (
+    "That's beyond this automation's current settings. To change what it can do, its architecture must be " +
+    "edited by a coding agent in an active session. The best path is to work on the automation directly: " +
+    `open this project's architecture page — ${archRef}. In the right-hand column use the to-do list to write ` +
+    "your changes step by step. Then in the left-hand column find this automation, hover over its name, and " +
+    "click the 🚀 rocket — that hands your specification to the coding agent (an active subscription and a " +
+    `running agent such as Codex are required). Track progress in ${stepsRef}.`
+  );
 }
 
 // ── Duplicate guard (step 207.x): a two-tier defence against duplicate records. ──
@@ -1033,13 +1067,16 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), " +
           "meta (a conversational message, a complaint, a follow-up ABOUT the assistant or a previous answer, or a " +
           "request about how the bot works — e.g. 'answer in Russian', 'did you save it?', 'why didn't you reply', " +
-          "'what is it called in the database'), or unclear (a real note/request whose action is genuinely ambiguous). " +
-          "No other text.",
+          "'what is it called in the database'), " +
+          "escalate (the user wants a NEW capability this assistant does NOT have, or is dissatisfied it cannot do " +
+          "something — a feature request / 'can you also do X' / 'this should also…' / 'I want it to…' beyond notes, " +
+          "reminders and finance), " +
+          "or unclear (a real note/request whose action is genuinely ambiguous). No other text.",
         text.slice(0, 1000),
         6,
       );
       // finance-query BEFORE finance so the longer token wins the match.
-      const word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|meta|unclear/) ?? ["unclear"])[0];
+      const word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|escalate|meta|unclear/) ?? ["unclear"])[0];
       if (word === "unclear") { intent = "ignore"; unclear = true; }
       else intent = word as Intent;
     }
@@ -1545,6 +1582,19 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
+  // Coder-escalation (step 207.10 P3/10.3): the user wants a capability beyond this automation's settings.
+  // Reply with the localized escalation script (open the architecture cockpit, write steps, launch rocket).
+  let escalated = 0;
+  for (const c of classified) {
+    if (c.intent !== "escalate") continue;
+    try {
+      await tgSend(c.chatId, await toLang(escalationScript(), await getLang(c.chatId)));
+      escalated++;
+    } catch (e) {
+      errors.push(`escalate reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   // Unclear messages (step 205 §D): offer action buttons instead of silently ignoring. The tap comes
   // back as a callback (handled in fetch-telegram-updates) carrying a forced action.
   let prompted = 0;
@@ -1565,5 +1615,5 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies, saved, reminded, answered, finance, errors };
+  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies + escalated, saved, reminded, answered, finance, errors };
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  beginApplying,
   refreshAutomationStatus,
   setAutomationEnabled,
+  setBotKeyOk,
   useAutomationStatus,
 } from "../_lib/automation-status";
 
@@ -20,6 +23,9 @@ export function BotKeySettings() {
   const enabled = status.loaded ? status.enabled : null;
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
+  // Honest "applying" state (item 7): the token save restarts the slot (~5s). We show this instead of
+  // letting a status check race the restart and flash a red error that only cleared on reload.
+  const [applying, setApplying] = useState(false);
 
   async function toggle() {
     const next = !(enabled ?? true);
@@ -75,8 +81,19 @@ export function BotKeySettings() {
         await fetch("/api/projects/personal/telegram-notes/set-menu", { method: "POST" });
       } catch { /* best-effort */ }
       setToken("");
-      void refreshAutomationStatus(); // reflect the new key in the pill/dots
-      toast.success("Bot token saved — applying (a brief restart)");
+      // The key IS persisted now (the env file was written before the response). Reflect it
+      // optimistically and open the restart window so the page auto-refresh pauses (item 7) — no
+      // status check races the ~5s restart, so no stale red error, no reload needed.
+      setBotKeyOk(true);
+      beginApplying(12000);
+      setApplying(true);
+      toast.success("Bot token saved — applying, the bot restarts in a few seconds");
+      // Reconcile once the restart + listener registration settle, WITHOUT a manual reload.
+      window.setTimeout(() => void refreshAutomationStatus(), 6000);
+      window.setTimeout(() => {
+        void refreshAutomationStatus();
+        setApplying(false);
+      }, 12000);
     } catch {
       toast.error("Could not save the token (network error)");
     } finally {
@@ -146,10 +163,16 @@ export function BotKeySettings() {
             onChange={(e) => setToken(e.target.value)}
             placeholder="123456:ABC-…"
           />
-          <Button onClick={saveToken} disabled={busy || !token.trim()}>
+          <Button onClick={saveToken} disabled={busy || applying || !token.trim()}>
             Save
           </Button>
         </div>
+        {applying && (
+          <p className="flex items-center gap-2 text-xs text-muted-foreground" role="status" aria-live="polite">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Applying — the bot is restarting (a few seconds). No need to reload.
+          </p>
+        )}
       </div>
 
       {/* Send a test message so you can confirm the bot works. Message your bot once first —

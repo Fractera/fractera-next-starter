@@ -79,6 +79,19 @@ export function setBotKeyOk(v: boolean) {
   set({ botKeyOk: v });
 }
 
+// Restart-window signal (step 207.10 item 7). A runtime env change (saving the bot token) restarts the
+// slot (~5s), during which the server briefly stops answering. While this window is open the page
+// auto-refresh MUST NOT fire router.refresh() — a refresh against the restarting server was the source
+// of the "stale red error that only cleared on reload". Plain module timestamp, read synchronously by
+// the auto-refresh tick (same client module, shared across islands).
+let applyingUntil = 0;
+export function beginApplying(ms = 12000) {
+  applyingUntil = Date.now() + ms;
+}
+export function isApplying(): boolean {
+  return Date.now() < applyingUntil;
+}
+
 // Derived overall health for the pill — the active bot track and the keys are what count.
 export type Health = "loading" | "running" | "degraded" | "broken";
 export function healthOf(s: AutomationStatus): { health: Health; label: string } {

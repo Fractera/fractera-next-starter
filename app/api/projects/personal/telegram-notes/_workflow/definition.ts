@@ -54,7 +54,9 @@ const ALL_CATEGORY_IDS = new Set([...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].m
 type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string };
 // finance = a money movement to RECORD; finance-query = a QUESTION about money already recorded (step 207.8);
 // photo = send back the receipt image of a finance record (step 207.10, /photo <id>).
-type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "help" | "ignore";
+// note = return a saved note's content to chat (/note <id>, step 207.10 P5); meta = a conversational /
+// follow-up / complaint message (step 207.10 P3) — answered helpfully instead of the unclear-buttons fallback.
+type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "note" | "meta" | "help" | "ignore";
 
 // Bot capability blurb (step 205 §I) — the /help reply + the start message.
 const CAPABILITIES =
@@ -81,6 +83,7 @@ function parseSlashCommand(text: string): { intent: Intent; payload: string } | 
     case "remind":   return { intent: "remind", payload: rest };
     case "recall":   return { intent: "recall", payload: rest };
     case "photo":    return { intent: "photo", payload: rest };
+    case "note":     return { intent: "note", payload: rest };
     case "digitize": return { intent: "help", payload: "Send me a photo of the receipt or document and I'll digitize it into your records." };
     default:         return null;
   }
@@ -249,6 +252,91 @@ async function loadPending(id: string): Promise<{ text: string; chatId: string }
   return null;
 }
 
+// ── Language (step 207.10, P1): reply in the user's language. Detect once per real message, persist
+// per chat, and translate fixed replies on demand (cached by a stable hash) so the automation stays
+// self-sufficient (only the OpenAI key). Model-generated answers instead get "reply in <lang>". ──
+async function getLang(chatId: string): Promise<string> {
+  try {
+    const row = (await db
+      .prepare("SELECT value FROM telegram_notes_state WHERE key = ?")
+      .get(`lang:${chatId}`)) as { value?: string } | null;
+    if (row?.value) return row.value;
+  } catch { /* default below */ }
+  return "English";
+}
+async function detectLang(text: string): Promise<string> {
+  const t = text.trim();
+  if (!t) return "";
+  if (/[Ѐ-ӿ]/.test(t)) return "Russian"; // fast path (no model call) for the common case
+  const ans = await cheapModel(
+    "Detect the language of the user's message. Reply with ONLY the English name of the language (e.g. English, Russian, Spanish). No other text.",
+    t.slice(0, 200), 4,
+  );
+  return (ans || "").replace(/[^A-Za-z ]/g, "").trim() || "English";
+}
+// Detect a real message's language and remember it; terse/empty messages keep the last known language.
+async function resolveLang(chatId: string, text: string): Promise<string> {
+  const detected = await detectLang(text);
+  if (!detected) return getLang(chatId);
+  try {
+    await db.prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)").run(`lang:${chatId}`, detected);
+  } catch { /* best-effort */ }
+  return detected;
+}
+function hashStr(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+// Translate a fixed English reply into the target language (cached), preserving numbers/names/emoji/ids.
+async function translateCached(enText: string, lang: string): Promise<string> {
+  if (!enText || !lang || /^english$/i.test(lang)) return enText;
+  const key = `tr:${lang}:${hashStr(enText)}`;
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(key)) as { value?: string } | null;
+    if (row?.value) return row.value;
+  } catch { /* translate below */ }
+  const out = await cheapModel(
+    `Translate the following UI message into ${lang}. Keep numbers, names, currency symbols, emoji and any /commands or #ids EXACTLY. Reply with ONLY the translation, no quotes.`,
+    enText.slice(0, 900), 400,
+  );
+  const translated = out || enText;
+  try {
+    await db.prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)").run(key, translated);
+  } catch { /* best-effort cache */ }
+  return translated;
+}
+// Send a fixed English reply localized to the chat's language (one wrapper over tgSend so every canned
+// string becomes multilingual without a per-string table).
+async function sendLocalized(chatId: string, enText: string): Promise<void> {
+  await tgSend(chatId, await translateCached(enText, await getLang(chatId)));
+}
+// Rewrite a longer model/answer text into the chat's language (no cache — answers are unique).
+async function toLang(text: string, lang: string): Promise<string> {
+  if (!text || !lang || /^english$/i.test(lang)) return text;
+  const out = await cheapModel(
+    `Rewrite the following message in ${lang}, preserving all facts, numbers and names. Reply with ONLY the rewritten message.`,
+    text.slice(0, 2000), 600,
+  );
+  return out || text;
+}
+
+// ── Public media links (step 207.10, P6): a link the user opens must hit the real public domain, never
+// localhost:3000. Rewrites a relative / localhost media path to APP_BASE_URL; callers verify 200 first. ──
+function publicMediaUrl(pathOrUrl: string): string {
+  if (/^https?:\/\//.test(pathOrUrl) && !/localhost|127\.0\.0\.1/.test(pathOrUrl)) return pathOrUrl;
+  const rel = pathOrUrl.replace(/^https?:\/\/[^/]+/, "");
+  return `${APP_BASE}${rel.startsWith("/") ? "" : "/"}${rel}`;
+}
+async function urlIsLive(url: string): Promise<boolean> {
+  try {
+    const r = await fetch(url, { method: "GET", signal: AbortSignal.timeout(15000) });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 // ── Duplicate guard (step 207.x): a two-tier defence against duplicate records. ──
 // Tier 1 — HARD idempotency: the SAME Telegram (chat_id, message_id) re-delivered (a process restart
 // mid-ack, a network retry, a double dispatch) must never insert twice. Records the pair atomically
@@ -340,7 +428,7 @@ async function removeDuplicateRecord(table: string, id: number, chatId: string):
   try {
     if (table === "finance") {
       await db.prepare("DELETE FROM automation_finance WHERE id = ? AND project = ?").run(id, PROJECT_SLUG);
-      await tgSend(chatId, "Removed the duplicate finance record.");
+      await sendLocalized(chatId, "Removed the duplicate finance record.");
     } else if (table === "note") {
       try {
         const row = (await db
@@ -349,10 +437,10 @@ async function removeDuplicateRecord(table: string, id: number, chatId: string):
         if (row?.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
       } catch { /* vector delete best-effort */ }
       await db.prepare("DELETE FROM telegram_notes WHERE id = ? AND project_slug = ?").run(id, PROJECT_SLUG);
-      await tgSend(chatId, "Removed the duplicate note.");
+      await sendLocalized(chatId, "Removed the duplicate note.");
     }
   } catch {
-    await tgSend(chatId, "I couldn't remove that record just now.");
+    await sendLocalized(chatId, "I couldn't remove that record just now.");
   }
 }
 
@@ -361,12 +449,13 @@ async function removeDuplicateRecord(table: string, id: number, chatId: string):
 // loss); "Remove duplicate" deletes the just-created row.
 async function promptDuplicate(chatId: string, table: "finance" | "note", newId: number, priorId: number, label: string): Promise<void> {
   const trimmed = label.replace(/\s+/g, " ").trim().slice(0, 80);
+  const lang = await getLang(chatId);
   await tgSendButtons(
     chatId,
-    `This looks like a duplicate of an earlier record (#${priorId}${trimmed ? `: ${trimmed}` : ""}). Keep it?`,
+    await translateCached(`This looks like a duplicate of an earlier record (#${priorId}${trimmed ? `: ${trimmed}` : ""}). Keep it?`, lang),
     [
-      { text: "✅ Keep both", data: "dupkeep" },
-      { text: "🗑 Remove duplicate", data: `dupdel:${table}:${newId}` },
+      { text: await translateCached("✅ Keep both", lang), data: "dupkeep" },
+      { text: await translateCached("🗑 Remove duplicate", lang), data: `dupdel:${table}:${newId}` },
     ],
   );
 }
@@ -656,7 +745,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
       // keep both (the record is already saved); dupdel:<table>:<id> = remove the just-created dup.
       const cbChatFinal = cbChat || allowedChat || "0";
       if (env.data === "dupkeep") {
-        await tgSend(cbChatFinal, "Kept both records.");
+        await sendLocalized(cbChatFinal, "Kept both records.");
         return [] satisfies TgMessage[];
       }
       if (env.data.startsWith("dupdel:")) {
@@ -671,7 +760,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
       if (!pending) return [] satisfies TgMessage[];
       const act = (["save", "remind", "recall", "ignore"].includes(action) ? action : "ignore") as Intent;
       if (act === "ignore") {
-        await tgSend(pending.chatId, "Okay — ignored.");
+        await sendLocalized(pending.chatId, "Okay — ignored.");
         return [] satisfies TgMessage[];
       }
       return [
@@ -732,7 +821,7 @@ async function deliverDueReminders(artifacts: Record<string, unknown>): Promise<
     const hhmm = `${String(when.getHours()).padStart(2, "0")}:${String(when.getMinutes()).padStart(2, "0")}`;
     const what = row.summary || row.full_text;
     try {
-      await tgSend(row.chat_id, `Reminder: you asked to be reminded at ${hhmm} to ${what}`);
+      await sendLocalized(row.chat_id, `Reminder: you asked to be reminded at ${hhmm} to ${what}`);
       await db.prepare("UPDATE telegram_notes SET delivered = 1 WHERE id = ?").run(row.id);
       delivered++;
     } catch (e) {
@@ -755,6 +844,9 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
 
   const out: Classified2[] = [];
   for (const msg of messages) {
+    // Language (step 207.10 P1): detect + remember the chat's language from any text message so every
+    // downstream reply answers in it. Cyrillic is a no-model fast path; other scripts ask the model once.
+    if (msg.text && msg.text.trim()) await resolveLang(msg.chatId, msg.text);
     // A button tap (callback) carries a forced action — skip the model, honor the user's choice.
     if (msg.forcedAction) {
       out.push({ intent: msg.forcedAction, projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
@@ -780,13 +872,16 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "save (states a fact/note to remember), remind (wants a time-based reminder), " +
           "recall (asks to find/retrieve something saved), finance (a money movement to RECORD — income or expense, " +
           "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), finance-query (a QUESTION about money already " +
-          "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), or unclear (none " +
-          "clearly applies). No other text.",
+          "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), " +
+          "meta (a conversational message, a complaint, a follow-up ABOUT the assistant or a previous answer, or a " +
+          "request about how the bot works — e.g. 'answer in Russian', 'did you save it?', 'why didn't you reply', " +
+          "'what is it called in the database'), or unclear (a real note/request whose action is genuinely ambiguous). " +
+          "No other text.",
         text.slice(0, 1000),
         6,
       );
       // finance-query BEFORE finance so the longer token wins the match.
-      const word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|unclear/) ?? ["unclear"])[0];
+      const word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|meta|unclear/) ?? ["unclear"])[0];
       if (word === "unclear") { intent = "ignore"; unclear = true; }
       else intent = word as Intent;
     }
@@ -840,20 +935,30 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
         body: JSON.stringify({ query: c.payload, mode: "hybrid" }),
         signal: AbortSignal.timeout(60_000),
       });
+      const lang = await getLang(c.chatId);
       if (!r.ok) {
-        out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: "Memory is temporarily unavailable, please try again later.", error: `HTTP ${r.status}` });
+        out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await translateCached("Memory is temporarily unavailable, please try again later.", lang), error: `HTTP ${r.status}` });
         continue;
       }
       const data = (await r.json()) as { response?: string };
-      const answer = (data.response ?? "").trim();
+      let answer = (data.response ?? "").trim();
+      // Clean the raw LightRAG output (step 207.10 P4): drop the "### References" section and internal
+      // record tags (Project/Hook/Record #) so the reply never leaks the DB schema, then answer in the
+      // user's language (LightRAG's own language is not controllable — re-phrase to the chat's language).
+      answer = answer.split(/\n#{1,6}\s*References\b/i)[0].trim();
+      answer = answer
+        .replace(/^\s*[-*]?\s*\**(Проект|Project|Хук|Hook|Запись|Record)\**\s*[:#].*$/gim, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      const clean = answer || `Nothing found in your notes for: ${c.payload}`;
       out.push({
         chatId: c.chatId,
         query: c.payload,
         hookPhrase: c.hookPhrase,
-        answer: answer || `Nothing found in your notes for: ${c.payload}`,
+        answer: await toLang(clean, lang),
       });
     } catch (e) {
-      out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: "Memory is temporarily unavailable, please try again later.", error: e instanceof Error ? e.message : String(e) });
+      out.push({ chatId: c.chatId, query: c.payload, hookPhrase: c.hookPhrase, answer: await translateCached("Memory is temporarily unavailable, please try again later.", await getLang(c.chatId)), error: e instanceof Error ? e.message : String(e) });
     }
   }
   return out;
@@ -1008,7 +1113,10 @@ async function ingestNoteToMemory(artifacts: Record<string, unknown>): Promise<u
   for (const p of persisted) {
     if (p.dbId == null) continue; // needs-when rows are not yet stored
     const when = new Date().toISOString().slice(0, 16).replace("T", " ");
-    const doc = `Project: ${PROJECT_SLUG} | Hook: ${p.intent} | Date: ${when} | Record #${p.dbId} | ${p.payload}`;
+    // Clean indexed text (step 207.10 P4): index the note content + date only — NOT the internal
+    // Project/Hook/Record tags, which used to leak verbatim into recall answers. The delete contract
+    // uses memory_track_id (captured from the response below) + the description, not this body text.
+    const doc = `Note from ${when}: ${p.payload}`;
     try {
       const r = await fetch(`${RAG_URL}/documents/text`, {
         method: "POST",
@@ -1070,9 +1178,10 @@ async function answerFinanceQuery(artifacts: Record<string, unknown>): Promise<u
       const answer = filtered.length
         ? `${kindLabel}${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}: ${total} across ${filtered.length} record(s).`
         : `No ${kindLabel} records${catLabel ? ` for ${catLabel}` : ""} ${periodLabel}.`;
-      out.push({ chatId: c.chatId, answer: answer.charAt(0).toUpperCase() + answer.slice(1) });
+      const lang = await getLang(c.chatId);
+      out.push({ chatId: c.chatId, answer: await translateCached(answer.charAt(0).toUpperCase() + answer.slice(1), lang) });
     } catch {
-      out.push({ chatId: c.chatId, answer: "I couldn't read your finance ledger just now — please try again." });
+      out.push({ chatId: c.chatId, answer: await translateCached("I couldn't read your finance ledger just now — please try again.", await getLang(c.chatId)) });
     }
   }
   return out;
@@ -1099,16 +1208,16 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   for (const p of persisted) {
     try {
       if (p.needsWhen) {
-        await tgSend(p.chatId, "When should I remind you? Reply with a date and time (for example: today at 19:05).");
+        await sendLocalized(p.chatId, "When should I remind you? Reply with a date and time (for example: today at 19:05).");
         continue;
       }
       if (p.intent === "save") {
         const ing = ingestById.get(p.dbId);
         if (ing && ing.ingestOk) {
-          await tgSend(p.chatId, `Saved: ${p.summary}`);
+          await sendLocalized(p.chatId, `Saved: ${p.summary}`);
           saved++;
         } else {
-          await tgSend(p.chatId, `Saved, but memory is unavailable — I'll index it later. (${ing?.error ?? "ingest error"})`);
+          await sendLocalized(p.chatId, `Saved, but memory is unavailable — I'll index it later. (${ing?.error ?? "ingest error"})`);
           saved++;
         }
         // Soft-duplicate nudge (step 207.x): the note is already saved — offer a one-tap removal.
@@ -1123,7 +1232,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
         let msg = `I'll remind you at ${fmt(p.reminderDue)}: ${p.summary}`;
         // Event+reminder model (step 207): if the thing happens at a different time than the notify, say so.
         if (p.eventAt && p.eventAt !== p.reminderDue) msg += ` (event at ${fmt(p.eventAt)})`;
-        await tgSend(p.chatId, msg);
+        await sendLocalized(p.chatId, msg);
         reminded++;
       }
     } catch (e) {
@@ -1154,12 +1263,12 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   for (const f of finances) {
     try {
       if (f.dbId == null) {
-        await tgSend(f.chatId, "I couldn't read a clear amount from that. Try a clearer photo, or tell me the amount.");
+        await sendLocalized(f.chatId, "I couldn't read a clear amount from that. Try a clearer photo, or tell me the amount.");
         continue;
       }
       const sign = f.kind === "income" ? "+" : "−";
       const cats = f.categories.map((id) => categoryLabel(id, "en")).join(", ");
-      await tgSend(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}`);
+      await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}`);
       finance++;
       // Soft-duplicate nudge (step 207.x): the record is already saved — offer a one-tap removal.
       if (f.duplicateOfId && f.dbId != null) {
@@ -1175,7 +1284,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   for (const c of classified) {
     if (c.intent !== "help") continue;
     try {
-      await tgSend(c.chatId, c.payload || CAPABILITIES);
+      await sendLocalized(c.chatId, c.payload || CAPABILITIES);
       helped++;
     } catch (e) {
       errors.push(`help reply: ${e instanceof Error ? e.message : String(e)}`);
@@ -1189,24 +1298,89 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     try {
       const id = Number((c.payload.match(/\d+/) ?? [])[0]);
       if (!Number.isFinite(id) || id <= 0) {
-        await tgSend(c.chatId, "Which record? Send /photo followed by the finance record number (for example: /photo 12).");
+        await sendLocalized(c.chatId, "Which record? Send /photo followed by the finance record number (for example: /photo 12).");
         continue;
       }
       const row = (await db
         .prepare("SELECT image_url, summary FROM automation_finance WHERE id = ? AND project = ?")
         .get(id, PROJECT_SLUG)) as { image_url?: string; summary?: string } | null;
       if (!row) {
-        await tgSend(c.chatId, `I couldn't find finance record #${id}.`);
+        await sendLocalized(c.chatId, `I couldn't find finance record #${id}.`);
         continue;
       }
       if (!row.image_url) {
-        await tgSend(c.chatId, `Finance record #${id} has no photo attached.`);
+        await sendLocalized(c.chatId, `Finance record #${id} has no photo attached.`);
         continue;
       }
       const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `Record #${id}: ${row.summary ?? ""}`.trim());
-      if (!sent) await tgSend(c.chatId, `I couldn't send the photo for record #${id} right now.`);
+      if (!sent) await sendLocalized(c.chatId, `I couldn't send the photo for record #${id} right now.`);
+      // Public link (step 207.10 P6): also send a clickable link on the real domain, verified live — the
+      // localized prefix is translated (cached), the raw URL is appended untouched (never localhost).
+      const link = publicMediaUrl(row.image_url);
+      if (!/localhost|127\.0\.0\.1/.test(link) && (await urlIsLive(link))) {
+        const prefix = await translateCached("Open the image:", await getLang(c.chatId));
+        await tgSend(c.chatId, `${prefix} ${link}`);
+      }
     } catch (e) {
       errors.push(`photo reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  // Note return (step 207.10 P5): "/note <id>" → send the saved note's full text (+ image link if any)
+  // back to the chat — the notes analogue of /photo. Scoped to this project.
+  for (const c of classified) {
+    if (c.intent !== "note") continue;
+    try {
+      const lang = await getLang(c.chatId);
+      const id = Number((c.payload.match(/\d+/) ?? [])[0]);
+      if (!Number.isFinite(id) || id <= 0) {
+        await sendLocalized(c.chatId, "Which note? Send /note followed by the record number (for example: /note 3).");
+        continue;
+      }
+      const row = (await db
+        .prepare("SELECT full_text, summary, image_url FROM telegram_notes WHERE id = ? AND project_slug = ?")
+        .get(id, PROJECT_SLUG)) as { full_text?: string; summary?: string; image_url?: string } | null;
+      if (!row) {
+        await sendLocalized(c.chatId, `I couldn't find note #${id}.`);
+        continue;
+      }
+      const body = (row.full_text || row.summary || "").trim();
+      const header = await translateCached(`Note #${id}:`, lang);
+      await tgSend(c.chatId, `${header}\n${body || "—"}`);
+      if (row.image_url) {
+        const link = publicMediaUrl(row.image_url);
+        if (!/localhost|127\.0\.0\.1/.test(link) && (await urlIsLive(link))) {
+          const prefix = await translateCached("Attached image:", lang);
+          await tgSend(c.chatId, `${prefix} ${link}`);
+        }
+      }
+    } catch (e) {
+      errors.push(`note reply: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  // Meta / conversational messages (step 207.10 P3): a complaint / follow-up / how-does-it-work message
+  // gets a helpful reply in the user's language instead of the unclear-buttons fallback.
+  let metaReplies = 0;
+  for (const c of classified) {
+    if (c.intent !== "meta") continue;
+    try {
+      const lang = await getLang(c.chatId);
+      const answer = await cheapModel(
+        `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message. Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly.`,
+        c.payload.slice(0, 500), 200,
+      );
+      await tgSend(
+        c.chatId,
+        answer ||
+          (await translateCached(
+            "I process each message automatically — send a note to save it, ask a question to find it, or /help for options.",
+            lang,
+          )),
+      );
+      metaReplies++;
+    } catch (e) {
+      errors.push(`meta reply: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -1217,11 +1391,12 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     if (!c.unclear || !c.payload) continue;
     try {
       const pid = await storePending(c.payload, c.chatId);
-      await tgSendButtons(c.chatId, "I'm not sure what to do with that — pick one:", [
-        { text: "💾 Save it", data: `${pid}:save` },
-        { text: "⏰ Remind me", data: `${pid}:remind` },
-        { text: "🔎 Find it", data: `${pid}:recall` },
-        { text: "✖ Sent by mistake", data: `${pid}:ignore` },
+      const lang = await getLang(c.chatId);
+      await tgSendButtons(c.chatId, await translateCached("I'm not sure what to do with that — pick one:", lang), [
+        { text: await translateCached("💾 Save it", lang), data: `${pid}:save` },
+        { text: await translateCached("⏰ Remind me", lang), data: `${pid}:remind` },
+        { text: await translateCached("🔎 Find it", lang), data: `${pid}:recall` },
+        { text: await translateCached("✖ Sent by mistake", lang), data: `${pid}:ignore` },
       ]);
       prompted++;
     } catch (e) {
@@ -1229,5 +1404,5 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped, saved, reminded, answered, finance, errors };
+  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies, saved, reminded, answered, finance, errors };
 }

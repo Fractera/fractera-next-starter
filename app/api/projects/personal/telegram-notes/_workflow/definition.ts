@@ -40,6 +40,9 @@ const DATA_URL = (process.env.REMOTE_DATA_URL ?? "http://localhost:3300").replac
 const DATA_SECRET = process.env.DATA_API_KEY ?? "";
 const OPENAI_KEY = () => process.env.OPENAI_API_KEY ?? "";
 const PROJECT_SLUG = "telegram-notes";
+// Duplicate guard (step 207.x): the soft near-duplicate window. A record matching a recent one from the
+// same chat WITHIN this window triggers a "keep both / remove duplicate" confirmation. Tunable per slot.
+const DUP_WINDOW_SEC = Number(process.env.TELEGRAM_NOTES_DUP_WINDOW_SEC ?? 86400);
 // The preset category menu handed to the model (step 207) — it must pick ids from THIS list (multi-flag).
 const CATEGORY_GUIDE =
   "INCOME category ids: " + INCOME_CATEGORIES.map((c) => `${c.id} (${c.en})`).join(", ") + ". " +
@@ -103,6 +106,7 @@ type Persisted = {
   chatId: string;
   summary: string;
   payload: string;
+  duplicateOfId?: number | null; // step 207.x: id of a suspected earlier duplicate (save notes only)
 };
 // One extracted reminder (step 207 event+reminder model). eventISO = when the thing happens; reminderISO =
 // when to notify (supports "an hour before" / "by 12:00"). One message can yield SEVERAL of these.
@@ -243,6 +247,128 @@ async function loadPending(id: string): Promise<{ text: string; chatId: string }
     if (row?.value) return JSON.parse(row.value) as { text: string; chatId: string };
   } catch { /* missing/parse */ }
   return null;
+}
+
+// ── Duplicate guard (step 207.x): a two-tier defence against duplicate records. ──
+// Tier 1 — HARD idempotency: the SAME Telegram (chat_id, message_id) re-delivered (a process restart
+// mid-ack, a network retry, a double dispatch) must never insert twice. Records the pair atomically
+// (INSERT OR IGNORE on the state table's PRIMARY KEY) and returns true when it was ALREADY seen, so the
+// caller skips silently. messageId 0 (manual run / callback-derived) carries no idempotency key.
+async function markProcessedOrSkip(chatId: string, messageId: number): Promise<boolean> {
+  if (!messageId || messageId <= 0) return false;
+  try {
+    const res = await db
+      .prepare("INSERT OR IGNORE INTO telegram_notes_state (key, value) VALUES (?, '1')")
+      .run(`seen:${chatId}:${messageId}`);
+    return Number((res as { changes?: number }).changes ?? 0) === 0;
+  } catch {
+    return false; // a state-table hiccup must never block a real message
+  }
+}
+
+// Tier 2 — SOFT near-duplicate: normalize free text so trivially-different phrasings still match.
+function normalizeText(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+// A recent finance record from the same chat with the SAME kind + amount + normalized summary is a
+// suspected duplicate (amount alone is too weak — two identical coffees are legitimate). Excludes the
+// just-inserted row; returns the earlier row's id or null.
+async function findRecentDuplicateFinance(
+  selfId: number, kind: string, amount: number, summary: string, chatId: string,
+): Promise<number | null> {
+  try {
+    const since = Math.floor(Date.now() / 1000) - DUP_WINDOW_SEC;
+    const rows = (await db
+      .prepare(
+        "SELECT id, summary FROM automation_finance WHERE project = ? AND chat_id = ? AND kind = ? " +
+          "AND amount = ? AND id <> ? AND created_at >= ? ORDER BY created_at DESC LIMIT 5",
+      )
+      .all(PROJECT_SLUG, chatId, kind, amount, selfId, since)) as Array<{ id: number; summary: string }>;
+    const norm = normalizeText(summary);
+    const hit = rows.find((r) => normalizeText(String(r.summary ?? "")) === norm);
+    return hit ? Number(hit.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+// A recent SAVED note from the same chat with the SAME normalized summary is a suspected duplicate.
+async function findRecentDuplicateNote(
+  selfId: number, summary: string, chatId: string,
+): Promise<number | null> {
+  try {
+    const norm = normalizeText(summary);
+    if (!norm) return null;
+    const since = Math.floor(Date.now() / 1000) - DUP_WINDOW_SEC;
+    const rows = (await db
+      .prepare(
+        "SELECT id, summary FROM telegram_notes WHERE project_slug = ? AND chat_id = ? AND hook_action = 'save' " +
+          "AND id <> ? AND created_at >= ? ORDER BY created_at DESC LIMIT 5",
+      )
+      .all(PROJECT_SLUG, chatId, selfId, since)) as Array<{ id: number; summary: string }>;
+    const hit = rows.find((r) => normalizeText(String(r.summary ?? "")) === norm);
+    return hit ? Number(hit.id) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Best-effort LightRAG vector delete by track id (mirrors records/[id] DELETE — the 188-R delete contract).
+async function deleteVectorDoc(trackId: string): Promise<void> {
+  try {
+    const st = await fetch(`${RAG_URL}/documents/track_status/${encodeURIComponent(trackId)}`, {
+      headers: { "X-API-Key": RAG_KEY }, signal: AbortSignal.timeout(15_000),
+    });
+    if (!st.ok) return;
+    const data = (await st.json()) as { documents?: Array<{ id?: string }> };
+    const docIds = (data.documents ?? []).map((d) => d.id).filter(Boolean) as string[];
+    if (!docIds.length) return;
+    await fetch(`${RAG_URL}/documents/delete_document`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "X-API-Key": RAG_KEY },
+      body: JSON.stringify({ doc_ids: docIds }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch { /* best-effort — the DB row is already gone */ }
+}
+
+// Remove a record the user confirmed is a duplicate (callback dupdel:<table>:<id>). Finance = a plain
+// row delete; note = the 188-R delete (row + best-effort vector doc). Scoped to this project.
+async function removeDuplicateRecord(table: string, id: number, chatId: string): Promise<void> {
+  if (!Number.isFinite(id) || id <= 0) return;
+  try {
+    if (table === "finance") {
+      await db.prepare("DELETE FROM automation_finance WHERE id = ? AND project = ?").run(id, PROJECT_SLUG);
+      await tgSend(chatId, "Removed the duplicate finance record.");
+    } else if (table === "note") {
+      try {
+        const row = (await db
+          .prepare("SELECT memory_track_id FROM telegram_notes WHERE id = ? AND project_slug = ?")
+          .get(id, PROJECT_SLUG)) as { memory_track_id?: string } | null;
+        if (row?.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
+      } catch { /* vector delete best-effort */ }
+      await db.prepare("DELETE FROM telegram_notes WHERE id = ? AND project_slug = ?").run(id, PROJECT_SLUG);
+      await tgSend(chatId, "Removed the duplicate note.");
+    }
+  } catch {
+    await tgSend(chatId, "I couldn't remove that record just now.");
+  }
+}
+
+// Offer a one-tap choice when a suspected duplicate was just recorded (step 207.x). Reuses the SAME
+// inline-button confirmation node as the unclear-intent prompt — the record is already saved (no data
+// loss); "Remove duplicate" deletes the just-created row.
+async function promptDuplicate(chatId: string, table: "finance" | "note", newId: number, priorId: number, label: string): Promise<void> {
+  const trimmed = label.replace(/\s+/g, " ").trim().slice(0, 80);
+  await tgSendButtons(
+    chatId,
+    `This looks like a duplicate of an earlier record (#${priorId}${trimmed ? `: ${trimmed}` : ""}). Keep it?`,
+    [
+      { text: "✅ Keep both", data: "dupkeep" },
+      { text: "🗑 Remove duplicate", data: `dupdel:${table}:${newId}` },
+    ],
+  );
 }
 
 // ── Finance / document digitization helpers (step 205 §E; categories reworked to fixed presets, step 207) ──
@@ -526,6 +652,18 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
       const cbChat = String(env.chatId ?? "");
       if (allowedChat && cbChat && cbChat !== allowedChat) return [] satisfies TgMessage[];
       await tgAnswerCallback(String(env.callbackQueryId ?? ""));
+      // Duplicate-confirmation callbacks (step 207.x): reuse this same confirmation node. dupkeep =
+      // keep both (the record is already saved); dupdel:<table>:<id> = remove the just-created dup.
+      const cbChatFinal = cbChat || allowedChat || "0";
+      if (env.data === "dupkeep") {
+        await tgSend(cbChatFinal, "Kept both records.");
+        return [] satisfies TgMessage[];
+      }
+      if (env.data.startsWith("dupdel:")) {
+        const parts = env.data.split(":");
+        await removeDuplicateRecord(parts[1] ?? "", Number(parts[2]), cbChatFinal);
+        return [] satisfies TgMessage[];
+      }
       const sep = env.data.indexOf(":");
       const pid = sep >= 0 ? env.data.slice(0, sep) : "";
       const action = sep >= 0 ? env.data.slice(sep + 1) : "ignore";
@@ -544,6 +682,9 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
       const chatId = String(env.chatId ?? "");
       if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
       const finalChat = chatId || allowedChat || "0";
+      // Hard idempotency (step 207.x, Tier 1): the same Telegram message re-delivered (process restart
+      // mid-ack, retry, double dispatch) must never insert twice — skip it silently.
+      if (await markProcessedOrSkip(finalChat, Number(env.messageId ?? 0))) return [] satisfies TgMessage[];
       // Remember the owner's chat so the "Test bot" button can send them a message (a bot cannot
       // initiate a chat — it needs a chat the owner has already talked to). Best-effort (step 205).
       try {
@@ -723,7 +864,7 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
 // finance text → cheap-model extract. The model segments into preset categories (multi-flag). The row is
 // written to the SEPARATE automation_finance ledger (NOT telegram_notes — its finance columns are
 // deprecated). The goal is a usable voice/photo finance ledger, not perfect books.
-type FinanceRow = { dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; categories: string[]; summary: string; imageUrl: string | null };
+type FinanceRow = { dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; categories: string[]; summary: string; imageUrl: string | null; duplicateOfId?: number | null };
 async function parseDocument(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
@@ -758,7 +899,12 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
       )
       .run(PROJECT_SLUG, extract.kind, extract.amount, JSON.stringify(extract.categories), extract.summary, imageUrl, c.chatId, c.date);
     const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
-    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl });
+    // Soft duplicate check (step 207.x, Tier 2): a recent identical money movement from this chat → the
+    // record is kept, but reply-in-telegram offers a one-tap "keep both / remove duplicate".
+    const duplicateOfId = dbId != null
+      ? await findRecentDuplicateFinance(dbId, extract.kind, extract.amount, extract.summary, c.chatId)
+      : null;
+    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId });
   }
   return out;
 }
@@ -784,7 +930,11 @@ async function persistNoteToDb(artifacts: Record<string, unknown>): Promise<unkn
         )
         .run(PROJECT_SLUG, item.hookPhrase, item.chatId, item.date, item.payload, item.summary);
       const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
-      out.push({ dbId, intent: "save", reminderDue: null, eventAt: null, needsWhen: false, chatId: item.chatId, summary: item.summary, payload: item.payload });
+      // Soft duplicate check (step 207.x, Tier 2): a recent identical saved note from this chat.
+      const duplicateOfId = dbId != null
+        ? await findRecentDuplicateNote(dbId, item.summary, item.chatId)
+        : null;
+      out.push({ dbId, intent: "save", reminderDue: null, eventAt: null, needsWhen: false, chatId: item.chatId, summary: item.summary, payload: item.payload, duplicateOfId });
       continue;
     }
 
@@ -961,6 +1111,10 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
           await tgSend(p.chatId, `Saved, but memory is unavailable — I'll index it later. (${ing?.error ?? "ingest error"})`);
           saved++;
         }
+        // Soft-duplicate nudge (step 207.x): the note is already saved — offer a one-tap removal.
+        if (p.duplicateOfId && p.dbId != null) {
+          await promptDuplicate(p.chatId, "note", p.dbId, p.duplicateOfId, p.summary);
+        }
       } else if (p.intent === "remind" && p.reminderDue) {
         const fmt = (t: number) => {
           const d = new Date(t * 1000);
@@ -1007,6 +1161,10 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       const cats = f.categories.map((id) => categoryLabel(id, "en")).join(", ");
       await tgSend(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}`);
       finance++;
+      // Soft-duplicate nudge (step 207.x): the record is already saved — offer a one-tap removal.
+      if (f.duplicateOfId && f.dbId != null) {
+        await promptDuplicate(f.chatId, "finance", f.dbId, f.duplicateOfId, f.summary);
+      }
     } catch (e) {
       errors.push(`finance reply: ${e instanceof Error ? e.message : String(e)}`);
     }

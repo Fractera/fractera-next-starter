@@ -8,10 +8,9 @@ import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords } from ".
 import { AboutAccordion } from "./about-accordion.client";
 import { AutoRefresh } from "./auto-refresh.client";
 import { CalendarSection } from "./calendar-section.client";
-import { FinanceSection } from "./finance-section.server";
 import { CronJobsTable } from "./cron-jobs-table.server";
 import { MissingKeysModal } from "./missing-keys-modal.client";
-import { RecordsTable } from "./records-table.client";
+import { RecordsFinancesPanel } from "./records-finances-panel.client";
 import { DiagramAccordion } from "./diagram-accordion.client";
 import { ProjectFooter } from "./project-footer.client";
 import { RunPanel } from "./run-panel.client";
@@ -123,16 +122,15 @@ export default async function TelegramNotesProjectEntry() {
         <CalendarSection events={calendarEvents} />
       </section>
 
+      {/* Records ⇄ Finances (step 207.10 item 5): one section, a right-aligned toggle, one table at a
+          time (Records by default). Finances is a SEPARATE ledger (owner decision) with its own search +
+          column picker; both are server-fetched and passed in. */}
       <section className="space-y-3">
-        <h2 className="text-xl font-medium">Records &amp; requests</h2>
-        <RecordsTable columns={PROJECT_COLUMNS} initialRows={records} />
-      </section>
-
-      {/* Finances (step 207): a SEPARATE ledger table (owner decision) — money movements digitized from
-          voice notes / receipt photos, grouped by kind with preset multi-flag categories. */}
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">Finances</h2>
-        <FinanceSection rows={financeRecords} />
+        <RecordsFinancesPanel
+          columns={PROJECT_COLUMNS}
+          records={records}
+          finances={financeRecords}
+        />
       </section>
 
       <section className="space-y-3">

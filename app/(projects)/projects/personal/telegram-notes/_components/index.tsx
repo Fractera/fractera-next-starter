@@ -5,7 +5,7 @@ import { PROJECT_INTERFACE } from "../_data/interface";
 import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
 import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords } from "../_lib/project-data";
-import { AboutAccordion } from "./about-accordion.client";
+import { UseCasesAccordion } from "./use-cases-accordion.client";
 import { AutoRefresh } from "./auto-refresh.client";
 import { CalendarSection } from "./calendar-section.client";
 import { CronJobsTable } from "./cron-jobs-table.server";
@@ -13,7 +13,7 @@ import { MissingKeysModal } from "./missing-keys-modal.client";
 import { RecordsFinancesPanel } from "./records-finances-panel.client";
 import { DiagramAccordion } from "./diagram-accordion.client";
 import { ProjectFooter } from "./project-footer.client";
-import { RunPanel } from "./run-panel.client";
+import { TestsPanel } from "./tests-panel.client";
 import { SettingsAccordion } from "./settings-accordion.client";
 import { StatusIndicator } from "./status-indicator.client";
 
@@ -100,14 +100,16 @@ export default async function TelegramNotesProjectEntry() {
       {/* Process diagram — collapsed accordion at the top (step 205 §G). */}
       <DiagramAccordion label={t.diagram} />
 
+      {/* Use cases (step 207.10 items 4 & 6): plain-language scenarios replace the abstract "about" text. */}
       <section className="space-y-3">
-        <h2 className="text-xl font-medium">{t.about}</h2>
-        <AboutAccordion />
+        <h2 className="text-xl font-medium">Use cases</h2>
+        <UseCasesAccordion />
       </section>
 
+      {/* Tests (step 207.10 items 4 & 6): per-entity probes + a custom run, replacing the murky run box. */}
       <section className="space-y-3">
-        <h2 className="text-xl font-medium">{t.run}</h2>
-        <RunPanel periodSec={periodSec} enabled={cronEnabled} />
+        <h2 className="text-xl font-medium">Tests</h2>
+        <TestsPanel periodSec={periodSec} enabled={cronEnabled} />
       </section>
 
       <section className="space-y-3">

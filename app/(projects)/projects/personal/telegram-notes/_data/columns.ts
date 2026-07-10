@@ -4,7 +4,7 @@
 // file — to add or change a column, extend the GRAPH and re-run, never edit a component.
 // Canon: CRUD-DOCS/workspace-standards/automation-ontology.md.
 
-export type ColumnType = "badge" | "text" | "longtext" | "date" | "link" | "actions";
+export type ColumnType = "badge" | "text" | "longtext" | "date" | "link" | "image" | "actions";
 export type ColumnOptions = {
   colorFrom?: string;
   emphasizeIfFuture?: boolean;
@@ -50,6 +50,13 @@ export const PROJECT_COLUMNS: ProjectColumn[] = [
     "source": "condition",
     "defaultVisible": false,
     "attr": "condition"
+  },
+  {
+    "id": "photo",
+    "header": "Photo",
+    "type": "image",
+    "source": "first_image",
+    "defaultVisible": true
   },
   {
     "id": "reminder",

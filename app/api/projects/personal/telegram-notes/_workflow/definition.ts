@@ -85,7 +85,7 @@ type TgMessage = { chatId: string; messageId: number; text: string; date: number
 // follow-up / complaint message (step 207.10 P3) — answered helpfully instead of the unclear-buttons fallback.
 // escalate = the user wants a capability BEYOND this automation's current settings (step 207.10 P3/10.3) →
 // answered with the coder-escalation script (open the architecture cockpit, write steps, launch the rocket).
-type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "note" | "meta" | "escalate" | "help" | "ignore";
+type Intent = "save" | "remind" | "recall" | "finance" | "finance-query" | "photo" | "note" | "delete" | "meta" | "escalate" | "help" | "ignore";
 
 // Bot capability blurb (step 205 §I) — the /help reply + the start message.
 const CAPABILITIES =
@@ -99,6 +99,7 @@ const CAPABILITIES =
   "• a follow-up about my last answer (repeat it, translate it) → I remember the recent conversation\n" +
   "• ask to SEE a photo in plain words (show the receipt) or /photo <number> → I send the image back\n" +
   "• /note <number> → the saved note's full text\n" +
+  "• ask to DELETE records (убери запись / delete all 11-euro records) → I list the matches and delete after your one-tap confirmation\n" +
   "If I'm not sure, I'll show you buttons to choose.";
 
 // Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
@@ -109,6 +110,8 @@ const CAPABILITIES =
 function heuristicIntent(text: string): Intent | null {
   const t = text.toLowerCase().trim();
   if (/^(запомни|запиши|сохрани|remember|save\b|note\b)/i.test(t)) return "save";
+  // «убери/удали…» = deletion of existing records (step 207.18b — «убери» used to CREATE a −11 row).
+  if (/^(убери|удали|сотри|delete|remove|erase)/i.test(t) || /(убери|удали|сотри)\s+(эту|ту|все|запис)/i.test(t)) return "delete";
   // «повтори/переведи…» = a follow-up about the previous answer → meta (answered with history, 207.16).
   if (/^(?:(?:а|и|ну)\s+)?(повтори|переведи|repeat|translate)/i.test(t)) return "meta";
   // «напомни …» about money movements is a ledger question, not a timed reminder (owner Round-3 test).
@@ -564,6 +567,62 @@ async function deleteVectorDoc(trackId: string): Promise<void> {
       signal: AbortSignal.timeout(30_000),
     });
   } catch { /* best-effort — the DB row is already gone */ }
+}
+
+// ── Record deletion (step 207.18b, owner case: «убери» must DELETE, not record a −11 row). Deletion is
+// ALWAYS the pair + links (rule R7): the DB row, its vector doc (via memory_track_id), and its
+// record_images links; images whose last link died go back to pending (never deleted — rule R2). ──
+async function deleteRecordPair(kind: "note" | "finance", id: number): Promise<void> {
+  try {
+    const trackRow = kind === "finance"
+      ? ((await db.prepare("SELECT memory_track_id FROM automation_finance WHERE id = ? AND project = ?").get(id, PROJECT_SLUG)) as { memory_track_id?: string } | null)
+      : ((await db.prepare("SELECT memory_track_id FROM telegram_notes WHERE id = ? AND project_slug = ?").get(id, PROJECT_SLUG)) as { memory_track_id?: string } | null);
+    if (trackRow?.memory_track_id) await deleteVectorDoc(String(trackRow.memory_track_id));
+  } catch { /* vector delete best-effort */ }
+  try {
+    const links = (await db.prepare("SELECT image_id FROM record_images WHERE record_kind = ? AND record_id = ?").all(kind, id)) as Array<{ image_id: number }>;
+    await db.prepare("DELETE FROM record_images WHERE record_kind = ? AND record_id = ?").run(kind, id);
+    for (const l of links) {
+      const still = (await db.prepare("SELECT 1 FROM record_images WHERE image_id = ? LIMIT 1").get(l.image_id)) as unknown;
+      if (!still) await db.prepare("UPDATE automation_images SET status = 'pending' WHERE id = ?").run(l.image_id);
+    }
+  } catch { /* links best-effort */ }
+  if (kind === "finance") {
+    await db.prepare("DELETE FROM automation_finance WHERE id = ? AND project = ?").run(id, PROJECT_SLUG);
+  } else {
+    await db.prepare("DELETE FROM telegram_notes WHERE id = ? AND project_slug = ?").run(id, PROJECT_SLUG);
+  }
+}
+
+// Find deletion targets from the user's words: exact amounts + keywords over BOTH tables. Powers both
+// point deletion («убери запись про принтер») and MASS deletion («удали все записи по 11 за пирожки»).
+type DeleteTarget = { kind: "note" | "finance"; id: number; label: string };
+async function findDeleteTargets(text: string, chatId: string, limit = 20): Promise<DeleteTarget[]> {
+  const out: DeleteTarget[] = [];
+  const finHits = await searchFinanceLedger(text, limit);
+  for (const h of finHits) {
+    const sign = h.kind === "income" ? "+" : "−";
+    out.push({ kind: "finance", id: h.id, label: `${sign}${h.amount} — ${h.summary}`.slice(0, 80) });
+  }
+  // Notes: token LIKE over summary/full_text (same stemming trick as the ledger search).
+  const tokens = (text.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [])
+    .filter((t) => !/^(убери|удали|сотри|все|запис|delete|remove|erase|the|all)/.test(t))
+    .slice(0, 6);
+  if (tokens.length && out.length < limit) {
+    try {
+      const rows = (await db
+        .prepare("SELECT id, summary, full_text FROM telegram_notes WHERE project_slug = ? AND chat_id = ? AND hook_action IN ('save','remind') ORDER BY created_at DESC LIMIT 200")
+        .all(PROJECT_SLUG, chatId)) as Array<{ id: number; summary: string; full_text: string }>;
+      for (const r of rows) {
+        const hay = `${r.summary} ${r.full_text}`.toLowerCase();
+        if (tokens.some((t) => hay.includes(t.slice(0, Math.max(4, t.length - 2))))) {
+          out.push({ kind: "note", id: r.id, label: (r.summary || r.full_text).slice(0, 80) });
+          if (out.length >= limit) break;
+        }
+      }
+    } catch { /* notes unavailable */ }
+  }
+  return out;
 }
 
 // Remove a record the user confirmed is a duplicate (callback dupdel:<table>:<id>). Both kinds now
@@ -1279,6 +1338,32 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
         await removeDuplicateRecord(parts[1] ?? "", Number(parts[2]), cbChatFinal);
         return [] satisfies TgMessage[];
       }
+      // Confirmed deletion (step 207.18b): deldo:<specId> → delete every target pair (row + vector doc
+      // + image links); delcancel → nothing touched. The spec was stored by the delete prompt.
+      if (env.data === "delcancel") {
+        await sendLocalized(cbChatFinal, "Okay — nothing deleted.");
+        return [] satisfies TgMessage[];
+      }
+      if (env.data.startsWith("deldo:")) {
+        const specId = env.data.slice("deldo:".length);
+        try {
+          const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`delspec:${specId}`)) as { value?: string } | null;
+          if (!row?.value) {
+            await sendLocalized(cbChatFinal, "This deletion request has expired — ask again.");
+            return [] satisfies TgMessage[];
+          }
+          const spec = JSON.parse(row.value) as { targets: Array<{ kind: "note" | "finance"; id: number }> };
+          let done = 0;
+          for (const t of spec.targets) {
+            try { await deleteRecordPair(t.kind, t.id); done++; } catch { /* per-record best-effort */ }
+          }
+          await db.prepare("DELETE FROM telegram_notes_state WHERE key = ?").run(`delspec:${specId}`);
+          await sendLocalized(cbChatFinal, done === 1 ? "Deleted 1 record (and its memory entry)." : `Deleted ${done} records (and their memory entries).`);
+        } catch {
+          await sendLocalized(cbChatFinal, "I couldn't delete those records just now.");
+        }
+        return [] satisfies TgMessage[];
+      }
       // Reconciliation-wizard callbacks (step 207.10 P2): period → categories(toggle) → confirm → compute.
       // Every step is a tap handled here and short-circuits the pipeline (returns no message to classify).
       if (env.data.startsWith("recon:")) {
@@ -1439,6 +1524,8 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), finance-query (a QUESTION about money already " +
           "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), " +
           "photo (asks to SEE / send back a previously saved receipt photo or image), " +
+          "delete (asks to REMOVE / erase previously recorded records — «убери», «удали запись», " +
+          "'delete all 11-euro records' — NEVER record anything for these), " +
           "compound (ONE message that carries BOTH a note-worthy experience AND a money movement — e.g. " +
           "'went to a nice cafe near the post office, loved it, bought a pie for 5.50' — the note AND the " +
           "purchase must both be recorded), " +
@@ -1453,7 +1540,7 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
         6,
       );
       // finance-query BEFORE finance so the longer token wins the match; compound before finance too.
-      let word = (ans.toLowerCase().match(/save|remind|recall|finance-query|compound|finance|escalate|meta|photo|unclear/) ?? [""])[0];
+      let word = (ans.toLowerCase().match(/save|remind|recall|finance-query|compound|finance|escalate|meta|photo|delete|unclear/) ?? [""])[0];
       // Heuristic fallback (step 207.16): an OpenAI outage used to turn EVERY message — including a
       // crystal-clear "запомни…" — into the unclear-buttons picker (owner test, 19:57–23:01). When the
       // model failed ("" = API error) or shrugged, route obvious phrasings by keyword instead; only a
@@ -2149,6 +2236,38 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
+  // Delete requests (step 207.18b): «убери запись», «удали все записи по 11 за пирожки». DESTRUCTIVE →
+  // never silent: find the targets (both tables, amounts + keywords), list them, and ask for a one-tap
+  // confirmation. The tap comes back as deldo:<specId> (handled in fetch-telegram-updates) and deletes
+  // each pair (row + vector doc + image links). Zero matches = an honest miss, nothing is guessed.
+  let deletePrompts = 0;
+  for (const c of classified) {
+    if (c.intent !== "delete") continue;
+    try {
+      const lang = await getLang(c.chatId);
+      const targets = await findDeleteTargets(c.payload, c.chatId);
+      if (!targets.length) {
+        await sendLocalized(c.chatId, "I couldn't find records matching that. Say what to delete more specifically (words or the amount).");
+        continue;
+      }
+      const specId = crypto.randomUUID().slice(0, 8);
+      try {
+        await db
+          .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
+          .run(`delspec:${specId}`, JSON.stringify({ chatId: c.chatId, targets: targets.map((t) => ({ kind: t.kind, id: t.id })) }));
+      } catch { /* state table required for confirm — fall through, the buttons will just expire */ }
+      const listing = targets.slice(0, 10).map((t) => `• ${t.label}`).join("\n") + (targets.length > 10 ? `\n… and ${targets.length - 10} more` : "");
+      const head = await translateCached(targets.length === 1 ? "Delete this record?" : `Delete these ${targets.length} records?`, lang);
+      await tgSendButtons(c.chatId, `${head}\n${listing}`, [
+        { text: await translateCached(`🗑 Yes, delete ${targets.length === 1 ? "it" : `all ${targets.length}`}`, lang), data: `deldo:${specId}` },
+        { text: await translateCached("Cancel", lang), data: "delcancel" },
+      ]);
+      deletePrompts++;
+    } catch (e) {
+      errors.push(`delete prompt: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   // Meta / conversational messages (step 207.10 P3): a complaint / follow-up / how-does-it-work message
   // gets a helpful reply in the user's language instead of the unclear-buttons fallback.
   let metaReplies = 0;
@@ -2212,5 +2331,5 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
 
   // Key-visibility diagnostic (step 207.16): measured here, inside a step, where fs/env access is legal.
   const diag = `key=${!!OPENAI_KEY()} env=${!!process.env.OPENAI_API_KEY} cwd=${process.cwd()}`;
-  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies + escalated, saved, reminded, answered, finance, errors, diag };
+  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies + escalated + deletePrompts, saved, reminded, answered, finance, errors, diag };
 }

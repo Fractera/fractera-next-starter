@@ -976,15 +976,15 @@ export async function runProject(input?: string) {
       answered: number;
       finance: number;
       errors: string[];
+      diag?: string;
     };
     artifacts["reply-in-telegram"] = outcome;
-    // Diagnostic tail (step 207.16): whether the AI key is visible from THIS execution context (env =
-    // process.env at call time; key = env OR the .env.local fallback). No secret is leaked — booleans
-    // only. Kept permanently: "key=false" in a run row is the first thing to check when replies degrade.
-    const diag = ` · key=${!!OPENAI_KEY()} env=${!!process.env.OPENAI_API_KEY} cwd=${process.cwd()}`;
+    // Diagnostic tail (step 207.16): computed INSIDE the reply STEP (the WDK compiler forbids fs/env in
+    // the workflow function itself — reachability-checked); here it is plain data from the outcome.
+    // "key=false" in a run row is the first thing to check when replies degrade. Booleans, no secret.
     const title =
       `processed ${outcome.processed} · saved ${outcome.saved} · reminded ${outcome.reminded} · answered ${outcome.answered} · finance ${outcome.finance}` +
-      (outcome.errors.length ? ` · ${outcome.errors.length} error(s)` : "") + diag;
+      (outcome.errors.length ? ` · ${outcome.errors.length} error(s)` : "") + (outcome.diag ? ` · ${outcome.diag}` : "");
     await closeRun(journalId, { ok: true, resultTitle: title });
     return { journalId, status: "completed" };
   } catch (e) {
@@ -1834,5 +1834,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies + escalated, saved, reminded, answered, finance, errors };
+  // Key-visibility diagnostic (step 207.16): measured here, inside a step, where fs/env access is legal.
+  const diag = `key=${!!OPENAI_KEY()} env=${!!process.env.OPENAI_API_KEY} cwd=${process.cwd()}`;
+  return { processed: persisted.length + recalls.length + financeAnswers.length + prompted + finance + helped + metaReplies + escalated, saved, reminded, answered, finance, errors, diag };
 }

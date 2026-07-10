@@ -18,7 +18,7 @@ import {
 import { Rocket, Send } from "lucide-react";
 import { USE_CASES, UPDATE_LOGIC_TEXT, UPDATE_LOGIC_STEPS } from "../_data/use-cases";
 
-// Use-cases accordion (step 207.10 items 4 & 6; step 207.16 adds the "Как обновить логику" walkthrough:
+// Use-cases accordion (step 207.10 items 4 & 6; step 207.16 adds the "How to update the logic" walkthrough:
 // a button with the owner's canonical text verbatim + a fuller accordion item carrying the same text
 // step-by-step and the automation's REAL Telegram link, resolved live via the bot-link route).
 export function UseCasesAccordion() {
@@ -56,10 +56,10 @@ export function UseCasesAccordion() {
             <span className="flex flex-col gap-0.5">
               <span className="flex items-center gap-1.5 font-medium">
                 <Rocket size={14} className="text-primary" />
-                Как обновить логику
+                How to update the logic
               </span>
               <span className="text-xs font-normal text-muted-foreground">
-                Передайте своё изменение агенту-программисту — по шагам.
+                Hand your change to a coding agent — step by step.
               </span>
             </span>
           </AccordionTrigger>
@@ -77,7 +77,7 @@ export function UseCasesAccordion() {
                 className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline underline-offset-4"
               >
                 <Send size={14} />
-                Открыть Telegram-чат этого проекта
+                Open this project’s Telegram chat
               </a>
             )}
           </AccordionContent>
@@ -88,12 +88,12 @@ export function UseCasesAccordion() {
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-1.5">
             <Rocket size={14} />
-            Как обновить логику
+            How to update the logic
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Как обновить логику</DialogTitle>
+            <DialogTitle>How to update the logic</DialogTitle>
           </DialogHeader>
           <p className="text-sm leading-relaxed text-muted-foreground">{UPDATE_LOGIC_TEXT}</p>
         </DialogContent>

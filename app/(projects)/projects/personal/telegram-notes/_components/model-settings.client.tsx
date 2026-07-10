@@ -32,7 +32,7 @@ export function ModelSettings() {
       .then((d) => setLive(Array.isArray(d?.models) && d.models.length ? (d.models as LiveModel[]) : []))
       .catch(() => setLive([]));
     // Show the CURRENT model (step 207.19 owner fix: the picker used to reopen as an empty
-    // placeholder — «не понимаю, на какой модели работаю»). Model ids are non-secret values.
+    // placeholder — the owner could not tell which model was active). Model ids are non-secret values.
     fetch("/api/project-config/env?keys=TELEGRAM_NOTES_MODEL", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {

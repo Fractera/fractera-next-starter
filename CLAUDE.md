@@ -32,6 +32,8 @@ record the task checklist; deepening sub-tasks during decomposition is allowed.
 
 ## 3. Environment & scope
 
+**Foundational system knowledge — [`ARCHITECTURE.md`](ARCHITECTURE.md) (root, beside `GLOSSARY.md`): the fundamental layers in priority/dependency order, and per layer what you CAN do, what you CANNOT, and the consequences of violation. Read it at session start together with GLOSSARY.md, before any work.** The map below is the operational summary; ARCHITECTURE.md is the authority.
+
 Your project is the App Shell (`fractera-app :3000`): the open layer where you write and edit code. Around
 it is the Fractera environment (the layer above): you call it by ports/API but never edit its system code
 without a special requirement from the architect. Everything sits behind nginx (`:80/:443`, absent in IP
@@ -251,7 +253,8 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
-    <action>Read GLOSSARY.md (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
+      (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
     <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
       (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
       decomposition-born overview at app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
@@ -288,7 +291,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); rag status known; language set known</gate>
+    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

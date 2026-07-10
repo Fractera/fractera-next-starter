@@ -78,7 +78,7 @@ const CATEGORY_GUIDE =
 // unknown (the user asks about a category without saying income/expense).
 const ALL_CATEGORY_IDS = new Set([...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].map((c) => c.id));
 
-type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string };
+type TgMessage = { chatId: string; messageId: number; text: string; date: number; forcedAction?: Intent; photoFileId?: string; location?: { lat: number; lng: number; title: string } };
 // finance = a money movement to RECORD; finance-query = a QUESTION about money already recorded (step 207.8);
 // photo = send back the receipt image of a finance record (step 207.10, /photo <id>).
 // note = return a saved note's content to chat (/note <id>, step 207.10 P5); meta = a conversational /
@@ -101,6 +101,8 @@ const CAPABILITIES =
   "• /note <number> → the saved note's full text\n" +
   "• ask to DELETE records (убери запись / delete all 11-euro records) → I list the matches and delete after your one-tap confirmation\n" +
   "• ask how to change my language → I'll walk you through the App Settings steps\n" +
+  "• share a location (attach → Location) or a Google Maps link → I pin the place to your record; ask “where did I…” later and you get a tappable 📍 map link\n" +
+  "• a reminder tied to a place (“remind me to come back here Saturday”) → the reminder arrives with the map link\n" +
   "If I'm not sure, I'll show you buttons to choose.";
 
 // How to change the app's default language (owner script, verbatim intent). Served through the meta
@@ -438,6 +440,31 @@ async function translateCached(enText: string, lang: string): Promise<string> {
 }
 // Send a fixed English reply localized to the chat's language (one wrapper over tgSend so every canned
 // string becomes multilingual without a per-string table).
+// Query → English search keywords (step 207.20c, the chicken case): image descriptions and finance
+// summaries from vision are ENGLISH; a query in any other language must match them. One cheap call,
+// cached forever by text hash (repeat questions are free). ASCII-only queries skip the call.
+async function queryToEnglish(text: string): Promise<string> {
+  const t = text.trim();
+  if (!t || /^[\x00-\x7F]*$/.test(t)) return "";
+  const key = `qen:${hashStr(t)}`;
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(key)) as { value?: string } | null;
+    if (row?.value) return row.value;
+  } catch { /* cache miss */ }
+  const out = await cheapModel(
+    "Translate the user's search request into ENGLISH keywords for matching against English record descriptions. Reply with ONLY the keywords (3-8 lowercase words, no punctuation).",
+    t.slice(0, 300),
+    60,
+  );
+  const en = out.toLowerCase().replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+  if (en) {
+    try {
+      await db.prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)").run(key, en);
+    } catch { /* cache is best-effort */ }
+  }
+  return en;
+}
+
 async function sendLocalized(chatId: string, enText: string): Promise<void> {
   await tgSend(chatId, await translateCached(enText, await getLang(chatId)));
 }
@@ -601,6 +628,16 @@ async function deleteRecordPair(kind: "note" | "finance", id: number): Promise<v
       if (!still) await db.prepare("UPDATE automation_images SET status = 'pending' WHERE id = ?").run(l.image_id);
     }
   } catch { /* links best-effort */ }
+  try {
+    // Geo links (step 207.20, mirror of the image rule): drop the links; a mark whose last link died
+    // goes back to pending (the place itself is never deleted).
+    const geoLinks = (await db.prepare("SELECT geo_id FROM record_geo WHERE record_kind = ? AND record_id = ?").all(kind, id)) as Array<{ geo_id: number }>;
+    await db.prepare("DELETE FROM record_geo WHERE record_kind = ? AND record_id = ?").run(kind, id);
+    for (const l of geoLinks) {
+      const still = (await db.prepare("SELECT 1 FROM record_geo WHERE geo_id = ? LIMIT 1").get(l.geo_id)) as unknown;
+      if (!still) await db.prepare("UPDATE automation_geo SET status = 'pending' WHERE id = ?").run(l.geo_id);
+    }
+  } catch { /* geo links best-effort */ }
   if (kind === "finance") {
     await db.prepare("DELETE FROM automation_finance WHERE id = ? AND project = ?").run(id, PROJECT_SLUG);
   } else {
@@ -618,8 +655,9 @@ async function findDeleteTargets(text: string, chatId: string, limit = 20): Prom
     const sign = h.kind === "income" ? "+" : "−";
     out.push({ kind: "finance", id: h.id, label: `${sign}${h.amount} — ${h.summary}`.slice(0, 80) });
   }
-  // Notes: token LIKE over summary/full_text (same stemming trick as the ledger search).
-  const tokens = (text.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [])
+  // Notes: token LIKE over summary/full_text (same stemming trick as the ledger search); EN-union 207.20c.
+  const enQuery = await queryToEnglish(text);
+  const tokens = (`${text} ${enQuery}`.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? [])
     .filter((t) => !/^(убери|удали|сотри|все|запис|delete|remove|erase|the|all)/.test(t))
     .slice(0, 6);
   if (tokens.length && out.length < limit) {
@@ -919,6 +957,116 @@ async function imagesOfRecord(recordKind: "note" | "finance", recordId: number):
     return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description, kindHint: r.kind_hint === "document" ? "document" : "photo" }));
   } catch { return []; }
 }
+// ── Geo-mark registry (step 207.20): the 4th storage next to notes/finance/images, exact mirror of the
+// image registry. Geo arrives ONLY as a Telegram location attach or a Google-Maps link — Bot API strips
+// EXIF/GPS from photos (investigated; a photo can never carry coordinates). pending until linked. ──
+type GeoMark = { id: number; lat: number; lng: number; label: string };
+function mapsLink(lat: number, lng: number): string {
+  return `https://maps.google.com/?q=${lat},${lng}`;
+}
+async function registerGeo(chatId: string, lat: number, lng: number, label: string, source: "telegram-location" | "maps-link"): Promise<number | null> {
+  try {
+    const res = await db
+      .prepare("INSERT INTO automation_geo (project, chat_id, lat, lng, label, source, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')")
+      .run(PROJECT_SLUG, chatId, lat, lng, label.slice(0, 200), source);
+    return Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
+  } catch { return null; }
+}
+// Recent pending (unlinked) geo marks of a chat — auto-attach candidates (same window as images).
+async function loadPendingGeo(chatId: string): Promise<GeoMark[]> {
+  try {
+    const rows = (await db
+      .prepare(
+        "SELECT id, lat, lng, label FROM automation_geo WHERE project = ? AND chat_id = ? AND status = 'pending' AND created_at >= ? ORDER BY created_at ASC",
+      )
+      .all(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - PENDING_ATTACH_WINDOW_SEC)) as Array<{ id: number; lat: number; lng: number; label: string }>;
+    return rows;
+  } catch { return []; }
+}
+async function linkGeo(recordKind: "note" | "finance", recordId: number, geos: GeoMark[]): Promise<void> {
+  for (const g of geos) {
+    try {
+      await db.prepare("INSERT OR IGNORE INTO record_geo (record_kind, record_id, geo_id) VALUES (?, ?, ?)").run(recordKind, recordId, g.id);
+      await db.prepare("UPDATE automation_geo SET status = 'linked' WHERE id = ?").run(g.id);
+    } catch { /* per-mark best-effort */ }
+  }
+}
+async function geoOfRecord(recordKind: "note" | "finance", recordId: number): Promise<GeoMark[]> {
+  try {
+    const rows = (await db
+      .prepare(
+        "SELECT g.id, g.lat, g.lng, g.label FROM record_geo rg JOIN automation_geo g ON g.id = rg.geo_id " +
+          "WHERE rg.record_kind = ? AND rg.record_id = ? ORDER BY rg.created_at ASC",
+      )
+      .all(recordKind, recordId)) as Array<{ id: number; lat: number; lng: number; label: string }>;
+    return rows;
+  } catch { return []; }
+}
+// " — at location: …" block for a vector doc (mirror of photosBlock): the label + coordinates make
+// records findable BY place and let the answer path rebuild the maps link.
+function geoBlock(geos: GeoMark[]): string {
+  if (!geos.length) return "";
+  return ` — at location: ${geos.map((g) => `${g.label || "shared location"} (${g.lat},${g.lng})`).join("; ")}`;
+}
+// "📍 label: link" reply lines for a record's places — appended to recall/finance answers and reminders.
+function geoLines(geos: GeoMark[]): string {
+  return geos.map((g) => `📍 ${g.label ? g.label + ": " : ""}${mapsLink(g.lat, g.lng)}`).join("\n");
+}
+// Late attach (mirror of a bare photo): a location sent AFTER the record («…вот где это было» + 📍)
+// attaches to the chat's LATEST recent record that has no geo yet, and the vector doc is re-ingested
+// so the place is searchable. Returns the record's summary (for the ack) or null when nothing matched.
+async function lateAttachGeo(chatId: string, geo: GeoMark): Promise<string | null> {
+  const since = Math.floor(Date.now() / 1000) - PENDING_ATTACH_WINDOW_SEC;
+  type Cand = { kind: "note" | "finance"; id: number; summary: string; at: number };
+  const cands: Cand[] = [];
+  try {
+    const notes = (await db
+      .prepare("SELECT id, summary, msg_date FROM telegram_notes WHERE chat_id = ? AND msg_date >= ? ORDER BY id DESC LIMIT 5")
+      .all(chatId, since)) as Array<{ id: number; summary: string; msg_date: number }>;
+    for (const n of notes) cands.push({ kind: "note", id: n.id, summary: n.summary, at: n.msg_date });
+    const fins = (await db
+      .prepare("SELECT id, summary, created_at FROM automation_finance WHERE project = ? AND chat_id = ? AND created_at >= ? ORDER BY id DESC LIMIT 5")
+      .all(PROJECT_SLUG, chatId, since)) as Array<{ id: number; summary: string; created_at: number }>;
+    for (const f of fins) cands.push({ kind: "finance", id: f.id, summary: f.summary, at: f.created_at });
+  } catch { return null; }
+  cands.sort((a, b) => b.at - a.at);
+  for (const c of cands) {
+    if ((await geoOfRecord(c.kind, c.id)).length) continue; // already has a place
+    await linkGeo(c.kind, c.id, [geo]);
+    await reingestRecord(c.kind, c.id);
+    return c.summary;
+  }
+  return null;
+}
+// Google-Maps link → coordinates. Direct forms are parsed offline; a short maps.app.goo.gl / goo.gl/maps
+// link is expanded by following the redirect (best-effort). Returns the coords and the text without the URL.
+const MAPS_URL_RE = /https?:\/\/(?:maps\.app\.goo\.gl|goo\.gl\/maps|(?:www\.)?google\.[a-z.]+\/maps|maps\.google\.[a-z.]+)[^\s]*/i;
+function coordsFromMapsUrl(url: string): { lat: number; lng: number } | null {
+  const at = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+  const q = url.match(/[?&](?:q|query|ll|destination)=(-?\d{1,3}\.\d+)(?:,|%2C)(-?\d{1,3}\.\d+)/i);
+  const m = at ?? q;
+  if (!m) return null;
+  const lat = Number(m[1]);
+  const lng = Number(m[2]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+}
+async function extractMapsLink(text: string): Promise<{ lat: number; lng: number; cleaned: string } | null> {
+  const m = text.match(MAPS_URL_RE);
+  if (!m) return null;
+  const url = m[0];
+  const cleaned = text.replace(url, " ").replace(/\s+/g, " ").trim();
+  let coords = coordsFromMapsUrl(url);
+  if (!coords) {
+    // Short link — follow the redirect chain to the canonical /maps URL, then re-parse.
+    try {
+      const r = await fetch(url, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(15000) });
+      coords = coordsFromMapsUrl(r.url ?? "");
+    } catch { /* unreachable short link — no coords */ }
+  }
+  return coords ? { ...coords, cleaned } : null;
+}
+
 // Shared low-level ingest: POST one doc text to LightRAG, return the track id (or null). Best-effort.
 async function ragIngestText(doc: string): Promise<string | null> {
   try {
@@ -944,10 +1092,10 @@ function photosBlock(images: RegisteredImage[]): string {
 // Ingest ONE finance record into the vector memory (step 207.16/207.18, owner contract: EVERY record
 // from EVERY case lands in LightRAG, and the local row stores the link). [fin#<id>] is the reverse
 // link (scale contract: a vector answer citing this doc resolves the row AND its images in O(1)).
-async function ingestFinanceToMemory(dbId: number, kind: string, amount: number, categories: string[], summary: string, images: RegisteredImage[] = []): Promise<void> {
+async function ingestFinanceToMemory(dbId: number, kind: string, amount: number, categories: string[], summary: string, images: RegisteredImage[] = [], geos: GeoMark[] = []): Promise<void> {
   const when = new Date().toISOString().slice(0, 16).replace("T", " ");
   const cats = categories.map((id) => `${categoryLabel(id, "en")} / ${categoryLabel(id, "ru")}`).join(", ");
-  const doc = `[fin#${dbId}] Finance record from ${when}: ${kind} ${amount}${cats ? ` (${cats})` : ""} — ${summary}${photosBlock(images)}`;
+  const doc = `[fin#${dbId}] Finance record from ${when}: ${kind} ${amount}${cats ? ` (${cats})` : ""} — ${summary}${photosBlock(images)}${geoBlock(geos)}`;
   const trackId = await ragIngestText(doc);
   if (trackId) {
     try {
@@ -958,9 +1106,9 @@ async function ingestFinanceToMemory(dbId: number, kind: string, amount: number,
 
 // Ingest ONE note into the vector memory with the [note#<id>] reverse marker (rule R4 — symmetric with
 // finance). Returns nothing; the row's memory_track_id is updated on success.
-async function ingestNoteDocToMemory(dbId: number, payload: string, images: RegisteredImage[] = []): Promise<boolean> {
+async function ingestNoteDocToMemory(dbId: number, payload: string, images: RegisteredImage[] = [], geos: GeoMark[] = []): Promise<boolean> {
   const when = new Date().toISOString().slice(0, 16).replace("T", " ");
-  const doc = `[note#${dbId}] Note from ${when}: ${payload}${photosBlock(images)}`;
+  const doc = `[note#${dbId}] Note from ${when}: ${payload}${photosBlock(images)}${geoBlock(geos)}`;
   const trackId = await ragIngestText(doc);
   if (trackId) {
     try {
@@ -977,20 +1125,21 @@ async function ingestNoteDocToMemory(dbId: number, payload: string, images: Regi
 async function reingestRecord(kind: "note" | "finance", id: number): Promise<void> {
   try {
     const images = await imagesOfRecord(kind, id);
+    const geos = await geoOfRecord(kind, id); // late geo attach re-indexes the place too (207.20)
     if (kind === "finance") {
       const row = (await db
         .prepare("SELECT kind, amount, categories, summary, memory_track_id FROM automation_finance WHERE id = ? AND project = ?")
         .get(id, PROJECT_SLUG)) as { kind?: string; amount?: number; categories?: string; summary?: string; memory_track_id?: string } | null;
       if (!row) return;
       if (row.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
-      await ingestFinanceToMemory(id, row.kind ?? "expense", Number(row.amount ?? 0), parseCategoryIds(row.categories), row.summary ?? "", images);
+      await ingestFinanceToMemory(id, row.kind ?? "expense", Number(row.amount ?? 0), parseCategoryIds(row.categories), row.summary ?? "", images, geos);
     } else {
       const row = (await db
         .prepare("SELECT full_text, summary, memory_track_id FROM telegram_notes WHERE id = ? AND project_slug = ?")
         .get(id, PROJECT_SLUG)) as { full_text?: string; summary?: string; memory_track_id?: string } | null;
       if (!row) return;
       if (row.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
-      await ingestNoteDocToMemory(id, row.full_text || row.summary || "", images);
+      await ingestNoteDocToMemory(id, row.full_text || row.summary || "", images, geos);
     }
   } catch { /* best-effort — the DB stays authoritative */ }
 }
@@ -1041,7 +1190,10 @@ async function latestRecordWithoutImages(chatId: string, sinceSec = 3600): Promi
 // labels / exact amounts over the recent rows, and return the hits for the answer (and their photos).
 type FinanceHit = { id: number; kind: string; amount: number; categories: string[]; summary: string; imageUrl: string | null; createdAt: number };
 async function searchFinanceLedger(query: string, limit = 5): Promise<FinanceHit[]> {
-  const tokens = (query.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}.,]{2,}/gu) ?? [])
+  // Cross-language matching (step 207.20c): summaries/descriptions from vision are English — a query
+  // in any language searches with the UNION of its own tokens and their English translation (cached).
+  const enQuery = await queryToEnglish(query);
+  const tokens = (`${query} ${enQuery}`.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}.,]{2,}/gu) ?? [])
     .map((t) => t.replace(/[.,]+$/, ""))
     .filter((t) => t.length >= 3);
   const amounts = (query.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => Number(n.replace(",", "."))).filter((n) => Number.isFinite(n) && n > 0);
@@ -1336,6 +1488,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
     const env = JSON.parse(raw) as {
       source?: string; kind?: string; data?: unknown; callbackQueryId?: unknown;
       chatId?: unknown; messageId?: unknown; text?: unknown; date?: unknown; photoFileId?: unknown;
+      location?: { lat?: unknown; lng?: unknown; title?: unknown };
     };
     // Callback from an inline button (step 205 §D): the user picked an action for an earlier "unclear"
     // message. Resolve the pending text + forced action, ack the tap, and feed it back into the pipeline.
@@ -1423,7 +1576,7 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
         { chatId: pending.chatId, messageId: 0, text: pending.text, date: Math.floor(Date.now() / 1000), forcedAction: act },
       ] satisfies TgMessage[];
     }
-    if (env && env.source === "telegram" && (typeof env.text === "string" || typeof env.photoFileId === "string")) {
+    if (env && env.source === "telegram" && (typeof env.text === "string" || typeof env.photoFileId === "string" || typeof env.location?.lat === "number")) {
       const chatId = String(env.chatId ?? "");
       if (allowedChat && chatId && chatId !== allowedChat) return [] satisfies TgMessage[];
       const finalChat = chatId || allowedChat || "0";
@@ -1444,6 +1597,10 @@ async function fetchTelegramUpdates(artifacts: Record<string, unknown>): Promise
           text: typeof env.text === "string" ? env.text : "",
           date: Number(env.date ?? Math.floor(Date.now() / 1000)),
           photoFileId: typeof env.photoFileId === "string" ? env.photoFileId : undefined,
+          // Geo-mark (step 207.20): a shared location/venue rides along; classify registers it.
+          location: typeof env.location?.lat === "number" && typeof env.location?.lng === "number"
+            ? { lat: env.location.lat, lng: env.location.lng, title: typeof env.location.title === "string" ? env.location.title : "" }
+            : undefined,
         },
       ] satisfies TgMessage[];
     }
@@ -1478,6 +1635,10 @@ async function deliverDueReminders(artifacts: Record<string, unknown>): Promise<
     const what = row.summary || row.full_text;
     try {
       await sendLocalized(row.chat_id, `Reminder: you asked to be reminded at ${hhmm} to ${what}`);
+      // Reminder with a place (step 207.20): «напомни сюда сходить в субботу» — the linked geo-mark
+      // follows as a tappable maps link, sent RAW (a URL must never pass through the translator).
+      const geos = await geoOfRecord("note", row.id);
+      if (geos.length) await tgSend(row.chat_id, geoLines(geos.slice(0, 2)));
       await db.prepare("UPDATE telegram_notes SET delivered = 1 WHERE id = ?").run(row.id);
       delivered++;
     } catch (e) {
@@ -1503,6 +1664,46 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
     // Language (step 207.10 P1): detect + remember the chat's language from any text message so every
     // downstream reply answers in it. Cyrillic is a no-model fast path; other scripts ask the model once.
     if (msg.text && msg.text.trim()) await resolveLang(msg.chatId, msg.text);
+    // Geo intake (step 207.20): a shared location registers as a pending geo-mark immediately. A
+    // location-ONLY message (no text, no photo) is complete here: it late-attaches to the chat's
+    // latest geo-less record (mirror of a bare photo) or stays pending for the next record.
+    if (msg.location) {
+      const geoId = await registerGeo(msg.chatId, msg.location.lat, msg.location.lng, msg.location.title || msg.text.trim(), "telegram-location");
+      if (!msg.text.trim() && !msg.photoFileId) {
+        if (geoId != null) {
+          const attachedTo = await lateAttachGeo(msg.chatId, { id: geoId, lat: msg.location.lat, lng: msg.location.lng, label: msg.location.title });
+          await sendLocalized(
+            msg.chatId,
+            attachedTo
+              ? `Location attached to your record: ${attachedTo}`
+              : "Location saved — I'll attach it to your next note or record.",
+          );
+        }
+        continue;
+      }
+    }
+    // Maps link in the text (step 207.20): register the place, then classify the text WITHOUT the URL
+    // (the words are the note; the link is its geo-mark).
+    if (msg.text && MAPS_URL_RE.test(msg.text)) {
+      const found = await extractMapsLink(msg.text);
+      if (found) {
+        const geoId = await registerGeo(msg.chatId, found.lat, found.lng, found.cleaned.slice(0, 100), "maps-link");
+        msg.text = found.cleaned;
+        // A link-only message is complete here — same late-attach as a bare location.
+        if (!msg.text && !msg.photoFileId) {
+          const attachedTo = geoId != null
+            ? await lateAttachGeo(msg.chatId, { id: geoId, lat: found.lat, lng: found.lng, label: "" })
+            : null;
+          await sendLocalized(
+            msg.chatId,
+            attachedTo
+              ? `Location attached to your record: ${attachedTo}`
+              : "Location saved — I'll attach it to your next note or record.",
+          );
+          continue;
+        }
+      }
+    }
     // A button tap (callback) carries a forced action — skip the model, honor the user's choice.
     if (msg.forcedAction) {
       out.push({ intent: msg.forcedAction, projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
@@ -1634,7 +1835,9 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
       const r = await fetch(`${RAG_URL}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-API-Key": RAG_KEY, "X-Agent-Identity": PROJECT_SLUG },
-        body: JSON.stringify({ query: c.payload, mode: "hybrid" }),
+        // EN augmentation (207.20c): the vector docs are English — a non-English question searches
+        // noticeably better with its English keywords alongside (cached translation, free on repeats).
+        body: JSON.stringify({ query: `${c.payload}${await queryToEnglish(c.payload).then((en) => (en ? ` (${en})` : ""))}`, mode: "hybrid" }),
         signal: AbortSignal.timeout(60_000),
       });
       const lang = await getLang(c.chatId);
@@ -1685,11 +1888,49 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
       if (finHits.length && ragEmpty) clean = formatFinanceHits(finHits);
       else if (finHits.length) clean = `${answer}\n\n${formatFinanceHits(finHits)}`;
       else clean = answer || `Nothing found in your notes for: ${c.payload}`;
+      // Grounding (step 207.20c, the chicken case: «жареная» was invented). Collect the cited records'
+      // OWN facts — row text, photo DESCRIPTIONS (automation_images), places — and compose the final
+      // answer STRICTLY from them: a detail the facts don't state gets an honest "not recorded", never
+      // a guess. Cost-neutral: this call REPLACES the toLang re-phrase.
+      const ground: string[] = [];
+      const geoForAnswer: GeoMark[] = [];
+      for (const [kind, ids] of [["finance", citedFin], ["note", citedNotes]] as const) {
+        for (const id of ids) {
+          try {
+            if (kind === "finance") {
+              const row = (await db.prepare("SELECT kind, amount, summary FROM automation_finance WHERE id = ? AND project = ?").get(id, PROJECT_SLUG)) as { kind?: string; amount?: number; summary?: string } | null;
+              if (row) ground.push(`finance#${id}: ${row.kind} ${row.amount} — ${row.summary}`);
+            } else {
+              const row = (await db.prepare("SELECT summary, full_text FROM telegram_notes WHERE id = ?").get(id)) as { summary?: string; full_text?: string } | null;
+              if (row) ground.push(`note#${id}: ${row.full_text || row.summary}`);
+            }
+          } catch { /* row lookup best-effort */ }
+          for (const img of await imagesOfRecord(kind, id)) {
+            if (img.description) ground.push(`photo attached to ${kind}#${id} shows: ${img.description}`);
+          }
+          const geos = await geoOfRecord(kind, id);
+          if (geos.length) {
+            ground.push(`location of ${kind}#${id}: ${geos.map((g) => g.label || `${g.lat},${g.lng}`).join("; ")}`);
+            geoForAnswer.push(...geos);
+          }
+        }
+      }
+      let final = "";
+      if (ground.length) {
+        final = await cheapModel(
+          `You answer a question about the user's saved records. Use ONLY the facts below (record texts, photo descriptions, locations). If the question asks about a detail the facts do not state, say plainly that the records don't specify it — NEVER guess or embellish. Answer in ${lang}, concise.`,
+          `Question: ${c.payload}\nDraft answer (may contain unsupported claims — trust the facts, not it): ${clean.slice(0, 1500)}\nFacts:\n${ground.join("\n").slice(0, 3000)}`,
+          400,
+        );
+      }
+      if (!final) final = await toLang(clean, lang);
+      // Places of the cited records (step 207.20d): «напомни где я ел пирожки» → tappable maps link.
+      if (geoForAnswer.length) final += `\n${geoLines(geoForAnswer.slice(0, 3))}`;
       out.push({
         chatId: c.chatId,
         query: c.payload,
         hookPhrase: c.hookPhrase,
-        answer: await toLang(clean, lang),
+        answer: final,
         photoUrls,
       });
     } catch (e) {
@@ -1740,6 +1981,15 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
     const kindHint: "document" | "photo" = vision.finance ? "document" : "photo";
     const imageId = url ? await registerImage(c.chatId, url, vision.description, kindHint) : null;
     analyzed.set(c.photoFileId, { imageId, url, vision });
+    // Polite geo fallback (step 207.20, owner decision): a PLACE-worthy photo (not a receipt) arrived
+    // and the chat has no pending location — tell the user photos never carry coordinates (Bot API
+    // strips EXIF) and how to add the place. Once per photo; receipts are money, not places.
+    if (imageId != null && kindHint === "photo" && !(await loadPendingGeo(c.chatId)).length) {
+      await sendLocalized(
+        c.chatId,
+        "Note: photos don't carry location data in Telegram. If you'll want to FIND this place later, send a location (attach → Location) or a Google Maps link in the next message — I'll pin it to this record.",
+      );
+    }
   }
 
   // Phase 2: the finance action itself.
@@ -1907,13 +2157,17 @@ type LinkOutcome = {
   // Companion notes born here (207.18d): a purely-financial message with a NON-document photo spawns
   // an informational note (the purchase story + the photo) so the finance table stays money-only.
   companions: Array<{ chatId: string; noteId: number; summary: string }>;
+  // Geo-marks (step 207.20): the final place sets per record, mirror of the image maps — the ingest
+  // node appends them to the vector docs (geoBlock).
+  noteGeo: Record<number, GeoMark[]>;
+  financeGeo: Record<number, GeoMark[]>;
 };
 async function linkImagesNode(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
-  const out: LinkOutcome = { noteImages: {}, financeImages: {}, linked: 0, companions: [] };
+  const out: LinkOutcome = { noteImages: {}, financeImages: {}, linked: 0, companions: [], noteGeo: {}, financeGeo: {} };
 
   // New records of this run, grouped by chat (finance rows keep their source text for companions).
   const byChat = new Map<string, { notes: number[]; fins: Array<{ id: number; summary: string; sourceText: string }> }>();
@@ -1968,15 +2222,32 @@ async function linkImagesNode(artifacts: Record<string, unknown>): Promise<unkno
         } catch { /* companion is best-effort — the photo stays pending */ }
       }
       for (const id of noteTargets) { await linkImages("note", id, photos); out.linked += photos.length; }
-      // Companion notes are born AFTER the ingest queue was formed — ingest them right here (rule R4).
-      for (const c of out.companions) {
-        await ingestNoteDocToMemory(c.noteId, g.fins[0]?.sourceText ?? c.summary, await imagesOfRecord("note", c.noteId));
-      }
     }
 
-    // Expose the final image sets (own receipts included) for the ingest node.
-    for (const f of g.fins) out.financeImages[f.id] = await imagesOfRecord("finance", f.id);
-    for (const id of g.notes) out.noteImages[id] = await imagesOfRecord("note", id);
+    // Geo-marks (step 207.20): the chat's pending places attach to EVERY record born from this burst —
+    // BOTH kinds (a place belongs to the visit note AND the purchase made there), companion notes included.
+    const pendingGeo = await loadPendingGeo(chatId);
+    if (pendingGeo.length) {
+      const noteIds = new Set<number>([...g.notes, ...out.companions.filter((c) => c.chatId === chatId).map((c) => c.noteId)]);
+      for (const id of noteIds) { await linkGeo("note", id, pendingGeo); out.linked += pendingGeo.length; }
+      for (const f of g.fins) { await linkGeo("finance", f.id, pendingGeo); out.linked += pendingGeo.length; }
+    }
+
+    // Companion notes are born AFTER the ingest queue was formed — ingest them right here (rule R4),
+    // AFTER geo linking so their vector doc carries the place (207.20).
+    for (const c of out.companions.filter((x) => x.chatId === chatId)) {
+      await ingestNoteDocToMemory(c.noteId, g.fins[0]?.sourceText ?? c.summary, await imagesOfRecord("note", c.noteId), await geoOfRecord("note", c.noteId));
+    }
+
+    // Expose the final image and geo sets (own receipts included) for the ingest node.
+    for (const f of g.fins) {
+      out.financeImages[f.id] = await imagesOfRecord("finance", f.id);
+      out.financeGeo[f.id] = await geoOfRecord("finance", f.id);
+    }
+    for (const id of g.notes) {
+      out.noteImages[id] = await imagesOfRecord("note", id);
+      out.noteGeo[id] = await geoOfRecord("note", id);
+    }
   }
   return out;
 }
@@ -1990,12 +2261,12 @@ async function ingestNoteToMemory(artifacts: Record<string, unknown>): Promise<u
 
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
-  const links = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0, companions: [] };
+  const links = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0, companions: [], noteGeo: {}, financeGeo: {} };
   const out: Ingested[] = [];
   for (const p of persisted) {
     if (p.dbId == null) continue; // needs-when rows are not yet stored
     try {
-      const ok = await ingestNoteDocToMemory(p.dbId, p.payload, links.noteImages[p.dbId] ?? []);
+      const ok = await ingestNoteDocToMemory(p.dbId, p.payload, links.noteImages[p.dbId] ?? [], links.noteGeo?.[p.dbId] ?? []);
       out.push({ dbId: p.dbId, chatId: p.chatId, summary: p.summary, ingestOk: ok, error: ok ? undefined : "ingest failed" });
     } catch (e) {
       out.push({ dbId: p.dbId, chatId: p.chatId, summary: p.summary, ingestOk: false, error: e instanceof Error ? e.message : String(e) });
@@ -2005,7 +2276,7 @@ async function ingestNoteToMemory(artifacts: Record<string, unknown>): Promise<u
   for (const f of finances) {
     if (f.dbId == null || f.attachedToId != null) continue;
     try {
-      await ingestFinanceToMemory(f.dbId, f.kind, f.amount, f.categories, f.summary, links.financeImages[f.dbId] ?? []);
+      await ingestFinanceToMemory(f.dbId, f.kind, f.amount, f.categories, f.summary, links.financeImages[f.dbId] ?? [], links.financeGeo?.[f.dbId] ?? []);
     } catch { /* best-effort — the ledger row is already saved */ }
   }
   return out;
@@ -2031,7 +2302,14 @@ async function answerFinanceQuery(artifacts: Record<string, unknown>): Promise<u
     const hits = await searchFinanceLedger(c.payload, 5);
     if (hits.length) {
       const lang = await getLang(c.chatId);
-      out.push({ chatId: c.chatId, answer: await toLang(formatFinanceHits(hits), lang) });
+      // Places of the matched rows (step 207.20d), appended AFTER translation — URLs stay raw.
+      const geoTails: string[] = [];
+      for (const h of hits.slice(0, 3)) {
+        const geos = await geoOfRecord("finance", h.id);
+        if (geos.length) geoTails.push(geoLines(geos.slice(0, 1)));
+      }
+      const tail = geoTails.length ? `\n${geoTails.join("\n")}` : "";
+      out.push({ chatId: c.chatId, answer: (await toLang(formatFinanceHits(hits), lang)) + tail });
       continue;
     }
     try {
@@ -2236,7 +2514,10 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
           if (url) { found = { id: h.id, image_url: url, summary: h.summary }; break; }
         }
         if (!found) {
-          const tokens = (c.payload.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []).slice(0, 8);
+          // Registry pass covers EVERY stored image (note-linked, finance-linked and pending). The
+          // descriptions are English → search with the union of the original tokens and the EN translation (207.20c).
+          const enQuery = await queryToEnglish(c.payload);
+          const tokens = (`${c.payload} ${enQuery}`.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []).slice(0, 12);
           if (tokens.length) {
             try {
               const rows = (await db
@@ -2345,6 +2626,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       const hist = await loadHistory(c.chatId);
       const answer = await cheapModel(
         `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message (possibly a follow-up about the previous answer — use the recent conversation to repeat/translate/clarify it). Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly. ` +
+          `NEVER invent facts about their saved records (what a photo shows, what was bought, where) — if such a detail is not in the conversation below, tell them to ask the question as a search (e.g. "what did I save about…") so the records are actually looked up. ` +
           `If they ask HOW TO CHANGE THE LANGUAGE (or complain that answers come in the wrong language), answer with exactly these steps, translated into ${lang}: ${LANGUAGE_GUIDE}`,
         `${historyBlock(hist)}NEW MESSAGE: ${c.payload.slice(0, 500)}`, 300,
       );

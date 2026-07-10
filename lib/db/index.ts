@@ -206,6 +206,31 @@ const SCHEMA = `
     created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
     PRIMARY KEY (record_kind, record_id, image_id)
   );
+  -- Geo-mark registry (step 207.20): every incoming Telegram location / Google-Maps link becomes a
+  -- FIRST-CLASS row the moment it arrives — the 4th storage next to notes, finance and images. Bot API
+  -- strips EXIF/GPS from photos, so geo arrives ONLY as a location attach or a maps link. status=pending
+  -- until linked (mirror of automation_images); pending rows live forever.
+  CREATE TABLE IF NOT EXISTS automation_geo (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    project     TEXT NOT NULL DEFAULT 'telegram-notes',
+    chat_id     TEXT NOT NULL DEFAULT '',
+    lat         REAL NOT NULL,
+    lng         REAL NOT NULL,
+    label       TEXT NOT NULL DEFAULT '',            -- venue title / user's words
+    source      TEXT NOT NULL DEFAULT 'telegram',    -- 'telegram-location' | 'maps-link'
+    status      TEXT NOT NULL DEFAULT 'pending',     -- 'pending' | 'linked'
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+  -- Record ⇄ geo links (step 207.20): MANY-TO-MANY across BOTH record kinds, mirror of record_images —
+  -- one place may belong to a note AND a finance record; the answer path resolves places ONLY through
+  -- this table («напомни где я ел пирожки» → 📍 maps link).
+  CREATE TABLE IF NOT EXISTS record_geo (
+    record_kind TEXT NOT NULL,                       -- 'note' | 'finance'
+    record_id   INTEGER NOT NULL,
+    geo_id      INTEGER NOT NULL,
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    PRIMARY KEY (record_kind, record_id, geo_id)
+  );
   -- External calendar OAuth tokens (step 207 Phase F) — per-project Google Calendar connection. One row
   -- per project; refresh_token drives long-lived access, access_token/expiry are the short-lived pair.
   -- Inert without GOOGLE_OAUTH_CLIENT_ID/SECRET (self-sufficiency): no row → the connector is "not

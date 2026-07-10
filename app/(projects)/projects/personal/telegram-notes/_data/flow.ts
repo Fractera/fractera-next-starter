@@ -323,25 +323,26 @@ export const FLOW_NODES: FlowNode[] = [
       "y": 80
     },
     "data": {
-      "label": "Link this run's images to this run's records (many-to-many)",
+      "label": "Link this run's images & places to this run's records (many-to-many)",
       "info": {
-        "summary": "Step 207.18 (rules R3/R5): the chat's pending images attach to EVERY record born from the same message burst — the cafe case: interior photo + receipt photo + a compound text → the note AND the finance record both carry both photos. Photos and words link in ANY order of arrival; a later photo attaches via «обнови/добавь/прикрепи» (or bare, in a short window) and re-indexes the record's vector doc (rule R7).",
+        "summary": "Step 207.18 (rules R3/R5) + 207.20 (geo-marks): the chat's pending images AND pending geo-marks attach to EVERY record born from the same message burst — the cafe case: interior photo + receipt photo + a compound text → the note AND the finance record both carry both photos; a shared location pins the place to both. Attachments link in ANY order of arrival; a later photo/location attaches to the latest bare record and re-indexes its vector doc (rule R7).",
         "processes": [
           "pending images (automation_images, status=pending) → record_images links for every new record",
-          "record_images = many-to-many across BOTH kinds (note | finance)",
-          "output {noteImages, financeImages} feeds the ingest node (photos in the vector doc)"
+          "pending geo-marks (automation_geo, status=pending) → record_geo links for every new record (step 207.20)",
+          "both link tables = many-to-many across BOTH kinds (note | finance)",
+          "output {noteImages, financeImages, noteGeo, financeGeo} feeds the ingest node (photos + places in the vector doc)"
         ],
         "kind": "step",
         "actions": ["save", "remind", "finance"],
         "condition": null,
-        "task": "Attach the chat's pending registered images to all records created in this run (notes + finance), via the record_images link table; mark images linked; expose the per-record image sets for the ingest node. Late attaches (a photo arriving after its record) are handled in parse-document via latestRecordWithoutImages + reingestRecord.",
+        "task": "Attach the chat's pending registered images and geo-marks to all records created in this run (notes + finance), via the record_images / record_geo link tables; mark them linked; expose the per-record sets for the ingest node. Late attaches (a photo or location arriving after its record) re-index via reingestRecord.",
         "tools": [
-          "automation_images + record_images via @/lib/db"
+          "automation_images + record_images + automation_geo + record_geo via @/lib/db"
         ],
         "envKeys": [],
         "io": {
-          "in": "persisted notes {dbId, chatId} + finance rows {dbId, chatId} + pending images of the chat",
-          "out": "{noteImages: {id→images[]}, financeImages: {id→images[]}, linked}"
+          "in": "persisted notes {dbId, chatId} + finance rows {dbId, chatId} + pending images & geo-marks of the chat",
+          "out": "{noteImages: {id→images[]}, financeImages: {id→images[]}, noteGeo, financeGeo, linked}"
         }
       }
     }

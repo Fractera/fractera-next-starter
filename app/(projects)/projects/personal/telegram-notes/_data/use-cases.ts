@@ -96,6 +96,56 @@ export const USE_CASES: UseCase[] = [
       "It replies with how to hand your change to a coding agent — see “How to update the logic” below for the full walkthrough.",
     ],
   },
+  {
+    id: "photo-proof",
+    title: "Ask what a saved photo actually shows",
+    summary: "Every photo gets its own stored description — answers come from it, never from guessing.",
+    steps: [
+      "Send a photo (say, a chicken you bought) with or without words — the bot stores what the image shows.",
+      "Later ask in ANY language: “was that chicken raw or roasted?”",
+      "It answers from the photo’s stored description — and honestly says so when the records don’t specify a detail.",
+    ],
+  },
+  {
+    id: "remember-where",
+    title: "Remember WHERE it happened",
+    summary: "Attach a location once — get a tappable map link whenever you ask “where?”.",
+    steps: [
+      "After a note or purchase, share a location (attach → Location) or paste a Google Maps link.",
+      "The place pins itself to your latest record (or to the next one you make).",
+      "Ask “where did I eat those potato-and-meat pies?” — the answer carries a 📍 link that opens the map.",
+    ],
+  },
+  {
+    id: "idea-spot",
+    title: "Pin an idea to a place",
+    summary: "A photo of a great sign or spot + a location = a findable idea on the map.",
+    steps: [
+      "Snap the sign, add words like “great marketing idea”, and share the location right after.",
+      "Photos never carry coordinates in Telegram — if you forget the location, the bot reminds you how to add it.",
+      "Ask “where did I see that cool sign?” — you get the note, the photo and the 📍 map link.",
+    ],
+  },
+  {
+    id: "place-note",
+    title: "Save a whole moment in one message",
+    summary: "Photo + words + location — one message becomes one connected record.",
+    steps: [
+      "Send “wonderful restaurant” with a photo, then share the location.",
+      "The note, the image description and the place link into a single record across all storages.",
+      "Any later question — what, where, how it looked — pulls the full picture back.",
+    ],
+  },
+  {
+    id: "remind-here",
+    title: "Set a reminder tied to a place",
+    summary: "“Remind me to come back HERE for dinner on Saturday.”",
+    steps: [
+      "Share a location and say “remind me to come here for dinner next Saturday at 19:00”.",
+      "If the time is unclear, the bot asks when exactly.",
+      "At the right moment the reminder arrives WITH the 📍 map link — no searching where “here” was.",
+    ],
+  },
 ];
 
 // "How to update the logic" (step 207.16; English-only page — step 207.19): the owner's canonical

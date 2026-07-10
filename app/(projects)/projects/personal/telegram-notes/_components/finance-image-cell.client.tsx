@@ -6,19 +6,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 // Receipt preview cell (step 207.9): the finance table's image column. A click opens a modal with the
 // full receipt image (media URL). Server-rendered table + this small client island — the rest of the
 // section stays JS-free. Degrades to the raw link (works with JavaScript off) inside the dialog trigger.
-// Resolve a stored media URL against the page's OWN origin (step 207.10 P6): a URL baked with an absolute
-// host (esp. http://localhost:3000 at record time) would break for a remote viewer, so strip the host and
-// keep the path — the browser then fetches it from the real domain serving this page. Relative paths pass through.
+// Media URLs are stored as http://localhost:3300/media/<id>/file — the media SERVICE address, unreachable
+// from the browser in EITHER mode (IP mode: "localhost" is the viewer's machine; secure mode: :3300 is
+// firewalled). Route every /media/ path through the app's same-origin proxy /api/media-proxy/* — that is
+// what makes the Preview modals work identically in both modes (step 207.18d).
 function sameOriginUrl(u: string): string {
+  let pathname = u;
   if (/^https?:\/\//i.test(u)) {
     try {
       const parsed = new URL(u);
-      return parsed.pathname + parsed.search;
+      pathname = parsed.pathname + parsed.search;
     } catch {
       return u;
     }
   }
-  return u;
+  const m = pathname.match(/^\/media\/(.+)$/);
+  if (m) return `/api/media-proxy/${m[1]}`;
+  return pathname;
 }
 
 export function FinanceImageCell({ url }: { url: string }) {

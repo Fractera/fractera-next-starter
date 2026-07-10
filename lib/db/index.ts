@@ -189,6 +189,10 @@ const SCHEMA = `
     description TEXT NOT NULL DEFAULT '',
     chat_id     TEXT NOT NULL DEFAULT '',
     status      TEXT NOT NULL DEFAULT 'pending',   -- 'pending' | 'linked'
+    -- kind_hint (step 207.18d, owner rule "финансовое отдельно от информационного"): 'document' = a
+    -- receipt/invoice (belongs to FINANCE records); 'photo' = anything else — a pie, an interior, a
+    -- residence (belongs to NOTES). Set from the vision analysis at intake; drives link routing.
+    kind_hint   TEXT NOT NULL DEFAULT 'photo',
     created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
   -- Record ⇄ image links (step 207.18, rule R3): MANY-TO-MANY across BOTH record kinds — one photo may
@@ -286,6 +290,11 @@ function makeLocalDb() {
     (sqlite.prepare('PRAGMA table_info(automation_finance)').all() as Array<{ name: string }>).map(c => c.name)
   )
   if (afCols.size && !afCols.has('memory_track_id')) safeAddColumn(sqlite, `ALTER TABLE automation_finance ADD COLUMN memory_track_id TEXT`)
+  // automation_images.kind_hint (step 207.18d — document vs photo routing) — live DBs get it via ALTER.
+  const aiCols = new Set(
+    (sqlite.prepare('PRAGMA table_info(automation_images)').all() as Array<{ name: string }>).map(c => c.name)
+  )
+  if (aiCols.size && !aiCols.has('kind_hint')) safeAddColumn(sqlite, `ALTER TABLE automation_images ADD COLUMN kind_hint TEXT NOT NULL DEFAULT 'photo'`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

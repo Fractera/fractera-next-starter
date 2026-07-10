@@ -172,6 +172,10 @@ const SCHEMA = `
     image_url    TEXT,
     chat_id      TEXT NOT NULL DEFAULT '',
     msg_date     INTEGER,
+    -- Vector-memory link (step 207.16, owner contract): EVERY finance record is ingested into LightRAG
+    -- and this column stores the ingest track id — the local row and the memory doc are one pair (same
+    -- contract as telegram_notes.memory_track_id; the duplicate-removal path deletes both together).
+    memory_track_id TEXT,
     created_at   INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
   -- External calendar OAuth tokens (step 207 Phase F) — per-project Google Calendar connection. One row
@@ -252,6 +256,12 @@ function makeLocalDb() {
   if (tnCols.size && !tnCols.has('event_at'))  safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN event_at INTEGER`)
   // telegram_notes.external_event_id (step 207 Phase F — external calendar sync) — live DBs get it via ALTER.
   if (tnCols.size && !tnCols.has('external_event_id')) safeAddColumn(sqlite, `ALTER TABLE telegram_notes ADD COLUMN external_event_id TEXT`)
+  // automation_finance.memory_track_id (step 207.16 — finance rows are ingested into LightRAG; the row
+  // stores the ingest track id) — live DBs get it via ALTER.
+  const afCols = new Set(
+    (sqlite.prepare('PRAGMA table_info(automation_finance)').all() as Array<{ name: string }>).map(c => c.name)
+  )
+  if (afCols.size && !afCols.has('memory_track_id')) safeAddColumn(sqlite, `ALTER TABLE automation_finance ADD COLUMN memory_track_id TEXT`)
   return {
     prepare(sql: string) {
       const stmt = sqlite.prepare(sql)

@@ -59,7 +59,7 @@ export default async function TelegramNotesProjectEntry() {
       <AutoRefresh intervalMs={8000} />
       {/* Native missing-keys modal (186.3): prompts for any declared integration
           key absent from the runtime env; renders nothing when none are required. */}
-      <MissingKeysModal lang={LANG} />
+      <MissingKeysModal lang={LANG} category="personal" project="telegram-notes" />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link

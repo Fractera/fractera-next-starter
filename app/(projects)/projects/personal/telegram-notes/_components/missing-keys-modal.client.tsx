@@ -47,7 +47,18 @@ const KEY_TO_SERVICE: Record<string, string> = Object.fromEntries(
 const REGULAR_KEYS = REQUIRED_ENV_KEYS.filter((k) => k !== OPENAI_KEY);
 const NEEDS_OPENAI = REQUIRED_ENV_KEYS.includes(OPENAI_KEY);
 
-export function MissingKeysModal({ lang }: { lang: string }) {
+// `category`/`project` identify the owning automation so a saved Telegram token can be
+// registered with the substrate listener (one bot per automation, step 205). Optional so
+// the modal stays reusable for automations that declare no Telegram bot.
+export function MissingKeysModal({
+  lang,
+  category,
+  project,
+}: {
+  lang: string;
+  category?: string;
+  project?: string;
+}) {
   const t = projectTabStrings(lang);
   const active = REQUIRED_ENV_KEYS.length > 0;
   const [missing, setMissing] = useState<string[]>([]);
@@ -112,11 +123,23 @@ export function MissingKeysModal({ lang }: { lang: string }) {
     }
     setSaving(true);
     try {
-      for (const [key, value] of entries) {
+      // ORDERING IS LOAD-BEARING (fixes the red-toast / black-screen race). Each key write that
+      // touches the slot env restarts fractera-app — the SAME process serving this modal and its
+      // page. Writing several keys, each with its own restart, meant a restart killed the NEXT
+      // in-flight request (the OpenAI save) and blanked the page. So: (1) write every regular slot
+      // key with restart DEFERRED when an OpenAI save follows (the OpenAI forwarder restarts
+      // fractera-app once, at the end, picking up these keys too); (2) if there is no OpenAI key,
+      // the LAST regular write carries the single restart. Result: exactly ONE restart, at the end,
+      // after every request has returned — nothing in-flight to kill.
+      let telegramToken = "";
+      for (let i = 0; i < entries.length; i++) {
+        const [key, value] = entries[i];
+        const isLastRegular = i === entries.length - 1;
+        const restart = openAi ? false : isLastRegular;
         const res = await fetch("/api/project-config/env", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key, value }),
+          body: JSON.stringify({ key, value, restart }),
         });
         if (!res.ok) {
           const info = (await res.json().catch(() => null)) as { error?: string } | null;
@@ -124,7 +147,26 @@ export function MissingKeysModal({ lang }: { lang: string }) {
           setSaving(false);
           return;
         }
+        if (key === "TELEGRAM_BOT_TOKEN") telegramToken = value;
       }
+
+      // Register this automation's bot with the substrate listener so it starts polling (one bot
+      // per automation, step 205). Best-effort + only when the automation identity is known — the
+      // env token is saved regardless; the listener reconciles on its next tick.
+      if (telegramToken && category && project) {
+        try {
+          await fetch("/api/project-config/register-bot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category, project, token: telegramToken }),
+          });
+        } catch {
+          /* best-effort — the token is persisted; registration retries on the next save */
+        }
+      }
+
+      // OpenAI key LAST: the forwarder writes Hermes/Memory/slot and triggers the single
+      // fractera-app restart at the very end, once every request above has already returned.
       if (openAi) {
         const res = await fetch("/api/project-config/openai-key", {
           method: "POST",
@@ -140,8 +182,8 @@ export function MissingKeysModal({ lang }: { lang: string }) {
       }
       toast.success(
         entries.length + (openAi ? 1 : 0) === 1
-          ? "Key saved — the app is applying it (a brief restart)"
-          : "Keys saved — the app is applying them (a brief restart)",
+          ? "Key saved — applying, the app restarts once in a few seconds"
+          : "Keys saved — applying, the app restarts once in a few seconds",
       );
       setOpen(false);
     } catch {

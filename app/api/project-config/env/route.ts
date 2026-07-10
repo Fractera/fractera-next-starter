@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
   }
 
-  let body: { key?: string; value?: string }
+  let body: { key?: string; value?: string; restart?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -112,6 +112,12 @@ export async function POST(req: NextRequest) {
 
   const key = (body.key ?? "").trim()
   const value = body.value ?? ""
+  // Optional restart deferral (default true = restart, so existing single-key callers are
+  // unchanged). A caller writing SEVERAL keys in one flow passes restart:false on all but the
+  // final trigger, so fractera-app — the very process serving THIS request and the caller's page —
+  // bounces exactly ONCE at the end instead of mid-flow. A mid-flow bounce killed the follow-up
+  // request (the OpenAI save) and blanked the page (the missing-keys-modal red-toast race).
+  const doRestart = body.restart !== false
   if (!key) return NextResponse.json({ error: "key is required" }, { status: 400 })
 
   const rejection = keyRejection(key)
@@ -139,8 +145,10 @@ export async function POST(req: NextRequest) {
 
   // Runtime var → detached restart so it takes effect without a rebuild. A tiny
   // sleep lets THIS response flush before pm2 recycles the process. Production only;
-  // in dev (hot-reload, no pm2) the value is already live on next read.
-  if (process.env.NODE_ENV === "production") {
+  // in dev (hot-reload, no pm2) the value is already live on next read. Skipped when
+  // the caller deferred (restart:false) — it will trigger the single restart itself.
+  const willRestart = doRestart && process.env.NODE_ENV === "production"
+  if (willRestart) {
     try {
       spawn("sh", ["-c", "sleep 1; pm2 restart fractera-app"], {
         detached: true,
@@ -151,5 +159,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, key, restarting: process.env.NODE_ENV === "production" })
+  return NextResponse.json({ ok: true, key, restarting: willRestart })
 }

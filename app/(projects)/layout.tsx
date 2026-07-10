@@ -5,6 +5,7 @@ import { ThemeInit } from "@/components/theme-init";
 import { bodyFontClass } from "@/lib/fonts";
 import { DEFAULT_LANGUAGE } from "@/config/translations/translations.config";
 import { requireRole } from "@/lib/auth/require-role";
+import { getAppConfig } from "@/config/app-config";
 import { ProjectsZoneHeader } from "@/app/(projects)/_components/projects-zone-header.server";
 
 // Root layout of the Projects layer (§3.12, step 175). Projects are independent
@@ -16,9 +17,19 @@ import { ProjectsZoneHeader } from "@/app/(projects)/_components/projects-zone-h
 // zone owns a static <html lang={DEFAULT_LANGUAGE}>. Pages here are dynamic
 // (role gate reads cookies) — the sanctioned cockpit exception to static-first.
 // Not indexed; no JSON-LD / GA.
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-};
+//
+// Title = "<brand> | Projects" so the browser tab reads the owner's company name
+// (short_name from the live app-config, "Fractera" by default) followed by the zone.
+// A child page (a specific project) may override with its own title; those that
+// don't inherit this zone title. generateMetadata (not a static const) because the
+// brand is a per-request read of the on-disk app-config.
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = getAppConfig().short_name || "Fractera";
+  return {
+    title: `${brand} | Projects`,
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function ProjectsLayout({
   children,

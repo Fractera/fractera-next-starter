@@ -130,6 +130,9 @@ function heuristicIntent(text: string): Intent | null {
   if (/^(?:(?:а|и|ну)\s+)?(повтори|переведи|repeat|translate)/i.test(t)) return "meta";
   // «напомни …» about money movements is a ledger question, not a timed reminder (owner Round-3 test).
   if (/^напомни/i.test(t) && /(движени|финанс|деньг|трат|расход|доход)/i.test(t)) return "finance-query";
+  // «напомни, я покупал/был/стоил…?» = a PAST-tense question about records → recall, not a timed
+  // reminder (owner test 207.20: «напомни я курицу покупал жареную или сырую»).
+  if (/^напомни/i.test(t) && /(покупал|купил|был[ао]?\b|стоил|записывал|сохранял|говорил)/i.test(t)) return "recall";
   if (/^(напомни|напоминание|remind)/i.test(t) || /напомни (мне|нам)/i.test(t)) return "remind";
   // photo = an image noun anywhere + a view/send verb anywhere ("покажи…картинку", "загружал картинку…
   // хочу посмотреть", "пришли чек"). Checked before recall so an image ask wins over a generic question.
@@ -775,18 +778,27 @@ async function visionAnalyze(dataUrl: string, caption: string): Promise<VisionAn
       body: JSON.stringify({
         model: VISION_MODEL,
         // Model-compatible params (207.16): gpt-5-family rejects max_tokens/temperature — see completionParams.
-        ...completionParams(VISION_MODEL, 400),
+        ...completionParams(VISION_MODEL, 900),
         messages: [
           { role: "system", content:
             "You analyze a photo for a personal notes & finance assistant. Output ONE JSON object, no prose: " +
-            '{"description":"<one short line: what the photo shows>","is_financial":true|false,' +
+            '{"description":"<EXHAUSTIVE description, 50-120 words>","is_financial":true|false,' +
             '"kind":"income|expense","items":[{"name":"<item>","amount":<number>}, ...],"total":<number>,' +
             '"categories":["<id>", ...],"summary":"<one line>"}. ' +
-            "description is ALWAYS filled (e.g. 'interior of a small cafe', 'a meat pie on a plate', " +
-            "'receipt: pie 5.50, coffee 2.00'). is_financial=true ONLY for a receipt/invoice/financial " +
-            "document with readable amounts. When itemized, list EVERY line item and set total = the sum " +
-            "of items; a single-amount document = one item. A receipt/purchase is an expense; a payment/" +
-            "salary received is income. categories = ids from the matching list (multi-flag). " +
+            "description (owner contract, step 207.20e — this text IS the searchable knowledge about the image; " +
+            "later questions are answered ONLY from it, so a detail you omit is a detail lost forever): reason " +
+            "through the image step by step and write an exhaustive 50-120 word description. Identify WHAT it is " +
+            "and its STATE (e.g. a vacuum-packed chilled raw chicken — not just 'chicken'; raw vs cooked, fresh vs " +
+            "frozen, new vs worn). TRANSCRIBE every readable text and number: label wording, weight, unit price, " +
+            "discounted price — and compute what they imply (5.00 → 2.50 = a 50% discount). For places/interiors: " +
+            "the kind of venue, wall colors, materials, furniture, style and atmosphere (e.g. turquoise sea-tone " +
+            "walls, simple wooden furniture, cheap but cozy). Use the caption to CONNECT the image to the user's " +
+            "story (a pie story + an interior photo = the place where the pies are eaten). Different photos should " +
+            "surface DIFFERENT parameters — extract what THIS image actually shows, never a generic line. " +
+            "is_financial=true ONLY for a receipt/invoice/financial document with readable amounts. When itemized, " +
+            "list EVERY line item and set total = the sum of items; a single-amount document = one item. A receipt/" +
+            "purchase is an expense; a payment/salary received is income. categories = ids from the matching list " +
+            "(multi-flag). " +
             CATEGORY_GUIDE },
           { role: "user", content: [
             { type: "text", text: caption ? `Caption: ${caption}` : "Analyze this photo." },
@@ -806,7 +818,7 @@ async function visionAnalyze(dataUrl: string, caption: string): Promise<VisionAn
       items?: Array<{ name?: unknown; amount?: unknown }>; total?: unknown;
       categories?: unknown; summary?: unknown;
     };
-    const description = String(o.description ?? "").slice(0, 300);
+    const description = String(o.description ?? "").slice(0, 900);
     if (o.is_financial !== true) return { description, finance: null };
     const kind = o.kind === "income" ? "income" : "expense";
     const items = Array.isArray(o.items)
@@ -919,7 +931,7 @@ async function registerImage(chatId: string, url: string, description: string, k
   try {
     const res = await db
       .prepare("INSERT INTO automation_images (project, media_url, description, chat_id, status, kind_hint) VALUES (?, ?, ?, ?, 'pending', ?)")
-      .run(PROJECT_SLUG, url, description.slice(0, 500), chatId, kindHint);
+      .run(PROJECT_SLUG, url, description.slice(0, 1000), chatId, kindHint);
     return Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
   } catch { return null; }
 }
@@ -1687,7 +1699,9 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
     if (msg.text && MAPS_URL_RE.test(msg.text)) {
       const found = await extractMapsLink(msg.text);
       if (found) {
-        const geoId = await registerGeo(msg.chatId, found.lat, found.lng, found.cleaned.slice(0, 100), "maps-link");
+        // Label stays SHORT (the record summary carries the story; a long label made the 📍 line
+        // repeat the whole message — owner test 207.20e).
+        const geoId = await registerGeo(msg.chatId, found.lat, found.lng, found.cleaned.slice(0, 60), "maps-link");
         msg.text = found.cleaned;
         // A link-only message is complete here — same late-attach as a bare location.
         if (!msg.text && !msg.photoFileId) {
@@ -1747,9 +1761,10 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "compound (ONE message that carries BOTH a note-worthy experience AND a money movement — e.g. " +
           "'went to a nice cafe near the post office, loved it, bought a pie for 5.50' — the note AND the " +
           "purchase must both be recorded), " +
-          "meta (a conversational message, a complaint, a follow-up ABOUT the assistant or a previous answer, or a " +
-          "request about how the bot works — e.g. 'answer in Russian', 'did you save it?', 'why didn't you reply', " +
-          "'what is it called in the database'), " +
+          "meta (STRICTLY about the assistant itself or the previous answer — 'answer in Russian', 'repeat that', " +
+          "'why didn't you reply', a complaint about the bot. A question about the CONTENT of saved records — " +
+          "what/where/when/who/how something was, even phrased conversationally ('скажи а где продают мои пирожки') — " +
+          "is recall, NEVER meta), " +
           "escalate (the user wants a NEW capability this assistant does NOT have, or is dissatisfied it cannot do " +
           "something — a feature request / 'can you also do X' / 'this should also…' / 'I want it to…' beyond notes, " +
           "reminders and finance), " +
@@ -1766,6 +1781,14 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       if (!word || word === "unclear") {
         const h = heuristicIntent(text);
         if (h) word = h;
+      }
+      // Content questions are NEVER meta (owner test 207.20: «скажи а где продают мои пирожки» went
+      // to meta → an honest-but-useless "not recorded" while the answer sat in the records). When the
+      // model says meta but the keyword shape says recall/finance-query, the search wins — meta stays
+      // only for true assistant-talk (repeat/translate/complaints), which the heuristic never claims.
+      if (word === "meta") {
+        const h = heuristicIntent(text);
+        if (h === "recall" || h === "finance-query" || h === "photo") word = h;
       }
       // Compound (step 207.18, owner case «кафе + пирожок за 5.50»): ONE message = a note AND a money
       // movement — fan out into BOTH existing actions (the diagram already routes classify → summarize
@@ -1967,6 +1990,7 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
   // (media upload + ONE vision call giving description AND, for receipts, the itemized extraction).
   // Dedupe by file id: a compound message fans into two classified entries sharing the photo.
   const analyzed = new Map<string, { imageId: number | null; url: string | null; vision: VisionAnalysis }>();
+  const geoHinted = new Set<string>(); // the location hint goes ONCE per chat per run (was: per photo)
   for (const c of classified) {
     if (!c.photoFileId || analyzed.has(c.photoFileId)) continue;
     let url: string | null = null;
@@ -1984,7 +2008,8 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
     // Polite geo fallback (step 207.20, owner decision): a PLACE-worthy photo (not a receipt) arrived
     // and the chat has no pending location — tell the user photos never carry coordinates (Bot API
     // strips EXIF) and how to add the place. Once per photo; receipts are money, not places.
-    if (imageId != null && kindHint === "photo" && !(await loadPendingGeo(c.chatId)).length) {
+    if (imageId != null && kindHint === "photo" && !geoHinted.has(c.chatId) && !(await loadPendingGeo(c.chatId)).length) {
+      geoHinted.add(c.chatId);
       await sendLocalized(
         c.chatId,
         "Note: photos don't carry location data in Telegram. If you'll want to FIND this place later, send a location (attach → Location) or a Google Maps link in the next message — I'll pin it to this record.",

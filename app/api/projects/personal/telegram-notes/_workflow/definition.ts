@@ -1,5 +1,8 @@
 import { journalRunStart, journalRunFinish } from "./journal";
-import { readFileSync } from "node:fs";
+// Bare "fs" on purpose: the WDK workflow compiler REJECTS the "node:" protocol prefix in workflow
+// modules ("Node.js modules are not available in workflow functions") but accepts the bare specifier —
+// exactly how @/lib/db imports fs/better-sqlite3 and runs fine inside steps. (step 207.16 round 3)
+import { readFileSync } from "fs";
 import { db } from "@/lib/db";
 // Finance presets (step 207): FIXED 10 income + 10 expense categories (multi-flag). The model segments a
 // money movement into one or more of these ids; normalizeCategories validates against the preset.

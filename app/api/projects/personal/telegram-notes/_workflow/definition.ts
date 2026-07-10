@@ -94,8 +94,11 @@ const CAPABILITIES =
   "• a time-based reminder → I remind you at the right time\n" +
   "• a question about what you saved → I search your notes\n" +
   "• a photo of a receipt → I digitize it into your records\n" +
-  "• a money question (how much did I spend on food this week) → I add it up\n" +
-  "• /photo <number> → I send back the receipt image of that finance record\n" +
+  "• a photo AND the words in any order → I link them into one record (photo first, story later — or the other way round)\n" +
+  "• a money question → a specific one (did Petya return the debt? how much was the chicken?) I answer from your records; a total (food this week) I add up; everything at once → income, expense and net\n" +
+  "• a follow-up about my last answer (repeat it, translate it) → I remember the recent conversation\n" +
+  "• ask to SEE a photo in plain words (show the receipt) or /photo <number> → I send the image back\n" +
+  "• /note <number> → the saved note's full text\n" +
   "If I'm not sure, I'll show you buttons to choose.";
 
 // Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
@@ -563,12 +566,18 @@ async function deleteVectorDoc(trackId: string): Promise<void> {
   } catch { /* best-effort — the DB row is already gone */ }
 }
 
-// Remove a record the user confirmed is a duplicate (callback dupdel:<table>:<id>). Finance = a plain
-// row delete; note = the 188-R delete (row + best-effort vector doc). Scoped to this project.
+// Remove a record the user confirmed is a duplicate (callback dupdel:<table>:<id>). Both kinds now
+// delete the pair — the DB row AND its vector-memory doc (finance rows are ingested too, step 207.16).
 async function removeDuplicateRecord(table: string, id: number, chatId: string): Promise<void> {
   if (!Number.isFinite(id) || id <= 0) return;
   try {
     if (table === "finance") {
+      try {
+        const row = (await db
+          .prepare("SELECT memory_track_id FROM automation_finance WHERE id = ? AND project = ?")
+          .get(id, PROJECT_SLUG)) as { memory_track_id?: string } | null;
+        if (row?.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
+      } catch { /* vector delete best-effort */ }
       await db.prepare("DELETE FROM automation_finance WHERE id = ? AND project = ?").run(id, PROJECT_SLUG);
       await sendLocalized(chatId, "Removed the duplicate finance record.");
     } else if (table === "note") {
@@ -752,6 +761,75 @@ async function parseFinanceQuery(text: string): Promise<FinanceQuery> {
   } catch {
     return { kind: null, categories: [], sinceDays: null, reconcile: reconcileHeuristic };
   }
+}
+
+// ── Pending images — the "editing state" for photo↔record linking (step 207.16, owner case). Humans
+// send the photo and the words SEPARATELY (photo first then a comment, or a comment then the photo, or
+// an album). A photo whose amount could not be read is therefore NEVER discarded: it is uploaded to the
+// media store and parked here per chat (TTL 30 min, up to 5), then linked to the NEXT finance record —
+// or, when the words say «обнови/добавь/прикрепи/этот…», to the latest recent record without a photo. ──
+const PENDING_IMG_TTL_SEC = 1800;
+const PENDING_IMG_MAX = 5;
+type PendingImage = { url: string; ts: number };
+async function loadPendingImages(chatId: string): Promise<PendingImage[]> {
+  try {
+    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`pending_image:${chatId}`)) as { value?: string } | null;
+    const arr = row?.value ? (JSON.parse(row.value) as PendingImage[]) : [];
+    const now = Math.floor(Date.now() / 1000);
+    return arr.filter((p) => p.url && now - p.ts <= PENDING_IMG_TTL_SEC);
+  } catch { return []; }
+}
+async function savePendingImage(chatId: string, url: string): Promise<void> {
+  try {
+    const arr = await loadPendingImages(chatId);
+    arr.push({ url, ts: Math.floor(Date.now() / 1000) });
+    await db
+      .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
+      .run(`pending_image:${chatId}`, JSON.stringify(arr.slice(-PENDING_IMG_MAX)));
+  } catch { /* state table optional */ }
+}
+async function clearPendingImages(chatId: string): Promise<void> {
+  try { await db.prepare("DELETE FROM telegram_notes_state WHERE key = ?").run(`pending_image:${chatId}`); } catch { /* best-effort */ }
+}
+// Ingest ONE finance record into the vector memory (step 207.16, owner contract: EVERY record from EVERY
+// case lands in LightRAG, and the local row stores the link). Mirrors ingestNoteToMemory; best-effort —
+// a memory hiccup never loses the ledger row, the record just stays searchable via the DB bridge only.
+async function ingestFinanceToMemory(dbId: number, kind: string, amount: number, categories: string[], summary: string): Promise<void> {
+  const when = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const cats = categories.map((id) => `${categoryLabel(id, "en")} / ${categoryLabel(id, "ru")}`).join(", ");
+  // [fin#<id>] — the reverse link (owner architecture decision, scale contract): a vector answer that
+  // quotes this doc carries the row id, so the local DB resolves the full record AND its image in O(1)
+  // regardless of ledger size. Forward link = memory_track_id on the row; this marker is the way back.
+  const doc = `[fin#${dbId}] Finance record from ${when}: ${kind} ${amount}${cats ? ` (${cats})` : ""} — ${summary}`;
+  try {
+    const r = await fetch(`${RAG_URL}/documents/text`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-API-Key": RAG_KEY, "X-Agent-Identity": PROJECT_SLUG },
+      body: JSON.stringify({ text: doc }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!r.ok) return;
+    const data = (await r.json()) as { track_id?: string };
+    if (data.track_id) {
+      await db.prepare("UPDATE automation_finance SET memory_track_id = ? WHERE id = ? AND project = ?").run(data.track_id, dbId, PROJECT_SLUG);
+    }
+  } catch { /* best-effort — the ledger row is already saved */ }
+}
+
+// The words that mean "this photo belongs to an existing record", any order of arrival.
+function wantsAttach(text: string): boolean {
+  return /обнови|добавь|прикрепи|привяжи|прикрепить|это(т)?\s+(самый|тот)|та\s+самая|attach|link|update/i.test(text);
+}
+// The latest recent finance record of this chat WITHOUT a photo (attach target), newest first.
+async function latestRecordWithoutPhoto(chatId: string, sinceSec = 3600): Promise<{ id: number; summary: string } | null> {
+  try {
+    const row = (await db
+      .prepare(
+        "SELECT id, summary FROM automation_finance WHERE project = ? AND chat_id = ? AND (image_url IS NULL OR image_url = '') AND created_at >= ? ORDER BY created_at DESC LIMIT 1",
+      )
+      .get(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - sinceSec)) as { id?: number; summary?: string } | null;
+    return row?.id ? { id: row.id, summary: row.summary ?? "" } : null;
+  } catch { return null; }
 }
 
 // ── Finance ledger keyword search (step 207.16): free-text questions about money ("did Petya return the
@@ -1328,6 +1406,19 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
         .replace(/^\s*[-*]?\s*\**(Проект|Project|Хук|Hook|Запись|Record)\**\s*[:#].*$/gim, "")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
+      // Reverse-link resolution (step 207.16, scale contract): a memory answer citing finance docs
+      // carries [fin#<id>] markers — resolve the rows in the local DB (O(1) at ANY ledger size) and
+      // surface their photos when the question asks to see them; the marker itself never reaches the user.
+      const citedIds = [...answer.matchAll(/\[fin#(\d+)\]/g)].map((m) => Number(m[1])).filter((n) => n > 0).slice(0, 5);
+      answer = answer.replace(/\s*\[fin#\d+\]\s*/g, " ").replace(/ {2,}/g, " ").trim();
+      if (citedIds.length && wantsImage) {
+        for (const id of citedIds) {
+          try {
+            const row = (await db.prepare("SELECT image_url FROM automation_finance WHERE id = ? AND project = ?").get(id, PROJECT_SLUG)) as { image_url?: string } | null;
+            if (row?.image_url && !photoUrls.includes(row.image_url) && photoUrls.length < 2) photoUrls.push(row.image_url);
+          } catch { /* best-effort */ }
+        }
+      }
       // A "nothing found" memory answer is REPLACED by the ledger hits; a real answer gets them appended.
       const ragEmpty = !answer || /no relevant context|не найдено релевант|nothing found|недостаточно информации|нет информации/i.test(answer);
       let clean: string;
@@ -1355,7 +1446,14 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
 // finance text → cheap-model extract. The model segments into preset categories (multi-flag). The row is
 // written to the SEPARATE automation_finance ledger (NOT telegram_notes — its finance columns are
 // deprecated). The goal is a usable voice/photo finance ledger, not perfect books.
-type FinanceRow = { dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; categories: string[]; summary: string; imageUrl: string | null; duplicateOfId?: number | null };
+type FinanceRow = {
+  dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; categories: string[];
+  summary: string; imageUrl: string | null; duplicateOfId?: number | null;
+  // Photo↔record linking outcomes (step 207.16, owner "editing state" case):
+  attachedToId?: number | null;   // this photo was linked to an EXISTING record (no new row)
+  pendingSaved?: boolean;         // photo parked for the NEXT record (no target yet)
+  pendingAttached?: boolean;      // a previously parked photo was linked to THIS new row
+};
 async function parseDocument(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
@@ -1376,13 +1474,43 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
       extract = await textExtractFinance(c.payload);
     }
     if (!extract) {
-      // Could not read a money movement — record nothing here; reply-in-telegram surfaces the miss.
+      // No readable money movement. A PHOTO is never discarded (owner "editing state" case): the words
+      // and the picture may arrive in any order, so either link it to a recent record now, or park it
+      // for the record that is about to arrive.
+      if (imageUrl) {
+        // «обнови/добавь/прикрепи/этот…» or just a bare photo right after a photo-less record → attach.
+        const target = wantsAttach(c.payload)
+          ? await latestRecordWithoutPhoto(c.chatId)
+          : await latestRecordWithoutPhoto(c.chatId, 900); // bare photo: only a very recent record
+        if (target) {
+          try {
+            await db.prepare("UPDATE automation_finance SET image_url = ? WHERE id = ? AND project = ?").run(imageUrl, target.id, PROJECT_SLUG);
+            out.push({ dbId: target.id, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: target.summary, imageUrl, attachedToId: target.id });
+            continue;
+          } catch { /* fall through to parking */ }
+        }
+        await savePendingImage(c.chatId, imageUrl);
+        out.push({ dbId: null, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: "", imageUrl, pendingSaved: true });
+        continue;
+      }
+      // Text without an amount and without a photo — reply-in-telegram surfaces the miss.
       out.push({ dbId: null, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: "", imageUrl });
       continue;
     }
 
     // Write to the SEPARATE finance ledger (step 207 owner decision). categories = validated preset ids
     // (multi-flag) stored as a JSON array; the telegram_notes finance columns are no longer written.
+    // A text record picks up a parked photo (owner "editing state" case: the photo arrived FIRST, its
+    // amount was unreadable, and THIS message is the words for it — link the newest pending image).
+    let pendingAttached = false;
+    if (!imageUrl) {
+      const parked = await loadPendingImages(c.chatId);
+      if (parked.length) {
+        imageUrl = parked[parked.length - 1].url;
+        pendingAttached = true;
+        await clearPendingImages(c.chatId);
+      }
+    }
     const res = await db
       .prepare(
         "INSERT INTO automation_finance (project, kind, amount, categories, summary, image_url, chat_id, msg_date) " +
@@ -1390,12 +1518,15 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
       )
       .run(PROJECT_SLUG, extract.kind, extract.amount, JSON.stringify(extract.categories), extract.summary, imageUrl, c.chatId, c.date);
     const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
+    // Owner contract (step 207.16): every finance record ALSO lands in the vector memory, and the row
+    // stores the track id — so free-text history search (chicken, pies…) finds money movements too.
+    if (dbId != null) await ingestFinanceToMemory(dbId, extract.kind, extract.amount, extract.categories, extract.summary);
     // Soft duplicate check (step 207.x, Tier 2): a recent identical money movement from this chat → the
     // record is kept, but reply-in-telegram offers a one-tap "keep both / remove duplicate".
     const duplicateOfId = dbId != null
       ? await findRecentDuplicateFinance(dbId, extract.kind, extract.amount, extract.summary, c.chatId)
       : null;
-    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId });
+    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId, pendingAttached });
   }
   return out;
 }
@@ -1674,13 +1805,24 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   // Finance records (step 205 §E): confirm what was digitized (or that nothing readable was found).
   for (const f of finances) {
     try {
+      // Photo↔record linking outcomes (step 207.16, owner "editing state" case) — these are not new
+      // records, they are the photo finding its home in either direction of arrival.
+      if (f.attachedToId != null) {
+        await sendLocalized(f.chatId, `Photo attached to the record: ${f.summary || `#${f.attachedToId}`}. Ask "покажи фото" or /photo ${f.attachedToId} to see it.`);
+        continue;
+      }
+      if (f.pendingSaved) {
+        await sendLocalized(f.chatId, "Photo saved. Tell me what it is and the amount (e.g. «пирожок за 5,50») — I'll record it with this photo attached.");
+        continue;
+      }
       if (f.dbId == null) {
         await sendLocalized(f.chatId, "I couldn't read a clear amount from that. Try a clearer photo, or tell me the amount.");
         continue;
       }
       const sign = f.kind === "income" ? "+" : "−";
       const cats = f.categories.map((id) => categoryLabel(id, "en")).join(", ");
-      await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}`);
+      const photoNote = f.pendingAttached ? " · 📷 photo attached" : "";
+      await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}${photoNote}`);
       finance++;
       // Soft-duplicate nudge (step 207.x): the record is already saved — offer a one-tap removal.
       if (f.duplicateOfId && f.dbId != null) {

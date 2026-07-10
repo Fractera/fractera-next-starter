@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -67,6 +67,8 @@ export function MissingKeysModal({
   const [openAiValue, setOpenAiValue] = useState("");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // True from the moment the keys are saved until the post-restart reload fires.
+  const [reloading, setReloading] = useState(false);
 
   useEffect(() => {
     if (!active) return;
@@ -180,12 +182,14 @@ export function MissingKeysModal({
           return;
         }
       }
-      toast.success(
-        entries.length + (openAi ? 1 : 0) === 1
-          ? "Key saved — applying, the app restarts once in a few seconds"
-          : "Keys saved — applying, the app restarts once in a few seconds",
-      );
+      toast.success("Keys saved — applying, the page reloads in a few seconds");
       setOpen(false);
+      // AUTO-RELOAD (owner request): saving triggers ONE fractera-app restart (~5-10s). Until the
+      // process is back the page keeps rendering its stale server state ("Not configured") and the
+      // chat/automation look dead even though the key landed. Poll the health of the key instead of
+      // guessing a delay, then reload once the app is serving again with the key in its env.
+      setReloading(true);
+      void waitForKeyThenReload();
     } catch {
       toast.error("Could not save keys (network error)");
     } finally {
@@ -193,7 +197,57 @@ export function MissingKeysModal({
     }
   }
 
+  // Poll until the restarted app reports the saved keys present (or a hard cap elapses), then
+  // reload. A restart makes fetches fail for a few seconds — those errors are expected, keep polling.
+  async function waitForKeyThenReload() {
+    const deadline = Date.now() + 60_000;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 2_000));
+      try {
+        if (NEEDS_OPENAI) {
+          const res = await fetch("/api/project-config/openai-key", { cache: "no-store" });
+          if (res.ok) {
+            const data = (await res.json()) as { configured?: boolean };
+            if (data.configured) break;
+          }
+        } else {
+          const query = encodeURIComponent(REGULAR_KEYS.join(","));
+          const res = await fetch(`/api/project-config/env?keys=${query}`, { cache: "no-store" });
+          if (res.ok) {
+            const data = (await res.json()) as { present?: Record<string, boolean> };
+            if (data.present && REGULAR_KEYS.every((k) => data.present![k])) break;
+          }
+        }
+      } catch {
+        /* app is restarting — keep polling */
+      }
+    }
+    window.location.reload();
+  }
+
   if (!active) return null;
+
+  // While the app restarts, keep a non-dismissible "applying" dialog up instead of dropping the
+  // user onto a stale page that still says "Not configured" until they reload by hand.
+  if (reloading) {
+    return (
+      <Dialog open>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.keysTitle}</DialogTitle>
+            <DialogDescription>
+              Applying your keys — the app restarts and this page reloads automatically. This takes a
+              few seconds; no need to do anything.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground" role="status" aria-live="polite">
+            <Loader2 className="size-4 animate-spin" />
+            Restarting…
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

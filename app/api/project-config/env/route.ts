@@ -74,6 +74,12 @@ async function authorize(req: NextRequest): Promise<boolean> {
   return Boolean(session?.roles?.some((r) => WRITE_ROLES.includes(r)))
 }
 
+// Non-secret keys whose VALUE may be returned (step 207.19 — the model picker must show the CURRENT
+// model, not an empty placeholder). Anything smelling of a credential is presence-only, as before.
+function valueReadable(key: string): boolean {
+  return !/TOKEN|KEY|SECRET|PASSWORD|AUTH/i.test(key)
+}
+
 export async function GET(req: NextRequest) {
   if (!(await authorize(req))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
@@ -81,7 +87,15 @@ export async function GET(req: NextRequest) {
   const keysParam = req.nextUrl.searchParams.get("keys") ?? ""
   const keys = keysParam.split(",").map((k) => k.trim()).filter(Boolean)
   const lines = await readEnvLines()
-  return NextResponse.json({ present: presentFromLines(lines, keys) })
+  // values: only for explicitly requested, non-secret keys (model ids etc.) — presence stays the
+  // contract for everything credential-shaped.
+  const values: Record<string, string> = {}
+  for (const k of keys) {
+    if (!valueReadable(k) || !KEY_RE.test(k)) continue
+    const line = lines.find((l) => l.startsWith(`${k}=`))
+    if (line) values[k] = line.slice(k.length + 1).trim()
+  }
+  return NextResponse.json({ present: presentFromLines(lines, keys), values })
 }
 
 export async function POST(req: NextRequest) {

@@ -6,6 +6,7 @@ import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
 import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords } from "../_lib/project-data";
 import { UseCasesAccordion } from "./use-cases-accordion.client";
+import { CollapsibleSection } from "./collapsible-section.client";
 import { AutoRefresh } from "./auto-refresh.client";
 import { CalendarSection } from "./calendar-section.client";
 import { CronJobsTable } from "./cron-jobs-table.server";
@@ -100,30 +101,8 @@ export default async function TelegramNotesProjectEntry() {
       {/* Process diagram — collapsed accordion at the top (step 205 §G). */}
       <DiagramAccordion label={t.diagram} />
 
-      {/* Use cases (step 207.10 items 4 & 6): plain-language scenarios replace the abstract "about" text. */}
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">Use cases</h2>
-        <UseCasesAccordion />
-      </section>
-
-      {/* Tests (step 207.10 items 4 & 6): per-entity probes + a custom run, replacing the murky run box. */}
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">Tests</h2>
-        <TestsPanel periodSec={periodSec} enabled={cronEnabled} />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">Settings</h2>
-        <SettingsAccordion />
-      </section>
-
-      {/* Calendar (step 205 §H): time-based automations put reminders on dates; the calendar marks
-          them and lists the selected date's events. The records table follows below. */}
-      <section className="space-y-3">
-        <h2 className="text-xl font-medium">Calendar</h2>
-        <CalendarSection events={calendarEvents} />
-      </section>
-
+      {/* THE WORKING SURFACES FIRST (step 207.19, owner layout rule): the tables are the main
+          workspace and must not sit below the settings/use-cases blocks. */}
       {/* Records ⇄ Finances (step 207.10 item 5): one section, a right-aligned toggle, one table at a
           time (Records by default). Finances is a SEPARATE ledger (owner decision) with its own search +
           column picker; both are server-fetched and passed in. */}
@@ -135,10 +114,32 @@ export default async function TelegramNotesProjectEntry() {
         />
       </section>
 
+      {/* Calendar (step 205 §H): time-based automations put reminders on dates; the calendar marks
+          them and lists the selected date's events. */}
+      <section className="space-y-3">
+        <h2 className="text-xl font-medium">Calendar</h2>
+        <CalendarSection events={calendarEvents} />
+      </section>
+
       <section className="space-y-3">
         <h2 className="text-xl font-medium">{t.scheduled}</h2>
         <CronJobsTable jobs={cronJobs} />
       </section>
+
+      {/* Use cases — ONE parent accordion; open it to see the per-case accordions inside. */}
+      <CollapsibleSection title="Use cases">
+        <UseCasesAccordion />
+      </CollapsibleSection>
+
+      {/* Settings — ONE parent accordion carrying the settings accordions AND the Tests block
+          (incl. Custom test), per the owner's layout rule. */}
+      <CollapsibleSection title="Settings">
+        <SettingsAccordion />
+        <div className="space-y-3 pt-2">
+          <h3 className="text-base font-medium">Tests</h3>
+          <TestsPanel periodSec={periodSec} enabled={cronEnabled} />
+        </div>
+      </CollapsibleSection>
 
       {/* Per-project footer (186.2): brand + deep-links + day/night theme toggle. */}
       <ProjectFooter shortName={getAppConfig().short_name} lang={LANG} />

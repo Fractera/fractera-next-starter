@@ -41,8 +41,10 @@ async function checkOpenai(req: NextRequest): Promise<{ ok: boolean; detail: str
     });
     if (!r.ok) return { ok: false, detail: "could not reach the key store (inconclusive)" };
     const d = (await r.json()) as { configured?: boolean };
+    // Name the model the automation runs on (step 207.19 owner request: the test toast must say it).
+    const model = process.env.TELEGRAM_NOTES_MODEL || "gpt-4o-mini (default)";
     return d?.configured
-      ? { ok: true, detail: "OpenAI key is configured" }
+      ? { ok: true, detail: `OpenAI key is configured · automation model: ${model}` }
       : { ok: false, detail: "OpenAI key is not configured" };
   } catch (e) {
     return { ok: false, detail: e instanceof Error ? e.message : "key store unreachable" };

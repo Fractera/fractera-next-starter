@@ -257,7 +257,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
     <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
       (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
-      decomposition-born overview at app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
+      decomposition-born overview at the PROJECTS service dir (step 197): /opt/fractera/projects-app/app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
       works / efficiency / reuse / result + the fractera:project graph) — ALONGSIDE the completed/current
       sub-steps, on EVERY step. It is the single source of truth for what the project is and how its nodes
       fit together; every spec/handoff step file points to it. Never build a project node without it.</action>

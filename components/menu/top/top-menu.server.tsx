@@ -7,7 +7,6 @@ import { AccountButton } from "@/components/menu/account/account-button.client";
 import { appShellAuthSide } from "@/components/menu/account/account-config";
 import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
-import { getProjectsManifest } from "@/app/(projects)/projects/_shared/projects-manifest";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
 // group enables the top/left/right slot or the app turns on the auth button. Server
@@ -38,9 +37,8 @@ export async function TopMenu({ lang }: { lang: string }) {
   if (groups.length === 0 && !authSide && !leftHas && !rightHas) return null;
 
   const ui = UI_LABELS[lang] ?? UI_LABELS.en;
-  // Projects manifest for the account drawer (step 177): a build-time fs-scan of
-  // app/(projects)/projects/* — the folder is the registry, no request at render.
-  const projects = authSide ? await getProjectsManifest() : undefined;
+  // The account drawer's Projects entry is a plain launcher into the projects service (:3003,
+  // step 197) — no build-time manifest fs-scan here anymore (the zone left the slot).
 
   return (
     <header className="w-full border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
@@ -62,7 +60,7 @@ export async function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} projects={projects} />}
+          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} />}
           {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
               the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}

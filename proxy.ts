@@ -49,9 +49,9 @@ const ADMIN_API_PREFIXES: string[] = [];
 const SERVICE_ROOTS = new Set([
   "dashboard",
   "project",
-  // Projects layer (§3.12, step 175): monolingual architect/manager zone at
-  // app/(projects)/projects — /projects/<category>/<slug>, never lang-prefixed.
-  "projects",
+  // NOTE: the "projects" layer (§3.12) LEFT this slot in step 197 — it now runs in its own
+  // process fractera-projects (:3003 / projects.<apex>), so /projects is no longer served here
+  // and is intentionally absent from this set. The account drawer links out to that service.
 ]);
 
 const LOCALE_COOKIE = "NEXT_LOCALE";

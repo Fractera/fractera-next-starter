@@ -13,7 +13,7 @@
 
 // Service subdomain prefixes — used to recover the apex from any service host
 // (e.g. admin.aifa.dev → aifa.dev) in domain/Secure mode.
-const KNOWN_PREFIXES = ["www", "auth", "admin", "data", "hermes", "lightrag"];
+const KNOWN_PREFIXES = ["www", "auth", "admin", "data", "hermes", "lightrag", "projects", "design"];
 
 function isIpHost(hostname: string): boolean {
   return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname) || hostname === "localhost";
@@ -38,6 +38,24 @@ export function adminBase(): string {
   const { protocol, hostname } = window.location;
   if (isIpHost(hostname)) return `${protocol}//${hostname}:3002`;
   return `${protocol}//admin.${apexFrom(hostname)}`;
+}
+
+// Public base URL of the Projects service (fractera-projects :3003, step 197) — the automations
+// layer that moved out of this slot into its own process. IP → <host>:3003 ; domain → projects.<apex>.
+export function projectsBase(): string {
+  if (typeof window === "undefined") return "http://localhost:3003";
+  const { protocol, hostname } = window.location;
+  if (isIpHost(hostname)) return `${protocol}//${hostname}:3003`;
+  return `${protocol}//projects.${apexFrom(hostname)}`;
+}
+
+// Public base URL of the Design service (fractera-design :3004, step 197) — the future design-system
+// surface on its own process. IP → <host>:3004 ; domain → design.<apex>.
+export function designBase(): string {
+  if (typeof window === "undefined") return "http://localhost:3004";
+  const { protocol, hostname } = window.location;
+  if (isIpHost(hostname)) return `${protocol}//${hostname}:3004`;
+  return `${protocol}//design.${apexFrom(hostname)}`;
 }
 
 // Build the auth redirect for an unauthorized click on a protected destination.

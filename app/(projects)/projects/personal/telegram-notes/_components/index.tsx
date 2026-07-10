@@ -22,16 +22,6 @@ import { StatusIndicator } from "./status-indicator.client";
 // separate later step). The canvas + settings were always English.
 const LANG = "en";
 
-// Approximate the run-countdown period from a 5-field cron schedule: "* * * * *" =
-// every minute; "*/N * * * *" = every N minutes. Phase 4 makes the interval adjustable.
-function schedulePeriodSec(schedule: string): number {
-  const minute = schedule.trim().split(/\s+/)[0] ?? "*";
-  if (minute === "*") return 60;
-  const m = /^\*\/(\d+)$/.exec(minute);
-  if (m) return Math.max(30, Number(m[1]) * 60);
-  return 60;
-}
-
 // The project's standalone page (contract R9), reshaped for step 188 Phase 2: a status
 // pill by the title, the "About" accordion, the process canvas (R6), a run panel with a
 // countdown to the next scheduled run, the Hooks layer, and the scheduled-runs queue.
@@ -47,11 +37,6 @@ export default async function TelegramNotesProjectEntry() {
   ]);
   const d = PROJECT_DESCRIPTION;
   const t = projectTabStrings(LANG);
-  const enabledJob = cronJobs.find((j) => j.enabled);
-  const cronEnabled = Boolean(enabledJob);
-  const periodSec = schedulePeriodSec(
-    enabledJob?.schedule ?? cronJobs[0]?.schedule ?? "* * * * *",
-  );
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-4 py-8">
@@ -141,7 +126,7 @@ export default async function TelegramNotesProjectEntry() {
         <SettingsAccordion />
         <div className="space-y-3 pt-2">
           <h3 className="text-base font-medium">Tests</h3>
-          <TestsPanel periodSec={periodSec} enabled={cronEnabled} />
+          <TestsPanel />
         </div>
       </CollapsibleSection>
 

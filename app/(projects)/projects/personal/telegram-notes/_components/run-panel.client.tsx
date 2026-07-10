@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { NextRunCountdown } from "./next-run-countdown.client";
 
-// Admin launch panel (contract R9): shows the countdown to the next scheduled run
-// and accepts a manual run input to start the project's durable workflow through its
-// trigger route. The started run journals itself into project_cron_runs, so it
-// appears in the results table below on the next page load. `periodSec`/`enabled`
-// come from the co-located cron.json (Phase 2).
-export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: number; enabled?: boolean }) {
+// Admin launch panel (contract R9): accepts a manual run input to start the project's durable
+// workflow through its trigger route. The started run journals itself into project_cron_runs, so
+// it appears in the results table on the next refresh. (The next-run countdown bar was removed —
+// owner decision, step 207.20: a relic of the 188 polling model; reminder delivery still ticks on
+// the cron schedule, it just is not visualized here.)
+export function RunPanel() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [lastRunId, setLastRunId] = useState<string | null>(null);
@@ -45,8 +44,7 @@ export function RunPanel({ periodSec = 60, enabled = true }: { periodSec?: numbe
 
   return (
     <div className="space-y-3 rounded-lg border p-4">
-      <NextRunCountdown periodSec={periodSec} enabled={enabled} />
-      <div className="border-t pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Run manually (test)
       </div>
       <Textarea

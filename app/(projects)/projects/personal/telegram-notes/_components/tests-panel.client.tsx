@@ -79,7 +79,7 @@ function StatusIcon({ s }: { s: Status }) {
   return <CircleDashed className="size-4 text-muted-foreground" />;
 }
 
-export function TestsPanel({ periodSec = 60, enabled = true }: { periodSec?: number; enabled?: boolean }) {
+export function TestsPanel() {
   const [status, setStatus] = useState<Record<string, Status>>({});
   const [detail, setDetail] = useState<Record<string, string>>({});
 
@@ -119,7 +119,7 @@ export function TestsPanel({ periodSec = 60, enabled = true }: { periodSec?: num
       {/* Custom test — a manual workflow run with free-form input. */}
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Custom test</p>
-        <RunPanel periodSec={periodSec} enabled={enabled} />
+        <RunPanel />
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import { FINANCE_COLUMNS, type FinanceColumn } from "../_data/finance-columns";
 import { categoryLabel } from "../_data/finance-categories";
 import type { FinanceRecord } from "../_lib/project-data";
 import { FinanceImageCell } from "./finance-image-cell.client";
+import { DeleteRecordButton } from "./delete-record-button.client";
 
 // Finance ledger table (step 207.10 item 5) — the SEPARATE money table (owner decision), now a CLIENT
 // table so it has the same search + column-picker + localStorage persistence as the universal records
@@ -78,6 +79,10 @@ function Cell({ col, row }: { col: FinanceColumn; row: FinanceRecord }) {
 export function FinanceTable({ rows }: { rows: FinanceRecord[] }) {
   const [search, setSearch] = useState("");
   const [visibleIds, setVisibleIds] = useState<string[]>(DEFAULT_VISIBLE);
+  // Deletable rows (step 207.20c): local copy so a delete drops the row instantly; re-synced from
+  // the server-fetched prop on every auto-refresh render.
+  const [data, setData] = useState(rows);
+  useEffect(() => setData(rows), [rows]);
 
   // Restore the user's personal column choice for this project's finance table.
   useEffect(() => {
@@ -103,15 +108,15 @@ export function FinanceTable({ rows }: { rows: FinanceRecord[] }) {
   // Client-side search over the money-relevant fields (summary, kind, amount, category labels).
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(
+    if (!q) return data;
+    return data.filter(
       (r) =>
         r.summary.toLowerCase().includes(q) ||
         r.kind.includes(q) ||
         String(r.amount).includes(q) ||
         r.categories.some((id) => categoryLabel(id, "en").toLowerCase().includes(q)),
     );
-  }, [rows, search]);
+  }, [data, search]);
 
   return (
     <div className="space-y-3">
@@ -155,13 +160,14 @@ export function FinanceTable({ rows }: { rows: FinanceRecord[] }) {
                   {c.header}
                 </th>
               ))}
+              <th className="w-10 px-1 py-2" aria-label="Actions" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={Math.max(cols.length, 1)} className="px-3 py-6 text-center text-muted-foreground">
-                  {rows.length === 0
+                <td colSpan={Math.max(cols.length + 1, 1)} className="px-3 py-6 text-center text-muted-foreground">
+                  {data.length === 0
                     ? "No finance records yet. Send the bot a money note (for example: “got paid 1000”) or a receipt photo."
                     : "No finance records match your search."}
                 </td>
@@ -174,6 +180,14 @@ export function FinanceTable({ rows }: { rows: FinanceRecord[] }) {
                       <Cell col={c} row={r} />
                     </td>
                   ))}
+                  <td className="px-1 py-1.5 text-right">
+                    <DeleteRecordButton
+                      kind="finance"
+                      id={r.id}
+                      label={r.summary}
+                      onDeleted={(id) => setData((prev) => prev.filter((x) => x.id !== id))}
+                    />
+                  </td>
                 </tr>
               ))
             )}

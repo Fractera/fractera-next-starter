@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { GeoRecord } from "../_lib/project-data";
+import { DeleteRecordButton } from "./delete-record-button.client";
 
 // GEO registry table (step 207.20 — the owner's FOUR integrated tables: Records · Finances · Images ·
 // GEO). Every stored place: label, a tappable Google-Maps link built from the coordinates, source
@@ -15,13 +16,16 @@ function fmtDate(unix: number): string {
 
 export function GeoTable({ rows }: { rows: GeoRecord[] }) {
   const [q, setQ] = useState("");
+  // Deletable rows (step 207.20c): local copy synced from the auto-refreshed server prop.
+  const [data, setData] = useState(rows);
+  useEffect(() => setData(rows), [rows]);
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    if (!needle) return rows;
-    return rows.filter((r) =>
+    if (!needle) return data;
+    return data.filter((r) =>
       `${r.label} ${r.source} ${r.status} ${r.linked.join(" ")}`.toLowerCase().includes(needle),
     );
-  }, [rows, q]);
+  }, [data, q]);
 
   return (
     <div className="space-y-2">
@@ -42,12 +46,13 @@ export function GeoTable({ rows }: { rows: GeoRecord[] }) {
               <th className="px-3 py-2 font-medium">Status</th>
               <th className="px-3 py-2 font-medium">Linked records</th>
               <th className="px-3 py-2 font-medium">Date</th>
+              <th className="w-10 px-1 py-2" aria-label="Actions" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">
+                <td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">
                   No places yet — share a location with the bot (attach → Location) or paste a Google Maps link.
                 </td>
               </tr>
@@ -89,6 +94,14 @@ export function GeoTable({ rows }: { rows: GeoRecord[] }) {
                     )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-xs">{fmtDate(r.createdAt)}</td>
+                  <td className="px-1 py-1.5 text-right">
+                    <DeleteRecordButton
+                      kind="geo"
+                      id={r.id}
+                      label={r.label || `${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}`}
+                      onDeleted={(id) => setData((prev) => prev.filter((x) => x.id !== id))}
+                    />
+                  </td>
                 </tr>
               ))
             )}

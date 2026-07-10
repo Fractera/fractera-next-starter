@@ -178,6 +178,30 @@ const SCHEMA = `
     memory_track_id TEXT,
     created_at   INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
+  -- Image registry (step 207.18, rules R2/R3): every incoming photo is a FIRST-CLASS row the moment it
+  -- arrives — media upload gives the URL, a cheap vision call gives the short description ("interior of
+  -- a cafe" / "receipt: pie 5.50, coffee 2.00"). status=pending until linked; pending images live
+  -- FOREVER (no TTL) so nothing the user sent is ever silently lost.
+  CREATE TABLE IF NOT EXISTS automation_images (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    project     TEXT NOT NULL DEFAULT 'telegram-notes',
+    media_url   TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    chat_id     TEXT NOT NULL DEFAULT '',
+    status      TEXT NOT NULL DEFAULT 'pending',   -- 'pending' | 'linked'
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+  -- Record ⇄ image links (step 207.18, rule R3): MANY-TO-MANY across BOTH record kinds — one photo may
+  -- belong to a note AND a finance record (cafe interior ↔ the visit note + the pie purchase); one
+  -- record may carry several photos (interior + receipt). The answer path always resolves photos
+  -- through THIS table (rule R6) — never by "latest receipt" guessing.
+  CREATE TABLE IF NOT EXISTS record_images (
+    record_kind TEXT NOT NULL,                     -- 'note' | 'finance'
+    record_id   INTEGER NOT NULL,
+    image_id    INTEGER NOT NULL,
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    PRIMARY KEY (record_kind, record_id, image_id)
+  );
   -- External calendar OAuth tokens (step 207 Phase F) — per-project Google Calendar connection. One row
   -- per project; refresh_token drives long-lived access, access_token/expiry are the short-lived pair.
   -- Inert without GOOGLE_OAUTH_CLIENT_ID/SECRET (self-sufficiency): no row → the connector is "not

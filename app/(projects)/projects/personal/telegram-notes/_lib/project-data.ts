@@ -17,10 +17,22 @@ const IDENT = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 // the /records API adds search + pagination.
 export async function getRecords(): Promise<RecordRow[]> {
   if (!RECORD_TABLE || !IDENT.test(RECORD_TABLE)) return [];
-  const sources = Array.from(
-    new Set(PROJECT_COLUMNS.map((c) => c.source).filter((s) => IDENT.test(s))),
+  // image-type columns (step 207.18) are NOT table columns — they resolve through record_images via a
+  // correlated subquery aliased to the declared source. MUST mirror records/route.ts exactly: selecting
+  // first_image as a plain column here threw "no such column" → catch → EMPTY first page while the API
+  // worked (the owner saw a blank records table with intact data — step 207.18c fix).
+  const imageSources = new Set(
+    PROJECT_COLUMNS.filter((c) => c.type === "image" && IDENT.test(c.source)).map((c) => c.source),
   );
-  const cols = ["id", ...sources.filter((s) => s !== "id")];
+  const sources = Array.from(
+    new Set(PROJECT_COLUMNS.map((c) => c.source).filter((s) => IDENT.test(s) && !imageSources.has(s))),
+  );
+  const imageSelects = [...imageSources].map(
+    (alias) =>
+      `(SELECT i.media_url FROM record_images ri JOIN automation_images i ON i.id = ri.image_id ` +
+      `WHERE ri.record_kind = 'note' AND ri.record_id = ${RECORD_TABLE}.id ORDER BY ri.created_at ASC LIMIT 1) AS ${alias}`,
+  );
+  const cols = ["id", ...sources.filter((s) => s !== "id"), ...imageSelects];
   try {
     const rows = await db
       .prepare(`SELECT ${cols.join(", ")} FROM ${RECORD_TABLE} ORDER BY id DESC LIMIT 20`)

@@ -4,7 +4,7 @@ import { PROJECT_DESCRIPTION } from "../_data/description";
 import { PROJECT_INTERFACE } from "../_data/interface";
 import { PROJECT_COLUMNS } from "../_data/columns";
 import { projectTabStrings } from "../_data/tab-i18n";
-import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords } from "../_lib/project-data";
+import { getCronJobs, getRecords, getCalendarEvents, getFinanceRecords, getImageRecords, getGeoRecords } from "../_lib/project-data";
 import { UseCasesAccordion } from "./use-cases-accordion.client";
 import { CollapsibleSection } from "./collapsible-section.client";
 import { AutoRefresh } from "./auto-refresh.client";
@@ -37,11 +37,13 @@ function schedulePeriodSec(schedule: string): number {
 // countdown to the next scheduled run, the Hooks layer, and the scheduled-runs queue.
 // The two repetitive process/results tables are replaced by one unified table in Phase 3.
 export default async function TelegramNotesProjectEntry() {
-  const [cronJobs, records, calendarEvents, financeRecords] = await Promise.all([
+  const [cronJobs, records, calendarEvents, financeRecords, imageRecords, geoRecords] = await Promise.all([
     getCronJobs(),
     getRecords(),
     getCalendarEvents(),
     getFinanceRecords(),
+    getImageRecords(),
+    getGeoRecords(),
   ]);
   const d = PROJECT_DESCRIPTION;
   const t = projectTabStrings(LANG);
@@ -103,14 +105,16 @@ export default async function TelegramNotesProjectEntry() {
 
       {/* THE WORKING SURFACES FIRST (step 207.19, owner layout rule): the tables are the main
           workspace and must not sit below the settings/use-cases blocks. */}
-      {/* Records ⇄ Finances (step 207.10 item 5): one section, a right-aligned toggle, one table at a
-          time (Records by default). Finances is a SEPARATE ledger (owner decision) with its own search +
-          column picker; both are server-fetched and passed in. */}
+      {/* The FOUR integrated storages (owner contract, step 207.20): Records · Finances · Images · GEO —
+          one section, a right-aligned toggle, one table at a time (Records by default). Images and GEO
+          are the registries every record links to (record_images / record_geo, many-to-many). */}
       <section className="space-y-3">
         <RecordsFinancesPanel
           columns={PROJECT_COLUMNS}
           records={records}
           finances={financeRecords}
+          images={imageRecords}
+          geo={geoRecords}
         />
       </section>
 

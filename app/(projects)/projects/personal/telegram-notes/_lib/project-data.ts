@@ -165,6 +165,98 @@ export async function getFinanceRecords(limit = 50): Promise<FinanceRecord[]> {
   }
 }
 
+// Image registry rows (step 207.20 UI — owner: FOUR tables, integrated): every stored photo with its
+// vision description, status, and the records it is linked to (via record_images, many-to-many).
+export type ImageRecord = {
+  id: string;
+  url: string;
+  description: string;
+  kindHint: string;
+  status: string;
+  linked: string[]; // "note#5: summary…" lines resolved through the link table
+  createdAt: number;
+};
+export async function getImageRecords(limit = 50): Promise<ImageRecord[]> {
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT id, media_url, description, kind_hint, status, created_at FROM automation_images
+          WHERE project = ? ORDER BY created_at DESC LIMIT ?`,
+      )
+      .all(PROJECT, limit);
+    const out: ImageRecord[] = [];
+    for (const r of rows) {
+      const links = (await db
+        .prepare(
+          `SELECT ri.record_kind, ri.record_id,
+                  COALESCE((SELECT n.summary FROM telegram_notes n WHERE ri.record_kind = 'note' AND n.id = ri.record_id),
+                           (SELECT f.summary FROM automation_finance f WHERE ri.record_kind = 'finance' AND f.id = ri.record_id), '') AS summary
+             FROM record_images ri WHERE ri.image_id = ? ORDER BY ri.created_at ASC LIMIT 5`,
+        )
+        .all(Number(r.id))) as Array<{ record_kind: string; record_id: number; summary: string }>;
+      out.push({
+        id: String(r.id),
+        url: String(r.media_url ?? ""),
+        description: String(r.description ?? ""),
+        kindHint: String(r.kind_hint ?? "photo"),
+        status: String(r.status ?? "pending"),
+        linked: links.map((l) => `${l.record_kind}#${l.record_id}${l.summary ? `: ${String(l.summary).slice(0, 60)}` : ""}`),
+        createdAt: Number(r.created_at),
+      });
+    }
+    return out;
+  } catch {
+    return []; // table not created yet — no images
+  }
+}
+
+// Geo-mark rows (step 207.20 UI): every stored place with its coordinates, source, status and linked
+// records (via record_geo). The maps link is built client-side from lat/lng.
+export type GeoRecord = {
+  id: string;
+  lat: number;
+  lng: number;
+  label: string;
+  source: string;
+  status: string;
+  linked: string[];
+  createdAt: number;
+};
+export async function getGeoRecords(limit = 50): Promise<GeoRecord[]> {
+  try {
+    const rows = await db
+      .prepare(
+        `SELECT id, lat, lng, label, source, status, created_at FROM automation_geo
+          WHERE project = ? ORDER BY created_at DESC LIMIT ?`,
+      )
+      .all(PROJECT, limit);
+    const out: GeoRecord[] = [];
+    for (const r of rows) {
+      const links = (await db
+        .prepare(
+          `SELECT rg.record_kind, rg.record_id,
+                  COALESCE((SELECT n.summary FROM telegram_notes n WHERE rg.record_kind = 'note' AND n.id = rg.record_id),
+                           (SELECT f.summary FROM automation_finance f WHERE rg.record_kind = 'finance' AND f.id = rg.record_id), '') AS summary
+             FROM record_geo rg WHERE rg.geo_id = ? ORDER BY rg.created_at ASC LIMIT 5`,
+        )
+        .all(Number(r.id))) as Array<{ record_kind: string; record_id: number; summary: string }>;
+      out.push({
+        id: String(r.id),
+        lat: Number(r.lat),
+        lng: Number(r.lng),
+        label: String(r.label ?? ""),
+        source: String(r.source ?? "telegram"),
+        status: String(r.status ?? "pending"),
+        linked: links.map((l) => `${l.record_kind}#${l.record_id}${l.summary ? `: ${String(l.summary).slice(0, 60)}` : ""}`),
+        createdAt: Number(r.created_at),
+      });
+    }
+    return out;
+  } catch {
+    return []; // table not created yet — no geo marks
+  }
+}
+
 export async function getCronJobs(): Promise<CronJob[]> {
   try {
     const raw = await readFile(

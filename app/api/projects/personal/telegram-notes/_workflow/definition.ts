@@ -228,7 +228,9 @@ async function tgSendPhotoByUrl(chatId: string, imageUrl: string, caption: strin
 // One cheap-model chat completion. Returns the assistant text (trimmed) or "" on failure —
 // callers degrade gracefully (the automation never dies because the model hiccuped).
 async function cheapModel(system: string, user: string, maxTokens = 400): Promise<string> {
-  const key = process.env.OPENAI_API_KEY ?? "";
+  // OPENAI_KEY() — NOT a direct process.env read: the step context may lack the runtime-loaded env
+  // (step 207.16 round 2 root cause — this line read env directly and silently returned "").
+  const key = OPENAI_KEY();
   if (!key) return "";
   try {
     const r = await fetch(OPENAI_URL, {
@@ -973,9 +975,13 @@ export async function runProject(input?: string) {
       errors: string[];
     };
     artifacts["reply-in-telegram"] = outcome;
+    // Diagnostic tail (step 207.16): whether the AI key is visible from THIS execution context (env =
+    // process.env at call time; key = env OR the .env.local fallback). No secret is leaked — booleans
+    // only. Kept permanently: "key=false" in a run row is the first thing to check when replies degrade.
+    const diag = ` · key=${!!OPENAI_KEY()} env=${!!process.env.OPENAI_API_KEY} cwd=${process.cwd()}`;
     const title =
       `processed ${outcome.processed} · saved ${outcome.saved} · reminded ${outcome.reminded} · answered ${outcome.answered} · finance ${outcome.finance}` +
-      (outcome.errors.length ? ` · ${outcome.errors.length} error(s)` : "");
+      (outcome.errors.length ? ` · ${outcome.errors.length} error(s)` : "") + diag;
     await closeRun(journalId, { ok: true, resultTitle: title });
     return { journalId, status: "completed" };
   } catch (e) {

@@ -649,10 +649,14 @@ async function uploadToMedia(bytes: Uint8Array): Promise<string | null> {
   return null;
 }
 
-// Vision extraction: read a receipt/document image → a money movement (kind/amount/type/summary).
-async function visionExtractFinance(dataUrl: string, caption: string): Promise<FinanceExtract | null> {
+// Combined vision analysis (step 207.18, rule R2) — ONE call per photo does BOTH jobs: a short
+// description of what the image shows (powers the registry + semantic search over images) AND, when it
+// is a receipt/financial document, the itemized extraction. Itemized receipts (пирожок 5.50 + кофе 2.00)
+// yield total = the SUM of items (7.00) — the owner's canonical case; items go into the summary.
+type VisionAnalysis = { description: string; finance: FinanceExtract | null };
+async function visionAnalyze(dataUrl: string, caption: string): Promise<VisionAnalysis> {
   const key = OPENAI_KEY();
-  if (!key) return null;
+  if (!key) return { description: "", finance: null };
   try {
     const r = await fetch(OPENAI_URL, {
       method: "POST",
@@ -660,27 +664,54 @@ async function visionExtractFinance(dataUrl: string, caption: string): Promise<F
       body: JSON.stringify({
         model: VISION_MODEL,
         // Model-compatible params (207.16): gpt-5-family rejects max_tokens/temperature — see completionParams.
-        ...completionParams(VISION_MODEL, 200),
+        ...completionParams(VISION_MODEL, 400),
         messages: [
           { role: "system", content:
-            "You read a receipt or financial document image and output ONE JSON object, no prose: " +
-            '{"kind":"income|expense","amount":<number>,"categories":["<id>", ...],"summary":"<one line>"}. ' +
-            "A receipt/purchase is an expense; a payment/salary received is income. " +
-            "categories = one or more ids from the matching list below (multi-flag; pick every id that fits). " +
+            "You analyze a photo for a personal notes & finance assistant. Output ONE JSON object, no prose: " +
+            '{"description":"<one short line: what the photo shows>","is_financial":true|false,' +
+            '"kind":"income|expense","items":[{"name":"<item>","amount":<number>}, ...],"total":<number>,' +
+            '"categories":["<id>", ...],"summary":"<one line>"}. ' +
+            "description is ALWAYS filled (e.g. 'interior of a small cafe', 'a meat pie on a plate', " +
+            "'receipt: pie 5.50, coffee 2.00'). is_financial=true ONLY for a receipt/invoice/financial " +
+            "document with readable amounts. When itemized, list EVERY line item and set total = the sum " +
+            "of items; a single-amount document = one item. A receipt/purchase is an expense; a payment/" +
+            "salary received is income. categories = ids from the matching list (multi-flag). " +
             CATEGORY_GUIDE },
           { role: "user", content: [
-            { type: "text", text: caption ? `Caption: ${caption}` : "Digitize this document." },
+            { type: "text", text: caption ? `Caption: ${caption}` : "Analyze this photo." },
             { type: "image_url", image_url: { url: dataUrl } },
           ] },
         ],
       }),
       signal: AbortSignal.timeout(60000),
     });
-    if (!r.ok) return null;
+    if (!r.ok) return { description: "", finance: null };
     const data = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    return parseFinanceJson(data.choices?.[0]?.message?.content ?? "");
+    const raw = data.choices?.[0]?.message?.content ?? "";
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return { description: "", finance: null };
+    const o = JSON.parse(m[0]) as {
+      description?: unknown; is_financial?: unknown; kind?: unknown;
+      items?: Array<{ name?: unknown; amount?: unknown }>; total?: unknown;
+      categories?: unknown; summary?: unknown;
+    };
+    const description = String(o.description ?? "").slice(0, 300);
+    if (o.is_financial !== true) return { description, finance: null };
+    const kind = o.kind === "income" ? "income" : "expense";
+    const items = Array.isArray(o.items)
+      ? o.items.map((i) => ({ name: String(i?.name ?? "").slice(0, 80), amount: Number(i?.amount) })).filter((i) => Number.isFinite(i.amount) && i.amount > 0)
+      : [];
+    const itemsSum = items.reduce((s, i) => s + i.amount, 0);
+    const total = Number(o.total);
+    // The ledger amount = the itemized SUM when items exist (owner: 5.50+2.00 → 7.00), else the total.
+    const amount = itemsSum > 0 ? itemsSum : Number.isFinite(total) && total > 0 ? total : 0;
+    if (amount <= 0) return { description, finance: null };
+    const categories = normalizeCategories(kind, o.categories);
+    const itemsLine = items.length > 1 ? ` (${items.map((i) => `${i.name} ${i.amount}`).join(", ")})` : "";
+    const summary = `${String(o.summary ?? "").slice(0, 160)}${itemsLine}`.trim() || description;
+    return { description, finance: { kind, amount, categories, summary: summary.slice(0, 240) } };
   } catch {
-    return null;
+    return { description: "", finance: null };
   }
 }
 
@@ -763,44 +794,57 @@ async function parseFinanceQuery(text: string): Promise<FinanceQuery> {
   }
 }
 
-// ── Pending images — the "editing state" for photo↔record linking (step 207.16, owner case). Humans
-// send the photo and the words SEPARATELY (photo first then a comment, or a comment then the photo, or
-// an album). A photo whose amount could not be read is therefore NEVER discarded: it is uploaded to the
-// media store and parked here per chat (TTL 30 min, up to 5), then linked to the NEXT finance record —
-// or, when the words say «обнови/добавь/прикрепи/этот…», to the latest recent record without a photo. ──
-const PENDING_IMG_TTL_SEC = 1800;
-const PENDING_IMG_MAX = 5;
-type PendingImage = { url: string; ts: number };
-async function loadPendingImages(chatId: string): Promise<PendingImage[]> {
+// ── Image registry (step 207.18, rules R2/R3/R5): every incoming photo becomes a FIRST-CLASS row in
+// automation_images the moment it arrives (media upload + a short vision description), status=pending
+// until linked. Pending images live FOREVER (no TTL — owner decision: nothing sent is silently lost);
+// the "recent" window below only governs AUTO-attachment so a week-old photo doesn't silently glue
+// itself to an unrelated record. record_images is the many-to-many link across BOTH record kinds. ──
+const PENDING_ATTACH_WINDOW_SEC = 1800; // auto-attach window; the registry row itself never expires
+type RegisteredImage = { id: number; url: string; description: string };
+async function registerImage(chatId: string, url: string, description: string): Promise<number | null> {
   try {
-    const row = (await db.prepare("SELECT value FROM telegram_notes_state WHERE key = ?").get(`pending_image:${chatId}`)) as { value?: string } | null;
-    const arr = row?.value ? (JSON.parse(row.value) as PendingImage[]) : [];
-    const now = Math.floor(Date.now() / 1000);
-    return arr.filter((p) => p.url && now - p.ts <= PENDING_IMG_TTL_SEC);
+    const res = await db
+      .prepare("INSERT INTO automation_images (project, media_url, description, chat_id, status) VALUES (?, ?, ?, ?, 'pending')")
+      .run(PROJECT_SLUG, url, description.slice(0, 500), chatId);
+    return Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
+  } catch { return null; }
+}
+// Recent pending (unlinked) images of this chat — the auto-attach candidates, newest last.
+async function loadPendingImages(chatId: string): Promise<RegisteredImage[]> {
+  try {
+    const rows = (await db
+      .prepare(
+        "SELECT id, media_url, description FROM automation_images WHERE project = ? AND chat_id = ? AND status = 'pending' AND created_at >= ? ORDER BY created_at ASC",
+      )
+      .all(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - PENDING_ATTACH_WINDOW_SEC)) as Array<{ id: number; media_url: string; description: string }>;
+    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description }));
   } catch { return []; }
 }
-async function savePendingImage(chatId: string, url: string): Promise<void> {
+// Link images to a record (rule R3) and mark them linked. Never throws.
+async function linkImages(recordKind: "note" | "finance", recordId: number, images: RegisteredImage[]): Promise<void> {
+  for (const img of images) {
+    try {
+      await db
+        .prepare("INSERT OR IGNORE INTO record_images (record_kind, record_id, image_id) VALUES (?, ?, ?)")
+        .run(recordKind, recordId, img.id);
+      await db.prepare("UPDATE automation_images SET status = 'linked' WHERE id = ?").run(img.id);
+    } catch { /* link is best-effort per image */ }
+  }
+}
+// Images of a record, via the link table (rule R6 — the ONLY photo resolution path).
+async function imagesOfRecord(recordKind: "note" | "finance", recordId: number): Promise<RegisteredImage[]> {
   try {
-    const arr = await loadPendingImages(chatId);
-    arr.push({ url, ts: Math.floor(Date.now() / 1000) });
-    await db
-      .prepare("INSERT OR REPLACE INTO telegram_notes_state (key, value) VALUES (?, ?)")
-      .run(`pending_image:${chatId}`, JSON.stringify(arr.slice(-PENDING_IMG_MAX)));
-  } catch { /* state table optional */ }
+    const rows = (await db
+      .prepare(
+        "SELECT i.id, i.media_url, i.description FROM record_images ri JOIN automation_images i ON i.id = ri.image_id " +
+          "WHERE ri.record_kind = ? AND ri.record_id = ? ORDER BY ri.created_at ASC",
+      )
+      .all(recordKind, recordId)) as Array<{ id: number; media_url: string; description: string }>;
+    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description }));
+  } catch { return []; }
 }
-async function clearPendingImages(chatId: string): Promise<void> {
-  try { await db.prepare("DELETE FROM telegram_notes_state WHERE key = ?").run(`pending_image:${chatId}`); } catch { /* best-effort */ }
-}
-// Ingest ONE finance record into the vector memory (step 207.16, owner contract: EVERY record from EVERY
-// case lands in LightRAG, and the local row stores the link). Mirrors ingestNoteToMemory; best-effort —
-// a memory hiccup never loses the ledger row, the record just stays searchable via the DB bridge only.
-async function ingestFinanceToMemory(dbId: number, kind: string, amount: number, categories: string[], summary: string): Promise<void> {
-  const when = new Date().toISOString().slice(0, 16).replace("T", " ");
-  const cats = categories.map((id) => `${categoryLabel(id, "en")} / ${categoryLabel(id, "ru")}`).join(", ");
-  // [fin#<id>] — the reverse link (owner architecture decision, scale contract): a vector answer that
-  // quotes this doc carries the row id, so the local DB resolves the full record AND its image in O(1)
-  // regardless of ledger size. Forward link = memory_track_id on the row; this marker is the way back.
-  const doc = `[fin#${dbId}] Finance record from ${when}: ${kind} ${amount}${cats ? ` (${cats})` : ""} — ${summary}`;
+// Shared low-level ingest: POST one doc text to LightRAG, return the track id (or null). Best-effort.
+async function ragIngestText(doc: string): Promise<string | null> {
   try {
     const r = await fetch(`${RAG_URL}/documents/text`, {
       method: "POST",
@@ -808,28 +852,110 @@ async function ingestFinanceToMemory(dbId: number, kind: string, amount: number,
       body: JSON.stringify({ text: doc }),
       signal: AbortSignal.timeout(30_000),
     });
-    if (!r.ok) return;
+    if (!r.ok) return null;
     const data = (await r.json()) as { track_id?: string };
-    if (data.track_id) {
-      await db.prepare("UPDATE automation_finance SET memory_track_id = ? WHERE id = ? AND project = ?").run(data.track_id, dbId, PROJECT_SLUG);
+    return data.track_id ?? null;
+  } catch { return null; }
+}
+
+// "with photos: …" block for a vector doc (rule R4): the vision DESCRIPTIONS (never URLs) make records
+// findable BY their images («покажи кафе с пирожками» → the note whose photo is a cafe interior).
+function photosBlock(images: RegisteredImage[]): string {
+  const descs = images.map((i) => i.description).filter(Boolean);
+  return descs.length ? ` — with photos: ${descs.join("; ")}` : "";
+}
+
+// Ingest ONE finance record into the vector memory (step 207.16/207.18, owner contract: EVERY record
+// from EVERY case lands in LightRAG, and the local row stores the link). [fin#<id>] is the reverse
+// link (scale contract: a vector answer citing this doc resolves the row AND its images in O(1)).
+async function ingestFinanceToMemory(dbId: number, kind: string, amount: number, categories: string[], summary: string, images: RegisteredImage[] = []): Promise<void> {
+  const when = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const cats = categories.map((id) => `${categoryLabel(id, "en")} / ${categoryLabel(id, "ru")}`).join(", ");
+  const doc = `[fin#${dbId}] Finance record from ${when}: ${kind} ${amount}${cats ? ` (${cats})` : ""} — ${summary}${photosBlock(images)}`;
+  const trackId = await ragIngestText(doc);
+  if (trackId) {
+    try {
+      await db.prepare("UPDATE automation_finance SET memory_track_id = ? WHERE id = ? AND project = ?").run(trackId, dbId, PROJECT_SLUG);
+    } catch { /* row already saved */ }
+  }
+}
+
+// Ingest ONE note into the vector memory with the [note#<id>] reverse marker (rule R4 — symmetric with
+// finance). Returns nothing; the row's memory_track_id is updated on success.
+async function ingestNoteDocToMemory(dbId: number, payload: string, images: RegisteredImage[] = []): Promise<boolean> {
+  const when = new Date().toISOString().slice(0, 16).replace("T", " ");
+  const doc = `[note#${dbId}] Note from ${when}: ${payload}${photosBlock(images)}`;
+  const trackId = await ragIngestText(doc);
+  if (trackId) {
+    try {
+      await db.prepare("UPDATE telegram_notes SET memory_track_id = ? WHERE id = ?").run(trackId, dbId);
+    } catch { /* row already saved */ }
+    return true;
+  }
+  return false;
+}
+
+// Re-index one record after a LATE image attach (rule R7): delete the old vector doc (by the stored
+// track id) and ingest a fresh one that now mentions the photos. The chain the owner asked for:
+// поздняя загрузка фото → связь → переиндекс — все хранилища согласованы.
+async function reingestRecord(kind: "note" | "finance", id: number): Promise<void> {
+  try {
+    const images = await imagesOfRecord(kind, id);
+    if (kind === "finance") {
+      const row = (await db
+        .prepare("SELECT kind, amount, categories, summary, memory_track_id FROM automation_finance WHERE id = ? AND project = ?")
+        .get(id, PROJECT_SLUG)) as { kind?: string; amount?: number; categories?: string; summary?: string; memory_track_id?: string } | null;
+      if (!row) return;
+      if (row.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
+      await ingestFinanceToMemory(id, row.kind ?? "expense", Number(row.amount ?? 0), parseCategoryIds(row.categories), row.summary ?? "", images);
+    } else {
+      const row = (await db
+        .prepare("SELECT full_text, summary, memory_track_id FROM telegram_notes WHERE id = ? AND project_slug = ?")
+        .get(id, PROJECT_SLUG)) as { full_text?: string; summary?: string; memory_track_id?: string } | null;
+      if (!row) return;
+      if (row.memory_track_id) await deleteVectorDoc(String(row.memory_track_id));
+      await ingestNoteDocToMemory(id, row.full_text || row.summary || "", images);
     }
-  } catch { /* best-effort — the ledger row is already saved */ }
+  } catch { /* best-effort — the DB stays authoritative */ }
 }
 
 // The words that mean "this photo belongs to an existing record", any order of arrival.
 function wantsAttach(text: string): boolean {
   return /обнови|добавь|прикрепи|привяжи|прикрепить|это(т)?\s+(самый|тот)|та\s+самая|attach|link|update/i.test(text);
 }
-// The latest recent finance record of this chat WITHOUT a photo (attach target), newest first.
-async function latestRecordWithoutPhoto(chatId: string, sinceSec = 3600): Promise<{ id: number; summary: string } | null> {
+// The latest recent record of this chat WITHOUT images — of EITHER kind (rule R5: the attach target may
+// be a note as well as a finance record; the newest one wins). Checked via record_images (rule R6).
+async function latestRecordWithoutImages(chatId: string, sinceSec = 3600): Promise<{ kind: "note" | "finance"; id: number; summary: string } | null> {
+  const since = Math.floor(Date.now() / 1000) - sinceSec;
+  type RecRow = { id: number; summary: string; created_at: number };
+  let fin: RecRow | null = null;
+  let note: RecRow | null = null;
   try {
-    const row = (await db
+    fin = (await db
       .prepare(
-        "SELECT id, summary FROM automation_finance WHERE project = ? AND chat_id = ? AND (image_url IS NULL OR image_url = '') AND created_at >= ? ORDER BY created_at DESC LIMIT 1",
+        "SELECT f.id, f.summary, f.created_at FROM automation_finance f WHERE f.project = ? AND f.chat_id = ? AND f.created_at >= ? " +
+          "AND (f.image_url IS NULL OR f.image_url = '') " +
+          "AND NOT EXISTS (SELECT 1 FROM record_images ri WHERE ri.record_kind = 'finance' AND ri.record_id = f.id) " +
+          "ORDER BY f.created_at DESC LIMIT 1",
       )
-      .get(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - sinceSec)) as { id?: number; summary?: string } | null;
-    return row?.id ? { id: row.id, summary: row.summary ?? "" } : null;
-  } catch { return null; }
+      .get(PROJECT_SLUG, chatId, since)) as RecRow | null;
+  } catch { /* none */ }
+  try {
+    note = (await db
+      .prepare(
+        "SELECT n.id, n.summary, n.created_at FROM telegram_notes n WHERE n.project_slug = ? AND n.chat_id = ? AND n.created_at >= ? " +
+          "AND n.hook_action IN ('save','remind') " +
+          "AND NOT EXISTS (SELECT 1 FROM record_images ri WHERE ri.record_kind = 'note' AND ri.record_id = n.id) " +
+          "ORDER BY n.created_at DESC LIMIT 1",
+      )
+      .get(PROJECT_SLUG, chatId, since)) as RecRow | null;
+  } catch { /* none */ }
+  if (fin && note) return fin.created_at >= note.created_at
+    ? { kind: "finance", id: fin.id, summary: fin.summary }
+    : { kind: "note", id: note.id, summary: note.summary };
+  if (fin) return { kind: "finance", id: fin.id, summary: fin.summary };
+  if (note) return { kind: "note", id: note.id, summary: note.summary };
+  return null;
 }
 
 // ── Finance ledger keyword search (step 207.16): free-text questions about money ("did Petya return the
@@ -1061,6 +1187,7 @@ export async function runProject(input?: string) {
     artifacts["parse-document"] = await parseDocument(artifacts);
     artifacts["answer-finance-query"] = await answerFinanceQuery(artifacts);
     artifacts["persist-note-to-db"] = await persistNoteToDb(artifacts);
+    artifacts["link-images"] = await linkImagesNode(artifacts);
     artifacts["ingest-note-to-memory"] = await ingestNoteToMemory(artifacts);
     const outcome = (await replyInTelegram(artifacts)) as {
       processed: number;
@@ -1279,8 +1406,11 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       out.push({ intent: msg.forcedAction, projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
       continue;
     }
-    // A photo always goes to document digitization (step 205 §E): a receipt / document → finance record.
-    if (msg.photoFileId) {
+    // A photo WITHOUT a caption goes to digitization (a receipt attempt; a non-receipt is registered
+    // pending — rule R2). A photo WITH a caption falls through: the caption is classified like any
+    // text (step 207.18 — «это моя резиденция, запомни» must become a NOTE with the photo linked),
+    // and the photoFileId rides along so parse-document registers the image whatever the intent.
+    if (msg.photoFileId && !msg.text.trim()) {
       out.push({ intent: "finance", projectSlug: PROJECT_SLUG, payload: msg.text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date, photoFileId: msg.photoFileId });
       continue;
     }
@@ -1309,6 +1439,9 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
           "e.g. 'got paid 1000', 'bought ice cream for 2 euro'), finance-query (a QUESTION about money already " +
           "recorded — how much spent/earned, e.g. 'how much did I spend on food this week'), " +
           "photo (asks to SEE / send back a previously saved receipt photo or image), " +
+          "compound (ONE message that carries BOTH a note-worthy experience AND a money movement — e.g. " +
+          "'went to a nice cafe near the post office, loved it, bought a pie for 5.50' — the note AND the " +
+          "purchase must both be recorded), " +
           "meta (a conversational message, a complaint, a follow-up ABOUT the assistant or a previous answer, or a " +
           "request about how the bot works — e.g. 'answer in Russian', 'did you save it?', 'why didn't you reply', " +
           "'what is it called in the database'), " +
@@ -1319,8 +1452,8 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
         `${historyBlock(hist)}NEW MESSAGE: ${text.slice(0, 1000)}`,
         6,
       );
-      // finance-query BEFORE finance so the longer token wins the match.
-      let word = (ans.toLowerCase().match(/save|remind|recall|finance-query|finance|escalate|meta|photo|unclear/) ?? [""])[0];
+      // finance-query BEFORE finance so the longer token wins the match; compound before finance too.
+      let word = (ans.toLowerCase().match(/save|remind|recall|finance-query|compound|finance|escalate|meta|photo|unclear/) ?? [""])[0];
       // Heuristic fallback (step 207.16): an OpenAI outage used to turn EVERY message — including a
       // crystal-clear "запомни…" — into the unclear-buttons picker (owner test, 19:57–23:01). When the
       // model failed ("" = API error) or shrugged, route obvious phrasings by keyword instead; only a
@@ -1328,6 +1461,15 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       if (!word || word === "unclear") {
         const h = heuristicIntent(text);
         if (h) word = h;
+      }
+      // Compound (step 207.18, owner case «кафе + пирожок за 5.50»): ONE message = a note AND a money
+      // movement — fan out into BOTH existing actions (the diagram already routes classify → summarize
+      // AND classify → parse-document; a compound simply takes both edges). The photo (if any) rides on
+      // the finance entry only — parse-document dedupes registration by file id anyway.
+      if (word === "compound") {
+        out.push({ intent: "save", projectSlug: PROJECT_SLUG, payload: text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date });
+        out.push({ intent: "finance", projectSlug: PROJECT_SLUG, payload: text, hookPhrase: "", chatId: msg.chatId, messageId: msg.messageId, date: msg.date, photoFileId: msg.photoFileId });
+        continue;
       }
       if (!word || word === "unclear") { intent = "ignore"; unclear = true; }
       else intent = word as Intent;
@@ -1342,6 +1484,9 @@ async function classifyMessage(artifacts: Record<string, unknown>): Promise<unkn
       chatId: msg.chatId,
       messageId: msg.messageId,
       date: msg.date,
+      // The photo rides along whatever the intent (step 207.18): parse-document registers EVERY incoming
+      // image into the registry; the record path links it afterwards (link-images node).
+      photoFileId: msg.photoFileId,
     });
   }
   return out;
@@ -1406,17 +1551,28 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
         .replace(/^\s*[-*]?\s*\**(Проект|Project|Хук|Hook|Запись|Record)\**\s*[:#].*$/gim, "")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
-      // Reverse-link resolution (step 207.16, scale contract): a memory answer citing finance docs
-      // carries [fin#<id>] markers — resolve the rows in the local DB (O(1) at ANY ledger size) and
-      // surface their photos when the question asks to see them; the marker itself never reaches the user.
-      const citedIds = [...answer.matchAll(/\[fin#(\d+)\]/g)].map((m) => Number(m[1])).filter((n) => n > 0).slice(0, 5);
-      answer = answer.replace(/\s*\[fin#\d+\]\s*/g, " ").replace(/ {2,}/g, " ").trim();
-      if (citedIds.length && wantsImage) {
-        for (const id of citedIds) {
-          try {
-            const row = (await db.prepare("SELECT image_url FROM automation_finance WHERE id = ? AND project = ?").get(id, PROJECT_SLUG)) as { image_url?: string } | null;
-            if (row?.image_url && !photoUrls.includes(row.image_url) && photoUrls.length < 2) photoUrls.push(row.image_url);
-          } catch { /* best-effort */ }
+      // Reverse-link resolution (step 207.16/207.18, scale contract): a memory answer citing records
+      // carries [fin#<id>] / [note#<id>] markers — resolve the rows in the local DB (O(1) at ANY ledger
+      // size) and surface their photos via record_images when the question asks to see them; the marker
+      // itself never reaches the user.
+      const citedFin = [...answer.matchAll(/\[fin#(\d+)\]/g)].map((m) => Number(m[1])).filter((n) => n > 0).slice(0, 5);
+      const citedNotes = [...answer.matchAll(/\[note#(\d+)\]/g)].map((m) => Number(m[1])).filter((n) => n > 0).slice(0, 5);
+      answer = answer.replace(/\s*\[(?:fin|note)#\d+\]\s*/g, " ").replace(/ {2,}/g, " ").trim();
+      if (wantsImage) {
+        for (const [kind, ids] of [["finance", citedFin], ["note", citedNotes]] as const) {
+          for (const id of ids) {
+            const linked = await imagesOfRecord(kind, id);
+            for (const img of linked) {
+              if (!photoUrls.includes(img.url) && photoUrls.length < 3) photoUrls.push(img.url);
+            }
+            // Legacy fallback: pre-207.18 finance rows carry image_url only.
+            if (kind === "finance" && !linked.length) {
+              try {
+                const row = (await db.prepare("SELECT image_url FROM automation_finance WHERE id = ? AND project = ?").get(id, PROJECT_SLUG)) as { image_url?: string } | null;
+                if (row?.image_url && !photoUrls.includes(row.image_url) && photoUrls.length < 3) photoUrls.push(row.image_url);
+              } catch { /* best-effort */ }
+            }
+          }
         }
       }
       // A "nothing found" memory answer is REPLACED by the ledger hits; a real answer gets them appended.
@@ -1449,8 +1605,9 @@ async function searchMemoryRecall(artifacts: Record<string, unknown>): Promise<u
 type FinanceRow = {
   dbId: number | null; chatId: string; kind: "income" | "expense"; amount: number; categories: string[];
   summary: string; imageUrl: string | null; duplicateOfId?: number | null;
-  // Photo↔record linking outcomes (step 207.16, owner "editing state" case):
+  // Photo↔record linking outcomes (step 207.16/207.18, owner "editing state" case):
   attachedToId?: number | null;   // this photo was linked to an EXISTING record (no new row)
+  attachedKind?: "note" | "finance"; // which kind of record the photo attached to
   pendingSaved?: boolean;         // photo parked for the NEXT record (no target yet)
   pendingAttached?: boolean;      // a previously parked photo was linked to THIS new row
 };
@@ -1459,37 +1616,49 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
 
   const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
   const out: FinanceRow[] = [];
+
+  // Phase 1 (rule R2): register EVERY incoming photo — whatever the intent — as a first-class row
+  // (media upload + ONE vision call giving description AND, for receipts, the itemized extraction).
+  // Dedupe by file id: a compound message fans into two classified entries sharing the photo.
+  const analyzed = new Map<string, { imageId: number | null; url: string | null; vision: VisionAnalysis }>();
+  for (const c of classified) {
+    if (!c.photoFileId || analyzed.has(c.photoFileId)) continue;
+    let url: string | null = null;
+    let vision: VisionAnalysis = { description: "", finance: null };
+    const photo = await fetchTelegramPhoto(c.photoFileId);
+    if (photo) {
+      url = await uploadToMedia(photo.bytes);
+      vision = await visionAnalyze(photo.dataUrl, c.payload);
+    }
+    const imageId = url ? await registerImage(c.chatId, url, vision.description) : null;
+    analyzed.set(c.photoFileId, { imageId, url, vision });
+  }
+
+  // Phase 2: the finance action itself.
   for (const c of classified) {
     if (c.intent !== "finance") continue;
+    const reg = c.photoFileId ? analyzed.get(c.photoFileId) : undefined;
+    const imageUrl = reg?.url ?? null;
+    let extract: FinanceExtract | null = reg ? reg.vision.finance : null;
+    // A captioned photo whose IMAGE has no readable amount may still carry the amount in the WORDS
+    // («пирожок за 5.50» под фото) — try the text; a plain text message is the text path as before.
+    if (!extract && c.payload.trim()) extract = await textExtractFinance(c.payload);
 
-    let imageUrl: string | null = null;
-    let extract: FinanceExtract | null = null;
-    if (c.photoFileId) {
-      const photo = await fetchTelegramPhoto(c.photoFileId);
-      if (photo) {
-        imageUrl = await uploadToMedia(photo.bytes);
-        extract = await visionExtractFinance(photo.dataUrl, c.payload);
-      }
-    } else {
-      extract = await textExtractFinance(c.payload);
-    }
     if (!extract) {
-      // No readable money movement. A PHOTO is never discarded (owner "editing state" case): the words
-      // and the picture may arrive in any order, so either link it to a recent record now, or park it
-      // for the record that is about to arrive.
-      if (imageUrl) {
-        // «обнови/добавь/прикрепи/этот…» or just a bare photo right after a photo-less record → attach.
+      if (imageUrl && reg?.imageId != null) {
+        // No money in this photo/words. «обнови/добавь/прикрепи/этот…» → attach to the latest recent
+        // record WITHOUT images of ANY kind (rule R5) + re-index its vector doc (rule R7); a bare photo
+        // right after such a record attaches too (shorter window). Otherwise it stays pending (forever
+        // in the registry; auto-attach window only bounds silent gluing).
         const target = wantsAttach(c.payload)
-          ? await latestRecordWithoutPhoto(c.chatId)
-          : await latestRecordWithoutPhoto(c.chatId, 900); // bare photo: only a very recent record
+          ? await latestRecordWithoutImages(c.chatId)
+          : await latestRecordWithoutImages(c.chatId, 900);
         if (target) {
-          try {
-            await db.prepare("UPDATE automation_finance SET image_url = ? WHERE id = ? AND project = ?").run(imageUrl, target.id, PROJECT_SLUG);
-            out.push({ dbId: target.id, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: target.summary, imageUrl, attachedToId: target.id });
-            continue;
-          } catch { /* fall through to parking */ }
+          await linkImages(target.kind, target.id, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description }]);
+          await reingestRecord(target.kind, target.id);
+          out.push({ dbId: target.id, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: target.summary, imageUrl, attachedToId: target.id, attachedKind: target.kind });
+          continue;
         }
-        await savePendingImage(c.chatId, imageUrl);
         out.push({ dbId: null, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: "", imageUrl, pendingSaved: true });
         continue;
       }
@@ -1499,18 +1668,9 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
     }
 
     // Write to the SEPARATE finance ledger (step 207 owner decision). categories = validated preset ids
-    // (multi-flag) stored as a JSON array; the telegram_notes finance columns are no longer written.
-    // A text record picks up a parked photo (owner "editing state" case: the photo arrived FIRST, its
-    // amount was unreadable, and THIS message is the words for it — link the newest pending image).
-    let pendingAttached = false;
-    if (!imageUrl) {
-      const parked = await loadPendingImages(c.chatId);
-      if (parked.length) {
-        imageUrl = parked[parked.length - 1].url;
-        pendingAttached = true;
-        await clearPendingImages(c.chatId);
-      }
-    }
+    // (multi-flag) stored as a JSON array. image_url keeps the FIRST photo for back-compat readers; the
+    // authoritative photo set is record_images (rule R3, linked in the link-images node / right here for
+    // the record's own receipt photo). Vector ingest moved to the ingest node (after linking — rule R4).
     const res = await db
       .prepare(
         "INSERT INTO automation_finance (project, kind, amount, categories, summary, image_url, chat_id, msg_date) " +
@@ -1518,15 +1678,15 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
       )
       .run(PROJECT_SLUG, extract.kind, extract.amount, JSON.stringify(extract.categories), extract.summary, imageUrl, c.chatId, c.date);
     const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
-    // Owner contract (step 207.16): every finance record ALSO lands in the vector memory, and the row
-    // stores the track id — so free-text history search (chicken, pies…) finds money movements too.
-    if (dbId != null) await ingestFinanceToMemory(dbId, extract.kind, extract.amount, extract.categories, extract.summary);
+    if (dbId != null && reg?.imageId != null && imageUrl) {
+      await linkImages("finance", dbId, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description }]);
+    }
     // Soft duplicate check (step 207.x, Tier 2): a recent identical money movement from this chat → the
     // record is kept, but reply-in-telegram offers a one-tap "keep both / remove duplicate".
     const duplicateOfId = dbId != null
       ? await findRecentDuplicateFinance(dbId, extract.kind, extract.amount, extract.summary, c.chatId)
       : null;
-    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId, pendingAttached });
+    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId });
   }
   return out;
 }
@@ -1621,45 +1781,83 @@ async function persistNoteToDb(artifacts: Record<string, unknown>): Promise<unkn
   return out;
 }
 
-// node:ingest-note-to-memory — Write the note to vector memory (LightRAG) [step]
+// node:link-images — Link this run's images to this run's records (many-to-many) [step]
+// Step 207.18 (rules R3/R5): the pending images of a chat attach to EVERY record born from the same
+// message burst — the owner's cafe case: interior photo + receipt photo + a compound text → the note AND
+// the finance record BOTH carry BOTH photos. The finance record's own receipt photo was already linked
+// at creation (parse-document); this node links what arrived photo-first. Output feeds the ingest node
+// so every vector doc mentions its photos (rule R4).
+type LinkOutcome = { noteImages: Record<number, RegisteredImage[]>; financeImages: Record<number, RegisteredImage[]>; linked: number };
+async function linkImagesNode(artifacts: Record<string, unknown>): Promise<unknown> {
+  "use step";
+
+  const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
+  const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
+  const out: LinkOutcome = { noteImages: {}, financeImages: {}, linked: 0 };
+
+  // New records of this run, grouped by chat.
+  const byChat = new Map<string, { notes: number[]; fins: number[] }>();
+  for (const p of persisted) {
+    if (p.dbId == null || p.intent === "recall") continue;
+    const g = byChat.get(p.chatId) ?? { notes: [], fins: [] };
+    g.notes.push(p.dbId);
+    byChat.set(p.chatId, g);
+  }
+  for (const f of finances) {
+    if (f.dbId == null || f.attachedToId != null) continue;
+    const g = byChat.get(f.chatId) ?? { notes: [], fins: [] };
+    g.fins.push(f.dbId);
+    byChat.set(f.chatId, g);
+  }
+
+  for (const [chatId, g] of byChat) {
+    const pending = await loadPendingImages(chatId);
+    if (!pending.length) {
+      // Still expose the records' already-linked images (receipt linked at creation) for the ingest node.
+      for (const id of g.fins) out.financeImages[id] = await imagesOfRecord("finance", id);
+      for (const id of g.notes) out.noteImages[id] = await imagesOfRecord("note", id);
+      continue;
+    }
+    for (const id of g.notes) {
+      await linkImages("note", id, pending);
+      out.noteImages[id] = await imagesOfRecord("note", id);
+      out.linked += pending.length;
+    }
+    for (const id of g.fins) {
+      await linkImages("finance", id, pending);
+      out.financeImages[id] = await imagesOfRecord("finance", id);
+      out.linked += pending.length;
+    }
+  }
+  return out;
+}
+
+// node:ingest-note-to-memory — Write this run's records to vector memory (LightRAG) [step]
+// Step 207.18 (rule R4): EVERY record of EVERY kind gets a vector doc with its reverse marker
+// ([note#id] / [fin#id]) and the vision descriptions of its linked photos. Runs AFTER link-images so
+// the doc already knows its photos; a later attach re-ingests via reingestRecord (rule R7).
 async function ingestNoteToMemory(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
+  const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
+  const links = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0 };
   const out: Ingested[] = [];
   for (const p of persisted) {
     if (p.dbId == null) continue; // needs-when rows are not yet stored
-    const when = new Date().toISOString().slice(0, 16).replace("T", " ");
-    // Clean indexed text (step 207.10 P4): index the note content + date only — NOT the internal
-    // Project/Hook/Record tags, which used to leak verbatim into recall answers. The delete contract
-    // uses memory_track_id (captured from the response below) + the description, not this body text.
-    const doc = `Note from ${when}: ${p.payload}`;
     try {
-      const r = await fetch(`${RAG_URL}/documents/text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-API-Key": RAG_KEY, "X-Agent-Identity": PROJECT_SLUG },
-        body: JSON.stringify({ text: doc, description: `telegram-notes #${p.dbId}` }),
-        signal: AbortSignal.timeout(60_000),
-      });
-      // Capture the LightRAG track id so the record can be deleted from BOTH stores later
-      // (188-R V2.5 Record delete contract): on delete we resolve this track id to the vector
-      // doc id(s) and remove them. Best-effort — a missing id only means no vector delete.
-      if (r.ok) {
-        try {
-          const data = (await r.json()) as { track_id?: string };
-          if (data?.track_id && p.dbId != null) {
-            await db
-              .prepare("UPDATE telegram_notes SET memory_track_id = ? WHERE id = ?")
-              .run(data.track_id, p.dbId);
-          }
-        } catch {
-          /* response not JSON — the ingest still succeeded, we just lack the track id */
-        }
-      }
-      out.push({ dbId: p.dbId, chatId: p.chatId, summary: p.summary, ingestOk: r.ok, error: r.ok ? undefined : `HTTP ${r.status}` });
+      const ok = await ingestNoteDocToMemory(p.dbId, p.payload, links.noteImages[p.dbId] ?? []);
+      out.push({ dbId: p.dbId, chatId: p.chatId, summary: p.summary, ingestOk: ok, error: ok ? undefined : "ingest failed" });
     } catch (e) {
       out.push({ dbId: p.dbId, chatId: p.chatId, summary: p.summary, ingestOk: false, error: e instanceof Error ? e.message : String(e) });
     }
+  }
+  // Finance rows created this run (attach-only outcomes re-ingest inside parse-document instead).
+  for (const f of finances) {
+    if (f.dbId == null || f.attachedToId != null) continue;
+    try {
+      await ingestFinanceToMemory(f.dbId, f.kind, f.amount, f.categories, f.summary, links.financeImages[f.dbId] ?? []);
+    } catch { /* best-effort — the ledger row is already saved */ }
   }
   return out;
 }
@@ -1735,6 +1933,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
   const financeAnswers = (artifacts["answer-finance-query"] as FinanceAnswer[]) ?? [];
+  const linkOut = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0 };
   const ingestById = new Map(ingested.map((i) => [i.dbId, i]));
 
   const errors: string[] = [];
@@ -1751,11 +1950,14 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       }
       if (p.intent === "save") {
         const ing = ingestById.get(p.dbId);
+        // Photo count via the link table (step 207.18) — the residence case confirms its photo.
+        const nImgs = p.dbId != null ? (linkOut.noteImages[p.dbId] ?? []).length : 0;
+        const photoNote = nImgs ? ` · 📷 ${nImgs > 1 ? `${nImgs} photos` : "photo"} attached` : "";
         if (ing && ing.ingestOk) {
-          await sendLocalized(p.chatId, `Saved: ${p.summary}`);
+          await sendLocalized(p.chatId, `Saved: ${p.summary}${photoNote}`);
           saved++;
         } else {
-          await sendLocalized(p.chatId, `Saved, but memory is unavailable — I'll index it later. (${ing?.error ?? "ingest error"})`);
+          await sendLocalized(p.chatId, `Saved${photoNote}, but memory is unavailable — I'll index it later. (${ing?.error ?? "ingest error"})`);
           saved++;
         }
         // Soft-duplicate nudge (step 207.x): the note is already saved — offer a one-tap removal.
@@ -1805,14 +2007,17 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   // Finance records (step 205 §E): confirm what was digitized (or that nothing readable was found).
   for (const f of finances) {
     try {
-      // Photo↔record linking outcomes (step 207.16, owner "editing state" case) — these are not new
-      // records, they are the photo finding its home in either direction of arrival.
+      // Photo↔record linking outcomes (step 207.16/207.18, owner "editing state" case) — these are not
+      // new records, they are the photo finding its home in either direction of arrival.
       if (f.attachedToId != null) {
-        await sendLocalized(f.chatId, `Photo attached to the record: ${f.summary || `#${f.attachedToId}`}. Ask "покажи фото" or /photo ${f.attachedToId} to see it.`);
+        await sendLocalized(f.chatId, `Photo attached to the ${f.attachedKind === "note" ? "note" : "record"}: ${f.summary || `#${f.attachedToId}`}. Ask "покажи фото" to see it.`);
         continue;
       }
       if (f.pendingSaved) {
-        await sendLocalized(f.chatId, "Photo saved. Tell me what it is and the amount (e.g. «пирожок за 5,50») — I'll record it with this photo attached.");
+        // If the SAME run already linked the pending photo to a record (a captioned photo whose caption
+        // became a note — the residence case), the record's own confirmation covers it — stay silent.
+        if (linkOut.linked > 0) continue;
+        await sendLocalized(f.chatId, "Photo saved. Tell me what it is (and the amount if it's a purchase) — I'll record it with this photo attached.");
         continue;
       }
       if (f.dbId == null) {
@@ -1821,7 +2026,8 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       }
       const sign = f.kind === "income" ? "+" : "−";
       const cats = f.categories.map((id) => categoryLabel(id, "en")).join(", ");
-      const photoNote = f.pendingAttached ? " · 📷 photo attached" : "";
+      const nImgs = (linkOut.financeImages[f.dbId] ?? []).length || (f.imageUrl ? 1 : 0);
+      const photoNote = nImgs ? ` · 📷 ${nImgs > 1 ? `${nImgs} photos` : "photo"} attached` : "";
       await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}${photoNote}`);
       finance++;
       // Soft-duplicate nudge (step 207.x): the record is already saved — offer a one-tap removal.
@@ -1845,8 +2051,9 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
     }
   }
 
-  // Photo return (step 207.10): "/photo <id>" → send the receipt image of that finance record back to the
-  // chat. Look the row up in the SEPARATE automation_finance ledger, scoped to this project.
+  // Photo return (step 207.10/207.18): "/photo <id>" or plain words → resolve the photo through the
+  // record_images link table (rule R6 — the ONLY path; the "most recent photo" fallback is REMOVED:
+  // it sent an unrelated chicken receipt for a cafe question).
   for (const c of classified) {
     if (c.intent !== "photo") continue;
     try {
@@ -1860,30 +2067,42 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
           await sendLocalized(c.chatId, `I couldn't find finance record #${id}.`);
           continue;
         }
-        if (!row.image_url) {
+        const linked = await imagesOfRecord("finance", id);
+        const url = linked[0]?.url ?? row.image_url ?? null;
+        if (!url) {
           await sendLocalized(c.chatId, `Finance record #${id} has no photo attached.`);
           continue;
         }
-        found = { id, image_url: row.image_url, summary: row.summary ?? "" };
+        found = { id, image_url: url, summary: row.summary ?? "" };
       } else {
-        // Natural-language photo request (step 207.16): "покажи курицу / пришли чек" — no number. Match
-        // the words against the ledger (only rows WITH a photo); nothing matches → the most recent photo.
-        const hits = (await searchFinanceLedger(c.payload, 10)).filter((h) => h.imageUrl);
-        if (hits.length) {
-          found = { id: hits[0].id, image_url: hits[0].imageUrl as string, summary: hits[0].summary };
-        } else {
-          const last = (await db
-            .prepare("SELECT id, image_url, summary FROM automation_finance WHERE project = ? AND image_url IS NOT NULL ORDER BY created_at DESC LIMIT 1")
-            .get(PROJECT_SLUG)) as { id?: number; image_url?: string; summary?: string } | null;
-          if (last?.image_url) found = { id: Number(last.id), image_url: last.image_url, summary: last.summary ?? "" };
+        // Natural-language request: match the words against finance records first, then against the
+        // image registry's own vision descriptions («покажи кафе» matches an image described as a cafe).
+        const hits = await searchFinanceLedger(c.payload, 10);
+        for (const h of hits) {
+          const linked = await imagesOfRecord("finance", h.id);
+          const url = linked[0]?.url ?? h.imageUrl;
+          if (url) { found = { id: h.id, image_url: url, summary: h.summary }; break; }
         }
         if (!found) {
-          await sendLocalized(c.chatId, "I have no saved photos yet. Photos of receipts you send me are attached to their finance records.");
+          const tokens = (c.payload.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) ?? []).slice(0, 8);
+          if (tokens.length) {
+            try {
+              const rows = (await db
+                .prepare("SELECT id, media_url, description FROM automation_images WHERE project = ? ORDER BY created_at DESC LIMIT 200")
+                .all(PROJECT_SLUG)) as Array<{ id: number; media_url: string; description: string }>;
+              const hit = rows.find((r) => tokens.some((t) => (r.description || "").toLowerCase().includes(t.slice(0, Math.max(4, t.length - 2)))));
+              if (hit) found = { id: hit.id, image_url: hit.media_url, summary: hit.description };
+            } catch { /* registry unavailable */ }
+          }
+        }
+        if (!found) {
+          // Rule R6: no link, no guessing — an honest miss instead of a random receipt.
+          await sendLocalized(c.chatId, "I couldn't find a saved photo matching that. Say more specifically what the photo shows, or use /photo with the record number.");
           continue;
         }
       }
       const row = { image_url: found.image_url, summary: found.summary };
-      const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `Record #${found.id}: ${row.summary ?? ""}`.trim());
+      const sent = await tgSendPhotoByUrl(c.chatId, row.image_url, `${row.summary ?? ""}`.trim());
       if (!sent) await sendLocalized(c.chatId, `I couldn't send the photo for record #${found.id} right now.`);
       // Public link (step 207.10 P6): also send a clickable link on the real domain, verified live — the
       // localized prefix is translated (cached), the raw URL is appended untouched (never localhost).

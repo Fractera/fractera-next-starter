@@ -316,19 +316,51 @@ export const FLOW_NODES: FlowNode[] = [
     }
   },
   {
+    "id": "link-images",
+    "type": "process",
+    "position": {
+      "x": 1170,
+      "y": 80
+    },
+    "data": {
+      "label": "Link this run's images to this run's records (many-to-many)",
+      "info": {
+        "summary": "Step 207.18 (rules R3/R5): the chat's pending images attach to EVERY record born from the same message burst — the cafe case: interior photo + receipt photo + a compound text → the note AND the finance record both carry both photos. Photos and words link in ANY order of arrival; a later photo attaches via «обнови/добавь/прикрепи» (or bare, in a short window) and re-indexes the record's vector doc (rule R7).",
+        "processes": [
+          "pending images (automation_images, status=pending) → record_images links for every new record",
+          "record_images = many-to-many across BOTH kinds (note | finance)",
+          "output {noteImages, financeImages} feeds the ingest node (photos in the vector doc)"
+        ],
+        "kind": "step",
+        "actions": ["save", "remind", "finance"],
+        "condition": null,
+        "task": "Attach the chat's pending registered images to all records created in this run (notes + finance), via the record_images link table; mark images linked; expose the per-record image sets for the ingest node. Late attaches (a photo arriving after its record) are handled in parse-document via latestRecordWithoutImages + reingestRecord.",
+        "tools": [
+          "automation_images + record_images via @/lib/db"
+        ],
+        "envKeys": [],
+        "io": {
+          "in": "persisted notes {dbId, chatId} + finance rows {dbId, chatId} + pending images of the chat",
+          "out": "{noteImages: {id→images[]}, financeImages: {id→images[]}, linked}"
+        }
+      }
+    }
+  },
+  {
     "id": "ingest-note-to-memory",
     "type": "process",
     "position": {
-      "x": 1300,
+      "x": 1430,
       "y": 0
     },
     "data": {
-      "label": "Write the note to vector memory (LightRAG)",
+      "label": "Write this run's records to vector memory (LightRAG)",
       "info": {
-        "summary": "Puts a formatted note into LightRAG — the workspace's shared vector memory (:9621) — so the record is unambiguously identifiable on search.",
+        "summary": "Puts EVERY record of EVERY kind into LightRAG (:9621) with its reverse marker — [note#id] / [fin#id] — and the vision descriptions of its linked photos (rule R4). A memory answer citing a marker resolves the local row AND its images in O(1) at any ledger size; recall strips the marker from the user-visible text.",
         "processes": [
-          "document format: project→hook→date→#dbId→text",
-          "ingest with X-Agent-Identity: telegram-notes",
+          "notes → doc \"[note#id] Note from <date>: <text> — with photos: <descriptions>\"",
+          "finance rows → doc \"[fin#id] Finance record …\" (same contract)",
+          "ingest with X-Agent-Identity: telegram-notes; track_id → memory_track_id on the row",
           "on failure → {ingestOk:false}, the run doesn't crash"
         ],
         "kind": "step",
@@ -358,14 +390,16 @@ export const FLOW_NODES: FlowNode[] = [
       "y": 160
     },
     "data": {
-      "label": "Digitize a receipt / voice finance note into a money record",
+      "label": "Register images + digitize money movements (photos & words in any order)",
       "info": {
-        "summary": "Step 205 §E (finance table + presets, step 207): a photo (receipt/document) is saved to the media store and read by a vision-capable per-project model; a voice/text finance note is read by the cheap model. Either way it becomes a money movement (income or expense) segmented into one or more of the FIXED preset categories (multi-flag, _data/finance-categories.ts), stored in the SEPARATE automation_finance ledger with kind/amount/categories/summary/image_url.",
+        "summary": "Step 205 §E + 207.18 (rule R2): EVERY incoming photo — whatever the intent — is registered as a first-class row (media upload + ONE vision call giving a short description AND, for receipts, the itemized extraction; пирожок 5.50 + кофе 2.00 → the ledger gets the 7.00 total, items in the summary). A money movement (photo or words) becomes an automation_finance row; a compound message (a note-worthy experience AND a purchase) fans into both actions. A photo with no readable money attaches to the latest record without images («обнови/добавь/прикрепи» or bare within a short window, rule R5) or stays pending in the registry (forever — nothing is lost).",
         "processes": [
-          "photo → media store (media service :3300) → image_url",
-          "vision (photo) or cheap model (text) → {kind, amount, categories[], summary}",
+          "every photo → media store (:3300) → automation_images row (vision description, status=pending)",
+          "ONE vision call: description + is_financial + itemized {items[], total} (sum of items wins)",
+          "words fallback: a captioned photo without readable amounts tries the caption text",
           "validate categories against the fixed preset (multi-flag; empty → other_*)",
-          "persist a row to automation_finance (telegram_notes finance columns deprecated)"
+          "persist a row to automation_finance; own receipt photo linked immediately (record_images)",
+          "no-money photo: attach to latestRecordWithoutImages (+ re-ingest, rule R7) or stay pending"
         ],
         "kind": "step",
         "actions": ["finance"],
@@ -517,8 +551,18 @@ export const FLOW_EDGES: Edge[] = [
     "target": "persist-note-to-db"
   },
   {
-    "id": "e-persist-note-to-db-ingest-note-to-memory",
+    "id": "e-persist-note-to-db-link-images",
     "source": "persist-note-to-db",
+    "target": "link-images"
+  },
+  {
+    "id": "e-parse-document-link-images",
+    "source": "parse-document",
+    "target": "link-images"
+  },
+  {
+    "id": "e-link-images-ingest-note-to-memory",
+    "source": "link-images",
     "target": "ingest-note-to-memory"
   },
   {

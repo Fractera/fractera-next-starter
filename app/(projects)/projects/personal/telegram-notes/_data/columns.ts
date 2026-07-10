@@ -27,19 +27,11 @@ export const RECORD_TABLE = "telegram_notes";
 export const PROJECT_COLUMNS: ProjectColumn[] = [
   {
     "id": "action",
-    "header": "Action",
+    "header": "Type",
     "type": "badge",
     "source": "hook_action",
     "defaultVisible": true,
     "attr": "action"
-  },
-  {
-    "id": "hook",
-    "header": "Hook",
-    "type": "text",
-    "source": "hook_phrase",
-    "defaultVisible": true,
-    "attr": "hook"
   },
   {
     "id": "summary",

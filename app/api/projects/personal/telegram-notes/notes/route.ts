@@ -55,13 +55,18 @@ export async function GET(req: NextRequest) {
       args.push(`%${q}%`);
     }
     const whereSql = where.join(" AND ");
+    // images_count / first image via the record_images link table (step 207.18, rule R3) — a correlated
+    // subquery pair keeps this one round-trip; the LIMIT-ed page keeps it cheap at any table size.
     const rows = (await db
       .prepare(
-        `SELECT id, hook_action, hook_phrase, condition, summary, reminder_due, delivered, created_at
-           FROM telegram_notes WHERE ${whereSql}
+        `SELECT n.id, n.hook_action, n.hook_phrase, n.condition, n.summary, n.reminder_due, n.delivered, n.created_at,
+                (SELECT COUNT(*) FROM record_images ri WHERE ri.record_kind = 'note' AND ri.record_id = n.id) AS images_count,
+                (SELECT i.media_url FROM record_images ri JOIN automation_images i ON i.id = ri.image_id
+                  WHERE ri.record_kind = 'note' AND ri.record_id = n.id ORDER BY ri.created_at ASC LIMIT 1) AS first_image
+           FROM telegram_notes n WHERE ${whereSql.replace(/project_slug/g, "n.project_slug").replace(/summary LIKE/g, "n.summary LIKE")}
           ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
       )
-      .all(...args, limit, offset)) as unknown as Row[];
+      .all(...args, limit, offset)) as unknown as (Row & { images_count?: number; first_image?: string | null })[];
     const totalRow = (await db
       .prepare(`SELECT COUNT(*) AS n FROM telegram_notes WHERE ${whereSql}`)
       .get(...args)) as { n: number } | null;
@@ -77,6 +82,8 @@ export async function GET(req: NextRequest) {
         reminderDue: r.reminder_due,
         delivered: Boolean(r.delivered),
         createdAt: r.created_at,
+        imagesCount: r.images_count ?? 0,
+        firstImage: r.first_image ?? null,
       })),
       total: totalRow?.n ?? 0,
     });

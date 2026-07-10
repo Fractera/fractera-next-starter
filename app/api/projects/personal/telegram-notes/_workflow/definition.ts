@@ -228,6 +228,22 @@ async function tgSendPhotoByUrl(chatId: string, imageUrl: string, caption: strin
   }
 }
 
+// Model-compatible completion params (step 207.16 round 4 root cause): the owner set
+// TELEGRAM_NOTES_MODEL=gpt-5.5 — the gpt-5 family REJECTS `max_tokens` (wants
+// `max_completion_tokens`) and a non-default `temperature`, so EVERY call silently 400'd
+// and the whole automation degraded to pickers/English. `max_completion_tokens` is the
+// canonical name accepted by current models; reasoning models also burn thinking tokens
+// out of the same budget, so tiny caps (classify=6) must be floored or the answer arrives
+// empty. Keep temperature:0 only where it is supported (gpt-4o family).
+function isReasoningModel(model: string): boolean {
+  return /^(gpt-5|o\d)/i.test(model);
+}
+function completionParams(model: string, maxTokens: number): Record<string, unknown> {
+  return isReasoningModel(model)
+    ? { max_completion_tokens: Math.max(maxTokens, 512) }
+    : { temperature: 0, max_completion_tokens: maxTokens };
+}
+
 // One cheap-model chat completion. Returns the assistant text (trimmed) or "" on failure —
 // callers degrade gracefully (the automation never dies because the model hiccuped).
 async function cheapModel(system: string, user: string, maxTokens = 400): Promise<string> {
@@ -245,10 +261,9 @@ async function cheapModel(system: string, user: string, maxTokens = 400): Promis
           { role: "system", content: system },
           { role: "user", content: user },
         ],
-        temperature: 0,
-        max_tokens: maxTokens,
+        ...completionParams(CHEAP_MODEL, maxTokens),
       }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(60_000),
     });
     if (!r.ok) return "";
     const data = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
@@ -635,8 +650,8 @@ async function visionExtractFinance(dataUrl: string, caption: string): Promise<F
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: VISION_MODEL,
-        temperature: 0,
-        max_tokens: 200,
+        // Model-compatible params (207.16): gpt-5-family rejects max_tokens/temperature — see completionParams.
+        ...completionParams(VISION_MODEL, 200),
         messages: [
           { role: "system", content:
             "You read a receipt or financial document image and output ONE JSON object, no prose: " +

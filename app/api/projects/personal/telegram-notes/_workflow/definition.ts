@@ -100,7 +100,19 @@ const CAPABILITIES =
   "• ask to SEE a photo in plain words (show the receipt) or /photo <number> → I send the image back\n" +
   "• /note <number> → the saved note's full text\n" +
   "• ask to DELETE records (убери запись / delete all 11-euro records) → I list the matches and delete after your one-tap confirmation\n" +
+  "• ask how to change my language → I'll walk you through the App Settings steps\n" +
   "If I'm not sure, I'll show you buttons to choose.";
+
+// How to change the app's default language (owner script, verbatim intent). Served through the meta
+// branch when the user asks how to switch the language / complains answers come in the wrong one;
+// the meta model translates it into the user's language.
+const LANGUAGE_GUIDE =
+  "You can change the language in your Admin panel settings — the link to the Admin panel came in your " +
+  "activation email. Open the Settings tab, then find the App Settings tab and scroll to the very bottom: " +
+  "you'll see the language settings. First add your language to the list of available languages (if it " +
+  "isn't there yet), then set it as the Default language and press the button to start a new app build. " +
+  "In about 1–2 minutes, once the app updates, your language becomes the base one and you'll get every " +
+  "answer in your native language.";
 
 // Deterministic slash-command → action mapping (the bot menu, step 205 §I). Returns null for a
 // non-command message (routed by the model instead).
@@ -125,6 +137,8 @@ function heuristicIntent(text: string): Intent | null {
     && /(куп|трат|плат|долг|деньг|расход|доход|стоил|финанс|евро|€|руб|доллар|bought|paid|spent|money|debt|cost)/i.test(t)) return "finance-query";
   // NOTE: no \b after Cyrillic — JS \b is ASCII-only, so "купил " would silently never match with it.
   if (/(куп(ил|ила|лен)|потратил|заплатил|получил|вернул долг|оплатил|bought|paid|got paid|received)/i.test(t) && /\d/.test(t)) return "finance";
+  // «как изменить язык» = a settings question → meta (answered with LANGUAGE_GUIDE), never a notes recall.
+  if (/(язык|language)/i.test(t) && /(смени|измени|поменя|переключ|change|switch|set)/i.test(t)) return "meta";
   if (/^(?:(?:а|и|ну|так|and|so|but)\s+)?(что|кто|когда|где|как(ой|ая|ое|ие)|вспомни|найди|покажи|расскажи|подскажи|скажи|what|when|who|where|which|find|show|recall)/i.test(t) || /\?\s*$/.test(t)) return "recall";
   return null;
 }
@@ -2330,7 +2344,8 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       // the previous exchange in front of the model — feed the recent thread alongside the message.
       const hist = await loadHistory(c.chatId);
       const answer = await cheapModel(
-        `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message (possibly a follow-up about the previous answer — use the recent conversation to repeat/translate/clarify it). Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly.`,
+        `You are a personal notes & finance Telegram assistant. The user sent a conversational or meta message (possibly a follow-up about the previous answer — use the recent conversation to repeat/translate/clarify it). Reply briefly and helpfully in ${lang}, and guide them: they can send a note to save it, ask a question to search their notes, send a receipt or a money note for finance, or use /help for options. Address their message directly. ` +
+          `If they ask HOW TO CHANGE THE LANGUAGE (or complain that answers come in the wrong language), answer with exactly these steps, translated into ${lang}: ${LANGUAGE_GUIDE}`,
         `${historyBlock(hist)}NEW MESSAGE: ${c.payload.slice(0, 500)}`, 300,
       );
       await tgSend(

@@ -22,10 +22,21 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get("search") ?? "").trim();
   const offset = Math.max(0, Number.parseInt(searchParams.get("offset") ?? "0", 10) || 0);
 
-  const sources = Array.from(
-    new Set(PROJECT_COLUMNS.map((c) => c.source).filter((s) => IDENT.test(s))),
+  // image-type columns (step 207.18) are NOT plain table columns — they resolve through the
+  // record_images link table (rule R6). Emit a correlated scalar subquery aliased to the declared
+  // source; the alias passes the same IDENT gate as real columns.
+  const imageSources = new Set(
+    PROJECT_COLUMNS.filter((c) => c.type === "image" && IDENT.test(c.source)).map((c) => c.source),
   );
-  const cols = ["id", ...sources.filter((s) => s !== "id")];
+  const sources = Array.from(
+    new Set(PROJECT_COLUMNS.map((c) => c.source).filter((s) => IDENT.test(s) && !imageSources.has(s))),
+  );
+  const imageSelects = [...imageSources].map(
+    (alias) =>
+      `(SELECT i.media_url FROM record_images ri JOIN automation_images i ON i.id = ri.image_id ` +
+      `WHERE ri.record_kind = 'note' AND ri.record_id = ${RECORD_TABLE}.id ORDER BY ri.created_at ASC LIMIT 1) AS ${alias}`,
+  );
+  const cols = ["id", ...sources.filter((s) => s !== "id"), ...imageSelects];
   const textCols = PROJECT_COLUMNS.filter(
     (c) => (c.type === "text" || c.type === "longtext") && IDENT.test(c.source),
   ).map((c) => c.source);

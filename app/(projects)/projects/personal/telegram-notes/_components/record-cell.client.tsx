@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { projectAction } from "../_data/actions";
 import type { ProjectColumn } from "../_data/columns";
 import type { RecordRow } from "../_lib/types";
+import { FinanceImageCell } from "./finance-image-cell.client";
 
 // The CLOSED renderer registry of the universal records table (ontology entity 12 Record).
 // One renderer per column type — a new column is DATA in _data/columns.ts (generated from the
@@ -90,6 +91,10 @@ export function RecordCell({
       ) : (
         <span className="text-muted-foreground">—</span>
       );
+    // image (step 207.18): the record's first linked photo (record_images) — same Preview modal the
+    // finance table uses (one visual language across both tables).
+    case "image":
+      return v ? <FinanceImageCell url={String(v)} /> : <span className="text-muted-foreground">—</span>;
     case "actions":
       if (col.options?.action === "delete") {
         return (

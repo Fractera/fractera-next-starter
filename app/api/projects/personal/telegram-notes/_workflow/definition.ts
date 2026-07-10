@@ -859,12 +859,15 @@ async function parseFinanceQuery(text: string): Promise<FinanceQuery> {
 // the "recent" window below only governs AUTO-attachment so a week-old photo doesn't silently glue
 // itself to an unrelated record. record_images is the many-to-many link across BOTH record kinds. ──
 const PENDING_ATTACH_WINDOW_SEC = 1800; // auto-attach window; the registry row itself never expires
-type RegisteredImage = { id: number; url: string; description: string };
-async function registerImage(chatId: string, url: string, description: string): Promise<number | null> {
+// kindHint (step 207.18d, owner rule): 'document' = receipt/invoice → belongs to FINANCE records;
+// 'photo' = everything else (a pie, an interior, a residence) → belongs to NOTES. Финансовая
+// составляющая отделена от информационной: фотографии пирожков не попадают в таблицу финансов.
+type RegisteredImage = { id: number; url: string; description: string; kindHint: "document" | "photo" };
+async function registerImage(chatId: string, url: string, description: string, kindHint: "document" | "photo"): Promise<number | null> {
   try {
     const res = await db
-      .prepare("INSERT INTO automation_images (project, media_url, description, chat_id, status) VALUES (?, ?, ?, ?, 'pending')")
-      .run(PROJECT_SLUG, url, description.slice(0, 500), chatId);
+      .prepare("INSERT INTO automation_images (project, media_url, description, chat_id, status, kind_hint) VALUES (?, ?, ?, ?, 'pending', ?)")
+      .run(PROJECT_SLUG, url, description.slice(0, 500), chatId, kindHint);
     return Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
   } catch { return null; }
 }
@@ -873,10 +876,10 @@ async function loadPendingImages(chatId: string): Promise<RegisteredImage[]> {
   try {
     const rows = (await db
       .prepare(
-        "SELECT id, media_url, description FROM automation_images WHERE project = ? AND chat_id = ? AND status = 'pending' AND created_at >= ? ORDER BY created_at ASC",
+        "SELECT id, media_url, description, kind_hint FROM automation_images WHERE project = ? AND chat_id = ? AND status = 'pending' AND created_at >= ? ORDER BY created_at ASC",
       )
-      .all(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - PENDING_ATTACH_WINDOW_SEC)) as Array<{ id: number; media_url: string; description: string }>;
-    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description }));
+      .all(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000) - PENDING_ATTACH_WINDOW_SEC)) as Array<{ id: number; media_url: string; description: string; kind_hint: string }>;
+    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description, kindHint: r.kind_hint === "document" ? "document" : "photo" }));
   } catch { return []; }
 }
 // Link images to a record (rule R3) and mark them linked. Never throws.
@@ -895,11 +898,11 @@ async function imagesOfRecord(recordKind: "note" | "finance", recordId: number):
   try {
     const rows = (await db
       .prepare(
-        "SELECT i.id, i.media_url, i.description FROM record_images ri JOIN automation_images i ON i.id = ri.image_id " +
+        "SELECT i.id, i.media_url, i.description, i.kind_hint FROM record_images ri JOIN automation_images i ON i.id = ri.image_id " +
           "WHERE ri.record_kind = ? AND ri.record_id = ? ORDER BY ri.created_at ASC",
       )
-      .all(recordKind, recordId)) as Array<{ id: number; media_url: string; description: string }>;
-    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description }));
+      .all(recordKind, recordId)) as Array<{ id: number; media_url: string; description: string; kind_hint: string }>;
+    return rows.map((r) => ({ id: r.id, url: r.media_url, description: r.description, kindHint: r.kind_hint === "document" ? "document" : "photo" }));
   } catch { return []; }
 }
 // Shared low-level ingest: POST one doc text to LightRAG, return the track id (or null). Best-effort.
@@ -1697,6 +1700,7 @@ type FinanceRow = {
   attachedKind?: "note" | "finance"; // which kind of record the photo attached to
   pendingSaved?: boolean;         // photo parked for the NEXT record (no target yet)
   pendingAttached?: boolean;      // a previously parked photo was linked to THIS new row
+  sourceText?: string;            // the original message text (207.18d — companion-note material)
 };
 async function parseDocument(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
@@ -1717,7 +1721,10 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
       url = await uploadToMedia(photo.bytes);
       vision = await visionAnalyze(photo.dataUrl, c.payload);
     }
-    const imageId = url ? await registerImage(c.chatId, url, vision.description) : null;
+    // Typed routing (207.18d): a receipt/invoice = 'document' (finance-bound); everything else =
+    // 'photo' (note-bound) — the financial and informational planes never mix.
+    const kindHint: "document" | "photo" = vision.finance ? "document" : "photo";
+    const imageId = url ? await registerImage(c.chatId, url, vision.description, kindHint) : null;
     analyzed.set(c.photoFileId, { imageId, url, vision });
   }
 
@@ -1741,7 +1748,7 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
           ? await latestRecordWithoutImages(c.chatId)
           : await latestRecordWithoutImages(c.chatId, 900);
         if (target) {
-          await linkImages(target.kind, target.id, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description }]);
+          await linkImages(target.kind, target.id, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description, kindHint: reg.vision.finance ? "document" : "photo" }]);
           await reingestRecord(target.kind, target.id);
           out.push({ dbId: target.id, chatId: c.chatId, kind: "expense", amount: 0, categories: [], summary: target.summary, imageUrl, attachedToId: target.id, attachedKind: target.kind });
           continue;
@@ -1758,22 +1765,27 @@ async function parseDocument(artifacts: Record<string, unknown>): Promise<unknow
     // (multi-flag) stored as a JSON array. image_url keeps the FIRST photo for back-compat readers; the
     // authoritative photo set is record_images (rule R3, linked in the link-images node / right here for
     // the record's own receipt photo). Vector ingest moved to the ingest node (after linking — rule R4).
+    // Owner rule (207.18d): the finance row carries ONLY document images (receipts). A non-document
+    // photo (the pie itself) stays pending here — link-images routes it into the informational plane
+    // (a note; created as a companion if this message was purely financial). image_url (back-compat
+    // display) is set only for a document photo.
+    const isDoc = reg?.vision.finance != null;
     const res = await db
       .prepare(
         "INSERT INTO automation_finance (project, kind, amount, categories, summary, image_url, chat_id, msg_date) " +
           "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       )
-      .run(PROJECT_SLUG, extract.kind, extract.amount, JSON.stringify(extract.categories), extract.summary, imageUrl, c.chatId, c.date);
+      .run(PROJECT_SLUG, extract.kind, extract.amount, JSON.stringify(extract.categories), extract.summary, isDoc ? imageUrl : null, c.chatId, c.date);
     const dbId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
-    if (dbId != null && reg?.imageId != null && imageUrl) {
-      await linkImages("finance", dbId, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description }]);
+    if (dbId != null && reg?.imageId != null && imageUrl && isDoc) {
+      await linkImages("finance", dbId, [{ id: reg.imageId, url: imageUrl, description: reg.vision.description, kindHint: "document" }]);
     }
     // Soft duplicate check (step 207.x, Tier 2): a recent identical money movement from this chat → the
     // record is kept, but reply-in-telegram offers a one-tap "keep both / remove duplicate".
     const duplicateOfId = dbId != null
       ? await findRecentDuplicateFinance(dbId, extract.kind, extract.amount, extract.summary, c.chatId)
       : null;
-    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId });
+    out.push({ dbId, chatId: c.chatId, kind: extract.kind, amount: extract.amount, categories: extract.categories, summary: extract.summary, imageUrl, duplicateOfId, sourceText: c.payload });
   }
   return out;
 }
@@ -1874,16 +1886,23 @@ async function persistNoteToDb(artifacts: Record<string, unknown>): Promise<unkn
 // the finance record BOTH carry BOTH photos. The finance record's own receipt photo was already linked
 // at creation (parse-document); this node links what arrived photo-first. Output feeds the ingest node
 // so every vector doc mentions its photos (rule R4).
-type LinkOutcome = { noteImages: Record<number, RegisteredImage[]>; financeImages: Record<number, RegisteredImage[]>; linked: number };
+type LinkOutcome = {
+  noteImages: Record<number, RegisteredImage[]>;
+  financeImages: Record<number, RegisteredImage[]>;
+  linked: number;
+  // Companion notes born here (207.18d): a purely-financial message with a NON-document photo spawns
+  // an informational note (the purchase story + the photo) so the finance table stays money-only.
+  companions: Array<{ chatId: string; noteId: number; summary: string }>;
+};
 async function linkImagesNode(artifacts: Record<string, unknown>): Promise<unknown> {
   "use step";
 
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
-  const out: LinkOutcome = { noteImages: {}, financeImages: {}, linked: 0 };
+  const out: LinkOutcome = { noteImages: {}, financeImages: {}, linked: 0, companions: [] };
 
-  // New records of this run, grouped by chat.
-  const byChat = new Map<string, { notes: number[]; fins: number[] }>();
+  // New records of this run, grouped by chat (finance rows keep their source text for companions).
+  const byChat = new Map<string, { notes: number[]; fins: Array<{ id: number; summary: string; sourceText: string }> }>();
   for (const p of persisted) {
     if (p.dbId == null || p.intent === "recall") continue;
     const g = byChat.get(p.chatId) ?? { notes: [], fins: [] };
@@ -1893,28 +1912,57 @@ async function linkImagesNode(artifacts: Record<string, unknown>): Promise<unkno
   for (const f of finances) {
     if (f.dbId == null || f.attachedToId != null) continue;
     const g = byChat.get(f.chatId) ?? { notes: [], fins: [] };
-    g.fins.push(f.dbId);
+    g.fins.push({ id: f.dbId, summary: f.summary, sourceText: f.sourceText ?? f.summary });
     byChat.set(f.chatId, g);
   }
 
   for (const [chatId, g] of byChat) {
     const pending = await loadPendingImages(chatId);
-    if (!pending.length) {
-      // Still expose the records' already-linked images (receipt linked at creation) for the ingest node.
-      for (const id of g.fins) out.financeImages[id] = await imagesOfRecord("finance", id);
-      for (const id of g.notes) out.noteImages[id] = await imagesOfRecord("note", id);
-      continue;
+    // Typed routing (207.18d, owner rule): documents (receipts) belong to FINANCE records; plain
+    // photos (the pie, the interior) belong to NOTES — the two planes never mix.
+    const docs = pending.filter((p) => p.kindHint === "document");
+    const photos = pending.filter((p) => p.kindHint !== "document");
+
+    // Documents → this run's finance records (fallback: notes, e.g. "запомни этот счёт" without money).
+    if (docs.length) {
+      const finTargets = g.fins.map((f) => f.id);
+      if (finTargets.length) {
+        for (const id of finTargets) { await linkImages("finance", id, docs); out.linked += docs.length; }
+      } else if (g.notes.length) {
+        for (const id of g.notes) { await linkImages("note", id, docs); out.linked += docs.length; }
+      }
     }
-    for (const id of g.notes) {
-      await linkImages("note", id, pending);
-      out.noteImages[id] = await imagesOfRecord("note", id);
-      out.linked += pending.length;
+
+    // Photos → this run's notes; a purely-financial burst gets a COMPANION note carrying the story
+    // and the photo («купил пирожок за 5.50» + фото пирожка → финансы без фото, заметка с фото).
+    if (photos.length) {
+      let noteTargets = [...g.notes];
+      if (!noteTargets.length && g.fins.length) {
+        const f = g.fins[0];
+        try {
+          const res = await db
+            .prepare(
+              "INSERT INTO telegram_notes (project_slug, hook_action, hook_phrase, condition, chat_id, msg_date, reminder_due, event_at, full_text, summary) " +
+                "VALUES (?, 'save', '', NULL, ?, ?, NULL, NULL, ?, ?)",
+            )
+            .run(PROJECT_SLUG, chatId, Math.floor(Date.now() / 1000), f.sourceText, f.summary);
+          const noteId = Number((res as { lastInsertRowid?: number | bigint }).lastInsertRowid ?? 0) || null;
+          if (noteId != null) {
+            noteTargets = [noteId];
+            out.companions.push({ chatId, noteId, summary: f.summary });
+          }
+        } catch { /* companion is best-effort — the photo stays pending */ }
+      }
+      for (const id of noteTargets) { await linkImages("note", id, photos); out.linked += photos.length; }
+      // Companion notes are born AFTER the ingest queue was formed — ingest them right here (rule R4).
+      for (const c of out.companions) {
+        await ingestNoteDocToMemory(c.noteId, g.fins[0]?.sourceText ?? c.summary, await imagesOfRecord("note", c.noteId));
+      }
     }
-    for (const id of g.fins) {
-      await linkImages("finance", id, pending);
-      out.financeImages[id] = await imagesOfRecord("finance", id);
-      out.linked += pending.length;
-    }
+
+    // Expose the final image sets (own receipts included) for the ingest node.
+    for (const f of g.fins) out.financeImages[f.id] = await imagesOfRecord("finance", f.id);
+    for (const id of g.notes) out.noteImages[id] = await imagesOfRecord("note", id);
   }
   return out;
 }
@@ -1928,7 +1976,7 @@ async function ingestNoteToMemory(artifacts: Record<string, unknown>): Promise<u
 
   const persisted = (artifacts["persist-note-to-db"] as Persisted[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
-  const links = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0 };
+  const links = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0, companions: [] };
   const out: Ingested[] = [];
   for (const p of persisted) {
     if (p.dbId == null) continue; // needs-when rows are not yet stored
@@ -2020,7 +2068,7 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
   const classified = (artifacts["classify-message"] as Classified2[]) ?? [];
   const finances = (artifacts["parse-document"] as FinanceRow[]) ?? [];
   const financeAnswers = (artifacts["answer-finance-query"] as FinanceAnswer[]) ?? [];
-  const linkOut = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0 };
+  const linkOut = (artifacts["link-images"] as LinkOutcome) ?? { noteImages: {}, financeImages: {}, linked: 0, companions: [] };
   const ingestById = new Map(ingested.map((i) => [i.dbId, i]));
 
   const errors: string[] = [];
@@ -2113,9 +2161,12 @@ async function replyInTelegram(artifacts: Record<string, unknown>): Promise<unkn
       }
       const sign = f.kind === "income" ? "+" : "−";
       const cats = f.categories.map((id) => categoryLabel(id, "en")).join(", ");
-      const nImgs = (linkOut.financeImages[f.dbId] ?? []).length || (f.imageUrl ? 1 : 0);
-      const photoNote = nImgs ? ` · 📷 ${nImgs > 1 ? `${nImgs} photos` : "photo"} attached` : "";
-      await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}${photoNote}`);
+      const nImgs = (linkOut.financeImages[f.dbId] ?? []).length;
+      const photoNote = nImgs ? ` · 📷 receipt attached` : "";
+      // Companion note (207.18d): a non-document photo went to the INFORMATIONAL plane — say so.
+      const companion = linkOut.companions.find((cn) => cn.chatId === f.chatId);
+      const companionNote = companion ? ` · 📝 the photo went to a note: "${companion.summary.slice(0, 60)}"` : "";
+      await sendLocalized(f.chatId, `Recorded ${f.kind} ${sign}${f.amount} · ${cats}: ${f.summary}${photoNote}${companionNote}`);
       finance++;
       // Soft-duplicate nudge (step 207.x): the record is already saved — offer a one-tap removal.
       if (f.duplicateOfId && f.dbId != null) {

@@ -14,7 +14,7 @@ import { projectsBase } from "@/lib/runtime-urls";
 export function AccountProjects({ label }: { label: string }) {
   return (
     <a
-      href={`${projectsBase()}/projects/personal`}
+      href={`${projectsBase()}/projects`}
       className={cn(
         buttonVariants({ variant: "ghost", size: "sm" }),
         "w-full justify-start gap-2 py-3 font-normal",

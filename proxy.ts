@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { shouldBypassAuth } from "@/lib/auth/auth-bypass";
 import { getSession } from "@/lib/auth/get-session";
-import { authBaseFromHost } from "@/lib/auth-base-server";
+import { authBaseFromHost, projectsBaseFromHost } from "@/lib/auth-base-server";
 import {
   SUPPORTED_LANGUAGES,
   DEFAULT_LANGUAGE,
@@ -199,6 +199,27 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const qs = search.toString();
     const target = `${authBaseFromHost(host, proto)}${pathname}${qs ? `?${qs}` : ""}`;
     return NextResponse.redirect(target);
+  }
+
+  // Job 0.5 — bridge the Projects layer to its own service (step 211). The Projects
+  // layer (§3.12) left this slot in step 197 and runs in fractera-projects (:3003 /
+  // projects.<apex>). A request that still lands here for /projects — the owner's
+  // muscle-memory URL, a stale link, or a /[lang]/projects hit — is redirected to
+  // that service instead of 404-ing (projects are NOT under [lang] on the slot, so
+  // the language router would rewrite /projects → /<lang>/projects and 404). This is
+  // future-proof: EVERY project path (including projects not yet created) bridges
+  // automatically, so a newly composed project is reachable the moment it deploys —
+  // no per-project wiring. Projects are monolingual → strip any leading /<lang>.
+  {
+    const segs = pathname.split("/").filter(Boolean);
+    const langLess = segs[0] && SUPPORTED_LANGUAGES.includes(segs[0]) ? segs.slice(1) : segs;
+    if (langLess[0] === "projects") {
+      const proto = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+      const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+      const projPath = "/" + langLess.join("/");
+      const qs = request.nextUrl.search;
+      return NextResponse.redirect(`${projectsBaseFromHost(host, proto)}${projPath}${qs}`);
+    }
   }
 
   // Job 1 — API auth gate.

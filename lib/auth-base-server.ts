@@ -35,3 +35,16 @@ export function authBaseFromHost(host: string | null, proto: string): string {
   if (isIpHost(hostname)) return `${scheme}://${hostname}:3001`;
   return `${scheme}://auth.${apexFrom(hostname)}`;
 }
+
+// Projects service base, the BROWSER-facing sibling of authBaseFromHost (step 211).
+// The Projects layer (§3.12) left this slot in step 197 and runs in its own process
+// (fractera-projects :3003 / projects.<apex>). The slot's proxy redirects any
+// /projects* request here so the natural URL keeps working — IP mode: <host>:3003;
+// Secure mode: projects.<apex> on 443. Mirror of projectsBase() in runtime-urls.ts.
+export function projectsBaseFromHost(host: string | null, proto: string): string {
+  if (!host) return "http://localhost:3003";
+  const hostname = host.split(":")[0];
+  const scheme = proto === "https" ? "https" : "http";
+  if (isIpHost(hostname)) return `${scheme}://${hostname}:3003`;
+  return `${scheme}://projects.${apexFrom(hostname)}`;
+}

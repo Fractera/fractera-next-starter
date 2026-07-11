@@ -1,5 +1,12 @@
 # Patterns & Anti-patterns — standard
 
+> **⚠️ DEPRECATED (step 210).** The reusable-code-patterns half of this standard is retired:
+> `PATTERNS/PATTERNS/` is gone and the `/service/patterns` page is removed. The concept becomes
+> the **Design layer** (`fractera-design` :3004), developed separately. What SURVIVES from this
+> document: **anti-patterns** — real files at `PATTERNS/ANTI-PATTERNS/`, still mandatory reading
+> before every deploy and still written after every failed deploy. Ignore the pattern-library
+> sections below; they are kept only as historical reference for the future Design layer.
+
 A reuse library the AI consults while it builds, surfaced by the **/patterns** page.
 Everything lives as **real markdown files on disk** — there is no database (the same
 model as development steps, the architecture README files, and the glossary). An

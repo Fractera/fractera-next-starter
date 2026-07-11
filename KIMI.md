@@ -43,7 +43,7 @@ Environment map (number = nesting depth):
 
 1. **App** — `fractera-app :3000` ← your project, editable
    - 1.1 Service pages (role architect, dynamic): `/ai-core` · `/architecture` · `/development-steps` ·
-     `/patterns` · `/glossary` · `/documents` · `/ai-draft-settings` · `/debug`
+     `/glossary` · `/documents` · `/ai-draft-settings` · `/debug`
 2. **Data** — `fractera-data :3300` (token-auth)
    - 2.1 SQLite — `app.db` + `media.db` (`products`, `deployment_records`, `projects`, `site_settings`)
    - 2.2 Object Storage / Media — uploads, thumbnails, crop, PWA-icon generation
@@ -169,9 +169,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
 ```xml
 <pipeline name="development" rules="never-deviate; sequential; recursive">
 
-  <law id="realtime-pages">/architecture, /development-steps, /ai-draft-settings, /patterns poll the
+  <law id="realtime-pages">/architecture, /development-steps, /ai-draft-settings poll the
     filesystem and highlight (pulse/blink) changed nodes; the architect sees you complete/create sub-steps
     in real time. Every on-disk action = a visible event.</law>
+  <law id="patterns-retired">Reusable code/UI patterns are the future DESIGN layer (fractera-design :3004,
+    developed separately) — PATTERNS/PATTERNS/ is gone; do not read, create or maintain it. The ONLY required
+    pattern reading is the anti-patterns (PATTERNS/ANTI-PATTERNS/) before every deploy.</law>
   <law id="multi-cycle">A task may not fit in one cycle — normal. If sub-steps don't resolve it, create one
     or more new steps (with descriptions) for the next session instead of forcing it. One request usually
     spawns 2-3 new steps and/or a dozen sub-steps.</law>
@@ -279,7 +282,6 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <stage id="6.2" name="Enrich task context">
     <action optional="true">targeted memory query: POST /api/rag/query (mode hybrid) to prefetch -> then
       verify in the real source on disk (memory accelerates, it is not the truth)</action>
-    <action>quick shallow pass over /patterns (PATTERNS/): memorize pattern names for reuse</action>
     <gate>every memory-derived claim used was re-checked against the source on disk</gate>
   </stage>
 
@@ -300,8 +302,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   </stage>
 
   <stage id="6.4" name="Development cycle" repeat="as needed">
-    <action>pull the patterns needed (/patterns); none fits -> create one and agree with the architect.
-      Write code per section-4 (static-first, .client/.server naming, &lt;=200 lines).</action>
+    <action>Write code per section-4 (static-first, .client/.server naming, &lt;=200 lines).</action>
     <action>materialize the route skeleton with the scaffold-declared-route-into-component-skeleton skill (.claude/skills/scaffold-declared-route-into-component-skeleton —
       page/entry/leaf/_meta by construction, the --access shape baked in); then write only the domain code,
       never hand-type the skeleton</action>
@@ -311,8 +312,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       (declared -> live once the real route file exists)</substep>
     <substep id="6.4.2.2" name="decompose">add new sub-steps to NEW-STEPS/ and new to-dos to /architecture</substep>
     <action>mark each iteration in the task checklist</action>
-    <action>while waiting on a deploy/feedback, don't idle: extract new patterns from the fresh code; on a
-      long step do not cross the 50% context boundary</action>
+    <action>while waiting on a deploy/feedback, don't idle; on a long step do not cross the 50% context boundary</action>
     <note name="composition">composition = assembling the page from parallel-routing slots + reusable
       patterns per shell-component-architecture.md (happens here, in the per-page cycle)</note>
     <gate>per iteration: README task cleared, checklist item ticked, code obeys section-4</gate>
@@ -354,7 +354,6 @@ done; echo $S
         PATTERNS/ANTI-PATTERNS/; fix; retry</action>
     </branch>
     <branch on="COMPLETED">
-      <action>save useful patterns: create the category, write PATTERNS/PATTERNS/{category}/</action>
       <action>record a Deployments row yourself: owner_product_loop_record_deployment (Deployments MCP
         :3215) — platform={you}, model={your-model-id}, tokens (honest; none -> 0), commit_hash, step,
         page_url, status=ready; result=3 default (the user sets the stars)</action>
@@ -366,13 +365,13 @@ done; echo $S
   <stage id="6.9" name="Close the step">
     <action>move {NN}-slug.md from NEW-STEPS/ to DEVELOPMENT-STEPS/COMPLETED-STEPS/ (status:completed,
       completedAt); write a maximally complete report (no abridgement): what was done, what you hit,
-      patterns used/created, deploy errors, model, tokens</action>
+      deploy errors, model, tokens</action>
     <gate>file in COMPLETED-STEPS/ with status/completedAt set and a complete report</gate>
   </stage>
 
   <stage id="6.10" name="Ingest to memory">
     <action>POST /api/rag/ingest (header X-Agent-Identity) the completed step file (from COMPLETED-STEPS/)
-      AND everything created during the step: new patterns/anti-patterns, ADRs/docs, GLOSSARY.md terms</action>
+      AND everything created during the step: new anti-patterns, ADRs/docs, GLOSSARY.md terms</action>
     <gate>ingest returned OK for the step file and every artifact created</gate>
   </stage>
 

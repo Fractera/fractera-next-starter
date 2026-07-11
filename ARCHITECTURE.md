@@ -111,7 +111,7 @@ do not reinvent it.
 activity, automation activity, application data, general knowledge about Fractera, the architecture
 of every entity, Hermes sources and more. Interface: `/api/rag/{status,query,ingest}`. Agent duties:
 LightRAG-first when reading (§0.2) and **ingest on every step close** (§11) — the completed step
-plus every artifact created (patterns, docs, glossary terms).
+plus every artifact created (anti-patterns, docs, glossary terms).
 
 **1.3.3 The coding agents.** Platforms (subscription only — API keys are forbidden): **Claude Code ·
 Codex · Google Antigravity** (still named "Gemini" in the code — a legacy name, migration pending) **·
@@ -126,10 +126,9 @@ to the static canon; they read the slot's files via `slotRoot()` and therefore s
 
 | Page | Purpose |
 |---|---|
-| **/service/architecture** | The main space. Three streams: **projects · pages · API**. On any node — study the architecture and the **source code** (built-in Monaco editor — the VS Code engine), propose changes, add a development task. A declared page = a README record; hovering a pending node → the 🚀 "rocket" (`launchBundle`) folds ALL pending records into ONE development step and hands it to a coding agent. Live polling: changed nodes blink — the owner watches the agent work in real time. |
+| **/service/architecture** | The main space. Three streams: **projects · pages · API**. On any node — study the architecture and the **source code** (built-in Monaco editor — the VS Code engine), propose changes, add a development task. A declared page = a README record; hovering a project/page ROOT that carries records → the 🚀 "rocket" sends THAT node's records (root + subtree) into ONE development step and clears them from the page, and the 🗑 trash orders the node's REMOVAL as a development step; both then show a handoff toast that closes only after the message for the coding agent is copied. Live polling: changed nodes blink — the owner watches the agent work in real time. |
 | **/service/ai-core** | The AI core: the live catalog of every skill and MCP tool the workspace actually has; deep-links into ai-draft-settings for editing drafts. |
 | **/service/development-steps** | The build queue: the slot's NEW-STEPS / COMPLETED-STEPS with real-time statuses (§11). |
-| **/service/patterns** | The slot's patterns and anti-patterns (§4): read, create, statuses. |
 | **/service/glossary** | Edits `GLOSSARY.md` — the project's term dictionary. |
 | **/service/documents** | Workspace documents (the knowledge base; ingested to memory). |
 | **/service/ai-draft-settings** | Skill/MCP drafts per agent (`AI-DRAFT-SETTINGS/{AGENT}/`) — the "draft → step → capability" pipeline. |
@@ -257,21 +256,22 @@ unrecoverable.** Without this procedure, any "fix auth while you're at it" is de
 
 ---
 
-## 4. Patterns before implementation
+## 4. Follow the existing architecture; anti-patterns are mandatory reading
 
 **The law.** Development happens ONLY on the existing architecture. The agent is **forbidden to
 bring its own habitual patterns** — folder/component/function naming, their placement, "the data
-structures I'm used to". Before implementing, the agent must study the existing patterns and repeat
-them.
+structures I'm used to". Before implementing, the agent must study how the existing code is built
+and repeat it.
 
-**Where they live.** `PATTERNS/PATTERNS/<category>/NN-slug.md` (what works) and
-`PATTERNS/ANTI-PATTERNS/NN-slug.md` (documented dead ends). Every file ends with the machine block
-`<!-- fractera:pattern {kind, category, number, name, status, description, code, tasks[]} -->` —
-the `/service/patterns` page reads and edits the same files.
+**The retired patterns library.** The reusable-code-patterns library (`PATTERNS/PATTERNS/`) and its
+`/service/patterns` page are GONE: that concept becomes the **Design layer** (`fractera-design`
+:3004), developed separately as its own product surface. Do not read, create or maintain
+`PATTERNS/PATTERNS/`.
 
-**Agent duties:** a quick pass over the patterns when entering a task (stage 6.2); nothing fits →
-create a new one and agree it with the architect; **a failed deploy → a mandatory new anti-pattern**
-(together with the `status=error` row in the Developments table, §11). Other code conventions: JSX
+**Anti-patterns stay — and stay mandatory.** `PATTERNS/ANTI-PATTERNS/NN-slug.md` (documented dead
+ends) are real files the agent **re-reads before every deploy** (stage 6.7); **a failed deploy → a
+mandatory new anti-pattern** (together with the `status=error` row in the Developments table, §11).
+They are visible read-only in the /service/ai-core Documentation branch. Other code conventions: JSX
 files are `*.client.tsx`/`*.server.tsx`, ≤200 lines per component, co-location of an entity's data
 inside its folder (`_data/`, `_lib/`, `_components/`).
 
@@ -447,8 +447,7 @@ that); duplicate these values in its own configs.
    step (one request usually spawns 2–3 steps and a dozen sub-steps). Forcing the unresolvable into
    one step is forbidden.
 3. **Closing a step**: the file moves to `COMPLETED-STEPS/` (`status: completed` + `completedAt` +
-   a **maximally complete report** — what was done, what it hit, which patterns were used/created,
-   deploy errors, model, tokens).
+   a **maximally complete report** — what was done, what it hit, deploy errors, model, tokens).
 4. **Ingest to memory**: `POST /api/rag/ingest` — the step file plus every artifact created.
 5. **A row in the Developments table** — **mandatory, via the MCP :3215**
    (`owner_product_loop_record_deployment`: platform, model, tokens (honest; none → 0), commit_hash,
@@ -500,7 +499,7 @@ Hermes plugin: `owner_delegate_task_to_platform` / `owner_delegate_task_to_best_
 | `CRUD-DOCS/workspace-standards/hermes-native-capabilities.md` | Hermes' native arsenal (~70 tools) |
 | `HOW-USE-AUTH.md` | Authorization recipes (§1.1) |
 | `shell-component-architecture.md` | The route skeleton (thin `page.tsx`, `_components/index.tsx`) |
-| `CRUD-DOCS/workspace-standards/development-steps.md`, `patterns.md` | The step and pattern formats (§4, §11) |
+| `CRUD-DOCS/workspace-standards/development-steps.md` | The step format (§11); `patterns.md` is deprecated — the concept moved to the Design layer (§4) |
 
 ---
 

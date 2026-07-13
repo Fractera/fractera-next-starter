@@ -1,5 +1,10 @@
 # GEMINI.md
 
+> 🔒 **Projects & automations — read `AUTOMATION-PROJECTS.md` FIRST.** Whenever a user or an agent starts
+> **developing, updating, improving or deleting an automation** (also called a *project* or a
+> *projects-automation*), you MUST read [`AUTOMATION-PROJECTS.md`](AUTOMATION-PROJECTS.md) before doing
+> anything else — it is the single, authoritative, complete documentation of that process.
+
 ## 1. Evolving pipeline coding agent
 
 Work sequentially, validating every stage, strictly per the presented pipeline. Parallel agents are not

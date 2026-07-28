@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
+import { AppWidthInit } from "@/components/app-width-init";
 import { DrawerProvider } from "@/providers/drawer-provider.client";
 import { TopMenu } from "@/components/menu/top/top-menu.server";
 import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
@@ -74,6 +75,7 @@ export default async function LangLayout({
       <head>
         <meta name="generator" content="Fractera" />
         <ThemeInit />
+        <AppWidthInit />
         {ld.map((schema, i) => (
           <script
             key={i}

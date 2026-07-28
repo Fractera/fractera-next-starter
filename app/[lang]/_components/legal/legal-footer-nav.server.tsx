@@ -10,8 +10,11 @@ export function LegalFooterNav({ lang }: { lang: string }) {
   const ui = legalUi(lang);
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold">{ui.heading}</h3>
-      <ul className="flex flex-col gap-2">
+      {/* Shared footer-heading font (mono/uppercase) — same as the areas navigator and the
+          footer-pages heading, so every footer section title reads as one family (owner req). */}
+      <h3 className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{ui.heading}</h3>
+      {/* Same responsive column rule as the areas navigator (owner req): 1 / 2 / 4 columns. */}
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-2">
         {CONTENT_DOCS.map((doc) => (
           <li key={doc}>
             <Link

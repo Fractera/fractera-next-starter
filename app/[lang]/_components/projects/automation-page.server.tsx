@@ -37,7 +37,7 @@ export async function AutomationPage({
   const allowed = meetsTier(roles, hero.access);
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <main data-app-column className="flex-1 px-6 py-10">
       {/* Breadcrumbs — always */}
       <nav className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
         <Link href={`/${lang}`} className="transition-colors hover:text-foreground">

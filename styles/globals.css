@@ -57,3 +57,21 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── APP CONTENT WIDTH (public showcase :3000) ──────────────────────────────
+   ONE variable drives the max-width of the main content column AND the footer
+   content. The footer width toggle (app-width-toggle.client.tsx) sets
+   html[data-app-width="wide"]; every container marked [data-app-column] reads
+   var(--app-w), so the page cards AND the footer widen together. Ported from the
+   Projects zone (:3003) width toggle.
+     • normal — centered 64rem (the max-w-5xl the showcase shipped with);
+     • wide   — full screen width minus a 32px bridge each side; --app-sbw is the
+                JS-measured scrollbar width (app-width-init.tsx) so 100vw never
+                causes a horizontal scroll;
+     • mobile (<768px) — full width, one column, toggle hidden. */
+:root { --app-w: 64rem; }
+html[data-app-width="wide"] { --app-w: calc(100vw - 64px - var(--app-sbw, 0px)); }
+[data-app-column] { width: 100%; max-width: var(--app-w); margin-left: auto; margin-right: auto; }
+@media (max-width: 767px) {
+  :root, html[data-app-width="wide"] { --app-w: 100%; }
+}

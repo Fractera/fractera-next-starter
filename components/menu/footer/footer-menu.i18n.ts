@@ -115,3 +115,56 @@ export function footerLabels(lang: string): FooterLabels {
   const c = CHROME[lang] ?? CHROME.en;
   return { ...h, ...c };
 }
+
+// ─── Layers navigator (footer) ───────────────────────────────────────────────
+// The four main app areas ("service pages") reached from the footer navigator:
+// Home (public) + the role-gated cockpit layers Admin / Design / Projects. Owner-facing
+// cockpit navigation → the admin-layers ten (rule 4г: en,es,fr,it,ru,de,pt,pl,tr,nl);
+// any other language falls back to English. `denied` is the red toast on insufficient role.
+export type LayerLabels = {
+  heading: string;
+  home: string;
+  admin: string;
+  design: string;
+  projects: string;
+  denied: string;
+};
+
+const LAYER_LABELS: Record<string, LayerLabels> = {
+  en: { heading: "Sections", home: "Home", admin: "Admin panel", design: "Design", projects: "Projects (automations)", denied: "Access denied — insufficient permissions" },
+  es: { heading: "Secciones", home: "Inicio", admin: "Panel de administración", design: "Diseño", projects: "Proyectos (automatizaciones)", denied: "Acceso denegado: permisos insuficientes" },
+  fr: { heading: "Sections", home: "Accueil", admin: "Panneau d'administration", design: "Design", projects: "Projets (automatisations)", denied: "Accès refusé — droits insuffisants" },
+  it: { heading: "Sezioni", home: "Home", admin: "Pannello di amministrazione", design: "Design", projects: "Progetti (automazioni)", denied: "Accesso negato — autorizzazioni insufficienti" },
+  ru: { heading: "Разделы", home: "Главная", admin: "Административная панель", design: "Дизайн", projects: "Проекты (автоматизации)", denied: "Доступ запрещён — недостаточно прав" },
+  de: { heading: "Bereiche", home: "Startseite", admin: "Administrationsbereich", design: "Design", projects: "Projekte (Automatisierungen)", denied: "Zugriff verweigert — unzureichende Berechtigungen" },
+  pt: { heading: "Seções", home: "Início", admin: "Painel de administração", design: "Design", projects: "Projetos (automações)", denied: "Acesso negado — permissões insuficientes" },
+  pl: { heading: "Sekcje", home: "Strona główna", admin: "Panel administracyjny", design: "Projektowanie", projects: "Projekty (automatyzacje)", denied: "Odmowa dostępu — niewystarczające uprawnienia" },
+  tr: { heading: "Bölümler", home: "Ana sayfa", admin: "Yönetim paneli", design: "Tasarım", projects: "Projeler (otomasyonlar)", denied: "Erişim reddedildi — yetersiz izin" },
+  nl: { heading: "Secties", home: "Home", admin: "Beheerpaneel", design: "Ontwerp", projects: "Projecten (automatiseringen)", denied: "Toegang geweigerd — onvoldoende rechten" },
+};
+
+export function layerLabels(lang: string): LayerLabels {
+  return LAYER_LABELS[lang] ?? LAYER_LABELS.en;
+}
+
+// ─── Content-width toggle (footer) ───────────────────────────────────────────
+// aria-label/title for the wide/narrow screen-width button (ported from the Projects
+// zone). Admin-layers ten (rule 4г); English fallback for any other language.
+export type WidthLabels = { wide: string; normal: string };
+
+const WIDTH_LABELS: Record<string, WidthLabels> = {
+  en: { wide: "Widen the screen", normal: "Narrow the screen" },
+  es: { wide: "Ampliar la pantalla", normal: "Reducir la pantalla" },
+  fr: { wide: "Élargir l'écran", normal: "Réduire l'écran" },
+  it: { wide: "Allarga lo schermo", normal: "Restringi lo schermo" },
+  ru: { wide: "Шире экран", normal: "Уже экран" },
+  de: { wide: "Bildschirm verbreitern", normal: "Bildschirm verschmälern" },
+  pt: { wide: "Ampliar a tela", normal: "Estreitar a tela" },
+  pl: { wide: "Poszerz ekran", normal: "Zwęź ekran" },
+  tr: { wide: "Ekranı genişlet", normal: "Ekranı daralt" },
+  nl: { wide: "Scherm verbreden", normal: "Scherm versmallen" },
+};
+
+export function widthLabels(lang: string): WidthLabels {
+  return WIDTH_LABELS[lang] ?? WIDTH_LABELS.en;
+}

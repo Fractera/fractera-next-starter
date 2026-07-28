@@ -13,11 +13,12 @@ export async function ProjectsHome({ lang }: { lang: string }) {
   const L = projectsStrings(lang);
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <main data-app-column className="flex-1 px-6 py-10">
       <h1 className="text-3xl font-bold tracking-tight">{L.homeTitle}</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">{L.homeSubtitle}</p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/* 1 / 2 / 4 columns (owner req) — same rule as the footer and the automation cards. */}
+      <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {categories.map((c) => (
           <Link
             key={c.slug}

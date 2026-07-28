@@ -4,8 +4,9 @@ import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups } from "@/lib/menu/group-menus";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
-import { FooterHomeSections } from "@/components/menu/footer/footer-home-sections.client";
-import { footerLabels } from "@/components/menu/footer/footer-menu.i18n";
+import { FooterLayersNav } from "@/components/menu/footer/footer-layers-nav.client";
+import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
+import { footerLabels, layerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 import { LegalFooterNav } from "@/app/[lang]/_components/legal/legal-footer-nav.server";
@@ -44,7 +45,9 @@ export function FooterMenu({ lang }: { lang: string }) {
 
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
-      <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col gap-6">
+      {/* data-app-column: the footer content follows the same width as the page content;
+          the footer width toggle (below) widens BOTH at once via --app-w (globals.css). */}
+      <div data-app-column className="px-6 py-10 flex flex-col gap-6">
         {/* Section 1 — footer-page navigation (groups that enabled the footer slot),
             under a "Footer pages" heading. */}
         {groups.length > 0 && (
@@ -60,11 +63,16 @@ export function FooterMenu({ lang }: { lang: string }) {
           </div>
         )}
 
-        {/* Legal section (step 305) — the required compliance pages, on every public page via the layout. */}
-        <LegalFooterNav lang={lang} />
+        {/* Section 2 (now ABOVE the legal block — owner reorder) — the app's MAIN AREAS
+            navigator ("service pages"): Home + role-gated Admin/Design/Projects cockpit
+            layers. Rendered on EVERY page (not home-only like the old scroll nav); a
+            responsive 3/2/1-column grid; unauthorized clicks get a red toast, authorized
+            ones redirect to the layer. */}
+        <FooterLayersNav lang={lang} labels={layerLabels(lang)} />
 
-        {/* Section 2 — home-section scroll navigation (HOME PAGE ONLY). */}
-        <FooterHomeSections lang={lang} label={ui.pageSections} />
+        {/* Legal section (step 305) — the required compliance pages, on every public page via the layout.
+            Sits BELOW the areas navigator per the owner's ordering. */}
+        <LegalFooterNav lang={lang} />
 
         {/* Section 3 — company: copyright + address, social, theme toggle, language.
             One row on every width (© + name on the left, controls on the right).
@@ -94,6 +102,9 @@ export function FooterMenu({ lang }: { lang: string }) {
                 <Icon className="size-4" />
               </a>
             ))}
+            {/* Content-width toggle (wide ↔ normal) — ported from the Projects zone footer;
+                governs the [data-app-column] width. Hidden on mobile (own full-width mode). */}
+            <AppWidthToggle labels={widthLabels(lang)} />
             <ThemeToggle labels={{ system: ui.system, light: ui.light, dark: ui.dark }} />
             <LanguageSwitcher />
           </div>

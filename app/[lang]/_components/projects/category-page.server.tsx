@@ -14,7 +14,7 @@ export async function CategoryPage({ lang, category }: { lang: string; category:
   const L = projectsStrings(lang);
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <main data-app-column className="flex-1 px-6 py-10">
       <Link
         href={`/${lang}`}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -29,7 +29,7 @@ export async function CategoryPage({ lang, category }: { lang: string; category:
       {cat.automations.length === 0 ? (
         <p className="mt-8 text-sm text-muted-foreground">{L.emptyCategory}</p>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {cat.automations.map((a) => (
             <Link
               key={a.slug}

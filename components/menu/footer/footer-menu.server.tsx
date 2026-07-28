@@ -8,6 +8,7 @@ import { FooterHomeSections } from "@/components/menu/footer/footer-home-section
 import { footerLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
+import { LegalFooterNav } from "@/app/[lang]/_components/legal/legal-footer-nav.server";
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
 // (re-programmed, not copied). Three sections:
@@ -58,6 +59,9 @@ export function FooterMenu({ lang }: { lang: string }) {
             </nav>
           </div>
         )}
+
+        {/* Legal section (step 305) — the required compliance pages, on every public page via the layout. */}
+        <LegalFooterNav lang={lang} />
 
         {/* Section 2 — home-section scroll navigation (HOME PAGE ONLY). */}
         <FooterHomeSections lang={lang} label={ui.pageSections} />

@@ -13,6 +13,8 @@ import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
 import { buildOrganizationSchema, buildWebSiteSchema, buildLocalBusinessSchema } from "@/lib/jsonld";
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config";
+import { readBannerConfig } from "./_components/legal/legal-config";
+import { CookieBanner } from "./_components/legal/cookie-banner.client";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/
 // <body> — the language comes from the [lang] route param (known at build), NOT from
@@ -54,6 +56,9 @@ export default async function LangLayout({
   if (!SUPPORTED_LANGUAGES.includes(lang)) notFound();
 
   const cfg = getAppConfig();
+  // Cookie-banner strings for this language (step 305) — merged config over the shipped default.
+  const banner = readBannerConfig();
+  const bannerStrings = banner.languages[lang] ?? banner.languages.en;
   const ld: Record<string, unknown>[] = [];
   if (cfg.jsonLd.website) ld.push(buildWebSiteSchema(cfg));
   if (cfg.jsonLd.organization) ld.push(buildOrganizationSchema(cfg));
@@ -100,6 +105,10 @@ export default async function LangLayout({
                 until a group enables its side's slot. */}
             <DrawerMenu side="left" lang={lang} />
             <DrawerMenu side="right" lang={lang} />
+            {/* Cookie-consent banner (step 305) — on every public page via this layout. Strings are
+                server-provided per language (readBannerConfig, ISR) so anonymous visitors get a fully
+                localized banner without hitting the gated /api. */}
+            <CookieBanner lang={lang} strings={bannerStrings} />
             <Toaster position="bottom-right" richColors closeButton />
           </DrawerProvider>
         </ThemeProvider>

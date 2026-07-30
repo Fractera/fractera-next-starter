@@ -1,18 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Lock } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getCategory, pickI18n } from "./catalog";
-import { getSessionRoles, meetsTier } from "./access";
 import { projectsStrings } from "./projects.i18n";
+import { AccessGate } from "./access-gate.client";
 
-// PUBLIC AUTOMATION PAGE (step 304) — header (from the [lang] layout) · breadcrumbs · body · footer.
-// The HERO (title + description) is ALWAYS shown, like the breadcrumbs and footer, regardless of access.
-// Only the BODY is gated: the caller's roles are compared to the automation's required tier and, when they
-// fall short, an error container replaces the body while the hero/breadcrumbs/footer stay visible.
+// PUBLIC AUTOMATION PAGE (step 304, made STATIC in step 311) — header (from the [lang] layout) · breadcrumbs
+// · body · footer. The HERO (title + description) is ALWAYS shown, regardless of access.
+//
+// STATIC-FIRST (step 311): this whole shell renders statically (ISR) — no session read on the server. Only
+// the BODY is gated, and that is the ONE per-visitor decision, so it moves to a client island (AccessGate,
+// /api/me). A PUBLIC automation (access "guest") has no gate → its body renders inline here, fully static.
 //
 // In THIS step the body has no content yet (tables/calendar/diagram/… are later steps): the allowed branch
-// renders an empty ready container, the denied branch renders the access-error container. No cockpit here —
-// no status bar, no launch panel, no dev console, no add/modify button.
+// renders an empty ready container, the denied branch the access-error container. No cockpit here.
 //
 // One catalog round-trip: getCategory() returns the category (for the localized breadcrumb label) AND its
 // automations (for this automation's hero + access tier) — no separate per-automation fetch needed.
@@ -32,9 +33,9 @@ export async function AutomationPage({
 
   const L = projectsStrings(lang);
   const categoryLabel = pickI18n(cat.titleI18n, lang);
-
-  const roles = await getSessionRoles();
-  const allowed = meetsTier(roles, hero.access);
+  // Public automation (guest tier) → body is the same for everyone, render it inline (fully static).
+  // Gated automation → the per-visitor decision lives in the client island.
+  const isPublic = hero.access === "guest";
 
   return (
     <main data-app-column className="flex-1 px-6 py-10">
@@ -57,17 +58,13 @@ export async function AutomationPage({
         {hero.description && <p className="max-w-3xl text-muted-foreground">{hero.description}</p>}
       </div>
 
-      {/* Body — gated */}
+      {/* Body — public renders inline (static); gated defers the per-visitor check to the client island. */}
       <div className="mt-8">
-        {allowed ? (
+        {isPublic ? (
           // Empty ready container — the automation body (tables/calendar/…) lands in a later step.
           <div className="min-h-[8rem] rounded-xl border border-dashed bg-muted/20" />
         ) : (
-          <div className="flex flex-col items-center gap-3 rounded-xl border bg-muted/30 p-10 text-center">
-            <Lock className="size-6 text-muted-foreground" />
-            <p className="font-medium">{L.bodyNoAccessTitle}</p>
-            <p className="max-w-md text-sm text-muted-foreground">{L.bodyNoAccessText}</p>
-          </div>
+          <AccessGate access={hero.access} lang={lang} />
         )}
       </div>
     </main>

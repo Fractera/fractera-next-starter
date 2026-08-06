@@ -92,6 +92,22 @@ const DROP_LEGACY = `
   DROP TABLE IF EXISTS entity_warning;
   DROP TABLE IF EXISTS global_automation;
   DROP TABLE IF EXISTS wave_snooze;
+  -- The frozen starter `other/starter-v3` created its own warehouses at runtime, one per
+  -- tab, prefixed with the automation id. The starter is gone; so are its tables.
+  DROP TABLE IF EXISTS other_starter_v3__analytics;
+  DROP TABLE IF EXISTS other_starter_v3__calendar;
+  DROP TABLE IF EXISTS other_starter_v3__calendar_delivery;
+  DROP TABLE IF EXISTS other_starter_v3__chat_state;
+  DROP TABLE IF EXISTS other_starter_v3__conversation;
+  DROP TABLE IF EXISTS other_starter_v3__database;
+  DROP TABLE IF EXISTS other_starter_v3__evolution_feedback;
+  DROP TABLE IF EXISTS other_starter_v3__evolution_proposal;
+  DROP TABLE IF EXISTS other_starter_v3__evolution_version;
+  DROP TABLE IF EXISTS other_starter_v3__links;
+  DROP TABLE IF EXISTS other_starter_v3__map;
+  DROP TABLE IF EXISTS other_starter_v3__route;
+  DROP TABLE IF EXISTS other_starter_v3__route_stop;
+  DROP TABLE IF EXISTS other_starter_v3__toast;
 `
 
 // ALTER TABLE ADD COLUMN must tolerate the "duplicate column" error: during

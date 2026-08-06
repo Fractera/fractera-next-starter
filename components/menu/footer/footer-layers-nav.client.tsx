@@ -3,35 +3,34 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { adminBase, designBase, projectsBase } from "@/lib/runtime-urls";
+import { adminBase, designBase } from "@/lib/runtime-urls";
 import type { LayerLabels } from "@/components/menu/footer/footer-menu.i18n";
 
-// Footer navigator between the app's MAIN AREAS (replaces the old home-section scroll
-// links). Four destinations: Home (public), Admin panel (:3002), Design (:3004) and
-// Projects/automations (:3003). Each cockpit layer is ROLE-GATED: on click, if the
+// Footer navigator between the app's MAIN AREAS. Three destinations after step 500:
+// Home (public), Admin panel (:3002) and Design (:3004). The Projects/automations
+// layer (:3003) was removed from the product. Each cockpit layer is ROLE-GATED: on click, if the
 // visitor lacks the required role a RED toast ("insufficient permissions") is shown and
 // navigation is cancelled; with the role, the browser is sent to that layer. Home is a
 // plain public link (no gate, works without JS). Identity comes from /api/me (the slot
 // convention — never auth() in a page). The cockpit hrefs are host-derived at CLICK time
-// (adminBase()/designBase()/projectsBase() read window.location) so one build works in both
+// (adminBase()/designBase() read window.location) so one build works in both
 // IP and domain (Secure) mode; they are rendered as href="#" (identical on server & first
 // client render → no hydration mismatch) and resolved in the handler. Heading uses the
 // shared footer-heading font (mono/uppercase), same as the other footer sections.
 type Me = { userId?: string; roles?: string[] } | null;
 
 type LayerItem = {
-  key: "home" | "admin" | "design" | "projects";
+  key: "home" | "admin" | "design";
   need: string[] | null; // null = public (always allowed); else roles admitted
   resolve: (lang: string) => string; // destination URL, computed at click (window-derived)
 };
 
-// Roles admitted to each cockpit layer. Projects mirrors requireRole() in the projects
-// zone (architect + manager); Admin/Design are architect-only. Home is public (need: null).
+// Roles admitted to each cockpit layer. Admin and Design are architect-only;
+// Home is public (need: null).
 const LAYERS: LayerItem[] = [
   { key: "home", need: null, resolve: (lang) => `/${lang}` },
   { key: "admin", need: ["architect"], resolve: () => adminBase() },
   { key: "design", need: ["architect"], resolve: () => designBase() },
-  { key: "projects", need: ["architect", "manager"], resolve: () => `${projectsBase()}/projects` },
 ];
 
 export function FooterLayersNav({ lang, labels }: { lang: string; labels: LayerLabels }) {

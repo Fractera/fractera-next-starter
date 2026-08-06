@@ -126,21 +126,21 @@ export type LayerLabels = {
   home: string;
   admin: string;
   design: string;
-  projects: string;
+  // step 500: `projects` removed with the projects layer; key kept out of the type.
   denied: string;
 };
 
 const LAYER_LABELS: Record<string, LayerLabels> = {
-  en: { heading: "Sections", home: "Home", admin: "Admin panel", design: "Design", projects: "Projects (automations)", denied: "Access denied — insufficient permissions" },
-  es: { heading: "Secciones", home: "Inicio", admin: "Panel de administración", design: "Diseño", projects: "Proyectos (automatizaciones)", denied: "Acceso denegado: permisos insuficientes" },
-  fr: { heading: "Sections", home: "Accueil", admin: "Panneau d'administration", design: "Design", projects: "Projets (automatisations)", denied: "Accès refusé — droits insuffisants" },
-  it: { heading: "Sezioni", home: "Home", admin: "Pannello di amministrazione", design: "Design", projects: "Progetti (automazioni)", denied: "Accesso negato — autorizzazioni insufficienti" },
-  ru: { heading: "Разделы", home: "Главная", admin: "Административная панель", design: "Дизайн", projects: "Проекты (автоматизации)", denied: "Доступ запрещён — недостаточно прав" },
-  de: { heading: "Bereiche", home: "Startseite", admin: "Administrationsbereich", design: "Design", projects: "Projekte (Automatisierungen)", denied: "Zugriff verweigert — unzureichende Berechtigungen" },
-  pt: { heading: "Seções", home: "Início", admin: "Painel de administração", design: "Design", projects: "Projetos (automações)", denied: "Acesso negado — permissões insuficientes" },
-  pl: { heading: "Sekcje", home: "Strona główna", admin: "Panel administracyjny", design: "Projektowanie", projects: "Projekty (automatyzacje)", denied: "Odmowa dostępu — niewystarczające uprawnienia" },
-  tr: { heading: "Bölümler", home: "Ana sayfa", admin: "Yönetim paneli", design: "Tasarım", projects: "Projeler (otomasyonlar)", denied: "Erişim reddedildi — yetersiz izin" },
-  nl: { heading: "Secties", home: "Home", admin: "Beheerpaneel", design: "Ontwerp", projects: "Projecten (automatiseringen)", denied: "Toegang geweigerd — onvoldoende rechten" },
+  en: { heading: "Sections", home: "Home", admin: "Admin panel", design: "Design", denied: "Access denied — insufficient permissions" },
+  es: { heading: "Secciones", home: "Inicio", admin: "Panel de administración", design: "Diseño", denied: "Acceso denegado: permisos insuficientes" },
+  fr: { heading: "Sections", home: "Accueil", admin: "Panneau d'administration", design: "Design", denied: "Accès refusé — droits insuffisants" },
+  it: { heading: "Sezioni", home: "Home", admin: "Pannello di amministrazione", design: "Design", denied: "Accesso negato — autorizzazioni insufficienti" },
+  ru: { heading: "Разделы", home: "Главная", admin: "Административная панель", design: "Дизайн", denied: "Доступ запрещён — недостаточно прав" },
+  de: { heading: "Bereiche", home: "Startseite", admin: "Administrationsbereich", design: "Design", denied: "Zugriff verweigert — unzureichende Berechtigungen" },
+  pt: { heading: "Seções", home: "Início", admin: "Painel de administração", design: "Design", denied: "Acesso negado — permissões insuficientes" },
+  pl: { heading: "Sekcje", home: "Strona główna", admin: "Panel administracyjny", design: "Projektowanie", denied: "Odmowa dostępu — niewystarczające uprawnienia" },
+  tr: { heading: "Bölümler", home: "Ana sayfa", admin: "Yönetim paneli", design: "Tasarım", denied: "Erişim reddedildi — yetersiz izin" },
+  nl: { heading: "Secties", home: "Home", admin: "Beheerpaneel", design: "Ontwerp", denied: "Toegang geweigerd — onvoldoende rechten" },
 };
 
 export function layerLabels(lang: string): LayerLabels {

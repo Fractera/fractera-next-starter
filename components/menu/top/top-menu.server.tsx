@@ -60,7 +60,7 @@ export async function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} />}
+          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} appName={cfg.name || cfg.short_name || ""} appDescription={cfg.description || ""} />}
           {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
               the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}

@@ -19,24 +19,6 @@ const SCHEMA = `
     domain_error  TEXT,
     updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
-  CREATE TABLE IF NOT EXISTS deployment_records (
-    id             TEXT PRIMARY KEY NOT NULL,
-    result         INTEGER NOT NULL DEFAULT 3,
-    project        TEXT NOT NULL DEFAULT 'default',
-    tokens         INTEGER NOT NULL DEFAULT 0,
-    platform       TEXT,
-    model          TEXT,
-    page_url       TEXT,
-    commit_message TEXT,
-    status         TEXT NOT NULL DEFAULT 'ready',
-    duration_ms    INTEGER,
-    commit_hash    TEXT,
-    branch         TEXT,
-    author         TEXT,
-    step           TEXT,
-    created_at     TEXT NOT NULL DEFAULT (datetime('now')),
-    created_by     TEXT NOT NULL DEFAULT 'system'
-  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks
@@ -108,6 +90,9 @@ const DROP_LEGACY = `
   DROP TABLE IF EXISTS other_starter_v3__route;
   DROP TABLE IF EXISTS other_starter_v3__route_stop;
   DROP TABLE IF EXISTS other_starter_v3__toast;
+  -- Step 500: the Deployments table (Product Loop journal) was removed from the admin
+  -- together with its panel and its API. Nothing writes or reads it any more.
+  DROP TABLE IF EXISTS deployment_records;
 `
 
 // ALTER TABLE ADD COLUMN must tolerate the "duplicate column" error: during
@@ -139,14 +124,9 @@ function makeLocalDb() {
   if (!cols.has('media_id'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_id   TEXT`)
   if (!cols.has('media_url'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_url  TEXT`)
   if (!cols.has('created_by')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'`)
-  // deployment_records.step (Product Loop) — added after the table shipped, so
-  // existing DBs need the column via ALTER (CREATE TABLE IF NOT EXISTS won't).
-  const depCols = new Set(
-    (sqlite.prepare('PRAGMA table_info(deployment_records)').all() as Array<{ name: string }>).map(c => c.name)
-  )
-  if (depCols.size && !depCols.has('step')) safeAddColumn(sqlite, `ALTER TABLE deployment_records ADD COLUMN step TEXT`)
-  // (step 500) The ALTER blocks for telegram_notes / automation_finance / automation_images
-  // are gone with their tables — those warehouses belonged to the removed projects layer.
+  // (step 500) The ALTER blocks for deployment_records / telegram_notes / automation_finance
+  // / automation_images are gone with their tables — those warehouses belonged to the
+  // removed projects layer and to the Deployments journal.
 
   return {
     prepare(sql: string) {

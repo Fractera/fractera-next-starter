@@ -92,7 +92,7 @@ const DROP_LEGACY = `
   DROP TABLE IF EXISTS entity_warning;
   DROP TABLE IF EXISTS global_automation;
   DROP TABLE IF EXISTS wave_snooze;
-  -- The frozen starter `other/starter-v3` created its own warehouses at runtime, one per
+  -- The frozen starter other/starter-v3 created its own warehouses at runtime, one per
   -- tab, prefixed with the automation id. The starter is gone; so are its tables.
   DROP TABLE IF EXISTS other_starter_v3__analytics;
   DROP TABLE IF EXISTS other_starter_v3__calendar;

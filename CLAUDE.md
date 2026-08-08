@@ -1,9 +1,12 @@
 # CLAUDE.md
 
-> 🔒 **Projects & automations — read `AUTOMATION-PROJECTS.md` FIRST.** Whenever a user or an agent starts
-> **developing, updating, improving or deleting an automation** (also called a *project* or a
-> *projects-automation*), you MUST read [`AUTOMATION-PROJECTS.md`](AUTOMATION-PROJECTS.md) before doing
-> anything else — it is the single, authoritative, complete documentation of that process.
+> 🔒 **Know your layer before you build. Section 3 is the map** — what is yours, what the platform already
+> provides (a database, authorization, storage, a knowledge graph, a map, channels), and what is out of
+> reach and belongs to the architect. Most wrong answers here are a second copy of something that already
+> exists one layer below.
+>
+> *(The automations layer, Hermes and the five coding agents were removed in step 500. If you meet them in
+> an old file or an old commit, that is history, not an instruction.)*
 
 ## 1. Evolving pipeline coding agent
 
@@ -37,44 +40,52 @@ record the task checklist; deepening sub-tasks during decomposition is allowed.
 
 ## 3. Environment & scope
 
-**Foundational system knowledge — [`ARCHITECTURE.md`](ARCHITECTURE.md) (root, beside `GLOSSARY.md`): the fundamental layers in priority/dependency order, and per layer what you CAN do, what you CANNOT, and the consequences of violation. Read it at session start together with GLOSSARY.md, before any work.** The map below is the operational summary; ARCHITECTURE.md is the authority.
+**This section is your map. Read it before proposing anything** — most wrong answers here come from not
+knowing that a thing already exists one layer below you.
 
-Your project is the App Shell (`fractera-app :3000`): the open layer where you write and edit code. Around
-it is the Fractera environment (the layer above): you call it by ports/API but never edit its system code
-without a special requirement from the architect. Everything sits behind nginx (`:80/:443`, absent in IP
-mode) and the auth gate (`fractera-auth :3001`).
+Your project is the app on **`:3000`** — the open layer, where you write and edit code. Everything else
+belongs to the platform around it: you *call* it, you do not rebuild it.
 
-Environment map (number = nesting depth):
+**1 — Yours.** `fractera-app :3000`: pages, components, content, the app's own logic. Here you are the
+author.
 
-1. **App** — `fractera-app :3000` ← your project, editable (product content only)
-2. **Data** — `fractera-data :3300` (token-auth)
-   - 2.1 SQLite — `app.db` + `media.db` (`products`, `deployment_records`, `projects`, `site_settings`)
-   - 2.2 Object Storage / Media — uploads, thumbnails, crop, PWA-icon generation
-3. **Admin** — `fractera-admin :3002` (cockpit)
-   - 3.1 Bridges — 5 platforms over WebSocket, each = an MCP server `:3210–3214`; + system terminal
-   - 3.2 Tools — Deploy (`POST /api/deploy`) · GitHub · Upload Image · Skills · Product Loop
-   - 3.3 LightRAG — Company Memory `:9621` (shared memory; `/api/rag/{status,query,ingest}`)
-   - 3.4 Hermes — Brain
-     - 3.4.1 Hermes Agent `:9119` (`config.yaml`, `SOUL.md`, skills, 7 MCP bridges `:3210–3216`:
-       deployments `:3215`, readiness `:3216`)
-     - 3.4.2 Chat Web UI `:9120`
-     - 3.4.3 Telegram gateway
-   - 3.5 Domain settings — domain connection + certificate
-   - 3.6 Service pages (role architect) — `:3002/service/*`: `/service/ai-core` · `/service/architecture` ·
-     `/service/development-steps` · `/service/glossary` · `/service/documents` ·
-     `/service/ai-draft-settings` · `/service/debug`. Moved out of the App slot into Admin in step 170 so
-     they survive a slot rebuild; their filesystem roots still read the SLOT (`slotRoot()`), so you still
-     declare/watch the SAME slot workspace — only the URL/port changed (`:3000/architecture` →
-     `:3002/service/architecture`), and their APIs live at `:3002/api/…` (e.g.
-     `:3002/api/project/default/architecture/tasks`). Opened from the **Service** button in the Admin header.
+**2 — The platform's, use it instead of building your own:**
 
-**Environment calls.** Reach a service by its port/endpoint: memory — `/api/rag/*`, deploy — `/api/deploy`,
-media — `:3300`, orchestration — Hermes `:9119`, service pages/their APIs — Admin `:3002/service/*` and
-`:3002/api/…`. Every API call carries `-H "X-Agent-Identity: <you>"` — without it DB changes are
-attributed to a generic agent and auditability is lost.
+- **Data — `fractera-data :3300`.** Rows, uploaded files and vectors, all behind one secret. It is also the
+  **single door** to the rest: `/service/rag` (knowledge graph), `/service/geo` (routes, distance matrices,
+  geocoding), `/service/channels` (Telegram and what follows). Ready clients sit next to you in
+  `lib/fractera/{data-service,vectors,knowledge}.ts` — use them.
+  **There is already a database.** If a request sounds like "connect Postgres / Neon / Supabase", say so
+  first: storage exists, it is shared with the deployed app, and a second one splits the data in two.
+- **Authorization — `fractera-auth :3001`.** Accounts, sessions, roles, external sign-in providers.
+  **Never write a second login.** "Add sign-in with X" is a platform setting, not app code; if the provider
+  is not in the set, that is a change for the architect.
+- **Admin panel — `fractera-admin :3002`.** The owner's cockpit: settings, stores, deployment. You do not
+  edit it, and its pages are not part of your project.
 
-**Boundary.** App `:3000` is your domain of authority. The layer above you read and call, but never change
-without the rights-escalation protocol (the architect's double confirmation).
+**3 — Out of reach; name the boundary and stop.** The auth architecture and its provider set, the admin
+panel, the installer, ports, the domain and certificates. These are changed by the architect. The correct
+behaviour is to say plainly which layer the request belongs to and wait — not to improvise a local
+imitation of it.
+
+### `APP-CONFIG` — the settings you cannot edit from here
+
+The app's name, description, address, logo and images, icons and PWA, author, social profiles, SEO,
+OpenGraph, analytics and structured data live in **`APP-CONFIG/app-config.json` on the server**, read at
+request time by `config/app-config.ts` over the committed defaults in `config/app-config.defaults.ts`.
+
+**That file is deliberately outside the repository** (`.gitignore`). It is not in your clone, it does not
+travel with a push or a pull, and a fresh server runs on the code defaults until the owner saves settings
+once. It is changed in **one place only — the panel, `App Settings` (`:3002` → `api/config/site`)** — and
+applies with no rebuild.
+
+So when a request is "change the site name / the description / the OG image / the analytics id", the answer
+is: that is a panel setting, change it there. Editing code for it is wrong twice — your change is not what
+the app reads, and it will be overwritten by the file that is. Only a **missing field** is a code matter,
+and that is a platform change, not a project one.
+
+(Its neighbour `PLATFORM-CONFIG/platform-config.json` follows the opposite rule — it IS tracked by git.
+Two adjacent settings files under two different rules; the owner has not yet decided which rule wins.)
 
 ---
 
@@ -98,9 +109,9 @@ a client component owning a route, not SSR). So routing is server-generated, cli
 are forbidden, content is SSG/ISR. A root `force-dynamic` (e.g. on `app/layout.tsx`) silently forces the
 WHOLE subtree dynamic — never do it; use ISR (`revalidate`). Exception: architect-only pages (the service
 cockpit) MAY and SHOULD stay dynamic. Next traps: `auth()`, `cookies()`, `headers()` in a layout/page.
-**Full canon + how-to → [`STATIC-FIRST.md`](STATIC-FIRST.md)** (deep recipe: `CRUD-DOCS/workspace-standards/static-first.md`).
+The full canon used to live in STATIC-FIRST.md and CRUD-DOCS; both were removed in step 500 as documentation of a world that no longer exists. What stands above IS the rule now.
 
-**Build-time env vars that must survive a redeploy** (any `NEXT_PUBLIC_*`, the language set, Stripe keys + product ids, custom app vars) → use the **`persist-env-var-with-rebuild`** skill + read `CRUD-DOCS/workspace-standards/build-time-env-and-redeploy.md`. Write the value into the slot's `app/.env.local` through the proper setter, then trigger a rebuild (the slot-scoped build bakes the slot's own `.env.local`). Never hand-wait a `pm2 restart` for a build-time value, never `force-dynamic` to "show it instantly".
+**Build-time env vars that must survive a redeploy** (any `NEXT_PUBLIC_*`, the language set, Stripe keys + product ids, custom app vars) → use the **`persist-env-var-with-rebuild`** skill. Write the value into the slot's `app/.env.local` through the proper setter, then trigger a rebuild (the slot-scoped build bakes the slot's own `.env.local`). Never hand-wait a `pm2 restart` for a build-time value, never `force-dynamic` to "show it instantly".
 
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`
@@ -166,7 +177,7 @@ Roles: `guest / user / architect` — enforced tiers; + business roles (full lis
 with `requiresGuestRegistration: true` the guest is issued a permanent `user.id`, their work persists and
 attaches to the account on registration.
 
-> Recipe — `HOW-USE-AUTH.md`; role vocabulary — `lib/roles.ts` (`ALL_ROLES`).
+> Role vocabulary — `lib/roles.ts` (`ALL_ROLES`). The auth layer is the platform s (`:3001`); you enable it, never rebuild it.
 
 **Public app-shell auth (when to turn login ON).** The auth LAYER always exists (the admin/owner
 login is always there); what is OFF by default is the **public, visitor-facing** login in the app
@@ -177,7 +188,7 @@ extra control costs bundle size + deploy time). **When the owner asks you to bui
 requires accounts, enabling app-shell auth is part of the job — add it WITHOUT asking separately; ask
 the owner ONLY the drawer side (left or right).** How: the `manage-app-shell-auth` skill / the
 `owner_app_settings_set_app_shell_auth` MCP (sets the env key, rebuilds), or Admin → App Settings →
-App authorization. Build-time → applies after a rebuild. Recipe → `HOW-USE-AUTH.md`.
+App authorization. Build-time → applies after a rebuild.
 
 ---
 
@@ -189,35 +200,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
 ```xml
 <pipeline name="development" rules="never-deviate; sequential; recursive">
 
-  <law id="service-page-location">SERVICE PAGES MOVED (step 170). The architect service pages named below
-    without a prefix — /architecture, /development-steps, /ai-draft-settings, /ai-core, /glossary,
-    /documents, /debug — no longer live in this App slot; they run in the ADMIN app at
-    :3002/service/&lt;name&gt; (opened from the Service button in the Admin header), so they SURVIVE a slot
-    rebuild. Their filesystem roots still read THIS slot (slotRoot()), so you declare/watch the SAME
-    workspace — only the URL/port changed. Their APIs live at :3002/api/… ; an API PATH written below such as
-    /api/project/default/architecture/tasks is unchanged in shape, just served on :3002. Page names appear
-    without the /service prefix in the pipeline below for brevity — read each as :3002/service/&lt;name&gt;.</law>
-  <law id="realtime-pages">/service/architecture, /service/development-steps, /service/ai-draft-settings
-    (Admin :3002) poll the filesystem and highlight (pulse/blink) changed nodes; the
-    architect sees you complete/create sub-steps in real time. Every on-disk action = a visible event.</law>
-  <law id="patterns-retired">Reusable code/UI patterns are the future DESIGN layer (fractera-design :3004,
-    developed separately) — PATTERNS/PATTERNS/ is gone; do not read, create or maintain it. The ONLY required
-    pattern reading is the anti-patterns (PATTERNS/ANTI-PATTERNS/) before every deploy.</law>
   <law id="announce-long-run">Before starting a long multi-step run that ends in deploy(s), TELL the owner
     plainly (their language): you are going into development, it may take a while, chat activity will be hidden
-    meanwhile, and they can watch progress live in the Admin at https://&lt;admin-host&gt;/service/architecture
-    and https://&lt;admin-host&gt;/service/development-steps (or http://&lt;IP&gt;:3002/service/… in IP mode).
-    Those realtime pages (see realtime-pages) are the progress view while the chat is silent.</law>
+    meanwhile, and that the chat will be quiet meanwhile.</law>
   <law id="multi-cycle">A task may not fit in one cycle — normal. If sub-steps don't resolve it, create one
     or more new steps (with descriptions) for the next session instead of forcing it. One request usually
     spawns 2-3 new steps and/or a dozen sub-steps.</law>
-  <law id="scenario-router">Every complex task belongs to ONE of two scenarios, decided BEFORE decomposing.
-    FROZEN-ASSEMBLY = flat, MCP-only, CREATE-new structural stubs from frozen templates (owner_content_orchestrate
-    / Hermes) — NOT hand-coding. REAL-DEVELOPMENT = this recursive coding pipeline — MODIFY an existing page,
-    author real/custom content, build real features. The border is the OPERATION, not a time-phase: create-new
-    stub = FROZEN; modify-existing or real/custom content = REAL-DEV. If the vector is not explicit, ask ONE
-    clarifying question and wait. Full rule: CRUD-DOCS/workspace-standards/task-scenario-router.md.</law>
-
   <law id="agent-feedback">Coder-to-orchestrator feedback channel (owner contract 184 R10): if, across
     delegated steps of the same task type, the orchestrator's handed-over instructions are SYSTEMATICALLY
     incomplete about something AND one of YOUR OWN skills covers exactly that gap, you MAY materialize ONE
@@ -233,30 +221,6 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     step per SYSTEMATIC gap (never per task); it NEVER blocks, replaces or delays the delegated work itself;
     the orchestrator reads it, evaluates the skill, adopts it if conflict-free and closes the step with a
     report.</law>
-
-  <law id="prefer-hermes-native">Prefer Hermes' NATIVE capability over building from scratch (owner, step 192
-    — the mirror of agent-feedback). Coding agents often do not know that the orchestrator Hermes already
-    ships ~70 native tools (web_search/web_extract, 10 browser tools, image_generate, text_to_speech, memory,
-    session_search, cronjob, delegate_task, execute_code, vision) plus the Nous Tool Gateway (one subscription
-    = web/browser/image/TTS). BEFORE you build OR propose any capability (an MCP bridge / skill / tool) whose
-    domain overlaps that arsenal — web search or extraction, a browser, image generation, TTS, memory/RAG,
-    scheduling/cron, delegation — you MUST first consult the native-capability catalog
-    CRUD-DOCS/workspace-standards/hermes-native-capabilities.md. If Hermes already provides it natively, DO
-    NOT reinvent it: either (a) enable the native capability in Hermes' config, or (b) hand it back to the
-    orchestrator by materializing ONE appeal step:
-    DEVELOPMENT-STEPS/NEW-STEPS/&lt;NN&gt;-native-capability-appeal-&lt;your-agent&gt;-&lt;topic&gt;.md (NN =
-    next free number across NEW-STEPS + COMPLETED-STEPS), an ordinary step file ending with the standard
-    fractera:step machine block whose plan carries { "kind": "native-capability-appeal", "from":
-    "&lt;your-agent&gt;", "to": "orchestrator", "nativeTool": "&lt;the native tool / Tool Gateway&gt;", "task":
-    "&lt;what you were about to build&gt;" }. Body skeleton (keep this intent verbatim): "Service message from
-    coding agent &lt;you&gt; to the orchestrator: I was about to solve &lt;task&gt; by building &lt;Y&gt; from
-    scratch, but Hermes provides this NATIVELY — &lt;nativeTool&gt;. Recommendation: do not build from scratch;
-    reformulate the spec to use Hermes' native capability, or enable it in config." Limits: it NEVER blocks the
-    delegated work; the orchestrator reads it, and per SOUL R13 reforms the spec / enables the native tool
-    instead of a from-scratch build, then closes the step. Graceful degrade: a project WITHOUT Hermes has no
-    native arsenal to defer to — use your own tools; the catalog still keeps you from reinventing what you
-    already have. This is the OPPOSITE direction of agent-feedback (there: your skill flows UP to the
-    orchestrator; here: you defer DOWN to Hermes' native capability).</law>
 
   <stage id="6.0" name="Session entry">
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
@@ -306,19 +270,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <triage>
       <trigger n="1" type="next-step" source="NEW-STEPS/" goto="6.3"/>
       <trigger n="2" type="direct-task" goto="6.3"/>
-      <trigger n="3" type="architecture-state" goto="flow-B"/>
-      <trigger n="4" type="agent-drafts" goto="flow-A"/>
     </triage>
-    <flow id="flow-A" page="/ai-draft-settings" folder="AI-DRAFT-SETTINGS/{AGENT}/ (SKILLS/, MCP/)">
-      <action>convert each draft into a new step (spec)</action>
-      <action>delete the draft record (Discard / Remove draft)</action>
-      <constraint>do not touch the original instruction/skill/MCP files; build nothing here</constraint>
-    </flow>
-    <flow id="flow-B" page="/architecture">
-      <action>take ONE record: todo on a live route | declared page (README.md, no built file) | danger/deletion</action>
-      <action>delete it on the tab; create a step for it (OR materialize many at once: hover a pending node -> Launch bundles EVERY pending record into one step and removes the sources; the skill declare-architecture-page-or-task and MCP owner_arch_create_record / owner_arch_send_to_steps do the same for an agent)</action>
-      <repeat until="tree empty"/>
-    </flow>
     <brainstorm ref="section-2" mode="adaptive">survey until "go/proceed"; next-step -> minimal,
       direct task -> dense</brainstorm>
     <gate>exactly one trigger chosen; goal restated to the architect and confirmed "go"</gate>
@@ -346,7 +298,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       to-do); declare a page/endpoint = create README.md (declared node); tasks via
       /api/project/default/architecture/tasks</action>
     <constraint>creating a page -> FIRST decide the access shape (public|private|public+guest) per
-      HOW-USE-AUTH.md (see section-5), before code, not by guessing — this access shape becomes the
+      section 5 of this file, before code, not by guessing — this access shape becomes the
       scaffold-declared-route-into-component-skeleton --access argument; an app that needs visitor
       accounts ALSO enables public app-shell auth (§5, manage-app-shell-auth)</constraint>
     <branch on="oversized-task">deliverable of THIS step = the step-chain + declared pages, not code</branch>

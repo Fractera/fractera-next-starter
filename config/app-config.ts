@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { cache } from "react";
 import { AppConfig, DEFAULT_APP_CONFIG } from "./app-config.defaults";
 
@@ -30,17 +30,18 @@ function deepMerge<T>(base: T, over: unknown): T {
   return out as T;
 }
 
-// Create the file from defaults on first read (like ensureRoot for CRUD-DOCS). Best-effort:
-// a read-only fs must never crash a render — we fall back to in-memory defaults.
-export function ensureConfig(): void {
-  try {
-    if (existsSync(CONFIG_PATH)) return;
-    mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-    writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_APP_CONFIG, null, 2), "utf8");
-  } catch {
-    /* fall back to defaults in memory */
-  }
-}
+// 🔒 THIS LAYER ONLY READS THE CONFIG. IT NEVER WRITES IT. (revision 2026-08-09)
+//
+// The single source of truth is the control panel (:3002 → api/config/site). It owns
+// the file; the app renders from it. Before this revision a helper here created the
+// file from the shipped defaults on first read, which meant the product layer could
+// author configuration too — two writers, and the panel would no longer be the one
+// answer to "what is this app called".
+//
+// A missing file is not a problem to fix: it means the owner has not saved settings
+// yet, and the committed defaults are exactly what the app should serve until they do.
+// Creating it here would also turn code defaults into "the owner's saved settings" the
+// moment anyone rendered a page.
 
 // Keep fields that feed `new URL(...)` valid so a blank value can never 500 a render.
 function normalize(cfg: AppConfig): AppConfig {
@@ -55,7 +56,6 @@ function normalize(cfg: AppConfig): AppConfig {
 
 // Read + merge the live config. Cached per request render pass; fresh across requests.
 export const getAppConfig = cache((): AppConfig => {
-  ensureConfig();
   try {
     const raw = readFileSync(CONFIG_PATH, "utf8");
     return normalize(deepMerge(DEFAULT_APP_CONFIG, JSON.parse(raw)));

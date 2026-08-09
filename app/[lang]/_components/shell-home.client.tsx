@@ -5,20 +5,19 @@ import { motion } from "motion/react";
 import { Zap, LayoutDashboard, Sparkles } from "lucide-react";
 import { adminBase } from "@/lib/runtime-urls";
 import { iconUrl, resolveBrandName, DEFAULT_APP_CONFIG, type AppConfig } from "@/config/app-config.defaults";
-import { HomeConfigList } from "./home-config-list.client";
 import { getHomeStrings } from "@/lib/i18n/home-strings";
 
-const AI_TOOLS = [
-  { name: "Claude Code",    color: "bg-orange-500/10 text-orange-400 border-orange-500/25" },
-  { name: "Codex",          color: "bg-green-500/10  text-green-400  border-green-500/25"  },
-  { name: "Gemini",         color: "bg-blue-500/10   text-blue-400   border-blue-500/25"   },
-  { name: "Qwen Code",      color: "bg-violet-500/10 text-violet-400 border-violet-500/25" },
-  { name: "Kimi Code",      color: "bg-cyan-500/10   text-cyan-400   border-cyan-500/25"   },
-  { name: "LightRag",       color: "bg-amber-500/10  text-amber-400  border-amber-500/25"  },
-  { name: "Hermes",         color: "bg-pink-500/10   text-pink-400   border-pink-500/25"   },
+// Что предлагает платформа под этим приложением. Ревизия 2026-08-09 убрала отсюда
+// «Claude Code · Codex · Gemini · Qwen Code · Kimi Code · LightRag · Hermes»: эти
+// подсистемы снесены шагом 500, и главная страница свежего сервера рекламировала
+// то, чего в продукте нет. Осталось ровно то, что действительно работает.
+const PLATFORM_SERVICES = [
   { name: "Auth",           color: "bg-rose-500/10   text-rose-400   border-rose-500/25"   },
   { name: "Database",       color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/25" },
   { name: "Object Storage", color: "bg-teal-500/10   text-teal-400   border-teal-500/25"   },
+  { name: "Knowledge Graph",color: "bg-amber-500/10  text-amber-400  border-amber-500/25"  },
+  { name: "Map & Routing",  color: "bg-green-500/10  text-green-400  border-green-500/25"  },
+  { name: "Channels",       color: "bg-cyan-500/10   text-cyan-400   border-cyan-500/25"   },
 ];
 
 export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: string }) {
@@ -130,10 +129,11 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
           </p>
         </motion.div>
 
-        {/* Configured Site Settings — a live summary of what the owner has branded */}
-        <HomeConfigList config={config} />
+        {/* Здесь стоял список настроек сайта — он повторял форму панели управления
+            вторым описанием тех же полей. Настройки принадлежат панели; удалено
+            ревизией 2026-08-09 вместе с `config/site-fields.ts`. */}
 
-        {/* AI tool pills */}
+        {/* Службы платформы */}
         <motion.div
           id="platforms"
           initial={false}
@@ -141,7 +141,7 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
           transition={{ delay: 0.32, duration: 0.5 }}
           className="flex flex-wrap justify-center gap-2 scroll-mt-20"
         >
-          {AI_TOOLS.map((tool, i) => (
+          {PLATFORM_SERVICES.map((tool, i) => (
             <motion.span
               key={tool.name}
               initial={false}

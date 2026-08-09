@@ -34,6 +34,29 @@ Continuity of context IS the quality of the work here.
 If you genuinely think a separate agent is warranted, say so in one sentence and continue working in this
 window. The user decides; you do not.
 
+### 🔒 `LESSONS.md` — where you actually evolve
+
+A session ends and takes its context with it. `LESSONS.md` is the part that survives: the user's
+preferences and the working habits you earned by getting something wrong once. Three duties:
+
+1. **Read it at session start** — with `CLAUDE.md` and `GLOSSARY.md`. Non-optional.
+2. **Follow it.** An entry is an instruction, not a note. Where an entry and your default habit disagree,
+   the entry wins — it exists because the default already failed here.
+3. **Append when a trigger fires**, in the same session, before the lesson is lost. Triggers: the user
+   corrected you or stated a preference · you were wrong in a way that will repeat · you established a
+   non-obvious project fact at real cost · the user said "remember this".
+
+Write the *habit*, not the incident — one rule per entry, a few lines, because this file is read in full
+every session and its length is paid every time. Do not restate what `CLAUDE.md` or `GLOSSARY.md` already
+says. If an entry proves wrong, delete it: a false rule followed forever costs more than a missing one.
+
+```
+### 2026-05-14 — Ask which store before adding a table
+**Trigger.** Built a table the platform already provided; the work was thrown away.
+**Rule.** Check lib/fractera/ clients before designing any storage.
+**Why.** A second store splits the data and neither half is complete.
+```
+
 ---
 
 ## 2. Dialogue format
@@ -266,6 +289,9 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Read LESSONS.md (section 1) — the user's preferences and the habits earned from earlier
+      mistakes. Follow it for the whole session, and append an entry the moment a trigger fires; do not
+      leave it to the end, an unwritten lesson dies with the context.</action>
     <action>Read WHAT THIS APP IS: `npm run read:app-config` (section 3, APP-CONFIG). The identity — name,
       description, brand, author, organization, SEO — is not in the code; it sits in APP-CONFIG/app-config.json
       on the server, outside git. Use the command, never the raw file: with up to 82 languages enabled the
@@ -307,7 +333,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
+    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + LESSONS.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

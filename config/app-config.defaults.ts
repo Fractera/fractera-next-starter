@@ -69,7 +69,6 @@ export interface AppConfig {
   manifest: string;
   mailSupport: string;
   lang: string;
-  chatBrand: string;
 
   // Object-storage references (media URL like /api/media/{id}/file) or null when unset.
   images: Record<RegularImageType, string | null>;
@@ -143,15 +142,19 @@ export interface AppConfig {
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
-  name: "Fractera — Production-Coding AI Server",
+  // These defaults ship with the starter and are what a fresh server serves until
+  // its owner saves settings in the panel once. They must therefore describe the
+  // product as it IS: the production-coding positioning they carried before was
+  // dropped with the coding agents in step 500, and a new server announcing it
+  // would be advertising a product that no longer exists.
+  name: "Fractera — Agentic Engineering Infrastructure",
   short_name: "Fractera",
   description:
-    "Production-Coding AI Server — multiple frontier AI models running entirely on your own server. No cloud lock-in.",
+    "Agentic Engineering Infrastructure — your own server, your own code, run and configured from one control panel.",
   url: "https://www.fractera.ai",
   manifest: "/manifest.webmanifest",
   mailSupport: "admin@fractera.ai",
   lang: "en",
-  chatBrand: "Hermes",
 
   images: {
     ogImage: null,

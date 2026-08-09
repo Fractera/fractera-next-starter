@@ -58,7 +58,6 @@ export const SECTIONS: Section[] = [
       { path: "description", label: "Description", type: "textarea", placeholder: "What this app is…" },
       { path: "url", label: "Site URL", type: "text", placeholder: "https://example.com" },
       { path: "mailSupport", label: "Support email", type: "text", placeholder: "admin@example.com" },
-      { path: "chatBrand", label: "Chat brand", type: "text", placeholder: "Hermes" },
     ],
   },
   {

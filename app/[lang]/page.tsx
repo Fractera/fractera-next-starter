@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import HomeEntry from "./_components"
-import { getAppConfig } from "@/config/app-config"
+import { getAppConfig, metaForLang } from "@/config/app-config"
 
 // Thin server entry — a page is never a client component. All logic and markup
 // live in the route's entry component (_components/index.tsx).
@@ -11,14 +11,19 @@ import { getAppConfig } from "@/config/app-config"
 export const revalidate = 300
 export const dynamicParams = true
 
-export async function generateMetadata(): Promise<Metadata> {
-  const config = getAppConfig()
-  const title = config.name || config.short_name || ""
-  const description = config.description || ""
+// Мета берётся НА ЯЗЫК (шаг 501). Прежде эта функция даже не принимала `params`:
+// при двух языках испанская страница получала английский заголовок и описание, то
+// есть объявляла себя англоязычной. Перевод берётся из `i18n` конфига, а если его
+// нет — основное значение (правило «нет перевода → основной язык»).
+export async function generateMetadata(
+  { params }: { params: Promise<{ lang: string }> },
+): Promise<Metadata> {
+  const { lang } = await params
+  const { title, description, siteName } = metaForLang(lang)
   return {
     title,
     description,
-    openGraph: { title, description },
+    openGraph: { title, description, siteName, locale: lang },
   }
 }
 

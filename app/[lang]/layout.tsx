@@ -31,8 +31,14 @@ export function generateStaticParams() {
   return SUPPORTED_LANGUAGES.map((lang) => ({ lang }));
 }
 
-export function generateMetadata(): Metadata {
-  return constructMetadata();
+// Язык страницы передаётся в сборку меты (шаг 501): без него `constructMetadata`
+// брала название, описание, шаблон заголовка, ключевые слова и имя сайта ОДНИМ
+// набором на все языки — и испанская страница объявляла себя англоязычной.
+export async function generateMetadata(
+  { params }: { params: Promise<{ lang: string }> },
+): Promise<Metadata> {
+  const { lang } = await params;
+  return constructMetadata({ lang });
 }
 
 export function generateViewport(): Viewport {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { AppConfig, ContentType } from "@/config/app-config.defaults";
 import { iconUrl, resolveBrandName } from "@/config/app-config.defaults";
-import { getAppConfig } from "@/config/app-config";
+import { getAppConfig, configValueForLang } from "@/config/app-config";
 
 // Build a Next Metadata object from the live site config (Admin -> Site Settings).
 // Ported from the 22slots construct-metadata, trimmed to the Shell's single-language reality
@@ -60,9 +60,21 @@ function resolveOgType(cfg: AppConfig): "website" | "article" {
 
 export function constructMetadata(args: ConstructArgs = {}): Metadata {
   const cfg = getAppConfig();
+
+  // Пять языковых значений (шаг 501). `configValueForLang` отдаёт перевод, а если
+  // его нет — основное значение, поэтому одноязычный сайт ведёт себя ровно как
+  // прежде, а многоязычный перестаёт отдавать английскую мету на испанской
+  // странице.
+  const lang = args.lang ?? cfg.lang;
+  const nameForLang = configValueForLang("name", lang) || resolveBrandName(cfg) || "Your Company App";
+  const descForLang = configValueForLang("description", lang) || cfg.description;
+  const templateForLang = configValueForLang("seo.titleTemplate", lang) || cfg.seo.titleTemplate;
+  const keywordsForLang = configValueForLang("seo.keywords", lang) || cfg.seo.keywords;
+  const siteNameForLang = configValueForLang("og.siteName", lang) || nameForLang;
+
   const {
-    title = resolveBrandName(cfg) ?? "Your Company App",
-    description = cfg.description,
+    title = nameForLang,
+    description = descForLang,
     image = cfg.images.ogImage,
     pathname,
     noIndex = false,
@@ -80,13 +92,13 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
   if (cfg.seo.yandexVerification) verification.yandex = cfg.seo.yandexVerification;
 
   return {
-    title: { default: title, template: cfg.seo.titleTemplate || `%s | ${cfg.name}` },
+    title: { default: title, template: templateForLang || `%s | ${nameForLang}` },
     description: desc,
     metadataBase: new URL(cfg.url),
     applicationName: cfg.short_name,
     creator: cfg.short_name,
     publisher: cfg.short_name,
-    ...(cfg.seo.keywords ? { keywords: cfg.seo.keywords } : {}),
+    ...(keywordsForLang ? { keywords: keywordsForLang } : {}),
     authors: [{ name: cfg.author.name, url: cfg.author.url }],
     alternates: { canonical },
     manifest: cfg.manifest,
@@ -96,8 +108,9 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
       title,
       description: desc,
       url: canonical,
-      siteName: cfg.og.siteName ?? cfg.name,
-      locale: cfg.og.locale ?? cfg.lang,
+      siteName: siteNameForLang,
+      // Локаль OG — язык СТРАНИЦЫ, а не один язык на весь сайт.
+      locale: cfg.og.locale ?? lang,
       ...(image
         ? { images: [{ url: image, width: cfg.og.imageWidth, height: cfg.og.imageHeight, alt: desc }] }
         : {}),

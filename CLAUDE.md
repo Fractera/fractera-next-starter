@@ -10,11 +10,29 @@
 
 ## 1. Evolving pipeline coding agent
 
-Work sequentially, validating every stage, strictly per the presented pipeline. Parallel agents are not
-launched — except by special need and with the user's agreement. Development runs in production mode. At
+Work sequentially, validating every stage, strictly per the presented pipeline. Development runs in production mode. At
 every necessary stage — dense dialogue with the user. Strict control over adherence to the development
 standard. On reaching the defined criteria, stops for refactoring are mandatory. Control over the launch,
 execution and completion of deployment.
+
+### 🔒 One context window — sub-agents are never your decision
+
+**You are forbidden to run multi-agent development of your own accord.** In every case except one you stay
+in a single context window and do the work yourself. The single exception is an explicit instruction from
+the user to call a sub-agent — their words, not your reading of the task.
+
+Nothing about a task authorises a spawn on its own: not its size, not "several independent parts", not
+"this would be faster in parallel", not a stage that looks self-contained. A task that seems to invite
+splitting is still yours to do here.
+
+**Why.** A sub-agent starts cold. It does not have this dialogue, the user's corrections, the decisions
+made twenty minutes ago, or the reason the previous approach was abandoned — so it re-derives them, and
+re-derives them wrong. What comes back reads as work done while quietly resting on assumptions nobody
+agreed to, and the user pays twice: once for the tokens, once for the review that finds the divergence.
+Continuity of context IS the quality of the work here.
+
+If you genuinely think a separate agent is warranted, say so in one sentence and continue working in this
+window. The user decides; you do not.
 
 ---
 

@@ -51,6 +51,26 @@ thing in red until the file exists.
 measured against. If a request does not serve any case in it, say so before writing code — either the
 request is wrong or the document is out of date, and both are worth a sentence.
 
+### 🔧 `PLATFORM-TOOLS.md` — read it EVERY time a tool enters the conversation
+
+**Whenever you are about to build, add, install or replace a tool of any kind, read this file first.** Not
+only at session start — again, at the moment the question arises. It is generated, so it is current;
+re-reading costs one file and prevents the two most expensive mistakes in this project.
+
+**The first mistake is building what already exists.** A cropper, a trimmer, a microphone button, a code
+viewer — the platform ships these, installed under `tools/`, and a hand-written twin has to be maintained
+forever beside the real one.
+
+**The second mistake is subtler and worse: picking the wrong one of several.** There will not be a single
+cropper. There will be four — one returning JPEG and losing transparency, one keeping PNG, one cropping on
+the server for large files, one locked to a square for avatars. **From the folder they are four similar
+names.** Nothing in `tools/` tells you which fits your case; the difference lives in the contract, and
+`PLATFORM-TOOLS.md` is where the contract is written: what each accepts, what it returns, and — usually
+the deciding part — what it refuses to do.
+
+So: seeing the folder is not knowing the tools. Read the entry, compare the **Limits** sections, then
+choose. If nothing fits, say so plainly and name what is missing rather than improvising a fifth cropper.
+
 ### 🧩 `CODE-SAMPLES/` — the owner's earlier work, used only when asked
 
 A folder of finished pieces the owner brought with them: a home page from a previous project, a set of
@@ -404,7 +424,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   <stage id="6.2" name="Enrich task context">
     <action optional="true">targeted memory query: POST /api/rag/query (mode hybrid) to prefetch -> then
       verify in the real source on disk (memory accelerates, it is not the truth)</action>
-    <gate>every memory-derived claim used was re-checked against the source on disk</gate>
+    <action>WHENEVER the work involves a tool — building one, adding one, replacing one, or wondering
+      whether one exists — RE-READ PLATFORM-TOOLS.md before writing code. Listing `tools/` is not enough:
+      several tools of the same purpose differ only in their contracts, and the Limits section is what
+      decides between them. Choosing by folder name is how the wrong cropper gets used.</action>
+    <gate>every memory-derived claim used was re-checked against the source on disk; if a tool is involved,
+      PLATFORM-TOOLS.md was re-read and the chosen tool named with the reason it fits</gate>
   </stage>
 
   <stage id="6.3" name="Open a step">

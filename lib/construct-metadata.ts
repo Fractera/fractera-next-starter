@@ -16,6 +16,12 @@ type ConstructArgs = {
   pathname?: string;
   noIndex?: boolean;
   noFollow?: boolean;
+  /**
+   * Язык страницы. Пять значений меты (имя, описание, шаблон заголовка, ключевые
+   * слова, имя сайта) читаются на этом языке; без него страница `/es` объявляла
+   * бы себя англоязычной. Не передан — берётся язык конфига.
+   */
+  lang?: string;
 };
 
 function normalizePath(p?: string): string {

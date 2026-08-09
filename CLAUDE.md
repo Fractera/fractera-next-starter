@@ -97,6 +97,27 @@ travel with a push or a pull, and a fresh server runs on the code defaults until
 once. It is changed in **one place only — the panel, `App Settings` (`:3002` → `api/config/site`)** — and
 applies with no rebuild.
 
+**READ IT AT SESSION START — this is mandatory, it is how you learn what application you are building:**
+
+```
+npm run read:app-config
+```
+
+It prints the app's identity — name, description, brand, languages, SEO, author, organization, which
+branding slots are filled and which settings the owner left empty. Nothing in the code tells you this: the
+repository is a generic starter, the identity lives in that file. Skip the command and you will build a
+bakery's page as if it were Fractera's.
+
+**Read it with that command, never by opening the JSON.** The config also stores TRANSLATIONS of five
+fields (`i18n.<path>.<lang>`), and the owner may enable up to 82 languages — the raw file then becomes tens
+of thousands of characters of the same five sentences repeated per language, which teaches you nothing and
+burns the context you need for the work. The command prints the base (English) slice, drops the `i18n`
+branch (reporting only that translations exist), collapses image/icon slots and long `data:` URIs, and adds
+the language set from `NEXT_PUBLIC_SUPPORTED_LANGUAGES`. It works with no server running, and on a fresh
+machine with no config file it says so and shows the committed defaults the app actually serves. For a
+single translated value use `configValueForLang(path, lang)` (`config/app-config.ts`) — not the file.
+(Logic: `config/app-config.agent-view.ts`, importable from server code as `getAgentConfigView()`.)
+
 So when a request is "change the site name / the description / the OG image / the analytics id", the answer
 is: that is a panel setting, change it there. Editing code for it is wrong twice — your change is not what
 the app reads, and it will be overwritten by the file that is. Only a **missing field** is a code matter,
@@ -245,6 +266,11 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Read WHAT THIS APP IS: `npm run read:app-config` (section 3, APP-CONFIG). The identity — name,
+      description, brand, author, organization, SEO — is not in the code; it sits in APP-CONFIG/app-config.json
+      on the server, outside git. Use the command, never the raw file: with up to 82 languages enabled the
+      file is mostly the `i18n` branch — the same five fields translated over and over — and it would eat the
+      context window; the command prints the English slice with translations dropped.</action>
     <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
       (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
       decomposition-born overview at the PROJECTS service dir (step 197): /opt/fractera/projects-app/app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
@@ -281,7 +307,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); rag status known; language set known</gate>
+    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

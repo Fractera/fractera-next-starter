@@ -44,6 +44,46 @@ documents rather than in any single one.
 
 ---
 
+---
+
+## Micro-tools — finished pieces you install instead of writing
+
+Beyond the services above, the platform ships small reusable **tools**: a component plus its server half,
+already working, meant to be taken rather than rebuilt. They are not called over the network — the owner
+installs a **copy** into this project from the panel's *Tools* section.
+
+**Where they land.** `tools/<id>/` in the project root, each next to an `INSTALLED.json` recording which
+version was taken and when.
+
+```
+tools/
+  image-crop/   client/image-cropper.client.tsx          INSTALLED.json
+  video-trim/   client/video-trimmer.client.tsx          INSTALLED.json
+  voice-input/  client/voice-input.client.tsx            INSTALLED.json
+                client/voice-input-i18n.ts
+                server/transcribe.ts
+                types/voice-input.ts
+```
+
+**Check `tools/` before building anything of this shape.** A cropper, a trimmer or a microphone button
+written from scratch beside an installed one is duplicated work that then has to be maintained twice.
+
+| Tool | What it does | What it needs | How you use it |
+|---|---|---|---|
+| `image-crop` | Pan/zoom selection of a picture, fixed 16:9 · 1:1 · 9:16, returns a JPEG blob. `force="square"` locks the aspect where purpose decides it. | browser only | `import { ImageCropper } from "@/tools/image-crop/client/image-cropper.client"` — render it over the page, take the blob in `onDone(blob, mode)`. |
+| `video-trim` | Keeps the middle of a clip, drops the rest; the cut happens on the server and replaces the stored object. | server-side ffmpeg (the data service has it) | `import { VideoTrimmer } from "@/tools/video-trim/client/video-trimmer.client"` — it posts to the media service itself. |
+| `voice-input` | Microphone beside a text field; speech is transcribed and inserted **at the cursor**. Carries its own interface strings in ten languages. | the OpenAI key, and HTTPS — browsers hand out a microphone on secure origins only | `import { VoiceInput } from "@/tools/voice-input/client/voice-input.client"`, give it `targetRef`, `value`, `onChange`, `lang`. Server half: `transcribeAudio()` from `server/transcribe.ts`, wrapped by a thin `api/transcribe` route of your own. |
+
+**They are yours once installed.** The copy is ordinary project code: change it, rename it, delete what you
+do not need. It travels with a push like any other file. Re-installing from the panel overwrites the copy
+and loses local edits — so if you changed a tool, say so before anyone updates it.
+
+**A missing capability is a request, not an improvisation.** If the shape you need is close to a tool but
+not it, adapt the installed copy. If nothing is close, say so — the panel's *Add a tool* page is where a
+new one is asked for.
+
+---
+
 ## When something is missing
 
 Say so plainly and name the layer it belongs to. Do not improvise a local imitation: a hand-rolled store,

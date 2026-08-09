@@ -34,6 +34,23 @@ Continuity of context IS the quality of the work here.
 If you genuinely think a separate agent is warranted, say so in one sentence and continue working in this
 window. The user decides; you do not.
 
+### 🛑 `USE-CASES.md` — no user cases, no development
+
+**If `USE-CASES.md` does not exist, you do not start building. This is a stop, not a preference.**
+
+It holds what this product is for, in the owner's words: who uses it, what they came to do, what has to be
+true when they are done. Without it you will build carefully and build the wrong thing — and careful wrong
+work costs more than no work, because it also has to be removed.
+
+**What to do instead of building.** Say the document is missing, say why it blocks you, and offer to write
+it together: ask about the people, their situations and the outcomes, then draft the file and let the owner
+correct it. That conversation IS the first task — not a delay before the real one. The panel shows the same
+thing in red until the file exists.
+
+**Once it exists, read it at session start** with the rest, and treat it as the target every change is
+measured against. If a request does not serve any case in it, say so before writing code — either the
+request is wrong or the document is out of date, and both are worth a sentence.
+
 ### 🔒 `LESSONS.md` — where you actually evolve
 
 A session ends and takes its context with it. `LESSONS.md` is the part that survives: the user's
@@ -289,6 +306,13 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Read USE-CASES.md — what this product is for. MISSING FILE = STOP: do not start building,
+      offer to write it with the owner instead (section 1).</action>
+    <action>Read PLATFORM-TOOLS.md — what the platform already gives you (stores, vector search, knowledge
+      graph, map, channels). You have no external tools; this file is the only way you know they exist, and
+      not knowing is how a second database gets built.</action>
+    <action>Read CODING-STANDARDS.md — the limits (250 lines then decompose, public pages static,
+      user-visible text through translations, settings read not hardcoded).</action>
     <action>Read LESSONS.md (section 1) — the user's preferences and the habits earned from earlier
       mistakes. Follow it for the whole session, and append an entry the moment a trigger fires; do not
       leave it to the end, an unwritten lesson dies with the context.</action>

@@ -13,12 +13,27 @@ survives. Without it every session repeats the same mistake and asks the same se
 
 ---
 
+## For the owner reading this page: one word makes this work
+
+The agent adds entries on its own when it can tell that something is worth keeping. It cannot always tell.
+
+**Say "remember this" (or «запомни») and the rule you want kept.** That is the whole interface. The agent
+must then write it here, in this file, in the same session — and every session after that one will follow
+it without you repeating yourself.
+
+Use it for anything that outlives one task: how you want work reported, a convention you keep correcting,
+a decision you are tired of re-explaining, a tool you never want touched. You are not writing to a chat
+that forgets; you are writing to the file the next session reads first.
+
+---
+
 ## When to add an entry (triggers)
 
 - **The user corrected you**, or stated a preference about how the work should be done.
 - **You were wrong in a way that will repeat.** Not the specific bug — the *habit* that produced it.
 - **You established a non-obvious fact about this project** at real cost, one no file states plainly.
-- **The user said "remember this".**
+- **The user said "remember this"** (or «запомни») — this one is not a judgement call. Write it down, in
+  this session, before doing anything else with the request.
 
 ## When NOT to add one
 

@@ -51,6 +51,19 @@ thing in red until the file exists.
 measured against. If a request does not serve any case in it, say so before writing code — either the
 request is wrong or the document is out of date, and both are worth a sentence.
 
+### 🧩 `CODE-SAMPLES/` — the owner's earlier work, used only when asked
+
+A folder of finished pieces the owner brought with them: a home page from a previous project, a set of
+styles, a component they are happy with. It exists so that work already done is not done twice.
+
+**Do not read it on your own.** Not at session start, not "to see what is there". A library of past work
+can be any size, and carrying it through a session means paying context for material the current task may
+not need at all.
+
+**Use it when the owner asks and names the sample** — "build the hero from `landing-hero.html`", "use the
+styles in `tokens.css`". Then read that file, follow its patterns, and say what you took from it. If a
+named sample does not exist, say so rather than improvising something similar.
+
 ### 📕 `TROUBLESHOOTING.md` — read it ON DEMAND, never at session start
 
 The one document you deliberately do **not** load with the others. It answers questions of a single shape:

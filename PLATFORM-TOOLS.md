@@ -73,6 +73,28 @@ written from scratch beside an installed one is duplicated work that then has to
 | `image-crop` | Pan/zoom selection of a picture, fixed 16:9 · 1:1 · 9:16, returns a JPEG blob. `force="square"` locks the aspect where purpose decides it. | browser only | `import { ImageCropper } from "@/tools/image-crop/client/image-cropper.client"` — render it over the page, take the blob in `onDone(blob, mode)`. |
 | `video-trim` | Keeps the middle of a clip, drops the rest; the cut happens on the server and replaces the stored object. | server-side ffmpeg (the data service has it) | `import { VideoTrimmer } from "@/tools/video-trim/client/video-trimmer.client"` — it posts to the media service itself. |
 | `voice-input` | Microphone beside a text field; speech is transcribed and inserted **at the cursor**. Carries its own interface strings in ten languages. | the OpenAI key, and HTTPS — browsers hand out a microphone on secure origins only | `import { VoiceInput } from "@/tools/voice-input/client/voice-input.client"`, give it `targetRef`, `value`, `onChange`, `lang`. Server half: `transcribeAudio()` from `server/transcribe.ts`, wrapped by a thin `api/transcribe` route of your own. |
+| `code-view` | Source code with real syntax colouring — a parser, not a set of regexes, so nested CSS inside HTML and generics in TypeScript come out right. Language detected from the file extension. | **`npm install shiki`** — see below | `import { CodeView } from "@/tools/code-view/client/code-view.client"` — pass `code` and `filename`, or an explicit `lang`. |
+
+### Does installing a tool need `npm install`?
+
+**Usually no — and the tool's page tells you before you install it.**
+
+Three of the four tools use only what this project already has: React, Next, `lucide-react`, `sonner` and
+the shadcn button. For those, copying the files IS the whole installation — there is nothing to run
+afterwards.
+
+**`code-view` is the exception, and the reason is worth understanding.** Syntax colouring is not string
+matching; it needs the grammar of every language it colours, and those grammars ship in a package. So the
+tool arrives with an unresolved import and **will not build** until you run:
+
+```
+npm install shiki
+```
+
+**How to tell in general.** A tool needs a package when it imports something that is not in this project's
+`package.json`. If a build fails right after installing a tool with `Module not found: Can't resolve 'x'`,
+that is the whole diagnosis — install `x` and build again. The panel states the requirement up front
+precisely so this does not have to be discovered by failure.
 
 **They are yours once installed.** The copy is ordinary project code: change it, rename it, delete what you
 do not need. It travels with a push like any other file. Re-installing from the panel overwrites the copy

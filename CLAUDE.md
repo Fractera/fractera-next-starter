@@ -51,6 +51,21 @@ thing in red until the file exists.
 measured against. If a request does not serve any case in it, say so before writing code — either the
 request is wrong or the document is out of date, and both are worth a sentence.
 
+### 📕 `TROUBLESHOOTING.md` — read it ON DEMAND, never at session start
+
+The one document you deliberately do **not** load with the others. It answers questions of a single shape:
+*"it worked while I was building it, and on the real server it does not"* — a page that will not open,
+buttons that are missing, a screen that hangs, something you can see and the user cannot.
+
+**Load it the moment the user reports difficulty of that kind, and not before.** Holding a diagnostic
+manual in context through every session means paying for it in every session, including the many where
+nothing is broken. Context spent on a problem that did not happen is context missing from the work that
+did.
+
+**Then add to it.** When you diagnose a cause that is not written there yet, write it — symptom, cause,
+fix, in that order. A case recorded from the symptom alone is worse than no case: the next session follows
+it into the wrong place.
+
 ### 🔒 `LESSONS.md` — where you actually evolve
 
 A session ends and takes its context with it. `LESSONS.md` is the part that survives: the user's

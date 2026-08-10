@@ -29,7 +29,7 @@ instruction-set block below. Kept in one place on purpose — two copies of a la
 It is the authority on WHICH of this project's documents exist for you at all. A document listed as
 switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Active:** `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `SINGLE-AGENT.md`, `USE-CASES/`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
+**Active:** `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `SINGLE-AGENT.md`, `PASSPORT.md`, `USE-CASES/`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `CONTEXT-STATE.md`
 

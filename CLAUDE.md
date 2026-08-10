@@ -34,14 +34,32 @@ Continuity of context IS the quality of the work here.
 If you genuinely think a separate agent is warranted, say so in one sentence and continue working in this
 window. The user decides; you do not.
 
-### ⏳ `CONTEXT-STATE.md` — the handoff between two context windows
+### 🎛 Instruction set — which documents you read
 
-<!-- fractera:context-state begin -->
-**Switched OFF.** The context handoff is an experimental capability and it is currently disabled in the
-control panel (App features → Experimental). Do not read `CONTEXT-STATE.md`, do not write it, and never
-demand that a step be closed on account of it. This block is rewritten automatically when the switch
-changes — do not edit it by hand.
-<!-- fractera:context-state end -->
+<!-- fractera:instruction-set begin -->
+**Managed by the control panel — do not edit this block by hand.**
+
+It is the authority on WHICH project documents you read at session entry. Where it disagrees with the
+reading list in stage 6.0, **this block wins**.
+
+**Read at session entry:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`
+
+**Switched OFF — do not read, do not demand, do not report as missing:** `CONTEXT-STATE.md`
+
+A switched-off document is a deliberate choice of the owner, usually to keep a small task cheap. It is
+not a missing document: never offer to recreate it and never work around its absence.
+
+**Context handoff — OFF.** Do not read `CONTEXT-STATE.md`, do not write it, and never demand
+that a step be closed on account of it.
+
+**Testing — ON.** Every step AND every sub-step ends with **two independent proofs from two
+different planes**, written out in the four-field shape defined in `TESTING.md` (what was run, the
+verbatim output, what it proves, and what that output would look like WITHOUT the change). Compilation is
+never one of the two: a build log looks identical whether or not the feature works. One of the proofs
+carries a negative control — a case whose answer is required to differ. **No two proofs ⇒ the step is not
+closed, and the word "done" is not available.** A proof you cannot obtain is named out loud, before
+reporting readiness — never replaced by a cheaper one.
+<!-- fractera:instruction-set end -->
 
 ### 🛑 `USE-CASES.md` — no user cases, no development
 
@@ -363,10 +381,11 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
-    <action>Read CONTEXT-STATE.md FIRST, before any other document — but only while the block in section 1
-      says the mechanism is ON. It carries what the previous window was in the middle of. Empty = nothing
-      to resume. Non-empty = a HINT, never proof: verify against `git log --oneline -10` and the recorded
-      git_head before acting on a single line, then clear the file once you have adopted it.</action>
+    <action>Read the INSTRUCTION SET block in section 1 FIRST: it is the authority on which of the
+      documents below you read at all. A document listed as switched off is not read, not demanded and
+      never reported as missing. When CONTEXT-STATE.md is listed as on, read it before any other document:
+      it carries what the previous window was in the middle of, and it is a HINT, never proof — verify
+      against `git log --oneline -10` and the recorded git_head, then clear it once adopted.</action>
     <action>Read USE-CASES.md — what this product is for. MISSING FILE = STOP: do not start building,
       offer to write it with the owner instead (section 1).</action>
     <action>Read PLATFORM-TOOLS.md — what the platform already gives you (stores, vector search, knowledge
@@ -491,9 +510,15 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   </stage>
 
   <stage id="6.6" name="Two proofs">
-    <action>present the architect two independent proofs from different planes (e.g. page renders the
-      result AND a row appears in the DB); the fifth proof is the live URL after deploy (6.8)</action>
-    <gate>two genuinely independent proofs, both reported in plain text</gate>
+    <action>READ `TESTING.md` and answer in the shape it defines: two independent proofs from two
+      different PLANES, each with the command actually run, its verbatim output, what that output proves,
+      and what it would have looked like WITHOUT the change. Compilation is never one of the two. One proof
+      carries a negative control — a case whose answer is required to differ. The live URL after deploy
+      (6.8) is a further proof, not a replacement.</action>
+    <action>a proof you cannot obtain (no key, architect-only page, owner's session) is NAMED, before
+      reporting readiness — never substituted by a cheaper one from a plane you can reach</action>
+    <gate>two genuinely independent proofs from different planes, both written out in the report; no two
+      proofs ⇒ the step is NOT closed and the word "done" is not used</gate>
   </stage>
 
   <stage id="6.7" name="Deploy preparation" requires="architect-approval">

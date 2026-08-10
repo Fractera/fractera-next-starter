@@ -17,16 +17,17 @@ export const MARKER = "fractera:context-state";
  * Is the mechanism switched on?
  *
  * The single source of truth is the control panel's own store —
- * PLATFORM-CONFIG/platform-config.json, branch `features`. The feature is
- * EXPERIMENTAL and therefore OFF by default: a missing file, a missing branch or
- * an unreadable one all mean off. Never guess "probably on" — a hook that starts
- * shouting on a project that never asked for it is worse than one that sleeps.
+ * PLATFORM-CONFIG/platform-config.json, branch `instructions`, keyed by the same
+ * document ids the panel uses. The capability is EXPERIMENTAL and therefore OFF
+ * by default: a missing file, a missing branch or an unreadable one all mean off.
+ * Never guess "probably on" — a hook that starts shouting on a project that never
+ * asked for it is worse than one that sleeps.
  */
 export function isEnabled(cwd) {
   try {
     const p = path.join(cwd, "PLATFORM-CONFIG", "platform-config.json");
     const cfg = JSON.parse(fs.readFileSync(p, "utf-8"));
-    return cfg?.features?.contextHandoff === true;
+    return cfg?.instructions?.["doc-context-state"] === true;
   } catch {
     return false;
   }

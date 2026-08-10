@@ -36,12 +36,16 @@ one that gives no warning.
 
 | Context used | What the model must do |
 |---|---|
-| **75%** | Finish the current sub-step, then write this file. Not "plan to" — write it. Announce to the architect that the window is closing and ask to close the step. |
-| **85%** | Stop opening new work. Only closing, and keeping this file fresh. |
-| **92%** | Write this file immediately, before anything else, even mid-task. |
+| **50%** | Write this file — now, not "later". Say plainly to the architect that half the window is spent and ask which sub-step to close. |
+| **65%** | Close what is open, start nothing new, refresh the "next action" line. |
+| **75%** | Stop taking work. Require the architect to end the step or sub-step; anything not in this file by now is what gets lost. |
+
+The thresholds are deliberately early. A demand that arrives at 90% cannot be obeyed: there is no room
+left to close a step cleanly, and the instruction competes with the work itself. Fifty percent feels
+premature — that is exactly why it works.
 
 After the first write, keep it current: every time the next physical action changes, update the line. A
-file written once at 75% and left alone describes a state that stopped being true half an hour ago.
+file written once and left alone describes a state that stopped being true half an hour ago.
 
 ## When the model reads it
 

@@ -34,6 +34,15 @@ Continuity of context IS the quality of the work here.
 If you genuinely think a separate agent is warranted, say so in one sentence and continue working in this
 window. The user decides; you do not.
 
+### ⏳ `CONTEXT-STATE.md` — the handoff between two context windows
+
+<!-- fractera:context-state begin -->
+**Switched OFF.** The context handoff is an experimental capability and it is currently disabled in the
+control panel (App features → Experimental). Do not read `CONTEXT-STATE.md`, do not write it, and never
+demand that a step be closed on account of it. This block is rewritten automatically when the switch
+changes — do not edit it by hand.
+<!-- fractera:context-state end -->
+
 ### 🛑 `USE-CASES.md` — no user cases, no development
 
 **If `USE-CASES.md` does not exist, you do not start building. This is a stop, not a preference.**
@@ -354,6 +363,10 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read ARCHITECTURE.md (the system's fundamental layers + your rights per layer), GLOSSARY.md
       (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+    <action>Read CONTEXT-STATE.md FIRST, before any other document — but only while the block in section 1
+      says the mechanism is ON. It carries what the previous window was in the middle of. Empty = nothing
+      to resume. Non-empty = a HINT, never proof: verify against `git log --oneline -10` and the recorded
+      git_head before acting on a single line, then clear the file once you have adopted it.</action>
     <action>Read USE-CASES.md — what this product is for. MISSING FILE = STOP: do not start building,
       offer to write it with the owner instead (section 1).</action>
     <action>Read PLATFORM-TOOLS.md — what the platform already gives you (stores, vector search, knowledge
@@ -408,7 +421,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>mode announced; ARCHITECTURE.md + GLOSSARY.md + LESSONS.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
+    <gate>CONTEXT-STATE.md read and reconciled with git (when the mechanism is ON); mode announced; ARCHITECTURE.md + GLOSSARY.md + LESSONS.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">

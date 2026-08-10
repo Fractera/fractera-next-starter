@@ -8,7 +8,7 @@ description: >
   dashboard) — and when the owner says "remove login". It is a BUILD-TIME toggle
   (NEXT_PUBLIC_APP_SHELL_AUTH = left | right | off) written through a validated setter; a
   change applies after a REBUILD. Self-sufficient: the setter is registered in every agent's
-  MCP client — no Hermes required. The admin login always exists separately; this governs
+  the panel's config API. The admin login always exists separately; this governs
   only what your visitors see.
 ---
 
@@ -59,16 +59,16 @@ Never flip it silently.
 
 ## Reading the current state
 
-- MCP `owner_app_settings_get_app_shell_auth` → `{ value: "left" | "right" | "off" }`.
-- No MCP present? Read `app/.env.local` and look for `NEXT_PUBLIC_APP_SHELL_AUTH` — reading is safe.
+- The panel's app settings page shows the current value: `left`, `right` or `off`.
+- No panel at hand? Read `app/.env.local` and look for `NEXT_PUBLIC_APP_SHELL_AUTH` — reading is safe.
 
 ## Writing — the setter (THE write path, in every agent)
 
-The validated setter reaches you as the `app-settings-bridge` MCP server (**:3218, owner
-tier**), registered in **every** agent's MCP client — not only Hermes — so a lone agent has
+The validated setter is the panel's own config API, reachable from any agent in this project, so a
+lone agent has
 it too (self-sufficiency).
 
-- `owner_app_settings_set_app_shell_auth` `{ value }` where `value` ∈ `"left" | "right" | "off"`.
+- `POST /api/config/site` with the app-shell auth field, where the value is `"left"`, `"right"` or `"off"`.
   Validated, atomic, returns `rebuild_required: true` and starts the rebuild when a deploy
   secret is present.
 

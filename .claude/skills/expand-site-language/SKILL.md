@@ -10,12 +10,9 @@ description: >
   will refuse or break the site. Two tools: owner_content_add_site_language (fan the language out,
   seeded with the default language so the site is valid instantly, no translation API) and
   owner_content_translate_pending (the non-blocking runner — you translate the strings later). Self-
-  sufficient: no Hermes, no other agent.
+  sufficient: no external service, no other agent.
 version: 1.0.0
 metadata:
-  hermes:
-    tags: [language, multilingual, i18n, locale, translate, translation, add-language, hreflang, seo, armenian, spanish, french, scale-languages, internationalization, expand]
-    related_skills: [manage-app-settings, manage-content-collections, compose-frozen-template, perceive-workspace, confirm-before-mutation]
 ---
 
 # expand-site-language
@@ -58,7 +55,7 @@ If you are tempted to reach for one of those to add a language: **stop and use t
 ## Flow
 
 1. **Ensure the language is in the set.** Not there yet → add it with **manage-app-settings**
-   (`owner_app_settings_set_languages`) and rebuild. The fan-out refuses a language not in the set.
+   (the panel's Languages page, or `POST /api/config/languages`) and rebuild. The fan-out refuses a language not in the set.
 2. **Fan it out.** `owner_content_add_site_language { lang }` — `dry_run: true` first (restate +
    confirm, §8.2), then for real. **REBUILD** (`owner_deploy_rebuild_slot`) to publish the new routes
    (seeded, noindex). The menus (header / footer / left / right) update automatically.
@@ -85,10 +82,10 @@ Never hand-author the locale files as a workaround; a broken tool is repaired, n
 
 ## How to call
 
-- **MCP (every agent):**
+- **From the control panel:**
   - `owner_content_add_site_language { lang, dry_run? }`
   - `owner_content_translate_pending { lang }` → then `{ lang, op:"write", tab, slug, translations:{ fields, blocks, faq } }`
-- **Standalone (lone agent, no MCP)** — plain file edits:
+- **Standalone (no panel at hand)** — plain file edits:
   ```bash
   # 1) fan out (default-language seed + noindex + per-language step)
   node .agents/skills/expand-site-language/fan-out-site-language.mjs --out . --lang hy --dry-run
@@ -102,5 +99,5 @@ Never hand-author the locale files as a workaround; a broken tool is repaired, n
 
 ## Self-sufficient
 
-Same skill ships to every agent (`.agents/skills` + `.claude/.gemini/.qwen/skills` + Hermes). It does
-not depend on Hermes existing — any single agent can extend a site's languages on its own.
+The skill lives in this project (`.claude/skills`) and depends on nothing outside it — a single agent
+can extend a site's languages on its own.

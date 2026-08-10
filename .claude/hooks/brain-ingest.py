@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-PostToolUse hook — auto-ingest docs/reports into Company Brain.
-Fires after every Write or Edit. Only acts on docs/, reports/, glossary.md.
+PostToolUse hook — auto-ingest the project's own documents into the agentic RAG.
+
+Fires after every Write or Edit and acts ONLY on the documents that describe this
+project to a future session. Everything else — application code, configuration,
+generated files — is deliberately ignored: the store is for knowledge that has to
+survive a context window, not for a second copy of the repository.
+
+The watched list mirrors the documents the control panel manages. Adding a path
+here that nobody writes is how this hook quietly became a no-op before.
 """
 import json, sys, os, subprocess
 
@@ -11,7 +18,11 @@ try:
 except Exception:
     sys.exit(0)
 
-WATCHED = ("/docs/", "/reports/", "glossary.md", "old-steps/")
+WATCHED = (
+    "ARCHITECTURE.md", "GLOSSARY.md", "LESSONS.md", "ANTI-PATTERNS.md",
+    "USE-CASES.md", "DESIGN.md", "TROUBLESHOOTING.md", "TESTING.md",
+    "/DEVELOPMENT-STEPS/", "/reports/",
+)
 if not any(p in file_path for p in WATCHED):
     sys.exit(0)
 

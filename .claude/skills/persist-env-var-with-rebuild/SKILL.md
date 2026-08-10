@@ -8,7 +8,7 @@ description: >
   proper setter, then trigger a rebuild: the slot-scoped build bakes the slot's own
   .env.local. Use when adding payments, a new integration key, a feature flag, or any
   value the app reads at build time — and to avoid the silent "saved but the app never
-  sees it" bug. Self-sufficient: works for a lone agent, no Hermes required.
+  sees it" bug. Self-sufficient: works for a lone agent.
 ---
 
 # persist-env-var-with-rebuild
@@ -38,7 +38,7 @@ never hand-wait a restart, never make a page dynamic to "show it instantly".**
 ## How to do it
 
 1. **Write through the proper setter, never raw.**
-   - Language set → MCP `owner_app_settings_set_languages` (or `/api/config/languages`).
+   - Language set → the panel route `/api/config/languages`.
    - A brand-new variable with no setter → add the line to the slot's `app/.env.local`
      (`KEY=value`, preserve all other lines, atomic write) and document it in the app.
 2. **Trigger a rebuild** — this is what bakes it. The deploy pipeline `POST /api/deploy`

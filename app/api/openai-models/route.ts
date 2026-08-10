@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth/get-session";
 // Live OpenAI model list for the slot's model pickers (step 207.19, owner rule: model choice is ALWAYS
 // a dropdown fed by the real /v1/models — hardcoded stale lists are a critical error). Same mechanism
 // as the Admin's /api/config/openai-models (the one behind the Memory settings dropdown), but
-// SELF-SUFFICIENT: reads the slot's own OPENAI_API_KEY, no Admin/Hermes dependency. Cached 5 min.
+// SELF-SUFFICIENT: reads the slot's own OPENAI_API_KEY, no dependency on the panel. Cached 5 min.
 export const runtime = "nodejs";
 
 const ROLES = ["architect", "manager", "agent"];

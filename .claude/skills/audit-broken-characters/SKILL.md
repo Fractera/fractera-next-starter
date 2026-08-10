@@ -6,12 +6,9 @@ description: >
   (e.g. "Documentación" showing "Documentaci□n"). Use when the owner reports a square / wrong glyph in
   the UI or content, says "broken character", "weird symbol", "mojibake", "validate encoding", or
   after authoring multilingual content and before closing a content step. It SHIPS SILENTLY (the file
-  still parses), so run the audit to catch it. Self-sufficient: one project-root script, no Hermes.
+  still parses), so run the audit to catch it. One project-root script, nothing external needed.
 version: 1.0.0
 metadata:
-  hermes:
-    tags: [encoding, broken-character, replacement-character, mojibake, control-character, validate, audit, multilingual, integrity, square, box-glyph, utf8]
-    related_skills: [expand-site-language, manage-content-collections, compose-frozen-template]
 ---
 
 # audit-broken-characters
@@ -42,7 +39,7 @@ Every finding reports **file · line · column · codepoint (e.g. `U+0013`) · l
 with the bad char shown as a safe `[U+XXXX]` marker, never the raw corruption). Exit code 1 on any finding
 — so it works as a pre-commit / CI gate. Read-only: it changes nothing.
 
-**MCP (any agent / Hermes):** `owner_content_scan_broken_characters` (language-expansion bridge) runs the
+**The same scan, from the panel:** the language-expansion tooling runs the
 same scan against the slot and returns the findings.
 
 ## How to FIX what it finds (critical)
@@ -60,5 +57,5 @@ same control byte or U+FFFD may stand for a **different** accented letter in dif
 
 ## Self-sufficient
 
-The scanner is a plain Node-ESM script at the project root — no Hermes, no MCP required to run it (the MCP
+The scanner is a plain Node-ESM script at the project root — nothing external is required to run it (the panel
 tool is just a convenience wrapper). It ships with every slot.

@@ -4,7 +4,7 @@ description: >
   (Re)install the language switcher button — a dropdown that lists the site's
   configured languages and switches the URL prefix. Use when the starter's
   switcher was deleted, or when turning a single-language project multilingual
-  and you need the button back. Self-sufficient: pure file edits, no Hermes, no MCP.
+  and you need the button back. Self-sufficient: pure file edits, nothing external.
 ---
 
 # install-language-switcher-dropdown
@@ -15,7 +15,7 @@ the active language by rewriting the URL prefix (`/en/… ↔ /es/…`). It rend
 **nothing** when only one language is configured, so it is safe to ship always.
 
 This skill is **self-sufficient**: it is plain file editing. It does NOT depend on
-Hermes, memory, or any other agent. The full multilingual standard is
+memory, or any other agent. The full multilingual standard is
 `CRUD-DOCS/workspace-standards/multilingual-content.md`.
 
 ## When to use

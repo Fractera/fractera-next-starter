@@ -23,7 +23,7 @@
 // Usage:
 //   node fan-out-site-language.mjs --out <slot-root> --lang <bcp47> [--dry-run]
 //
-// Self-sufficient: plain Node-ESM, writes only under --out, no Hermes, no MCP required.
+// Self-sufficient: plain Node-ESM, writes only under --out, nothing external required.
 // Output: ONE line of JSON (the bridge parses the last line — step 158 lesson).
 
 import { mkdir, writeFile, readFile, readdir, stat } from "node:fs/promises"
@@ -254,7 +254,7 @@ This language was seeded with the default language's text and is currently \`noi
 Run the translation: the agent translates the STRINGS only, the block structure stays frozen; on write the
 page clears \`needsTranslation\` and becomes indexable after the next manual Deploy.
 
-Use the **translate-pending-pages** skill / \`owner_content_translate_pending\` MCP — do NOT hand-edit.
+Use the **translate-pending-pages** skill — do NOT hand-edit.
 Optional: add notes below to focus the model (e.g. regional law, real legal links) — they are honored on run.
 
 ## Pages to translate

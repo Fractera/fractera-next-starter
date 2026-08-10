@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "read:app-config": "node scripts/print-app-config-for-agent.mjs",
-    "check:skills": "node scripts/skill-parity-check.mjs",
+    "read:app-config": "node scripts/print-app-config-for-agent.mjs",
     "check:encoding": "node scripts/scan-broken-characters.mjs"
   },
   "dependencies": {

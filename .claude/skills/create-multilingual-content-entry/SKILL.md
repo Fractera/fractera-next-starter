@@ -6,7 +6,7 @@ description: >
   file, partial per-language override files — auto-discovered (no registry), with
   zero language branching in page code. Use whenever you add or translate content
   that must work in more than one language. Self-sufficient: pure file edits, no
-  Hermes and no MCP.
+  any external service.
 ---
 
 # create-multilingual-content-entry
@@ -17,7 +17,7 @@ a new language is a new file, a partial translation is fine, and no page ever sa
 scaling) is `CRUD-DOCS/workspace-standards/content-engine.md`; the focused i18n recipe is
 `CRUD-DOCS/workspace-standards/multilingual-content.md`; this skill is their operational entry.
 
-This skill is **self-sufficient**: it is plain file editing. It does NOT depend on Hermes,
+This skill is **self-sufficient**: it is plain file editing. It does NOT depend on any service,
 on memory, or on any other agent. If you are the only agent in the project, you can still
 create a correct multilingual document.
 

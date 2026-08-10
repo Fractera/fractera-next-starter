@@ -39,12 +39,16 @@ window. The user decides; you do not.
 <!-- fractera:instruction-set begin -->
 **Managed by the control panel — do not edit this block by hand.**
 
-It is the authority on WHICH project documents you read at session entry. Where it disagrees with the
-reading list in stage 6.0, **this block wins**.
+It is the authority on WHICH of this project's documents exist for you at all. A document listed as
+switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Read at session entry:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
+**Active:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `CONTEXT-STATE.md`
+
+Active does NOT mean "load at session entry". Each document keeps the reading rule this instruction
+gives it: most are read on entry, `TROUBLESHOOTING.md` only on demand, `CODE-SAMPLES/` only when the
+owner names a sample. This block answers "may I use it at all", stage 6.0 answers "when".
 
 A switched-off document is a deliberate choice of the owner, usually to keep a small task cheap. It is
 not a missing document: never offer to recreate it and never work around its absence.
@@ -340,9 +344,9 @@ login screens, you ENABLE the existing layer. Turn it ON only for apps that genu
 accounts (store / social / SaaS / dashboard); leave it OFF for a landing page or portfolio (every
 extra control costs bundle size + deploy time). **When the owner asks you to build something that
 requires accounts, enabling app-shell auth is part of the job — add it WITHOUT asking separately; ask
-the owner ONLY the drawer side (left or right).** How: the `manage-app-shell-auth` skill / the
-`owner_app_settings_set_app_shell_auth` MCP (sets the env key, rebuilds), or Admin → App Settings →
-App authorization. Build-time → applies after a rebuild.
+the owner ONLY the drawer side (left or right).** How: the `manage-app-shell-auth` skill, or
+Admin → App Settings → App authorization (sets the env key and rebuilds).
+Build-time → applies after a rebuild.
 
 ---
 
@@ -522,7 +526,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   </stage>
 
   <stage id="6.7" name="Deploy preparation" requires="architect-approval">
-    <action>load and re-read the anti-patterns (PATTERNS/ANTI-PATTERNS/) before launching</action>
+    <action>load and re-read the anti-patterns (ANTI-PATTERNS.md) before launching</action>
     <branch on="discrepancy-found">cancel the deploy; fix</branch>
     <action>launch the deploy (reading DEPLOY_SECRET from bridges/app/.env.local is a sanctioned exception
       to the section-3 boundary — platform action, secret read-only); build 2-4 min, only app/ rebuilt:</action>
@@ -543,7 +547,7 @@ done; echo $S
   <stage id="6.8" name="Deploy result">
     <branch on="FAILED|HEALTH_FAILED">
       <action>record a Deployments row (status=error, commit); study log[]; add an anti-pattern to
-        PATTERNS/ANTI-PATTERNS/; fix; retry</action>
+        ANTI-PATTERNS.md; fix; retry</action>
     </branch>
     <branch on="COMPLETED">
       <action>record a Deployments row yourself: owner_product_loop_record_deployment (Deployments MCP

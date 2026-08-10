@@ -29,7 +29,7 @@ instruction-set block below. Kept in one place on purpose — two copies of a la
 It is the authority on WHICH of this project's documents exist for you at all. A document listed as
 switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Active:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `SINGLE-AGENT.md`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
+**Active:** `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `SINGLE-AGENT.md`, `USE-CASES/`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `CONTEXT-STATE.md`
 
@@ -75,22 +75,37 @@ that finds the divergence. If you believe a second agent is warranted, say so in
 working here. Details: `SINGLE-AGENT.md`.
 <!-- fractera:instruction-set end -->
 
-### 🛑 `USE-CASES.md` — no user cases, no development
+### 🛑 `USE-CASES/` — no confirmed user cases, no development
 
-**If `USE-CASES.md` does not exist, you do not start building. This is a stop, not a preference.**
+**If `USE-CASES/CASES/` holds no CONFIRMED case, you do not start building. This is a stop, not a
+preference.**
 
-It holds what this product is for, in the owner's words: who uses it, what they came to do, what has to be
-true when they are done. Without it you will build carefully and build the wrong thing — and careful wrong
-work costs more than no work, because it also has to be removed.
+Each file there is one scenario in the owner's words: who uses the product, what brought them, what must
+be true when they are done. A case carries a status. **A case the owner has not confirmed is a guess the
+model wrote** — building on it is building on a guess, and the panel keeps its alarm lit until every case
+is confirmed.
 
-**What to do instead of building.** Say the document is missing, say why it blocks you, and offer to write
-it together: ask about the people, their situations and the outcomes, then draft the file and let the owner
-correct it. That conversation IS the first task — not a delay before the real one. The panel shows the same
-thing in red until the file exists.
+**What to do instead of building.** Say which cases are missing or unconfirmed, and point at the Use cases
+section of the control panel: it runs a Quiz — seven opening questions, then a conversation that turns
+into cases. That conversation IS the first task, not a delay before the real one.
 
-**Once it exists, read it at session start** with the rest, and treat it as the target every change is
-measured against. If a request does not serve any case in it, say so before writing code — either the
-request is wrong or the document is out of date, and both are worth a sentence.
+**Once they exist, read `USE-CASES/CASES/` at session start** and treat it as the target every change is
+measured against. If a request serves no case, say so before writing code — either the request is wrong or
+the cases are out of date, and both are worth a sentence.
+
+### 📥 `USE-CASES/RAW/` — the raw material, and you normally leave it closed
+
+Every question the Quiz asked and every answer the owner gave is written there, along with the seed. It
+grows to hundreds of exchanges.
+
+**Do not read it in ordinary work.** The cases are the distilled result; the raw log is the sediment, and
+carrying it into a session means paying for hundreds of turns to learn what four confirmed cases already
+say.
+
+**Open it only on a direct need** — when you are looking for an intention that got lost when the cases
+were written: the owner says "I told you about this" and no case reflects it, or a case contradicts itself
+and you need what was actually said. Then read the relevant part, name what you found, and — if it matters
+— offer to turn it into a case rather than acting on it silently.
 
 ### 🔧 `PLATFORM-TOOLS.md` — read it EVERY time a tool enters the conversation
 
@@ -400,8 +415,10 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       never reported as missing. When CONTEXT-STATE.md is listed as on, read it before any other document:
       it carries what the previous window was in the middle of, and it is a HINT, never proof — verify
       against `git log --oneline -10` and the recorded git_head, then clear it once adopted.</action>
-    <action>Read USE-CASES.md — what this product is for. MISSING FILE = STOP: do not start building,
-      offer to write it with the owner instead (section 1).</action>
+    <action>Read USE-CASES/CASES/ — what this product is for, one file per scenario. NO CONFIRMED CASE =
+      STOP: do not start building; say which cases are missing or unconfirmed and point at the Use cases
+      section of the control panel, whose Quiz creates them (section 1). USE-CASES/RAW/ is NOT read in
+      ordinary work — only when a lost intention has to be recovered.</action>
     <action>Read PLATFORM-TOOLS.md — what the platform already gives you (stores, vector search, knowledge
       graph, map, channels) AND which micro-tools are installed in tools/, each with its full contract:
       import line, props, what it returns, a working example, and its limits. You have no external tools;

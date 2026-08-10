@@ -42,7 +42,7 @@ window. The user decides; you do not.
 It is the authority on WHICH project documents you read at session entry. Where it disagrees with the
 reading list in stage 6.0, **this block wins**.
 
-**Read at session entry:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`
+**Read at session entry:** `USE-CASES.md`, `PLATFORM-TOOLS.md`, `ARCHITECTURE.md`, `GLOSSARY.md`, `LESSONS.md`, `ANTI-PATTERNS.md`, `DESIGN.md`, `PARALLEL-ROUTING.md`, `CODING-STANDARDS.md`, `TROUBLESHOOTING.md`, `TESTING.md`, `DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `CONTEXT-STATE.md`
 

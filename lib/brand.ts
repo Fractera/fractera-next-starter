@@ -16,7 +16,7 @@
 // they need as props.
 
 import { getAppConfig } from "@/config/app-config"
-import { logoUrl } from "@/config/app-config.defaults"
+import { getLogoPath, resolveBrandName } from "@/config/app-config.defaults"
 
 export type Brand = {
   /** Product name used in titles and breadcrumbs. */
@@ -32,9 +32,9 @@ export type Brand = {
 export function brand(): Brand {
   const cfg = getAppConfig()
   const siteUrl = (cfg.url ?? "").replace(/\/+$/, "")
-  const logo = logoUrl(cfg)
+  const logo = getLogoPath(cfg)
   return {
-    name: cfg.short_name || cfg.name,
+    name: resolveBrandName(cfg) ?? cfg.short_name ?? cfg.name,
     // No separate legal-entity field in APP-CONFIG yet: the author name is the
     // closest honest answer, and inventing "<name>, Inc." would put a legal
     // claim into structured data that nobody made.

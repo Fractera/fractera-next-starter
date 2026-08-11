@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { revalidateTag } from "next/cache"
+import { CATALOGUE_TAG } from "@/lib/catalogue"
 import { getSession } from "@/lib/auth/get-session"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
@@ -66,6 +68,10 @@ export async function POST(req: NextRequest) {
   await db.prepare(
     "INSERT INTO products (id, name, price, media_id, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?)"
   ).run(id, String(name).trim(), Number(price), media_id ?? null, media_url ?? null, createdBy)
+
+  // Публичные страницы обязаны увидеть новый товар сразу, а не через час:
+  // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
+  revalidateTag(CATALOGUE_TAG)
 
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   return NextResponse.json({ product }, { status: 201 })

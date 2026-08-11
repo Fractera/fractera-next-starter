@@ -16,6 +16,9 @@ import { ProductsPanel } from "./products-panel.client"
 // The island receives its words as PROPS. A client component that imports the
 // dictionary itself would ship all ten languages to every browser.
 
+// Каркас списка тоже статический: строки грузит островок по кнопке.
+export const revalidate = 3600
+
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = productsUi(lang)
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки

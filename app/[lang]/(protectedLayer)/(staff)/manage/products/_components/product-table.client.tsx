@@ -52,7 +52,7 @@ export function ProductTable({ products, deleting, onDelete, lang, labels }: Pro
             // Название на языке страницы: в таблице человек ищет глазами то же
             // слово, которое увидит в карточке.
             const p = localizeProduct(row, lang)
-            const href = `/${lang}/products/${p.id}`
+            const href = `/${lang}/manage/products/${p.id}`
             const cell = "px-4 py-2.5"
             return (
               <tr

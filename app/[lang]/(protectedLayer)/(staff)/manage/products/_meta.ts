@@ -8,8 +8,8 @@ import type { RouteMeta } from "@/lib/architecture/route-meta"
 const meta: RouteMeta = {
   // — Identity & lifecycle —
   kind: "page",
-  path: "/[lang]/products",
-  filePath: "app/[lang]/(protectedLayer)/(staff)/products/page.tsx",
+  path: "/[lang]/manage/products",
+  filePath: "app/[lang]/(protectedLayer)/(staff)/manage/products/page.tsx",
   status: "live",
   todo: [], // built — no pending build tasks
 

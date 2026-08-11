@@ -1,27 +1,35 @@
-import type { MetadataRoute } from "next";
-import { getAppConfig } from "@/config/app-config";
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, SINGLE_LANG_MODE } from "@/config/translations/translations.config";
+import type { MetadataRoute } from "next"
+import { db } from "@/lib/db"
+import { brand } from "@/lib/brand"
+import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
 
-// Static sitemap (step 131). The public surface of the starter is the localized home
-// (/<lang>); architect-only service pages are intentionally excluded (noindex). Base
-// URL is config-driven (getAppConfig) so it follows the owner's domain.
-export const dynamic = "force-static";
-export const revalidate = 86_400;
+// КАРТА САЙТА — без неё каталог наполовину невидим.
+//
+// Витрина показывает первую партию товаров; остальные подгружаются по кнопке и в
+// разметку не попадают, значит перейти на них поисковику неоткуда. Карта сайта —
+// единственный канал, по которому он узнаёт о них. Строится из базы, поэтому
+// товар, созданный после сборки, попадает сюда сам.
+export const revalidate = 3600
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  if (process.env.NEXT_PUBLIC_SEO_SITEMAP_ENABLED === "false") return [];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const site = brand().siteUrl
+  if (!site) return []
 
-  const baseUrl = getAppConfig().url;
-  const now = new Date();
+  const rows = (await db.prepare(
+    "SELECT id, created_at FROM products ORDER BY created_at DESC LIMIT 50000"
+  ).all()) as unknown as { id: string; created_at: string }[]
 
-  if (SINGLE_LANG_MODE) {
-    return [{ url: baseUrl, lastModified: now, changeFrequency: "daily", priority: 1.0 }];
+  const out: MetadataRoute.Sitemap = []
+  for (const lang of SUPPORTED_LANGUAGES) {
+    out.push({ url: `${site}/${lang}/products`, changeFrequency: "daily", priority: 0.8 })
+    for (const r of rows) {
+      out.push({
+        url: `${site}/${lang}/products/${r.id}`,
+        lastModified: r.created_at ? new Date(`${r.created_at}Z`) : undefined,
+        changeFrequency: "weekly",
+        priority: 0.6,
+      })
+    }
   }
-
-  return SUPPORTED_LANGUAGES.map((lang) => ({
-    url: `${baseUrl}/${lang}`,
-    lastModified: now,
-    changeFrequency: "daily" as const,
-    priority: lang === DEFAULT_LANGUAGE ? 1.0 : 0.9,
-  }));
+  return out
 }

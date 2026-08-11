@@ -1,4 +1,5 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
+import { prerenderSlugs } from "@/lib/catalogue"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { productsUi } from "../../_data/ui.i18n"
@@ -13,6 +14,20 @@ import { ProductCard } from "./product-card.client"
 //
 // Название самого товара — данные, и оно приезжает в островок. Пока не приехало,
 // на его месте скелетон, а не пустота и не «Загрузка…».
+// 🔒 СТАТИКА И ЗДЕСЬ — ради этого слой и разводили. Каркас карточки (крошки,
+// заголовок, рамка) не зависит ни от данных, ни от того, кто смотрит, поэтому
+// он предрендерится; данные приезжают в островок после гидратации. Динамический
+// МАРШРУТ не делает страницу динамической — это и есть закон «статический
+// каркас + динамический контейнер», доказанный таблицей маршрутов сборки.
+//
+// Товар вне среза родится при первом обращении и дальше будет отдаваться
+// статикой (ISR,  по умолчанию ).
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  return (await prerenderSlugs()).map(productId => ({ productId }))
+}
+
 export default function ProductEntry({ lang, productId }: { lang: string; productId: string }) {
   const t = productsUi(lang)
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
@@ -26,7 +41,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
         <Breadcrumbs
           lang={lang}
           trail={[
-            { label: t.title, href: `/${lang}/products` },
+            { label: t.title, href: `/${lang}/manage/products` },
             { label: productId.slice(0, 8) },
           ]}
         />
@@ -48,7 +63,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
               fieldSaved: t.fieldSaved, descriptionField: t.descriptionField,
               translations: t.translations,
             }}
-            backHref={`/${lang}/products`}
+            backHref={`/${lang}/manage/products`}
           />
         </div>
       </div>

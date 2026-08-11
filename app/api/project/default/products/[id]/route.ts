@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { revalidateTag } from "next/cache"
+import { CATALOGUE_TAG } from "@/lib/catalogue"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 
@@ -53,6 +55,9 @@ export async function PATCH(
     await db.prepare("UPDATE products SET i18n = ? WHERE id = ?").run(JSON.stringify(all), id)
   }
 
+  // Публичные страницы обязаны увидеть правку сразу, а не через час:
+  // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
+  revalidateTag(CATALOGUE_TAG)
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   return NextResponse.json({ product })
 }
@@ -67,6 +72,9 @@ export async function GET(
   if (denied) return denied
 
   const { id } = await params
+  // Публичные страницы обязаны увидеть правку сразу, а не через час:
+  // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
+  revalidateTag(CATALOGUE_TAG)
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 })
   return NextResponse.json({ product })
@@ -84,5 +92,6 @@ export async function DELETE(
 
   const { id } = await params
   await db.prepare("DELETE FROM products WHERE id = ?").run(id)
+  revalidateTag(CATALOGUE_TAG)
   return NextResponse.json({ ok: true })
 }

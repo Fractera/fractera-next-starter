@@ -8,3 +8,5 @@ export default async function Page(
   const { lang, productId } = await params
   return <ProductEntry lang={lang} productId={productId} />
 }
+
+export { generateStaticParams, revalidate } from "./_components"

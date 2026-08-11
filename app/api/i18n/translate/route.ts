@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
   if (denied) return denied
 
   const key = openAiKey()
+  // Причина отказа называется КОДОМ, а не прозой: интерфейс по нему показывает
+  // нужную подсказку со ссылкой, а не общее «не удалось», после которого
+  // человеку некуда идти.
   if (!key) return NextResponse.json({ error: "no-key" }, { status: 503 })
 
   const body = (await req.json().catch(() => null)) as Body | null
@@ -67,7 +70,15 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(120_000),
     })
     if (!res.ok) {
-      return NextResponse.json({ error: `translation failed (${res.status})` }, { status: 502 })
+      // Разбираем ответ OpenAI: «кончились деньги» и «ключ не тот» — разные беды
+      // с разными действиями, и человек обязан видеть, какая из них случилась.
+      // Общее «не удалось» оставляет его без следующего шага.
+      const detail = await res.json().catch(() => null)
+      const code = String(detail?.error?.code ?? "")
+      if (res.status === 401) return NextResponse.json({ error: "bad-key" }, { status: 401 })
+      if (code === "insufficient_quota") return NextResponse.json({ error: "no-funds" }, { status: 402 })
+      if (res.status === 429) return NextResponse.json({ error: "rate-limit" }, { status: 429 })
+      return NextResponse.json({ error: "upstream", upstreamStatus: res.status }, { status: 502 })
     }
     const data = await res.json()
     const raw = data?.choices?.[0]?.message?.content ?? "{}"
@@ -86,6 +97,6 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ translations: out })
   } catch {
-    return NextResponse.json({ error: "translation failed" }, { status: 502 })
+    return NextResponse.json({ error: "upstream" }, { status: 502 })
   }
 }

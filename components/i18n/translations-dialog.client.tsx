@@ -2,33 +2,37 @@
 
 // ДИАЛОГ ДОБАВЛЕНИЯ ПЕРЕВОДОВ — общий инструмент проекта.
 //
-// Подключается любой сущностью, у которой есть переводимые поля: продукт
-// сегодня, категория и страница завтра. Форма одна, потому что задача одна —
-// заполнить языки приложения значениями одной записи.
+// Подключается любой сущностью с переводимыми полями: продукт сегодня,
+// категория и страница завтра.
 //
-// 🔒 ОДНОЯЗЫЧНОЕ ПРИЛОЖЕНИЕ НЕ ВИДИТ ЭТОГО ДИАЛОГА ВООБЩЕ. Переводить не на что,
-// и спрашивать об этом человека — отнимать у него время вопросом без ответа.
-// Проверка стоит первой строкой: вызывающему не нужно о ней помнить.
+// 🔒 ОДНОЯЗЫЧНОЕ ПРИЛОЖЕНИЕ ЭТОГО ДИАЛОГА НЕ ВИДИТ. Переводить не на что, и
+// спрашивать об этом человека — отнимать время вопросом без ответа. Проверка
+// стоит первой строкой: вызывающему о ней помнить не надо.
 //
-// 🔒 КРЕСТИК = «ПРОПУСТИТЬ». Запись к этому моменту уже создана, терять нечего:
-// она живёт значением языка интерфейса, переводы добавляются позже с карточки.
-// Второй вопрос «точно выйти?» на каждом закрытии — плата за случай, которого
-// здесь нет.
+// 🔒 ВЫСОТА — ДОЛЯ ЭКРАНА, А НЕ ЧИСЛО ПИКСЕЛЕЙ. Фиксированные 600 px выходили за
+// нижний край на ноутбуке вместе с кнопками сохранения. Ограничен ВЕСЬ диалог
+// (80 % высоты окна), а прокручивается только список языков — шапка с кнопками
+// перевода и подвал с сохранением остаются на месте всегда.
 //
-// Пустые контейнеры до нажатия перевода — не заготовка, а честность: заполнить
-// их исходным текстом значило бы выдать непереведённое за перевод, и оно уехало
-// бы в базу настоящим значением.
+// 🔒 КРЕСТИК = «ПРОПУСТИТЬ». Запись уже создана: она живёт значением языка
+// интерфейса, переводы добавляются позже с карточки. Второй вопрос «точно
+// выйти?» — плата за случай, которого здесь нет.
 
 import { useState } from "react"
-import { HelpCircle, Languages, Loader2, X } from "lucide-react"
+import { AlertTriangle, ExternalLink, HelpCircle, Languages, Loader2, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { SINGLE_LANG_MODE } from "@/config/translations/translations.config"
+import { adminBase } from "@/lib/runtime-urls"
 import { TranslationCell } from "./translation-cell.client"
 import { translationsUi } from "./translations-dialog.i18n"
 import { useTranslations, type Drafts, type TranslatableField } from "./use-translations"
 
 export type { TranslatableField, Drafts }
+
+// Куда вести человека с каждой бедой. Ошибка без следующего шага — это не
+// сообщение, а тупик: он узнаёт, что не вышло, и не узнаёт, что делать.
+const BILLING_URL = "https://platform.openai.com/settings/organization/billing/overview"
 
 export function TranslationsDialog(
   { open, lang, fields, onSave, onSkip }: {
@@ -36,28 +40,42 @@ export function TranslationsDialog(
     /** Язык интерфейса — он же язык исходных значений. */
     lang: string
     fields: TranslatableField[]
+    /** Сохранить переводы ОДНОГО языка. Возвращает успех. */
     onSave: (drafts: Drafts) => Promise<boolean>
     onSkip: () => void
   },
 ) {
   const t = translationsUi(lang)
   const [active, setActive] = useState(0)
-  const { targets, drafts, setCell, translate, save, busy, saving, filled } =
-    useTranslations(fields, lang, t.failed)
+  const [savingLang, setSavingLang] = useState<string | null>(null)
+  const { targets, drafts, setCell, translate, busy, error, saved, markSaved } =
+    useTranslations(fields, lang)
 
   if (!open || SINGLE_LANG_MODE || targets.length === 0) return null
 
   const field = fields[active] ?? fields[0]
 
-  async function commit() {
-    const ok = await save(onSave)
-    if (ok) toast.success(t.saved)
+  async function saveOne(code: string) {
+    setSavingLang(code)
+    const ok = await onSave({ [code]: drafts[code] ?? {} })
+    setSavingLang(null)
+    if (ok) {
+      markSaved(code)
+      toast.success(t.saved)
+    }
   }
 
+  const errorText =
+    error === "no-key" ? t.errNoKey
+    : error === "bad-key" ? t.errBadKey
+    : error === "no-funds" ? t.errNoFunds
+    : error === "rate-limit" ? t.errRateLimit
+    : error ? t.errUpstream : null
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/40 p-4">
-      <div className="mt-8 w-full max-w-2xl rounded-lg border border-border bg-background shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-background shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
           <p className="flex items-center gap-1.5 text-[12px] font-medium text-foreground">
             <Languages size={13} />{t.title}
           </p>
@@ -66,11 +84,10 @@ export function TranslationsDialog(
           </button>
         </div>
 
-        <div className="space-y-3 p-4">
+        <div className="shrink-0 space-y-3 px-4 pt-3">
           <p className="text-[11px] leading-relaxed text-muted-foreground">{t.intro}</p>
 
-          {/* Разделы цифрами — только когда полей больше одного. На единственном
-              поле ряд из одной кнопки ничего не сообщает. */}
+          {/* Вкладки полей — только когда полей больше одного. */}
           {fields.length > 1 && (
             <div className="flex flex-wrap items-center gap-1.5">
               {fields.map((f, i) => (
@@ -89,48 +106,68 @@ export function TranslationsDialog(
             </div>
           )}
 
+          {/* ДВЕ кнопки перевода, и обе про ВКЛАДКИ: эту и все. «Перевести это
+              поле» отсюда убрано — поле и вкладка здесь одно и то же, а два
+              имени одного действия заставляли выбирать между синонимами. */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={() => translate()} disabled={busy}>
+            <Button size="sm" variant="outline" onClick={() => translate(field?.key)} disabled={busy}>
               {busy ? <Loader2 size={12} className="animate-spin" /> : <Languages size={12} />}
-              {busy ? t.translating : t.translateAll}
+              {busy ? t.translating : t.translateTab}
             </Button>
-            {fields.length > 1 && field && (
-              <Button size="sm" variant="outline" onClick={() => translate(field.key)} disabled={busy}>
-                {t.translateField}
+            {fields.length > 1 && (
+              <Button size="sm" onClick={() => translate()} disabled={busy}>
+                {t.translateAllTabs}
               </Button>
             )}
           </div>
 
-          {/* Высота тела зафиксирована: список языков может быть длинным, и
-              диалог не имеет права уезжать за нижний край экрана вместе со
-              своими кнопками. */}
-          <div className="max-h-[600px] space-y-2 overflow-y-auto pr-1">
-            {targets.map(code => (
+          {errorText && (
+            <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-2.5 text-[11px] leading-relaxed text-destructive">
+              <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+              <div>
+                <p>{errorText}</p>
+                {(error === "no-key" || error === "bad-key") && (
+                  <a href={`${adminBase()}/${lang}/openai`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
+                    {t.errKeyLink}<ExternalLink size={10} />
+                  </a>
+                )}
+                {error === "no-funds" && (
+                  <a href={BILLING_URL} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
+                    {t.errFundsLink}<ExternalLink size={10} />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Прокручивается ТОЛЬКО список языков. */}
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+          {targets.map(code => {
+            const value = drafts[code]?.[field?.key ?? ""] ?? ""
+            return (
               <TranslationCell
                 key={code}
                 lang={code}
-                value={drafts[code]?.[field?.key ?? ""] ?? ""}
+                value={value}
                 multiline={field?.multiline}
-                placeholder={t.empty}
+                dirty={Boolean(field) && value.trim() !== field.value.trim()}
+                saved={Boolean(saved[code])}
+                saving={savingLang === code}
+                labels={{ save: t.saveOne, saving: t.saving, savedMark: t.savedMark }}
                 onChange={v => field && setCell(code, field.key, v)}
+                onSave={() => saveOne(code)}
               />
-            ))}
-          </div>
+            )
+          })}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-2.5">
-          <div className="flex items-center gap-1.5">
-            <Button size="sm" variant="ghost" onClick={onSkip}>{t.skip}</Button>
-            {/* Родной `title` вместо всплывающей подсказки: работает на касании,
-                переживает выключенный JS и не требует ещё одного примитива. */}
-            <span title={t.hint} className="cursor-help text-muted-foreground">
-              <HelpCircle size={13} />
-            </span>
-          </div>
-          <Button size="sm" onClick={commit} disabled={saving || !filled}>
-            {saving && <Loader2 size={12} className="animate-spin" />}
-            {saving ? t.saving : t.save}
-          </Button>
+        <div className="flex shrink-0 items-center gap-1.5 border-t border-border px-4 py-2.5">
+          <Button size="sm" variant="ghost" onClick={onSkip}>{t.skip}</Button>
+          {/* Родной `title`: работает на касании и переживает выключенный JS. */}
+          <span title={t.hint} className="cursor-help text-muted-foreground">
+            <HelpCircle size={13} />
+          </span>
         </div>
       </div>
     </div>

@@ -1,8 +1,45 @@
-import { ProductsApp } from "./products-app.client"
+import { productsUi } from "../_data/products.i18n"
+import { ProductsPanel } from "./products-panel.client"
 
-// Route entry component (the default _meta.ts entryComponent). Server by
-// default: it composes the route and is where server-side data loading would
-// land. The interactive surface is the client island it renders.
-export default function ProductsEntry() {
-  return <ProductsApp />
+// Route entry — SERVER component, and everything it renders is the STATIC SHELL:
+// heading, description, the note about where the data lives. None of it needs a
+// query, so the page is prerendered per language and addressable instantly.
+//
+// 🔒 THE ONE DIVISION THIS FILE EXISTS TO SHOW. What you can render without
+// asking anybody anything belongs here, in the prerender. What requires the
+// database belongs inside the island below, behind a button the visitor presses.
+// A protected page is a static page with dynamic holes — never a dynamic page.
+//
+// The island receives its words as PROPS. A client component that imports the
+// dictionary itself would ship all ten languages to every browser.
+
+export default function ProductsEntry({ lang }: { lang: string }) {
+  const t = productsUi(lang)
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-6 py-10">
+        <header className="mb-8">
+          <a href={`/${lang}`} className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground">
+            ←
+          </a>
+          <h1 className="mt-1 text-xl font-semibold text-foreground">{t.title}</h1>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
+        </header>
+
+        <ProductsPanel
+          labels={{
+            reveal: t.reveal, revealHint: t.revealHint, loading: t.loading,
+            tableTitle: t.tableTitle, empty: t.empty, count: t.count,
+            add: t.add, cancelAdd: t.cancelAdd, newProduct: t.newProduct,
+            name: t.name, price: t.price, uploadPhoto: t.uploadPhoto, save: t.save,
+            colPhoto: t.colPhoto, colName: t.colName, colPrice: t.colPrice, colId: t.colId,
+            created: t.created, deleted: t.deleted, failed: t.failed,
+          }}
+        />
+
+        <p className="mt-6 text-center font-mono text-[10px] text-muted-foreground/50">{t.storageNote}</p>
+      </div>
+    </main>
+  )
 }

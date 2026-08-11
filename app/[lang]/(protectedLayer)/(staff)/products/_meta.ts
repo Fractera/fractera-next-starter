@@ -70,7 +70,7 @@ const meta: RouteMeta = {
   pageIsClient: false,
   entryIsClient: false,
   localComponents: [
-    "products-app.client",
+    "products-panel.client",
     "product-form.client",
     "product-table.client",
     "types",

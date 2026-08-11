@@ -25,10 +25,19 @@ const PUBLIC = join(ROOT, "public")
 const problems = []
 const fail = (file, rule, detail) => problems.push({ file: relative(ROOT, file), rule, detail })
 
-/** Every `_data` folder under app/[lang], at any depth. */
+// 🔒 ЗАЩИЩЁННЫЙ СЛОЙ СЮДА НЕ ВХОДИТ. Эти правила описывают ПУБЛИЧНЫЙ контент:
+// страницу, одинаковую для всех, предрендеренную и индексируемую. У страницы за
+// авторизацией законны и клиентский островок, и динамический сегмент — там иначе
+// нельзя. Проверка, зашедшая в `(protectedLayer)`, объявляет нарушением ровно то,
+// что этот слой обязан делать, и «починка» по её отчёту сломала бы страницу.
+// Граница описана в `CONTENT-ENGINE.md` §2.
+const PROTECTED_GROUP = "(protectedLayer)"
+
+/** Every `_data` folder under app/[lang], at any depth, outside the protected layer. */
 function findDataDirs(dir, out = []) {
   if (!existsSync(dir)) return out
   for (const name of readdirSync(dir)) {
+    if (name === PROTECTED_GROUP) continue
     const p = join(dir, name)
     if (!statSync(p).isDirectory()) continue
     if (name === "_data") out.push(p)

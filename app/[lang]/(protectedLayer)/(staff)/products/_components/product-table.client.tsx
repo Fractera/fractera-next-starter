@@ -7,9 +7,10 @@ type Props = {
   products: Product[]
   deleting: string | null
   onDelete: (id: string) => void
+  labels: { colPhoto: string; colName: string; colPrice: string; colId: string }
 }
 
-export function ProductTable({ products, deleting, onDelete }: Props) {
+export function ProductTable({ products, deleting, onDelete, labels }: Props) {
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-border rounded-xl">
@@ -26,10 +27,10 @@ export function ProductTable({ products, deleting, onDelete }: Props) {
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-border bg-muted/40">
-            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground w-14">Photo</th>
-            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Name</th>
-            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Price</th>
-            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground font-mono">ID</th>
+            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground w-14">{labels.colPhoto}</th>
+            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">{labels.colName}</th>
+            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">{labels.colPrice}</th>
+            <th className="text-left px-4 py-2.5 font-medium text-muted-foreground font-mono">{labels.colId}</th>
             <th className="px-4 py-2.5 w-10" />
           </tr>
         </thead>

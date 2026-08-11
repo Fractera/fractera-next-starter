@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react"
 import { Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { FileUploadField } from "@/services/upload/file-upload-field.client"
 import type { UploadedFile } from "@/services/upload/upload.service"
 
@@ -11,16 +12,17 @@ type Props = {
   saving: boolean
   onSave: () => void
   onUpload: (f: UploadedFile | null) => void
+  labels: { newProduct: string; name: string; price: string; uploadPhoto: string; save: string }
 }
 
-export function ProductForm({ form, setForm, saving, onSave, onUpload }: Props) {
+export function ProductForm({ form, setForm, saving, onSave, onUpload, labels }: Props) {
   return (
     <div className="mb-6 p-4 rounded-xl border border-border bg-muted/30">
-      <p className="text-xs font-medium text-foreground mb-3">New product</p>
+      <p className="text-xs font-medium text-foreground mb-3">{labels.newProduct}</p>
       <div className="flex flex-wrap gap-3 mb-3">
         <input
           type="text"
-          placeholder="Product name"
+          placeholder={labels.name}
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           onKeyDown={e => e.key === "Enter" && onSave()}
@@ -28,7 +30,7 @@ export function ProductForm({ form, setForm, saving, onSave, onUpload }: Props) 
         />
         <input
           type="number"
-          placeholder="Price"
+          placeholder={labels.price}
           min={0}
           step={0.01}
           value={form.price}
@@ -38,7 +40,7 @@ export function ProductForm({ form, setForm, saving, onSave, onUpload }: Props) 
         <FileUploadField
           accept="image"
           preview
-          label="Upload photo"
+          label={labels.uploadPhoto}
           onUpload={f => onUpload(f)}
         />
       </div>

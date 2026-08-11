@@ -51,22 +51,23 @@ export function ProductsPager(
           </Select>
         </div>
 
-        {pages > 1 && (
-          <Pagination className="mx-0 w-auto justify-end">
-            <PaginationContent>
-              {/* Четыре края движения: в начало · шаг назад · шаг вперёд · в
-                  конец. Крайние появляются только когда страниц больше двух —
-                  на двух они дублируют соседний шаг и лишь добавляют шума. */}
-              {pages > 2 && (
-                <PaginationItem>
-                  <PaginationFirst
-                    title={labels.first}
-                    aria-disabled={page <= 1}
-                    className={page <= 1 ? "pointer-events-none opacity-40" : ""}
-                    onClick={() => onPage(1)}
-                  />
-                </PaginationItem>
-              )}
+        {/* 🔒 ПАГИНАЦИЯ ВИДНА ВСЕГДА, даже когда страница одна.
+            Пряталась она по правилу «не показывать бесполезное» — и владелец
+            решил, что функция не сделана: на двух товарах страниц одна, стрелки
+            исчезали целиком, и проверить их было нечем.
+            Невидимый элемент неотличим от несуществующего. Погашенная стрелка
+            сообщает две вещи разом: управление есть, и дальше идти некуда. */}
+        <Pagination className="mx-0 w-auto justify-end">
+          <PaginationContent>
+              {/* Четыре края движения: в начало · шаг назад · шаг вперёд · в конец. */}
+              <PaginationItem>
+                <PaginationFirst
+                  title={labels.first}
+                  aria-disabled={page <= 1}
+                  className={page <= 1 ? "pointer-events-none opacity-40" : ""}
+                  onClick={() => onPage(1)}
+                />
+              </PaginationItem>
               <PaginationItem>
                 <PaginationPrevious
                   label={labels.prev}
@@ -88,19 +89,16 @@ export function ProductsPager(
                   onClick={() => onPage(page + 1)}
                 />
               </PaginationItem>
-              {pages > 2 && (
-                <PaginationItem>
-                  <PaginationLast
-                    title={labels.last}
-                    aria-disabled={page >= pages}
-                    className={page >= pages ? "pointer-events-none opacity-40" : ""}
-                    onClick={() => onPage(pages)}
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        )}
+              <PaginationItem>
+                <PaginationLast
+                  title={labels.last}
+                  aria-disabled={page >= pages}
+                  className={page >= pages ? "pointer-events-none opacity-40" : ""}
+                  onClick={() => onPage(pages)}
+                />
+              </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   )

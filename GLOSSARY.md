@@ -45,6 +45,20 @@ known at build time?**
 `components/auth/access-gate.i18n.ts`). They belong to the developer, are the same in every project, are
 finite and known at build time, and ship with the build.
 
+**How many languages they need is decided by ONE question: is the element reusable?**
+
+- **Reusable — all 82 languages, written up front.** The language switcher, error toasts, the platform
+  refusals in `lib/i18n/platform-errors.ts`, shared empty states, anything under `components/`. Nobody
+  rewrites these when a language is enabled: the owner ticks it in the panel and they must speak it the
+  same minute. Two languages here means the reusable half of the product breaks in every new language at
+  once.
+- **Belonging to one page or one feature — exactly the enabled set** (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`).
+  A catalogue heading, its button label, its empty state. They are born with that page and die with it;
+  translating them into 82 languages up front pays for words the site does not show.
+
+Both are complete solutions, not stages of one. Calling the second kind "a debt because the rule says 82"
+is a mistake this project has already made once.
+
 **2. Content of a public page** — the title and body of an article. It lives in **files**, in the
 per-language cell of that post (`_data/ru.ts`). It belongs to the author, is finite and written in
 advance, and is prerendered. See `CONTENT-ENGINE.md`.

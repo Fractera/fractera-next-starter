@@ -24,25 +24,23 @@ import { ProductTableSkeleton } from "@/app/[lang]/(protectedLayer)/_components/
 import { ProductsToolbar } from "@/app/[lang]/(protectedLayer)/_components/products/products-toolbar.client"
 import { ProductsPager } from "@/app/[lang]/(protectedLayer)/_components/products/products-pager.client"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
+import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
 
+// Только ОТЛИЧИТЕЛЬНЫЕ слова этой страницы. Колонки, тулбар и пагинация уехали в
+// общий словарь защищённого слоя: они одинаковы у всех четырёх ролей, и четыре
+// копии одного слова — это четыре места правки и четырёхкратная оплата перевода.
 export type ProductsLabels = {
-  reveal: string; revealHint: string; loading: string
-  tableTitle: string; empty: string; count: string
   add: string; cancelAdd: string; newProduct: string
   name: string; price: string; uploadPhoto: string; save: string
-  colPhoto: string; colName: string; colPrice: string; colId: string
-  created: string; deleted: string; failed: string
-  searchPlaceholder: string; find: string; reset: string; nothingFound: string
-  perPage: string; prev: string; next: string; pageOf: string
-  first: string; last: string
+  created: string; deleted: string; nothingFound: string
   descriptionField: string
 }
 
 export function ProductsPanel(
-  { lang, currency, labels, errors, dialogUi, billingUrl }:
-  { lang: string; currency: string; labels: ProductsLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
+  { lang, currency, labels, common, errors, dialogUi, billingUrl }:
+  { lang: string; currency: string; labels: ProductsLabels; common: ProductListUi; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
 ) {
   const list = useProductList(common.failed)
   const [adding, setAdding] = useState(false)

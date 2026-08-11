@@ -40,20 +40,16 @@ export default function ProductsEntry({ lang }: { lang: string }) {
 
         <ProductsPanel
           lang={lang}
+          common={common}
           currency={getAppConfig().commerce.currency}
           errors={errors}
           dialogUi={dialogUi}
           billingUrl={OPENAI_BILLING_URL}
           labels={{
-            reveal: common.reveal, revealHint: common.revealHint, loading: common.loading,
-            tableTitle: common.tableTitle, empty: common.empty, count: common.count,
             add: t.add, cancelAdd: t.cancelAdd, newProduct: t.newProduct,
             name: t.name, price: t.price, uploadPhoto: t.uploadPhoto, save: t.save,
-            colPhoto: common.colPhoto, colName: common.colName, colPrice: common.colPrice, colId: common.colId,
-            created: t.created, deleted: t.deleted, failed: common.failed,
-            searchPlaceholder: common.searchPlaceholder, find: common.find, reset: common.reset, nothingFound: t.nothingFound,
-            perPage: common.perPage, prev: common.prev, next: common.next, pageOf: common.pageOf,
-            first: common.first, last: common.last, descriptionField: t.descriptionField,
+            created: t.created, deleted: t.deleted, nothingFound: t.nothingFound,
+            descriptionField: t.descriptionField,
           }}
         />
 

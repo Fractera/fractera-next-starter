@@ -1,5 +1,5 @@
-import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 import { productsUi } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n"
+import { pricesUi } from "@/app/[lang]/(protectedLayer)/(finance)/prices/_data/ui.i18n"
 import type { DrawerLink } from "@/components/menu/account/account-drawer.client"
 
 // РАБОЧИЕ РАЗДЕЛЫ, которые ящик аккаунта показывает вошедшему.
@@ -14,20 +14,24 @@ import type { DrawerLink } from "@/components/menu/account/account-drawer.client
 // обнаружился, когда публичная витрина заняла адрес `/[lang]/products` и страница
 // переехала в `/[lang]/manage/products`: старый адрес молча стал открывать витрину.
 //
-// 🔒 РОЛИ ЗДЕСЬ — ТОЛЬКО ВИДИМОСТЬ. Скрытый пункт не защищает страницу; замок
-// стоит на ней самой (`layout.tsx` подгруппы). Список ролей берётся ОТТУДА ЖЕ,
-// из `PROTECTED_GROUP_ROLES`, чтобы пункт не разошёлся с дверью, которую он
-// открывает: разойдясь, он либо дразнит отказом, либо прячет доступное.
+// 🔒 ПУНКТ НАЗЫВАЕТ СВОЙ СЛОЙ, А НЕ СПИСОК РОЛЕЙ. Роли слоя знает `lib/roles.ts`,
+// и ящик спрашивает их там же — поэтому пункт физически не может разойтись с
+// дверью, которую открывает. Перечисли роли здесь копией, и однажды пункт начнёт
+// либо дразнить отказом, либо прятать доступное.
+//
+// Видимость — вежливость, а не защита: замок стоит на самой странице
+// (`layout.tsx` подгруппы) и в маршрутах данных.
+//
+// 🔒 ЭТОТ ФАЙЛ — ЕДИНСТВЕННОЕ МЕСТО, КОТОРОМУ ПОЗВОЛЕНО ЗНАТЬ ПРО СТРАНИЦЫ РАЗНЫХ
+// ГРУПП. Он и существует ради этого: собрать меню из того, что построено. Сами
+// группы друг о друге по-прежнему не знают ничего.
 //
 // Слова каждого пункта живут при своей странице (её `_data/ui.i18n.ts`), а не в
 // словаре ящика: это строка одной страницы, и языков у неё столько же, сколько у
 // страницы, — не 82 впрок.
 export function accountLinks(lang: string): DrawerLink[] {
   return [
-    {
-      href: `/${lang}/manage/products`,
-      label: productsUi(lang).title,
-      roles: PROTECTED_GROUP_ROLES.staff,
-    },
+    { href: `/${lang}/manage/products`, label: productsUi(lang).title, group: "staff" },
+    { href: `/${lang}/prices`, label: pricesUi(lang).title, group: "finance" },
   ]
 }

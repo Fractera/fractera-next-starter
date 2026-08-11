@@ -329,6 +329,21 @@ frame, headings and empty states are prerendered, and only the rows load into a 
 opens. Never carry `CONTENT-ENGINE.md`'s "no dynamic `[slug]`" into a dashboard: that sentence is scoped
 to public content, where an alternative exists.
 
+**🔒 A permission group NEVER imports from a sibling group.** `(protectedLayer)` holds four groups —
+`(account)`, `(staff)`, `(finance)`, `(admin)` — and the same business entity usually appears in several
+of them: staff edit the whole product card, finance edit only its price. The shared part rises to the
+**lowest common ancestor**, it never sits in whichever group happened to be built first:
+
+- needed by two groups → `app/[lang]/(protectedLayer)/_components/…`, `_lib/…`, `_data/…`
+- needed by a group AND the public layer (types, row→language resolution, queries) → `lib/<entity>/`
+- needed by one group only → stays in that group
+
+This is a rule written from a real defect: the product type and `localizeProduct` were born inside
+`(staff)`, so the PUBLIC storefront ended up importing from the staff permission group. Nothing broke,
+which is what made it dangerous — the next group would have cemented it. The single exception is
+`lib/menu/account-links.ts`: assembling the menu out of what exists is exactly its job, and it is the
+only file allowed to know about pages of several groups at once.
+
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`
 - `breadcrumb-trail.server.tsx` ✅

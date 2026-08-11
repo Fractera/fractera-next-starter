@@ -15,15 +15,12 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // the entry point too. UI standard: shadcn Button/buttonVariants + lucide icons.
 type Me = { userId?: string; email?: string; roles?: string[] } | null;
 
-export function AccountButton({ lang, side, labels, links, appName, appDescription }: {
+export function AccountButton({ lang, side, labels, links }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
   /** Рабочие разделы ящика: состав приходит с сервера, где известны страницы проекта. */
   links?: DrawerLink[];
-  // Step 500 — workspace identity from APP-CONFIG, passed down to the drawer.
-  appName?: string;
-  appDescription?: string;
 }) {
   const [me, setMe] = useState<Me>(undefined as unknown as Me);
 
@@ -37,7 +34,7 @@ export function AccountButton({ lang, side, labels, links, appName, appDescripti
   }, []);
 
   if (me && me.userId) {
-    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} appName={appName} appDescription={appDescription} />;
+    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} />;
   }
 
   return (

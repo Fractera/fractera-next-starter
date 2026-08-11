@@ -10,29 +10,51 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
+import { PROTECTED_GROUP_ROLES, type ProtectedGroup } from "@/lib/roles";
+
+// Слой → ключ его заголовка в словаре. Отдельной таблицей, чтобы добавить пятый
+// слой можно было в двух местах (роли и словарь), а не в трёх.
+const GROUP_LABEL = {
+  account: "groupAccount",
+  staff: "groupStaff",
+  finance: "groupFinance",
+  admin: "groupAdmin",
+} as const satisfies Record<ProtectedGroup, keyof AccountLabels>;
 
 // Full-height account drawer (step 161). Opens from the side set by NEXT_PUBLIC_APP_SHELL_AUTH;
 // taller than the left/right page drawers (which start below the header). Three zones:
-//   (top) sticky title; (middle) scroll area — the Projects accordion for architect/manager
-//   (step 177), empty for everyone else; (bottom) fixed: sign out, then the identity row
-//   (info icon → role tooltip + the email).
+//   (top) sticky title; (middle) scroll area — the person's work sections, grouped by
+//   permission layer; (bottom) fixed: sign out, then the identity row (info icon → role
+//   tooltip + the email).
 // Owns its OWN open state — DrawerProvider is structurally two-sided (left/right) and must not
 // carry a third drawer. UI standard: shadcn Sheet (Radix) + lucide; trigger = shadcn Button
 // (Base UI, no asChild) driving controlled state.
+//
+// 🔒 РАЗБИТ ПО ЧЕТЫРЁМ СЛОЯМ ПРАВ, А НЕ ПЛОСКИМ СПИСКОМ. Сотрудник может быть
+// одновременно менеджером и финансистом — и это не мелочь учёта, а разные роли
+// в работе: правя цену, он действует как финансист, заводя товар — как
+// менеджер. Плоский список этого не показывает, и человек не видит, в каком
+// качестве он делает то, что делает. Порядок блоков ФИКСИРОВАН и совпадает с
+// `PROTECTED_GROUP_ROLES`: своё → чужое по долгу службы → деньги → сам проект.
+//
 // 🔒 ПУНКТЫ ПРИХОДЯТ СПИСКОМ, А НЕ ЗАШИТЫ ЗДЕСЬ. Ящик — переиспользуемая часть
 // продукта, живущая на всех 82 языках; страницы проекта у каждого клиента свои.
 // Впиши сюда «Управление товарами» — и слово либо соврёт про 82 языка, либо
 // потребует перевода на 82 ради страницы, которой в соседнем проекте нет.
-// Поэтому ящик знает форму пункта (адрес, подпись, роли), а чем его наполнить,
-// решает приложение — там же, где живут слова этой страницы.
+// Поэтому ящик знает ФОРМУ пункта и названия слоёв (это его словарь), а чем
+// наполнить слои — решает приложение, там же, где живут слова этих страниц.
 export type DrawerLink = {
   href: string;
   label: string;
-  /** Кому пункт виден. Пусто — виден всем вошедшим. */
-  roles?: readonly string[];
+  /** Слой прав, к которому относится раздел. */
+  group: ProtectedGroup;
 };
 
-export function AccountDrawer({ lang, side, labels, email, roles, links, appName, appDescription }: {
+// Порядок показа. Он же порядок в `PROTECTED_GROUP_ROLES` — списки, идущие в
+// разном порядке, однажды разойдутся составом, и заметит это пользователь.
+const GROUP_ORDER = ["account", "staff", "finance", "admin"] as const;
+
+export function AccountDrawer({ lang, side, labels, email, roles, links }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
@@ -40,16 +62,21 @@ export function AccountDrawer({ lang, side, labels, email, roles, links, appName
   roles?: string[];
   /** Пункты рабочих разделов — их состав задаёт приложение. */
   links?: DrawerLink[];
-  // Step 500 — identity of this workspace, read from APP-CONFIG by the server
-  // component that mounts the drawer. The same pair the home page renders.
-  appName?: string;
-  appDescription?: string;
 }) {
   const [open, setOpen] = useState(false);
   const roleList = roles && roles.length ? roles : [];
-  const visible = (links ?? []).filter(
-    (l) => !l.roles?.length || l.roles.some((r) => roleList.includes(r)),
-  );
+
+  // Блок показывается, если человек ПРИНАДЛЕЖИТ слою, а не если в слое есть
+  // страницы: слой без страниц — это «здесь пока ничего не построено», и сказать
+  // это честнее, чем спрятать слой и оставить человека в уверенности, что прав у
+  // него меньше, чем есть.
+  const sections = GROUP_ORDER
+    .filter((g) => PROTECTED_GROUP_ROLES[g].some((r) => roleList.includes(r)))
+    .map((g) => ({
+      group: g,
+      title: labels[GROUP_LABEL[g]],
+      links: (links ?? []).filter((l) => l.group === g),
+    }));
 
   return (
     <>
@@ -68,30 +95,35 @@ export function AccountDrawer({ lang, side, labels, email, roles, links, appName
           {/* Middle (step 500) — the Projects accordion is gone together with the
               projects layer. The drawer now says whose workspace this is: name and
               description straight from APP-CONFIG, the same pair the home renders. */}
+          {/* Середина — рабочие разделы по слоям прав. Роль сверяется ЗДЕСЬ только
+              ради того, чтобы не показывать заведомо закрытую дверь: настоящая
+              проверка стоит на самой странице (layout подгруппы) и в маршрутах
+              данных. Спрятанный пункт — вежливость, а не защита, и путать эти два
+              не следует никогда. */}
           <div className="flex-1 overflow-y-auto px-4 py-4">
-            {appName ? <p className="text-base font-semibold text-foreground">{appName}</p> : null}
-            {appDescription ? (
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{appDescription}</p>
-            ) : null}
-
-            {/* Рабочие разделы. Роль сверяется ЗДЕСЬ только ради того, чтобы не
-                показывать заведомо закрытую дверь: настоящая проверка стоит на
-                самой странице (layout подгруппы). Спрятанный пункт — вежливость,
-                а не защита; порядок проверок разный, и путать их нельзя. */}
-            {visible.length > 0 && (
-              <nav className="mt-5 flex flex-col gap-1 border-t border-border pt-4">
-                {visible.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
-            )}
+            {sections.map((s) => (
+              <section key={s.group} className="mb-5 last:mb-0">
+                <h3 className="px-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {s.title}
+                </h3>
+                {s.links.length > 0 ? (
+                  <nav className="mt-1.5 flex flex-col gap-0.5">
+                    {s.links.map((l) => (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
+                  </nav>
+                ) : (
+                  <p className="mt-1.5 px-2 text-xs text-muted-foreground/70">{labels.groupEmpty}</p>
+                )}
+              </section>
+            ))}
           </div>
 
           {/* Bottom — fixed: identity row on top, sign out below; both left-aligned. */}

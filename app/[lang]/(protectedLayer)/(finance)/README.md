@@ -9,4 +9,11 @@ different, but because the blast radius does: a wrong role here is a financial i
 inconvenience. A separate group makes "who may see money" a question with one visible answer, and makes
 an accidental widening of access impossible to commit quietly.
 
-**Empty for now** — no page has been built here yet.
+**Built here:** `prices` — the catalogue seen from the money side. The same products the staff layer
+manages, but the only editable field is the price, and that limit is enforced by the server
+(`api/project/default/products/[id]`, `FIELDS_BY_GROUP`), not by hiding inputs. A page that merely
+hides a field is not a restriction: the route is visible in any developer tab.
+
+The list is read through the same endpoint the staff page uses — reading is shared, writing is not.
+The table, toolbar, pager and skeleton come from `(protectedLayer)/_components/products/`; this group
+owns only its own composition and its own words.

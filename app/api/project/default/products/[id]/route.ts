@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { revalidateTag } from "next/cache"
 import { CATALOGUE_TAG } from "@/lib/catalogue"
-import { requireRoles } from "@/lib/auth/require-roles"
+import { requireRoles, groupsOf } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 
 // PATCH — правка полей карточки. Обновляются ТОЛЬКО присланные поля: карточка
@@ -12,18 +12,48 @@ import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 // Переводы приходят как { field, lang, value } и ложатся в колонку i18n тем же
 // способом, что и в APP-CONFIG. Базовое значение и перевод — разные поля одного
 // запроса, поэтому правка русского названия не трогает английское.
+// 🔒 ДВЕ ГРУППЫ, РАЗНЫЕ ПРАВА НА ПОЛЯ — И РЕШАЕТСЯ ЭТО ЗДЕСЬ, НА СЕРВЕРЕ.
+//
+// Персонал правит карточку целиком. Финансист правит ТОЛЬКО цену: у него своя
+// страница, где остальные поля даже не показаны. Но интерфейс, который чего-то
+// не показывает, — не ограничение: адрес маршрута виден в любой вкладке
+// разработчика, и запрос с `name` отправляется вручную за десять секунд.
+// Единственное место, где «только цена» становится правдой, — вот эта проверка.
+//
+// Отказ ЯВНЫЙ, а не тихое игнорирование лишнего поля: молча выполненный
+// наполовину запрос выглядит как успех, и расхождение с базой обнаружится
+// не сразу и не тем, кто его создал.
+const FIELDS_BY_GROUP: Record<string, readonly string[]> = {
+  staff: ["name", "price", "description", "i18n"],
+  finance: ["price"],
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const denied = await requireRoles(req, PROTECTED_GROUP_ROLES.staff)
-  if (denied) return denied
+  const groups = await groupsOf(req)
+  const allowedFields = new Set(groups.flatMap(g => FIELDS_BY_GROUP[g] ?? []))
+  if (allowedFields.size === 0) {
+    // Ни персонал, ни финансы. Анонима до сюда не пускает и `proxy.ts`, но
+    // маршрут обязан отвечать сам: он единственный, кто знает про поля.
+    return requireRoles(req, [...PROTECTED_GROUP_ROLES.staff, ...PROTECTED_GROUP_ROLES.finance])
+  }
 
   const { id } = await params
   const body = await req.json().catch(() => null) as
     | { name?: string; price?: number; description?: string | null; i18n?: { field: string; lang: string; value: string } }
     | null
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+
+  const asked = Object.keys(body).filter(k => body[k as keyof typeof body] !== undefined)
+  const refused = asked.filter(k => !allowedFields.has(k))
+  if (refused.length) {
+    return NextResponse.json(
+      { error: "Forbidden", fields: refused, allowed: [...allowedFields] },
+      { status: 403 },
+    )
+  }
 
   const row = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 })

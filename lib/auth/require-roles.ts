@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import { getSession } from "./get-session"
+import { PROTECTED_GROUP_ROLES, type ProtectedGroup } from "@/lib/roles"
 
 // 🔒 НАСТОЯЩИЙ ЗАМОК ЗАЩИЩЁННОГО СЛОЯ. Всё остальное — вывеска.
 //
@@ -29,4 +30,22 @@ export async function requireRoles(
     return NextResponse.json({ error: "Forbidden", requires: allowed }, { status: 403 })
   }
   return null
+}
+
+/**
+ * К каким слоям прав принадлежит вызывающий.
+ *
+ * Нужно там, где доступ решается не «пустить/не пустить», а «что именно можно»:
+ * персонал правит карточку товара целиком, финансист — только цену. Двумя
+ * вызовами `requireRoles` подряд это не выражается: каждый читает сессию заново
+ * и каждый умеет только отказать целиком.
+ *
+ * Возвращает пустой список и для анонима — вызывающий отличает его сам, если
+ * различие ему важно.
+ */
+export async function groupsOf(req: NextRequest): Promise<ProtectedGroup[]> {
+  const session = await getSession(req)
+  const mine = session?.roles ?? []
+  return (Object.keys(PROTECTED_GROUP_ROLES) as ProtectedGroup[])
+    .filter(g => PROTECTED_GROUP_ROLES[g].some(r => mine.includes(r)))
 }

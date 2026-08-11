@@ -29,6 +29,7 @@ import { Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
+import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import { useProduct } from "../_lib/use-product"
 import { EditableField } from "./editable-field.client"
 
@@ -41,8 +42,8 @@ export type CardLabels = {
 }
 
 export function ProductCard(
-  { productId, lang, labels, backHref }:
-  { productId: string; lang: string; labels: CardLabels; backHref: string },
+  { productId, lang, labels, errors, billingUrl, backHref }:
+  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; billingUrl: string; backHref: string },
 ) {
   const { state, saveField, saveDrafts } = useProduct(productId, lang, {
     savedLabel: labels.fieldSaved,
@@ -82,11 +83,9 @@ export function ProductCard(
 
   const p = state.product
 
-  async function commitTranslations(drafts: Drafts): Promise<boolean> {
-    const ok = await saveDrafts(drafts)
-    if (ok) setTranslating(false)
-    return ok
-  }
+  // Окно остаётся открытым после сохранения: человек сам решает, сколько
+  // языков заполнить за один заход и когда закрыть.
+  const commitTranslations = (drafts: Drafts) => saveDrafts(drafts)
 
   return (
     <article>
@@ -150,6 +149,8 @@ export function ProductCard(
           { key: "name", label: labels.name, value: p.localizedName },
           { key: "description", label: labels.descriptionField, value: p.localizedDescription ?? "", multiline: true },
         ]}
+        errors={errors}
+        billingUrl={billingUrl}
         onSkip={() => setTranslating(false)}
         onSave={commitTranslations}
       />

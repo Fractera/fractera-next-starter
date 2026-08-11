@@ -24,6 +24,7 @@ import { ProductTableSkeleton } from "./product-table-skeleton"
 import { ProductsToolbar } from "./products-toolbar.client"
 import { ProductsPager } from "./products-pager.client"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
+import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 
 export type ProductsLabels = {
   reveal: string; revealHint: string; loading: string
@@ -38,7 +39,10 @@ export type ProductsLabels = {
   descriptionField: string
 }
 
-export function ProductsPanel({ lang, labels }: { lang: string; labels: ProductsLabels }) {
+export function ProductsPanel(
+  { lang, labels, errors, billingUrl }:
+  { lang: string; labels: ProductsLabels; errors: PlatformErrors; billingUrl: string },
+) {
   const list = useProductList(labels.failed)
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: "", price: "" })
@@ -94,7 +98,9 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
           })
         }
       }
-      setJustCreated(null)
+      // 🔒 ОКНО НЕ ЗАКРЫВАЕТСЯ САМО. Сколько языков сохранить и когда уйти —
+      // решает человек: он может добавить один перевод, посмотреть, добавить
+      // второй. Закрытие после первого сохранения обрывало работу на середине.
       await list.load()
       return true
     } catch {
@@ -170,6 +176,8 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
           open
           lang={lang}
           fields={[{ key: "name", label: labels.name, value: justCreated.name }]}
+          errors={errors}
+          billingUrl={billingUrl}
           onSkip={() => setJustCreated(null)}
           onSave={saveTranslations}
         />

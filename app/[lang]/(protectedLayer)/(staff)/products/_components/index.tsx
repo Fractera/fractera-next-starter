@@ -1,4 +1,5 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
+import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
@@ -16,6 +17,9 @@ import { ProductsPanel } from "./products-panel.client"
 
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = productsUi(lang)
+  // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
+  // текущего языка (/code/CLAUDE.md §4д).
+  const errors = platformErrors(lang)
 
   return (
     <main className="min-h-screen bg-background">
@@ -29,6 +33,8 @@ export default function ProductsEntry({ lang }: { lang: string }) {
 
         <ProductsPanel
           lang={lang}
+          errors={errors}
+          billingUrl={OPENAI_BILLING_URL}
           labels={{
             reveal: t.reveal, revealHint: t.revealHint, loading: t.loading,
             tableTitle: t.tableTitle, empty: t.empty, count: t.count,

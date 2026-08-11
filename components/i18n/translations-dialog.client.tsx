@@ -24,22 +24,27 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { SINGLE_LANG_MODE } from "@/config/translations/translations.config"
 import { adminBase } from "@/lib/runtime-urls"
+import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import { TranslationCell } from "./translation-cell.client"
 import { translationsUi } from "./translations-dialog.i18n"
 import { useTranslations, type Drafts, type TranslatableField } from "./use-translations"
 
 export type { TranslatableField, Drafts }
 
-// Куда вести человека с каждой бедой. Ошибка без следующего шага — это не
-// сообщение, а тупик: он узнаёт, что не вышло, и не узнаёт, что делать.
-const BILLING_URL = "https://platform.openai.com/settings/organization/billing/overview"
+// 🔒 СООБЩЕНИЯ ОБ ОТКАЗАХ ПРИХОДЯТ ПРОПСОМ, а не импортом. Их 82 языка, и
+// импорт из клиентского компонента увёз бы весь словарь в браузер на каждой
+// странице. Серверный компонент резолвит их и передаёт готовыми — тот же закон,
+// что у панели (/code/CLAUDE.md §4д).
 
 export function TranslationsDialog(
-  { open, lang, fields, onSave, onSkip }: {
+  { open, lang, fields, errors, billingUrl, onSave, onSkip }: {
     open: boolean
     /** Язык интерфейса — он же язык исходных значений. */
     lang: string
     fields: TranslatableField[]
+    /** Сообщения об отказах на языке страницы — из lib/i18n/platform-errors. */
+    errors: PlatformErrors
+    billingUrl: string
     /** Сохранить переводы ОДНОГО языка. Возвращает успех. */
     onSave: (drafts: Drafts) => Promise<boolean>
     onSkip: () => void
@@ -66,11 +71,11 @@ export function TranslationsDialog(
   }
 
   const errorText =
-    error === "no-key" ? t.errNoKey
-    : error === "bad-key" ? t.errBadKey
-    : error === "no-funds" ? t.errNoFunds
-    : error === "rate-limit" ? t.errRateLimit
-    : error ? t.errUpstream : null
+    error === "no-key" ? errors.noKey
+    : error === "bad-key" ? errors.badKey
+    : error === "no-funds" ? errors.noFunds
+    : error === "rate-limit" ? errors.rateLimit
+    : error ? errors.upstream : null
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
@@ -128,12 +133,12 @@ export function TranslationsDialog(
                 <p>{errorText}</p>
                 {(error === "no-key" || error === "bad-key") && (
                   <a href={`${adminBase()}/${lang}/openai`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
-                    {t.errKeyLink}<ExternalLink size={10} />
+                    {errors.keyLink}<ExternalLink size={10} />
                   </a>
                 )}
                 {error === "no-funds" && (
-                  <a href={BILLING_URL} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
-                    {t.errFundsLink}<ExternalLink size={10} />
+                  <a href={billingUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 underline">
+                    {errors.fundsLink}<ExternalLink size={10} />
                   </a>
                 )}
               </div>

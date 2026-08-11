@@ -37,7 +37,12 @@ export async function PATCH(
   if (allowedFields.size === 0) {
     // Ни персонал, ни финансы. Анонима до сюда не пускает и `proxy.ts`, но
     // маршрут обязан отвечать сам: он единственный, кто знает про поля.
-    return requireRoles(req, [...PROTECTED_GROUP_ROLES.staff, ...PROTECTED_GROUP_ROLES.finance])
+    // `requireRoles` отдаёт `null`, когда доступ ЕСТЬ, — сюда мы попадаем только
+    // когда его нет, но возвращать `null` из обработчика нельзя, поэтому исход
+    // без отказа закрывается явным 403.
+    const allowed = [...PROTECTED_GROUP_ROLES.staff, ...PROTECTED_GROUP_ROLES.finance]
+    const denied = await requireRoles(req, allowed)
+    return denied ?? NextResponse.json({ error: "Forbidden", requires: allowed }, { status: 403 })
   }
 
   const { id } = await params

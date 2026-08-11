@@ -55,8 +55,11 @@ export function inline(text: string, kp: string): ReactNode[] {
       // Внутренняя ссылка на корень: подпись `%SITE%` становится названием
       // сайта на языке этой же ссылки. Название приходит из настроек проекта,
       // поэтому в тексте статьи не остаётся ничьего имени.
+      // Подставляется ИМЯ САЙТА, а не его SEO-заголовок: заголовок собирается по
+      // шаблону `%s | <имя>` и в якоре читается как «Имя — описание | Имя».
+      // Якорь — это то, как сайт называет сам себя в чужом предложении.
       const root = href.match(ROOT_LINK)
-      const label = root && m[2].trim() === SITE_TOKEN ? metaForLang(root[1]).title : m[2]
+      const label = root && m[2].trim() === SITE_TOKEN ? metaForLang(root[1]).siteName : m[2]
 
       nodes.push(
         <a

@@ -323,6 +323,15 @@ both themes by definition, so a dark design keeps being dark under a light shell
 **The one honest exception** is a label drawn ON a filled accent: its text must contrast with the fill,
 not with the page, so `bg-primary` pairs with `text-primary-foreground` — never with `text-foreground`.
 
-**How to check without a browser:** `grep -rn "bg-black\|text-white\|bg-zinc-\|border-white" app/[lang]/<section>/`
-must return nothing. A page that passes this cannot be theme-blind, because it has no colour of its own
-left to disobey with.
+**How to check without a browser — and where the first attempt was WRONG:**
+
+```
+grep -rn "bg-black\|text-white\|bg-zinc-\|border-white\|bg-white/\|violet-" \
+  app/[lang]/<section>/ lib/content/ components/content-page/
+```
+
+Sweeping the section folder alone is not enough, and skipping the rest cost a second round: after the
+blog index was fixed its POST pages were still black, because posts are drawn by the shared engine —
+`standard-content-page.tsx` and `lib/content/blocks/`. A section can be perfectly clean and still render
+dark. A page that passes the sweep above cannot be theme-blind: no colour of its own is left to disobey
+with.

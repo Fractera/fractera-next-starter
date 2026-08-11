@@ -25,8 +25,6 @@ import { LoadMore } from "./load-more.client"
 // ISR: страница пересобирается раз в час, а при создании товара — сразу, по
 // метке `revalidateTag(CATALOGUE_TAG)`. Значение `revalidate` обязано быть
 // статически вычислимым (документация Next 16): `3600` можно, `60 * 60` нельзя.
-export const revalidate = 3600
-
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params
   const t = catalogueUi(lang)

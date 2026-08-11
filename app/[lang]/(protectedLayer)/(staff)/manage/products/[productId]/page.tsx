@@ -1,7 +1,11 @@
-import ProductEntry from "./_components"
+import ProductEntry, { generateStaticParams } from "./_components"
 
-// Тонкий вход динамического маршрута. Оба параметра приходят из адреса: язык —
-// от языкового сегмента, productId — от этого. Страница их только передаёт.
+// Тонкий вход карточки менеджера.
+// 🔒 `revalidate` ОБЪЯВЛЕН ЗДЕСЬ, А НЕ РЕЭКСПОРТИРОВАН. Next разбирает его
+// статически в самом файле маршрута: `export { revalidate } from "./_components"`
+// даёт ошибку сборки «mustn't be reexported». Функции (`generateMetadata`,
+// `generateStaticParams`) реэкспортировать можно — значения нельзя.
+export const revalidate = 3600
 export default async function Page(
   { params }: { params: Promise<{ lang: string; productId: string }> },
 ) {
@@ -9,4 +13,4 @@ export default async function Page(
   return <ProductEntry lang={lang} productId={productId} />
 }
 
-export { generateStaticParams, revalidate } from "./_components"
+export { generateStaticParams }

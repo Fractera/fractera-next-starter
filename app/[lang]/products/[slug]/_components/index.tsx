@@ -25,8 +25,6 @@ import { catalogueUi } from "../../_data/ui.i18n"
 // 🔒 `revalidate` СТАТИЧЕСКИ ВЫЧИСЛИМ. Документация требует буквально этого:
 // `3600` можно, `60 * 60` нельзя — второе Next не разберёт и страница станет
 // динамической молча.
-export const revalidate = 3600
-
 export async function generateStaticParams() {
   const slugs = await prerenderSlugs()
   return slugs.map(slug => ({ slug }))

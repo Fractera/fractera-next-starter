@@ -22,8 +22,6 @@ import { ProductCard } from "./product-card.client"
 //
 // Товар вне среза родится при первом обращении и дальше будет отдаваться
 // статикой (ISR,  по умолчанию ).
-export const revalidate = 3600
-
 export async function generateStaticParams() {
   return (await prerenderSlugs()).map(productId => ({ productId }))
 }

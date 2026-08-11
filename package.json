@@ -9,6 +9,8 @@
     "lint": "next lint",
     "read:app-config": "node scripts/print-app-config-for-agent.mjs",
     "check:encoding": "node scripts/scan-broken-characters.mjs",
+    "predev": "node lib/parser-fs.mjs",
+    "prebuild": "node lib/parser-fs.mjs",
     "check:content": "node scripts/check-content.mjs"
   },
   "dependencies": {

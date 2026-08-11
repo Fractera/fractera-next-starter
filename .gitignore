@@ -43,3 +43,4 @@ Thumbs.db
 # logs
 *.log
 npm-debug.log*
+app/[lang]/**/_list.generated.ts

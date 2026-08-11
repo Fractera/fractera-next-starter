@@ -34,8 +34,40 @@ a **skeleton** until its data arrives, and the data comes from an authenticated 
 the set of such pages is unbounded (a million accounts = a million dashboards), these routes address one
 item with a dynamic segment `/[id]`, never with a folder per item.
 
+## Three kinds of translation — and why they live in three different places
+
+Saying "the translations" without saying WHICH is how two different mechanisms get mixed into one wrong
+one. There are three, and the boundary between them is the same question that decides routing: **is this
+known at build time?**
+
+**1. Interface strings** — headings, buttons, column names, toasts, breadcrumb labels. They live in
+**code**, in a co-located `<entity>.i18n.ts` next to what shows them (`_data/ui.i18n.ts`,
+`components/auth/access-gate.i18n.ts`). They belong to the developer, are the same in every project, are
+finite and known at build time, and ship with the build.
+
+**2. Content of a public page** — the title and body of an article. It lives in **files**, in the
+per-language cell of that post (`_data/ru.ts`). It belongs to the author, is finite and written in
+advance, and is prerendered. See `CONTENT-ENGINE.md`.
+
+**3. Content of an object** — a product's name and description, a category, anything a person creates
+while using the app. It lives in **the database, in that object's own row**, in an `i18n` JSON column
+shaped `{ "name": { "ru": "…" } }` — the same shape `APP-CONFIG` uses. It belongs to whoever created the
+object, appears at runtime, and is unbounded: a million products means a million translations, none of
+which exists at build time.
+
+**Why a JSON column and not a column per language** (case 3 only): a column per language does not scale —
+every new language would need a schema migration, and a project may enable ten. Resolution rule, the same
+as the content engine's: **no translation → the base value**. An empty string where a name should be looks
+like a breakage; the English name looks like an honest edge of translation.
+
+**Naming, so the two mechanisms never get confused again:** interface strings live in `_data/*.i18n.ts`;
+object translations are resolved by `_lib/localize-<entity>.ts`. They were once called
+`products.i18n.ts` and `product-i18n.ts` — one letter apart, doing different things.
+
 | Term | Meaning |
 |---|---|
+| Interface strings | Translations of the UI itself — in code, `<entity>.i18n.ts`, finite and shipped with the build |
+| Object translations | Translations of a row the user created — in the DB, `i18n` JSON column of that row |
 | Public layer | Page independent of authorization and role — top-menu pages and plain file-system pages; prerendered and indexed (see above) |
 | Protected layer | Page requiring BOTH a signed-in visitor AND a named role; lives in `app/[lang]/(protectedLayer)/` (see above) |
 | Static shell | Prerendered part of a page: heading, description, prose, empty states, frame — no data behind it |

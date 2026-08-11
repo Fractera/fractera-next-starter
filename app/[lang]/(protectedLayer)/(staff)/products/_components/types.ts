@@ -6,7 +6,7 @@ export type Product = {
   description: string | null
   /**
    * Переводы полей одной строкой JSON: `{ "name": { "ru": "…" } }`.
-   * Разрешается через `_lib/product-i18n.ts`; колонка на язык не заводится —
+   * Разрешается через `_lib/localize-product.ts`; колонка на язык не заводится —
    * каждый новый язык требовал бы миграции схемы.
    */
   i18n: string | null

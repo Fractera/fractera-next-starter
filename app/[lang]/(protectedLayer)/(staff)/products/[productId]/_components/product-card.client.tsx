@@ -23,7 +23,7 @@ import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { projectApi } from "@/lib/architecture/project-api"
 import type { Product } from "../../_components/types"
-import { localizeProduct, type LocalizedProduct } from "../../_lib/product-i18n"
+import { localizeProduct, type LocalizedProduct } from "../../_lib/localize-product"
 
 type Labels = {
   name: string; price: string; colId: string

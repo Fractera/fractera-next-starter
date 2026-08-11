@@ -1,5 +1,5 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
-import { productsUi } from "../_data/products.i18n"
+import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
 // Route entry — SERVER component, and everything it renders is the STATIC SHELL:

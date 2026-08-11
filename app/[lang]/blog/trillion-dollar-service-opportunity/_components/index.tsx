@@ -17,7 +17,7 @@ const post = createContentPost({
   resolve: lang => ({
     ...blogPost(data, lang),
     hero: (
-      <div className="my-8 w-full aspect-video rounded-2xl overflow-hidden border border-white/15 bg-black">
+      <div className="my-8 w-full aspect-video rounded-2xl overflow-hidden border border-border bg-background">
         <iframe
           src={VIDEO_EMBED}
           title="Elon Musk — Dwarkesh Patel interview (the moment)"

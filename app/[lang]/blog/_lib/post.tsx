@@ -46,7 +46,7 @@ export function blogPost(data: BlogData, lang: string): ContentPost {
       ? (
         <figure className="my-8 flex flex-col gap-3">
           <div
-            className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_60px_-15px_rgba(167,139,250,0.35)]"
+            className="overflow-hidden rounded-2xl border border-border shadow-[0_0_60px_-15px_rgba(167,139,250,0.35)]"
             style={meta.heroAspect ? { aspectRatio: meta.heroAspect } : undefined}
           >
             <video
@@ -55,11 +55,11 @@ export function blogPost(data: BlogData, lang: string): ContentPost {
               controls
               playsInline
               preload="none"
-              className="h-full w-full bg-black object-cover"
+              className="h-full w-full bg-background object-cover"
             />
           </div>
           {r.heroCaption && (
-            <figcaption className="text-center text-sm text-white/40">{r.heroCaption}</figcaption>
+            <figcaption className="text-center text-sm text-muted-foreground">{r.heroCaption}</figcaption>
           )}
         </figure>
       )

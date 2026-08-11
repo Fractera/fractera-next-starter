@@ -299,3 +299,30 @@ language cells, one internal root link in each, and the gate green before you re
 **Near-variants count as the same command.** It is spoken, so *"create a blog post"*, *"создай пост
 для блога"*, *"добавь публикацию"* are one request. Ask for the subject if it was not given; never
 invent the topic of someone's article.
+
+## 13. Colours come from the theme, never from a palette
+
+**Requirement: a content page must obey the site's theme.** The visitor switches to light and the page
+turns light — like every other page. This is not decoration: a section that stays dark while the shell
+turns light reads as a broken page, and the blog was exactly that until 2026-08-11.
+
+**The cause was one habit:** the section was written with absolute colours — `bg-black`, `text-white`,
+`text-white/50`, `bg-zinc-900`, `border-white/10`, a `violet` accent. Absolute colours are the same in
+both themes by definition, so a dark design keeps being dark under a light shell.
+
+**Use tokens instead**, the ones the rest of the product uses:
+
+| Instead of | Write |
+|---|---|
+| `bg-black`, `bg-zinc-900` | `bg-background`, `bg-muted` |
+| `text-white` | `text-foreground` |
+| `text-white/50`, `/40`, `/55` | `text-muted-foreground` |
+| `border-white/10`, `/15` | `border-border` |
+| a named accent (`violet-600`) | `bg-primary` + `text-primary-foreground` |
+
+**The one honest exception** is a label drawn ON a filled accent: its text must contrast with the fill,
+not with the page, so `bg-primary` pairs with `text-primary-foreground` — never with `text-foreground`.
+
+**How to check without a browser:** `grep -rn "bg-black\|text-white\|bg-zinc-\|border-white" app/[lang]/<section>/`
+must return nothing. A page that passes this cannot be theme-blind, because it has no colour of its own
+left to disobey with.

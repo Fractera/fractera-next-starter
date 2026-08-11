@@ -28,6 +28,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
         </header>
 
         <ProductsPanel
+          lang={lang}
           labels={{
             reveal: t.reveal, revealHint: t.revealHint, loading: t.loading,
             tableTitle: t.tableTitle, empty: t.empty, count: t.count,
@@ -35,7 +36,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
             name: t.name, price: t.price, uploadPhoto: t.uploadPhoto, save: t.save,
             colPhoto: t.colPhoto, colName: t.colName, colPrice: t.colPrice, colId: t.colId,
             created: t.created, deleted: t.deleted, failed: t.failed,
-            searchPlaceholder: t.searchPlaceholder, find: t.find, nothingFound: t.nothingFound,
+            searchPlaceholder: t.searchPlaceholder, find: t.find, reset: t.reset, nothingFound: t.nothingFound,
             perPage: t.perPage, prev: t.prev, next: t.next, pageOf: t.pageOf,
             first: t.first, last: t.last,
           }}

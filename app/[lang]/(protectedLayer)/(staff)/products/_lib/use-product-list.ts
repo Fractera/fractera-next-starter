@@ -67,6 +67,14 @@ export function useProductList(failedLabel: string) {
     void load({ page: 1, q: query })
   }, [query, load])
 
+  // Сброс — отдельное действие, а не «поиск по пустой строке»: стереть текст и
+  // нажать «Найти» человек не догадывается, и остаётся запертым в выборке.
+  const resetSearch = useCallback(() => {
+    setQuery("")
+    setApplied("")
+    void load({ page: 1, q: "" })
+  }, [load])
+
   const changeSize = useCallback((next: number) => {
     setPerPage(next)
     localStorage.setItem(SIZE_KEY, String(next))
@@ -76,6 +84,6 @@ export function useProductList(failedLabel: string) {
   return {
     revealed, loading, products, page, pages, total, perPage,
     query, setQuery, applied,
-    load, search, changeSize,
+    load, search, resetSearch, changeSize,
   }
 }

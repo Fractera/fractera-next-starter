@@ -11,24 +11,25 @@
 // каждую букву на медленной сети обгоняет сам себя, и список моргает ответами
 // на промежуточные слова.
 
-import { Plus, X, Loader2, Eye, Search } from "lucide-react"
+import { Plus, X, Loader2, Eye, Search, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export type ToolbarLabels = {
   tableTitle: string; reveal: string; loading: string
   add: string; cancelAdd: string
-  searchPlaceholder: string; find: string
+  searchPlaceholder: string; find: string; reset: string
 }
 
 export function ProductsToolbar(
-  { labels, revealed, loading, adding, query, onQuery, onReveal, onToggleAdd, onSearch }: {
+  { labels, revealed, loading, adding, query, applied, onQuery, onReveal, onToggleAdd, onSearch, onReset }: {
     labels: ToolbarLabels
-    revealed: boolean; loading: boolean; adding: boolean; query: string
+    revealed: boolean; loading: boolean; adding: boolean; query: string; applied: string
     onQuery: (v: string) => void
     onReveal: () => void
     onToggleAdd: () => void
     onSearch: () => void
+    onReset: () => void
   },
 ) {
   return (
@@ -61,6 +62,13 @@ export function ProductsToolbar(
         <Button size="sm" variant="secondary" onClick={onSearch} disabled={loading}>
           <Search size={12} />{labels.find}
         </Button>
+        {/* Сброс появляется только когда выборка ПРИМЕНЕНА: кнопка, которой не
+            от чего отказываться, — лишний элемент на каждом экране. */}
+        {applied && (
+          <Button size="sm" variant="ghost" onClick={onReset} disabled={loading}>
+            <RotateCcw size={12} />{labels.reset}
+          </Button>
+        )}
       </div>
     </>
   )

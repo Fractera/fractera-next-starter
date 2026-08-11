@@ -31,12 +31,12 @@ export type ProductsLabels = {
   name: string; price: string; uploadPhoto: string; save: string
   colPhoto: string; colName: string; colPrice: string; colId: string
   created: string; deleted: string; failed: string
-  searchPlaceholder: string; find: string; nothingFound: string
+  searchPlaceholder: string; find: string; reset: string; nothingFound: string
   perPage: string; prev: string; next: string; pageOf: string
   first: string; last: string
 }
 
-export function ProductsPanel({ labels }: { labels: ProductsLabels }) {
+export function ProductsPanel({ lang, labels }: { lang: string; labels: ProductsLabels }) {
   const list = useProductList(labels.failed)
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: "", price: "" })
@@ -95,10 +95,12 @@ export function ProductsPanel({ labels }: { labels: ProductsLabels }) {
         loading={list.loading}
         adding={adding}
         query={list.query}
+        applied={list.applied}
         onQuery={list.setQuery}
         onReveal={() => list.load({ page: 1 })}
         onToggleAdd={() => setAdding(v => !v)}
         onSearch={list.search}
+        onReset={list.resetSearch}
       />
 
       {adding && (
@@ -119,7 +121,7 @@ export function ProductsPanel({ labels }: { labels: ProductsLabels }) {
         </div>
       ) : (
         <>
-          <ProductTable products={list.products} deleting={deleting} onDelete={remove} labels={labels} />
+          <ProductTable products={list.products} deleting={deleting} onDelete={remove} lang={lang} labels={labels} />
           <ProductsPager
             labels={labels}
             total={list.total}

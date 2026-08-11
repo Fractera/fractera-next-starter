@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { getAppConfig } from "@/config/app-config"
+import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { accountingProductsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
@@ -14,6 +15,8 @@ import { ProductsPanel } from "./products-panel.client"
 // импортирующий словарь, увёз бы в браузер все его языки.
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = accountingProductsUi(lang)
+  // Общие слова списка — один словарь на все четыре слоя.
+  const common = productListUi(lang)
   const currency = getAppConfig().commerce.currency
 
   return (
@@ -26,7 +29,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 
-        <ProductsPanel lang={lang} currency={currency} labels={t} />
+        <ProductsPanel lang={lang} currency={currency} labels={t} common={common} />
       </div>
     </main>
   )

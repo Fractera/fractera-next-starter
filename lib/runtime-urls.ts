@@ -67,3 +67,25 @@ export function registerRedirectUrl(callbackUrl: string, requireRole: "user" | "
   url.searchParams.set("requireRole", requireRole);
   return url.toString();
 }
+
+// Адрес панели, выведенный ИЗ АДРЕСА САЙТА, а не из окна браузера.
+//
+// 🔒 ЗАЧЕМ ВТОРАЯ ФОРМА. `adminBase()` выше читает `window.location`, поэтому
+// работает только после гидратации — а главная странице обязана отдать ссылку на
+// панель в СТАТИЧЕСКОМ HTML: её читает и человек с выключенным JS, и поисковик.
+// Здесь адрес берётся из настроек (`APP-CONFIG.url`), которые сервер знает на
+// рендере, и страница остаётся статической.
+//
+// Пустой адрес — законный исход свежего сервера, где настройки ещё не сохраняли:
+// возвращаем пустую строку, а вызывающий показывает шаг без ссылки. Выдуманный
+// адрес панели хуже отсутствующего: он ведёт человека в никуда на первом же шаге.
+export function adminUrlFromSite(siteUrl: string | undefined): string {
+  if (!siteUrl) return "";
+  try {
+    const { protocol, hostname } = new URL(siteUrl);
+    if (isIpHost(hostname)) return `${protocol}//${hostname}:3002`;
+    return `${protocol}//admin.${apexFrom(hostname)}`;
+  } catch {
+    return "";
+  }
+}

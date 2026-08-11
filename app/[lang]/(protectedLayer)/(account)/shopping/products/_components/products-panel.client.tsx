@@ -18,27 +18,28 @@ import { ProductTable } from "@/app/[lang]/(protectedLayer)/_components/products
 import { ProductTableSkeleton } from "@/app/[lang]/(protectedLayer)/_components/products/product-table-skeleton"
 import type { CartUi } from "@/components/cart/cart.i18n"
 import { AddToOrder } from "./add-to-order.client"
+import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { ShoppingProductsUi } from "../_data/ui.i18n"
 
 export function ProductsPanel(
-  { lang, currency, labels, cart }:
-  { lang: string; currency: string; labels: ShoppingProductsUi; cart: CartUi },
+  { lang, currency, labels, common, cart }:
+  { lang: string; currency: string; labels: ShoppingProductsUi; common: ProductListUi; cart: CartUi },
 ) {
-  const list = useProductList(labels.failed)
+  const list = useProductList(common.failed)
 
   return (
     <>
       <ProductsToolbar
         labels={{
-          tableTitle: labels.tableTitle,
-          reveal: labels.reveal,
-          loading: labels.loading,
+          tableTitle: common.tableTitle,
+          reveal: common.reveal,
+          loading: common.loading,
           // Заводить товары покупатель не может — кнопки создания у него нет.
           add: "",
           cancelAdd: "",
-          searchPlaceholder: labels.searchPlaceholder,
-          find: labels.find,
-          reset: labels.reset,
+          searchPlaceholder: common.searchPlaceholder,
+          find: common.find,
+          reset: common.reset,
         }}
         revealed={list.revealed}
         loading={list.loading}
@@ -55,9 +56,9 @@ export function ProductsPanel(
       {!list.revealed ? (
         <>
           <ProductTableSkeleton
-            labels={{ colPhoto: labels.colPhoto, colName: labels.colName, colPrice: labels.colPrice, colId: labels.colId }}
+            labels={{ colPhoto: common.colPhoto, colName: common.colName, colPrice: common.colPrice, colId: common.colId }}
           />
-          <p className="mt-3 text-xs text-muted-foreground">{labels.revealHint}</p>
+          <p className="mt-3 text-xs text-muted-foreground">{common.revealHint}</p>
         </>
       ) : (
         <>
@@ -70,8 +71,8 @@ export function ProductsPanel(
             lang={lang}
             currency={currency}
             labels={{
-              colPhoto: labels.colPhoto, colName: labels.colName,
-              colPrice: labels.colPrice, colId: labels.colId, empty: labels.empty,
+              colPhoto: common.colPhoto, colName: common.colName,
+              colPrice: common.colPrice, colId: common.colId, empty: common.empty,
             }}
             hrefFor={(id) => `/${lang}/products/${id}`}
             rowAction={(p) => <AddToOrder product={p} labels={cart} />}
@@ -79,9 +80,9 @@ export function ProductsPanel(
 
           <ProductsPager
             labels={{
-              count: labels.count, perPage: labels.perPage,
-              prev: labels.prev, next: labels.next, pageOf: labels.pageOf,
-              first: labels.first, last: labels.last,
+              count: common.count, perPage: common.perPage,
+              prev: common.prev, next: common.next, pageOf: common.pageOf,
+              first: common.first, last: common.last,
             }}
             total={list.total}
             page={list.page}

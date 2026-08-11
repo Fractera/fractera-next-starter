@@ -44,7 +44,7 @@ export function ProductsPanel(
   { lang, currency, labels, errors, dialogUi, billingUrl }:
   { lang: string; currency: string; labels: ProductsLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
 ) {
-  const list = useProductList(labels.failed)
+  const list = useProductList(common.failed)
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: "", price: "" })
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null)
@@ -77,7 +77,7 @@ export function ProductsPanel(
       setAdding(false)
       await list.load({ page: 1 })
     } catch {
-      toast.error(labels.failed)
+      toast.error(common.failed)
     } finally {
       setSaving(false)
     }
@@ -104,7 +104,7 @@ export function ProductsPanel(
       await list.load()
       return true
     } catch {
-      toast.error(labels.failed)
+      toast.error(common.failed)
       return false
     }
   }
@@ -114,8 +114,8 @@ export function ProductsPanel(
     <section>
       <ProductsToolbar
         labels={labels}
-        revealed={list.revealed}
-        loading={list.loading}
+        revealed={liscommon.revealed}
+        loading={liscommon.loading}
         adding={adding}
         query={list.query}
         applied={list.applied}
@@ -123,7 +123,7 @@ export function ProductsPanel(
         onReveal={() => list.load({ page: 1 })}
         onToggleAdd={() => setAdding(v => !v)}
         onSearch={list.search}
-        onReset={list.resetSearch}
+        onReset={liscommon.resetSearch}
       />
 
       {adding && (
@@ -133,14 +133,14 @@ export function ProductsPanel(
         />
       )}
 
-      {!list.revealed ? (
+      {!liscommon.revealed ? (
         <>
           <ProductTableSkeleton labels={labels} />
-          <p className="mt-2 text-center text-[10px] text-muted-foreground">{labels.revealHint}</p>
+          <p className="mt-2 text-center text-[10px] text-muted-foreground">{common.revealHint}</p>
         </>
       ) : list.products.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-xs text-muted-foreground">
-          {list.applied ? labels.nothingFound : labels.empty}
+          {list.applied ? labels.nothingFound : common.empty}
         </div>
       ) : (
         <>
@@ -159,7 +159,7 @@ export function ProductsPanel(
             total={list.total}
             page={list.page}
             pages={list.pages}
-            perPage={list.perPage}
+            perPage={liscommon.perPage}
             onPage={p => list.load({ page: p })}
             onSize={list.changeSize}
           />

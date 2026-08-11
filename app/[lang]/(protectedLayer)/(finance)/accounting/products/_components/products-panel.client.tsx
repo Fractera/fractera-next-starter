@@ -18,15 +18,16 @@ import { ProductsPager } from "@/app/[lang]/(protectedLayer)/_components/product
 import { ProductTableSkeleton } from "@/app/[lang]/(protectedLayer)/_components/products/product-table-skeleton"
 import { localizeProduct } from "@/lib/products/localize"
 import { ProductRow } from "./product-row.client"
+import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { AccountingProductsUi } from "../_data/ui.i18n"
 
 export function ProductsPanel(
-  { lang, currency, labels }: { lang: string; currency: string; labels: AccountingProductsUi },
+  { lang, currency, labels, common }: { lang: string; currency: string; labels: AccountingProductsUi; common: ProductListUi },
 ) {
   const {
     revealed, loading, products, page, pages, total, perPage,
     query, setQuery, applied, load, search, resetSearch, changeSize,
-  } = useProductList(labels.failed)
+  } = useProductList(common.failed)
 
   // Сохранённая цена кладётся в уже загруженный список, а не перезапрашивается:
   // повторный запрос ради одного изменившегося числа сбрасывает позицию прокрутки
@@ -40,16 +41,16 @@ export function ProductsPanel(
     <>
       <ProductsToolbar
         labels={{
-          tableTitle: labels.tableTitle,
-          reveal: labels.reveal,
-          loading: labels.loading,
+          tableTitle: common.tableTitle,
+          reveal: common.reveal,
+          loading: common.loading,
           // Заводить товары бухгалтеру нечем — форма создания сюда не приходит,
           // и кнопка, которая её открывает, тоже.
           add: "",
           cancelAdd: "",
-          searchPlaceholder: labels.searchPlaceholder,
-          find: labels.find,
-          reset: labels.reset,
+          searchPlaceholder: common.searchPlaceholder,
+          find: common.find,
+          reset: common.reset,
         }}
         revealed={revealed}
         loading={loading}
@@ -66,9 +67,9 @@ export function ProductsPanel(
       {!revealed ? (
         <>
           <ProductTableSkeleton
-            labels={{ colPhoto: "", colName: labels.colName, colPrice: labels.colPrice, colId: labels.colId }}
+            labels={{ colPhoto: "", colName: common.colName, colPrice: common.colPrice, colId: common.colId }}
           />
-          <p className="mt-3 text-xs text-muted-foreground">{labels.revealHint}</p>
+          <p className="mt-3 text-xs text-muted-foreground">{common.revealHint}</p>
         </>
       ) : (
         <>
@@ -78,16 +79,16 @@ export function ProductsPanel(
 
           {rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-24 text-center">
-              <p className="text-sm text-muted-foreground">{labels.empty}</p>
+              <p className="text-sm text-muted-foreground">{common.empty}</p>
             </div>
           ) : (
             <div className="overflow-hidden rounded-xl border border-border">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colName}</th>
-                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colPrice}</th>
-                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colId}</th>
+                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{common.colName}</th>
+                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{common.colPrice}</th>
+                    <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{common.colId}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -99,7 +100,7 @@ export function ProductsPanel(
                       currency={currency}
                       labels={{
                         save: labels.save, cancel: labels.cancel,
-                        saved: labels.saved, failed: labels.failed, invalidPrice: labels.invalidPrice,
+                        saved: labels.saved, failed: common.failed, invalidPrice: labels.invalidPrice,
                       }}
                       onSaved={(id, price) => setPatched(prev => ({ ...prev, [id]: price }))}
                     />
@@ -111,9 +112,9 @@ export function ProductsPanel(
 
           <ProductsPager
             labels={{
-              count: labels.count, perPage: labels.perPage,
-              prev: labels.prev, next: labels.next, pageOf: labels.pageOf,
-              first: labels.first, last: labels.last,
+              count: common.count, perPage: common.perPage,
+              prev: common.prev, next: common.next, pageOf: common.pageOf,
+              first: common.first, last: common.last,
             }}
             total={total}
             page={page}

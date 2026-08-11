@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { getAppConfig } from "@/config/app-config"
+import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
@@ -20,6 +21,8 @@ import { ProductsPanel } from "./products-panel.client"
 // Каркас списка тоже статический: строки грузит островок по кнопке.
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = productsUi(lang)
+  // Общие слова списка — один словарь на все четыре слоя.
+  const common = productListUi(lang)
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
   // текущего языка (/code/CLAUDE.md §4д).
   const errors = platformErrors(lang)
@@ -42,15 +45,15 @@ export default function ProductsEntry({ lang }: { lang: string }) {
           dialogUi={dialogUi}
           billingUrl={OPENAI_BILLING_URL}
           labels={{
-            reveal: t.reveal, revealHint: t.revealHint, loading: t.loading,
-            tableTitle: t.tableTitle, empty: t.empty, count: t.count,
+            reveal: common.reveal, revealHint: common.revealHint, loading: common.loading,
+            tableTitle: common.tableTitle, empty: common.empty, count: common.count,
             add: t.add, cancelAdd: t.cancelAdd, newProduct: t.newProduct,
             name: t.name, price: t.price, uploadPhoto: t.uploadPhoto, save: t.save,
-            colPhoto: t.colPhoto, colName: t.colName, colPrice: t.colPrice, colId: t.colId,
-            created: t.created, deleted: t.deleted, failed: t.failed,
-            searchPlaceholder: t.searchPlaceholder, find: t.find, reset: t.reset, nothingFound: t.nothingFound,
-            perPage: t.perPage, prev: t.prev, next: t.next, pageOf: t.pageOf,
-            first: t.first, last: t.last, descriptionField: t.descriptionField,
+            colPhoto: common.colPhoto, colName: common.colName, colPrice: common.colPrice, colId: common.colId,
+            created: t.created, deleted: t.deleted, failed: common.failed,
+            searchPlaceholder: common.searchPlaceholder, find: common.find, reset: common.reset, nothingFound: t.nothingFound,
+            perPage: common.perPage, prev: common.prev, next: common.next, pageOf: common.pageOf,
+            first: common.first, last: common.last, descriptionField: t.descriptionField,
           }}
         />
 

@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { prerenderSlugs } from "@/lib/catalogue"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../../_data/ui.i18n"
 import { ProductCard } from "./product-card.client"
 
@@ -28,6 +29,8 @@ export async function generateStaticParams() {
 
 export default function ProductEntry({ lang, productId }: { lang: string; productId: string }) {
   const t = productsUi(lang)
+  // Общие слова списка — один словарь на все четыре слоя.
+  const common = productListUi(lang)
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
   // текущего языка (/code/CLAUDE.md §4д).
   const errors = platformErrors(lang)
@@ -54,9 +57,9 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
             dialogUi={dialogUi}
             billingUrl={OPENAI_BILLING_URL}
             labels={{
-              name: t.name, price: t.price, colId: t.colId,
+              name: t.name, price: t.price, colId: common.colId,
               notFoundTitle: t.notFoundTitle, notFoundBody: t.notFoundBody,
-              failed: t.failed, back: t.back,
+              failed: common.failed, back: t.back,
               edit: t.edit, saveField: t.saveField, cancelEdit: t.cancelEdit,
               fieldSaved: t.fieldSaved, descriptionField: t.descriptionField,
               translations: t.translations,

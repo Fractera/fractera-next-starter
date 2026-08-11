@@ -8,14 +8,14 @@ import type { RouteMeta } from "@/lib/architecture/route-meta"
 const meta: RouteMeta = {
   // — Identity & lifecycle —
   kind: "page",
-  path: "/[lang]/dashboard",
-  filePath: "app/[lang]/(protectedLayer)/(account)/dashboard/page.tsx",
+  path: "/[lang]/products",
+  filePath: "app/[lang]/(protectedLayer)/(staff)/products/page.tsx",
   status: "live",
   todo: [], // built — no pending build tasks
 
   // — Access control —
   visibility: "private",
-  roles: ["user", "buyer", "vip_user", "subscriber_lite", "subscriber_standard", "subscriber_max", "architect"],
+  roles: ["manager", "senior_manager", "support_manager", "delivery_manager", "content_editor", "admin", "architect"],
   unauthorizedRedirect: "/register?requireRole=user",
   enforcedBy: "component",
 
@@ -25,9 +25,9 @@ const meta: RouteMeta = {
   pathParams: [],
   dynamicParams: undefined,
   prerenderedParams: undefined,
-  routeGroup: "(protectedLayer)/(account)",
+  routeGroup: "(protectedLayer)/(staff)",
   parallelSlot: undefined,
-  parentLayout: "app/[lang]/(protectedLayer)/layout.tsx",
+  parentLayout: "app/[lang]/(protectedLayer)/(staff)/layout.tsx",
 
   // — Rendering & caching —
   // Static-first canon: private != dynamic. Auth is a client guard (enforcedBy: "component",
@@ -70,7 +70,7 @@ const meta: RouteMeta = {
   pageIsClient: false,
   entryIsClient: false,
   localComponents: [
-    "dashboard-app.client",
+    "products-app.client",
     "product-form.client",
     "product-table.client",
     "types",

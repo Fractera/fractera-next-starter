@@ -12,4 +12,11 @@ quietly shows one operator's view of everyone, or one customer the operator's vi
 **A separate "team" group would be this one under another name.** It was considered and folded in: two
 doors into the same rooms drift apart, and the second one is always the one that forgets a check.
 
-**Empty for now** — no page has been built here yet.
+**Lives here today:** `products` — catalogue management: create products, list and delete them,
+upload images.
+
+**Why it is here and not in `(account)`.** The page was called `dashboard` and sat in the visitor's own
+space. Both were wrong, and the code says why: `GET /api/project/default/products` returns EVERY row with
+no owner filter, while `POST` stamps `created_by`. A page that shows everyone's rows is a duty station,
+not a personal space. If the product decision changes to "each seller manages their own products", the
+move back is real work, not a rename: the GET must filter by the session first.

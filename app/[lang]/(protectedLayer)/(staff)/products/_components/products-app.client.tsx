@@ -15,7 +15,7 @@ const ENV_HINT = process.env.NODE_ENV === "development"
   ? " — Check REMOTE_DATA_URL and DATA_API_KEY in .env.local"
   : ""
 
-export function DashboardApp() {
+export function ProductsApp() {
   const [ready, setReady]               = useState(false)
   const [products, setProducts]         = useState<Product[]>([])
   const [adding, setAdding]             = useState(false)
@@ -107,9 +107,9 @@ export function DashboardApp() {
             <a href="/" className="text-xs text-muted-foreground hover:text-foreground font-mono transition-colors">
               ← back
             </a>
-            <h1 className="text-xl font-semibold mt-1 text-foreground">Dashboard</h1>
+            <h1 className="text-xl font-semibold mt-1 text-foreground">Product catalogue</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Product catalogue · DB + media upload test
+              Create products and add them to the catalogue · DB + media upload
             </p>
           </div>
           <button

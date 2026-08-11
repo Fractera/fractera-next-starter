@@ -15,4 +15,6 @@ when they sign up. Such a page is user-scoped by shape and belongs here, but its
 declare `roles: ['guest', 'user']` in `_meta.ts` and say so in the page's own comment. `guest` is not
 "nobody": it is somebody without an account yet.
 
-**Lives here today:** `dashboard` — the product catalogue demo (database + media upload).
+**Empty for now** — the catalogue lives in `(staff)`, because it is the business's data, not the
+visitor's own. A page belongs here the day it shows a person THEIR rows: their orders, their
+subscription, their uploads.

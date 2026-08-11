@@ -34,7 +34,10 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
             labels={{
               name: t.name, price: t.price, colId: t.colId,
               notFoundTitle: t.notFoundTitle, notFoundBody: t.notFoundBody,
-              failed: t.failed, loading: t.loading, back: t.back,
+              failed: t.failed, back: t.back,
+              edit: t.edit, saveField: t.saveField, cancelEdit: t.cancelEdit,
+              fieldSaved: t.fieldSaved, baseValue: t.baseValue, translation: t.translation,
+              descriptionField: t.descriptionField,
             }}
             backHref={`/${lang}/products`}
           />

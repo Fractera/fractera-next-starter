@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from "next/server"
+import { requireRoles } from "@/lib/auth/require-roles"
+import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
+import { openAiKey } from "@/lib/openai-key"
+
+// Перевод полей записи — дверь для диалога добавления переводов.
+//
+// 🔒 ОТДЕЛЬНАЯ ДВЕРЬ, А НЕ ВЫЗОВ ИЗ КОМПОНЕНТА. Ключ OpenAI не попадает в
+// браузер ни при каких обстоятельствах: всё, что уходит клиенту, читается любым
+// посетителем через вкладку разработчика.
+//
+// 🔒 МОДЕЛЬ ЗАШИТА ЗДЕСЬ, и это решение владельца: выбирать модель ради перевода
+// одного слова — работа вместо ценности. Меняется она в одном месте — этой
+// строке.
+//
+// Роль проверяется: перевод стоит денег ровно как расшифровка речи.
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+const MODEL = "gpt-5"
+const API = "https://api.openai.com/v1/chat/completions"
+
+type Body = {
+  /** Поля как есть: { name: "Apple", description: "…" }. */
+  texts?: Record<string, string>
+  /** Язык исходных значений. */
+  from?: string
+  /** Языки, на которые переводим. */
+  to?: string[]
+}
+
+export async function POST(req: NextRequest) {
+  const denied = await requireRoles(req, PROTECTED_GROUP_ROLES.staff)
+  if (denied) return denied
+
+  const key = openAiKey()
+  if (!key) return NextResponse.json({ error: "no-key" }, { status: 503 })
+
+  const body = (await req.json().catch(() => null)) as Body | null
+  const texts = body?.texts ?? {}
+  const from = body?.from ?? "en"
+  const to = (body?.to ?? []).filter(l => l && l !== from)
+  if (!Object.keys(texts).length || !to.length) {
+    return NextResponse.json({ error: "texts and to are required" }, { status: 400 })
+  }
+
+  // Один запрос на ВСЕ языки и ВСЕ поля. Запрос на каждую пару «поле × язык» —
+  // это десятки вызовов на одну запись: дороже, дольше и разваливается частично,
+  // оставляя половину переводов.
+  const prompt = [
+    `Translate the values of this JSON object from ${from} into each of these languages: ${to.join(", ")}.`,
+    `Return ONLY a JSON object shaped { "<lang>": { "<field>": "<translation>" } } with no commentary.`,
+    `Keep the meaning and the register of the original. Do not translate proper names, product codes or URLs.`,
+    `Source: ${JSON.stringify(texts)}`,
+  ].join("\n")
+
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      }),
+      signal: AbortSignal.timeout(120_000),
+    })
+    if (!res.ok) {
+      return NextResponse.json({ error: `translation failed (${res.status})` }, { status: 502 })
+    }
+    const data = await res.json()
+    const raw = data?.choices?.[0]?.message?.content ?? "{}"
+    const parsed = JSON.parse(raw) as Record<string, Record<string, string>>
+
+    // Отдаём только запрошенные языки и только запрошенные поля: модель иногда
+    // добавляет от себя, и лишний ключ уехал бы в базу как настоящий перевод.
+    const out: Record<string, Record<string, string>> = {}
+    for (const lang of to) {
+      const got = parsed[lang]
+      if (!got) continue
+      out[lang] = {}
+      for (const field of Object.keys(texts)) {
+        if (typeof got[field] === "string") out[lang][field] = got[field]
+      }
+    }
+    return NextResponse.json({ translations: out })
+  } catch {
+    return NextResponse.json({ error: "translation failed" }, { status: 502 })
+  }
+}

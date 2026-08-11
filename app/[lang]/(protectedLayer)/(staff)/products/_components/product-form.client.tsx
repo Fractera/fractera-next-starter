@@ -1,9 +1,10 @@
 "use client"
 
-import type { Dispatch, SetStateAction } from "react"
+import { useRef, type Dispatch, type SetStateAction } from "react"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FileUploadField } from "@/services/upload/file-upload-field.client"
+import VoiceInput from "@/_tools/voice-input/client/voice-input.client"
 import type { UploadedFile } from "@/services/upload/upload.service"
 
 type Props = {
@@ -12,10 +13,12 @@ type Props = {
   saving: boolean
   onSave: () => void
   onUpload: (f: UploadedFile | null) => void
+  lang: string
   labels: { newProduct: string; name: string; price: string; uploadPhoto: string; save: string }
 }
 
-export function ProductForm({ form, setForm, saving, onSave, onUpload, labels }: Props) {
+export function ProductForm({ form, setForm, saving, onSave, onUpload, lang, labels }: Props) {
+  const nameRef = useRef<HTMLInputElement>(null)
   return (
     <div className="mb-6 p-4 rounded-xl border border-border bg-muted/30">
       <p className="text-xs font-medium text-foreground mb-3">{labels.newProduct}</p>
@@ -23,6 +26,7 @@ export function ProductForm({ form, setForm, saving, onSave, onUpload, labels }:
         <input
           type="text"
           placeholder={labels.name}
+          ref={nameRef}
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           onKeyDown={e => e.key === "Enter" && onSave()}
@@ -44,6 +48,18 @@ export function ProductForm({ form, setForm, saving, onSave, onUpload, labels }:
           onUpload={f => onUpload(f)}
         />
       </div>
+      {/* Голос — под полями, слева: он ПИШЕТ в название, а не решает, что
+          делать дальше. Та же раскладка, что у Quiz в панели. */}
+      <div className="mb-3 flex items-center">
+        <VoiceInput
+          targetRef={nameRef}
+          value={form.name}
+          onChange={v => setForm(f => ({ ...f, name: v }))}
+          lang={lang}
+          apiUrl="/api/transcribe"
+        />
+      </div>
+
       <div className="flex justify-end">
         <button
           onClick={onSave}

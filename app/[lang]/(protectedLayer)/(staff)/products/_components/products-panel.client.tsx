@@ -23,6 +23,7 @@ import { ProductTable } from "./product-table.client"
 import { ProductTableSkeleton } from "./product-table-skeleton"
 import { ProductsToolbar } from "./products-toolbar.client"
 import { ProductsPager } from "./products-pager.client"
+import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 
 export type ProductsLabels = {
   reveal: string; revealHint: string; loading: string
@@ -34,6 +35,7 @@ export type ProductsLabels = {
   searchPlaceholder: string; find: string; reset: string; nothingFound: string
   perPage: string; prev: string; next: string; pageOf: string
   first: string; last: string
+  descriptionField: string
 }
 
 export function ProductsPanel({ lang, labels }: { lang: string; labels: ProductsLabels }) {
@@ -43,6 +45,9 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  // Созданная запись, ждущая переводов. Диалог открывается ПОСЛЕ создания, а не
+  // вместо него: продукт уже существует, и закрытие диалога ничего не теряет.
+  const [justCreated, setJustCreated] = useState<{ id: string; name: string } | null>(null)
 
   async function add() {
     if (!form.name.trim() || !form.price) return
@@ -59,7 +64,10 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
         }),
       })
       if (!res.ok) throw new Error(String(res.status))
+      const data = await res.json().catch(() => ({}))
       toast.success(labels.created)
+      const created = data?.product
+      if (created?.id) setJustCreated({ id: created.id, name: created.name })
       setForm({ name: "", price: "" })
       setUploaded(null)
       setAdding(false)
@@ -68,6 +76,30 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
       toast.error(labels.failed)
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Переводы новой записи ложатся тем же PATCH, что и правка с карточки: один
+  // способ записи на весь проект, а не второй ради формы создания.
+  async function saveTranslations(drafts: Drafts): Promise<boolean> {
+    if (!justCreated) return false
+    try {
+      for (const [lng, values] of Object.entries(drafts)) {
+        for (const [field, value] of Object.entries(values)) {
+          if (!value.trim()) continue
+          await fetch(projectApi(`/products/${justCreated.id}`), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ i18n: { field, lang: lng, value } }),
+          })
+        }
+      }
+      setJustCreated(null)
+      await list.load()
+      return true
+    } catch {
+      toast.error(labels.failed)
+      return false
     }
   }
 
@@ -106,7 +138,7 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
       {adding && (
         <ProductForm
           form={form} setForm={setForm} saving={saving}
-          onSave={add} onUpload={setUploaded} labels={labels}
+          onSave={add} onUpload={setUploaded} lang={lang} labels={labels}
         />
       )}
 
@@ -132,6 +164,15 @@ export function ProductsPanel({ lang, labels }: { lang: string; labels: Products
             onSize={list.changeSize}
           />
         </>
+      )}
+      {justCreated && (
+        <TranslationsDialog
+          open
+          lang={lang}
+          fields={[{ key: "name", label: labels.name, value: justCreated.name }]}
+          onSkip={() => setJustCreated(null)}
+          onSave={saveTranslations}
+        />
       )}
     </section>
   )

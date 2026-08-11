@@ -20,6 +20,10 @@ export type ProductState =
   | { kind: "failed" }
 
 export function useProduct(productId: string, lang: string, labels: { savedLabel: string; failedLabel: string }) {
+  // Английский — базовый язык строки: на нём правится колонка, а не ключ внутри
+  // переводов. Иначе английское значение легло бы в i18n.en и разошлось бы с
+  // тем, что лежит в самой колонке.
+  const isBaseLang = lang === "en"
   const [state, setState] = useState<ProductState>({ kind: "loading" })
 
   const load = useCallback(async () => {
@@ -62,18 +66,41 @@ export function useProduct(productId: string, lang: string, labels: { savedLabel
     }
   }, [productId, load, labels.savedLabel, labels.failedLabel])
 
-  /** Базовое значение поля — своя колонка в строке. */
-  const saveBase = useCallback(
-    (field: "name" | "price" | "description", value: string) =>
-      patch({ [field]: field === "price" ? Number(value) : value }),
-    [patch],
+  // 🔒 КУДА ЛОЖИТСЯ ПРАВКА. Язык страницы базовый — в саму колонку; любой
+  // другой — в перевод ЭТОГО языка. Человек правит то, что видит: на /ru он
+  // видит русское название и меняет русское, а не английское молча.
+  //
+  // Цена — не текст и переводу не подлежит: число одинаково на всех языках.
+  const saveField = useCallback(
+    (field: "name" | "price" | "description", value: string) => {
+      if (field === "price") return patch({ price: Number(value) })
+      if (isBaseLang) return patch({ [field]: value })
+      return patch({ i18n: { field, lang, value } })
+    },
+    [patch, isBaseLang, lang],
   )
 
-  /** Перевод поля — ключ внутри колонки `i18n`; другие языки не трогаются. */
-  const saveTranslation = useCallback(
-    (field: "name" | "description", value: string) => patch({ i18n: { field, lang, value } }),
-    [patch, lang],
-  )
+  /** Пачка переводов из диалога: по ключу на язык, тем же маршрутом. */
+  const saveDrafts = useCallback(async (drafts: Record<string, Record<string, string>>) => {
+    try {
+      for (const [lng, values] of Object.entries(drafts)) {
+        for (const [field, value] of Object.entries(values)) {
+          if (!value.trim()) continue
+          await fetch(projectApi(`/products/${productId}`), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ i18n: { field, lang: lng, value } }),
+          })
+        }
+      }
+      toast.success(labels.savedLabel)
+      await load()
+      return true
+    } catch {
+      toast.error(labels.failedLabel)
+      return false
+    }
+  }, [productId, load, labels.savedLabel, labels.failedLabel])
 
-  return { state, saveBase, saveTranslation }
+  return { state, saveField, saveDrafts }
 }

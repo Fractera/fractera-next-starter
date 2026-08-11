@@ -38,7 +38,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
             created: t.created, deleted: t.deleted, failed: t.failed,
             searchPlaceholder: t.searchPlaceholder, find: t.find, reset: t.reset, nothingFound: t.nothingFound,
             perPage: t.perPage, prev: t.prev, next: t.next, pageOf: t.pageOf,
-            first: t.first, last: t.last,
+            first: t.first, last: t.last, descriptionField: t.descriptionField,
           }}
         />
 

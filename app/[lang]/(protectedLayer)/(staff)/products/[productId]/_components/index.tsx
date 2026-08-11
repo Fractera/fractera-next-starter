@@ -36,8 +36,8 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
               notFoundTitle: t.notFoundTitle, notFoundBody: t.notFoundBody,
               failed: t.failed, back: t.back,
               edit: t.edit, saveField: t.saveField, cancelEdit: t.cancelEdit,
-              fieldSaved: t.fieldSaved, baseValue: t.baseValue, translation: t.translation,
-              descriptionField: t.descriptionField,
+              fieldSaved: t.fieldSaved, descriptionField: t.descriptionField,
+              translations: t.translations,
             }}
             backHref={`/${lang}/products`}
           />

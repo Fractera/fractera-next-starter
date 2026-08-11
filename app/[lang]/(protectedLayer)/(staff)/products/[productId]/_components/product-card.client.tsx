@@ -1,24 +1,34 @@
 "use client"
 
-// Динамический контейнер карточки товара — и место, где товар правят.
+// Динамический контейнер карточки товара.
 //
-// 🔒 ГДЕ ГРАНИЦА ПРАВИЛА «ЗАКРЫТО ПО УМОЛЧАНИЮ». Кнопки «Показать» здесь нет
-// намеренно: человек пришёл ИМЕННО за этим товаром. Правило защищает от дорогих
-// выборок, которых никто не просил, а не от единственного запроса, ради
-// которого страницу открыли. Что правило требует безусловно — каркас готов до
-// данных, место данных занимает скелетон — соблюдено.
+// 🔒 КАРТОЧКА ГОВОРИТ НА ЯЗЫКЕ СВОЕЙ СТРАНИЦЫ. Перечня языков здесь нет: на
+// `/ru` человек видит русское и правит русское. Пары «базовое / перевод» на
+// одной странице заставляли его каждый раз решать, какое из двух полей он сейчас
+// меняет, — и это была моя ошибка, а не свойство задачи.
 //
-// 🔒 ВЁРСТКА ВЗЯТА У СТАТЬИ, А НЕ ЕЁ КОД. Переиспользована ФОРМА: изображение
-// фигурой с подписью, крупный заголовок, врезка. Сам `StandardContentPage` не
-// подключён — он несёт чёрную тему витрины и внутри приложения смотрелся бы
-// чужим. Переиспользуют то, что подходит, а не всё, что есть.
+// Куда пишется правка: язык страницы базовый (английский) — в саму колонку;
+// любой другой — в перевод ЭТОГО языка. Человек правит то, что видит, и не
+// ломает чужой язык молча.
 //
-// ПРАВКА — НА МЕСТЕ И ПО ОДНОМУ ПОЛЮ. Базовое значение и перевод разведены
-// намеренно: правка русского названия не должна трогать английское, и человек
-// должен видеть, какое из двух он меняет.
+// Работа с остальными языками — кнопкой «Переводы», тем же диалогом, что и при
+// создании. Один инструмент на весь проект, а не второй для карточки.
+//
+// 🔒 ГДЕ ГРАНИЦА ПРАВИЛА «ЗАКРЫТО ПО УМОЛЧАНИЮ». Кнопки «Показать» нет: человек
+// пришёл ИМЕННО за этим товаром. Правило защищает от дорогих выборок, которых
+// никто не просил, а не от запроса, ради которого страницу открыли. Что правило
+// требует безусловно — каркас готов до данных, место данных занимает скелетон.
+//
+// Вёрстка взята у статьи (изображение фигурой с подписью, крупный заголовок,
+// врезка), но не её код: `StandardContentPage` несёт чёрную тему витрины и
+// внутри приложения смотрелся бы чужим.
 
+import { useState } from "react"
 import Link from "next/link"
+import { Languages } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 import { useProduct } from "../_lib/use-product"
 import { EditableField } from "./editable-field.client"
 
@@ -27,17 +37,18 @@ export type CardLabels = {
   notFoundTitle: string; notFoundBody: string
   failed: string; back: string
   edit: string; saveField: string; cancelEdit: string; fieldSaved: string
-  baseValue: string; translation: string; descriptionField: string
+  descriptionField: string; translations: string
 }
 
 export function ProductCard(
   { productId, lang, labels, backHref }:
   { productId: string; lang: string; labels: CardLabels; backHref: string },
 ) {
-  const { state, saveBase, saveTranslation } = useProduct(productId, lang, {
+  const { state, saveField, saveDrafts } = useProduct(productId, lang, {
     savedLabel: labels.fieldSaved,
     failedLabel: labels.failed,
   })
+  const [translating, setTranslating] = useState(false)
   const editLabels = {
     edit: labels.edit, save: labels.saveField,
     cancel: labels.cancelEdit, saved: labels.fieldSaved, failed: labels.failed,
@@ -70,11 +81,12 @@ export function ProductCard(
   }
 
   const p = state.product
-  const raw = state.raw
-  // Английский — базовый язык строки: на нём правится колонка, а не ключ внутри
-  // переводов. Иначе английское название легло бы в i18n.en и разошлось бы с
-  // тем, что лежит в самой колонке.
-  const isBase = lang === "en"
+
+  async function commitTranslations(drafts: Drafts): Promise<boolean> {
+    const ok = await saveDrafts(drafts)
+    if (ok) setTranslating(false)
+    return ok
+  }
 
   return (
     <article>
@@ -88,49 +100,39 @@ export function ProductCard(
         </figure>
       )}
 
-      <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-xl">{p.localizedName}</h2>
-      <p className="mt-1 text-lg font-medium text-foreground">
-        {new Intl.NumberFormat(lang, { style: "decimal", minimumFractionDigits: 2 }).format(p.price)}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-xl">{p.localizedName}</h2>
+          <p className="mt-1 text-lg font-medium text-foreground">
+            {new Intl.NumberFormat(lang, { style: "decimal", minimumFractionDigits: 2 }).format(p.price)}
+          </p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => setTranslating(true)}>
+          <Languages size={12} />{labels.translations}
+        </Button>
+      </div>
 
       <div className="mt-6 space-y-5 rounded-xl border border-border p-4">
         <EditableField
-          label={`${labels.name} · ${labels.baseValue}`}
-          value={raw.name}
+          label={labels.name}
+          value={p.localizedName}
           labels={editLabels}
-          onSave={v => saveBase("name", v)}
+          onSave={v => saveField("name", v)}
         />
-        {!isBase && (
-          <EditableField
-            label={`${labels.name} · ${labels.translation}`}
-            value={p.localizedName === raw.name ? "" : p.localizedName}
-            labels={editLabels}
-            onSave={v => saveTranslation("name", v)}
-          />
-        )}
         <EditableField
           label={labels.price}
-          value={String(raw.price)}
+          value={String(p.price)}
           numeric
           labels={editLabels}
-          onSave={v => saveBase("price", v)}
+          onSave={v => saveField("price", v)}
         />
         <EditableField
-          label={`${labels.descriptionField} · ${labels.baseValue}`}
-          value={raw.description ?? ""}
+          label={labels.descriptionField}
+          value={p.localizedDescription ?? ""}
           multiline
           labels={editLabels}
-          onSave={v => saveBase("description", v)}
+          onSave={v => saveField("description", v)}
         />
-        {!isBase && (
-          <EditableField
-            label={`${labels.descriptionField} · ${labels.translation}`}
-            value={p.localizedDescription === raw.description ? "" : (p.localizedDescription ?? "")}
-            multiline
-            labels={editLabels}
-            onSave={v => saveTranslation("description", v)}
-          />
-        )}
         <div className="flex gap-2 border-t border-border pt-3 text-xs">
           <span className="w-16 shrink-0 text-muted-foreground">{labels.colId}</span>
           <span className="truncate font-mono text-muted-foreground">{p.id}</span>
@@ -140,6 +142,17 @@ export function ProductCard(
       <Link href={backHref} className="mt-6 inline-block text-xs text-muted-foreground underline hover:text-foreground">
         ← {labels.back}
       </Link>
+
+      <TranslationsDialog
+        open={translating}
+        lang={lang}
+        fields={[
+          { key: "name", label: labels.name, value: p.localizedName },
+          { key: "description", label: labels.descriptionField, value: p.localizedDescription ?? "", multiline: true },
+        ]}
+        onSkip={() => setTranslating(false)}
+        onSave={commitTranslations}
+      />
     </article>
   )
 }

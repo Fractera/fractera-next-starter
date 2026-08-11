@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { AccountDrawer } from "@/components/menu/account/account-drawer.client";
+import { AccountDrawer, type DrawerLink } from "@/components/menu/account/account-drawer.client";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
 
@@ -15,10 +15,12 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // the entry point too. UI standard: shadcn Button/buttonVariants + lucide icons.
 type Me = { userId?: string; email?: string; roles?: string[] } | null;
 
-export function AccountButton({ lang, side, labels, appName, appDescription }: {
+export function AccountButton({ lang, side, labels, links, appName, appDescription }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
+  /** Рабочие разделы ящика: состав приходит с сервера, где известны страницы проекта. */
+  links?: DrawerLink[];
   // Step 500 — workspace identity from APP-CONFIG, passed down to the drawer.
   appName?: string;
   appDescription?: string;
@@ -35,7 +37,7 @@ export function AccountButton({ lang, side, labels, appName, appDescription }: {
   }, []);
 
   if (me && me.userId) {
-    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} appName={appName} appDescription={appDescription} />;
+    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} appName={appName} appDescription={appDescription} />;
   }
 
   return (

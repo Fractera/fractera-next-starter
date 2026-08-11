@@ -6,6 +6,7 @@ import { MobileMenu } from "@/components/menu/top/mobile-menu.client";
 import { AccountButton } from "@/components/menu/account/account-button.client";
 import { appShellAuthSide } from "@/components/menu/account/account-config";
 import { accountLabels } from "@/components/menu/account/account-menu.i18n";
+import { accountLinks } from "@/lib/menu/account-links";
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
@@ -60,7 +61,7 @@ export async function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} appName={cfg.name || cfg.short_name || ""} appDescription={cfg.description || ""} />}
+          {authSide && <AccountButton lang={lang} side={authSide} labels={accountLabels(lang)} links={accountLinks(lang)} appName={cfg.name || cfg.short_name || ""} appDescription={cfg.description || ""} />}
           {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
               the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}

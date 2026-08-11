@@ -19,12 +19,27 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // Owns its OWN open state — DrawerProvider is structurally two-sided (left/right) and must not
 // carry a third drawer. UI standard: shadcn Sheet (Radix) + lucide; trigger = shadcn Button
 // (Base UI, no asChild) driving controlled state.
-export function AccountDrawer({ lang, side, labels, email, roles, appName, appDescription }: {
+// 🔒 ПУНКТЫ ПРИХОДЯТ СПИСКОМ, А НЕ ЗАШИТЫ ЗДЕСЬ. Ящик — переиспользуемая часть
+// продукта, живущая на всех 82 языках; страницы проекта у каждого клиента свои.
+// Впиши сюда «Управление товарами» — и слово либо соврёт про 82 языка, либо
+// потребует перевода на 82 ради страницы, которой в соседнем проекте нет.
+// Поэтому ящик знает форму пункта (адрес, подпись, роли), а чем его наполнить,
+// решает приложение — там же, где живут слова этой страницы.
+export type DrawerLink = {
+  href: string;
+  label: string;
+  /** Кому пункт виден. Пусто — виден всем вошедшим. */
+  roles?: readonly string[];
+};
+
+export function AccountDrawer({ lang, side, labels, email, roles, links, appName, appDescription }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
   email?: string;
   roles?: string[];
+  /** Пункты рабочих разделов — их состав задаёт приложение. */
+  links?: DrawerLink[];
   // Step 500 — identity of this workspace, read from APP-CONFIG by the server
   // component that mounts the drawer. The same pair the home page renders.
   appName?: string;
@@ -32,6 +47,9 @@ export function AccountDrawer({ lang, side, labels, email, roles, appName, appDe
 }) {
   const [open, setOpen] = useState(false);
   const roleList = roles && roles.length ? roles : [];
+  const visible = (links ?? []).filter(
+    (l) => !l.roles?.length || l.roles.some((r) => roleList.includes(r)),
+  );
 
   return (
     <>
@@ -55,6 +73,25 @@ export function AccountDrawer({ lang, side, labels, email, roles, appName, appDe
             {appDescription ? (
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{appDescription}</p>
             ) : null}
+
+            {/* Рабочие разделы. Роль сверяется ЗДЕСЬ только ради того, чтобы не
+                показывать заведомо закрытую дверь: настоящая проверка стоит на
+                самой странице (layout подгруппы). Спрятанный пункт — вежливость,
+                а не защита; порядок проверок разный, и путать их нельзя. */}
+            {visible.length > 0 && (
+              <nav className="mt-5 flex flex-col gap-1 border-t border-border pt-4">
+                {visible.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
+            )}
           </div>
 
           {/* Bottom — fixed: identity row on top, sign out below; both left-aligned. */}

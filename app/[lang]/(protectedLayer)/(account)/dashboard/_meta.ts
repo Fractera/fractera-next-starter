@@ -8,26 +8,26 @@ import type { RouteMeta } from "@/lib/architecture/route-meta"
 const meta: RouteMeta = {
   // — Identity & lifecycle —
   kind: "page",
-  path: "/dashboard",
-  filePath: "app/app/dashboard/page.tsx",
+  path: "/[lang]/dashboard",
+  filePath: "app/[lang]/(protectedLayer)/(account)/dashboard/page.tsx",
   status: "live",
   todo: [], // built — no pending build tasks
 
   // — Access control —
   visibility: "private",
-  roles: ["user", "architect"],
+  roles: ["user", "buyer", "vip_user", "subscriber_lite", "subscriber_standard", "subscriber_max", "architect"],
   unauthorizedRedirect: "/register?requireRole=user",
   enforcedBy: "component",
 
   // — Routing shape —
-  isDynamicRoute: false,
-  segmentParams: [],
+  isDynamicRoute: true,
+  segmentParams: ["lang"],
   pathParams: [],
   dynamicParams: undefined,
   prerenderedParams: undefined,
-  routeGroup: undefined,
+  routeGroup: "(protectedLayer)/(account)",
   parallelSlot: undefined,
-  parentLayout: "app/app/layout.tsx",
+  parentLayout: "app/[lang]/(protectedLayer)/layout.tsx",
 
   // — Rendering & caching —
   // Static-first canon: private != dynamic. Auth is a client guard (enforcedBy: "component",
@@ -57,7 +57,7 @@ const meta: RouteMeta = {
 
   // — i18n —
   i18n: {
-    localized: false,
+    localized: true,
     locales: [],
     defaultLocale: undefined,
   },

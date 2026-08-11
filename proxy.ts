@@ -46,13 +46,18 @@ const ADMIN_API_PREFIXES: string[] = [];
 // the Dashboard and per-project workspaces remain rooted in the slot. Only
 // user-facing CONTENT (the home page and pages the user builds) goes under [lang].
 // Keep in sync with the app/(service) folders.
-const SERVICE_ROOTS = new Set([
-  "dashboard",
-  "project",
-  // NOTE: the "projects" layer (§3.12) LEFT this slot in step 197 — it now runs in its own
-  // process fractera-projects (:3003 / projects.<apex>), so /projects is no longer served here
-  // and is intentionally absent from this set. The account drawer links out to that service.
-]);
+// 🪦 EMPTY SINCE 2026-08-11 — and the emptiness is the decision.
+//
+// `dashboard` moved into the protected layer under `[lang]`, so it takes a
+// language prefix like every other page: a signed-in person reads their own
+// language, and there is no reason their dashboard should be the one screen in
+// the product that is English-only. `project` had already stopped existing as a
+// page; the entry outlived it.
+//
+// Keep the mechanism: a root page that genuinely must never be prefixed (a
+// webhook landing, a health page) belongs here. Adding a normal page to this set
+// is how a surface silently loses its languages.
+const SERVICE_ROOTS = new Set<string>([]);
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60;

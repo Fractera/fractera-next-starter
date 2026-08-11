@@ -79,8 +79,8 @@ const meta: RouteMeta = {
 
   // — Segment boundaries —
   hasLoading: false,
-  hasError: false,
-  hasNotFound: false,
+  hasError: true,
+  hasNotFound: true,
   hasLayout: true,
 
   // — API —

@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
 import { PROTECTED_GROUP_ROLES, type ProtectedGroup } from "@/lib/roles";
+import { FLOW_COLOR } from "@/lib/flows";
 
 // Слой → ключ его заголовка в словаре. Отдельной таблицей, чтобы добавить пятый
 // слой можно было в двух местах (роли и словарь), а не в трёх.
@@ -103,7 +104,12 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
           <div className="flex-1 overflow-y-auto px-4 py-4">
             {sections.map((s) => (
               <section key={s.group} className="mb-5 last:mb-0">
-                <h3 className="px-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {/* Точка того же цвета, что и полоса потока на странице. Один
+                    источник цвета на оба места (`lib/flows.ts`): человек,
+                    увидевший зелёную ленту, обязан найти в ящике зелёную точку —
+                    иначе оба знака перестают что-либо значить. */}
+                <h3 className="flex items-center gap-2 px-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  <span aria-hidden className={`size-2 shrink-0 rounded-full ${FLOW_COLOR[s.group].dot}`} />
                   {s.title}
                 </h3>
                 {s.links.length > 0 ? (

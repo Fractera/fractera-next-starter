@@ -1,6 +1,8 @@
 import { AccessGate } from "@/components/auth/access-gate.client"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 import { accessGateUi } from "@/components/auth/access-gate.i18n"
+import { accountLabels } from "@/components/menu/account/account-menu.i18n"
+import { FlowRail } from "../_components/flow-rail.server"
 
 // Дверь подгруппы «admin». Форма одинакова у всех четырёх намеренно: увидев один
 // такой макет, агент понимает устройство слоя, даже если не открыл README.
@@ -18,6 +20,10 @@ export default async function Layout(
   const { lang } = await params
   return (
     <AccessGate roles={PROTECTED_GROUP_ROLES.admin} lang={lang} ui={accessGateUi(lang)}>
+      {/* Полоса потока: имя слоя берётся из того же словаря, что и заголовок
+          блока в ящике аккаунта (82 языка) — два места, называющие один слой
+          разными словами, хуже, чем ни одного. */}
+      <FlowRail group="admin" label={accountLabels(lang).groupAdmin} />
       {children}
     </AccessGate>
   )

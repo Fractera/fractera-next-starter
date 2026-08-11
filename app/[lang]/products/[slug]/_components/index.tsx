@@ -3,7 +3,10 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { buildAlternates } from "@/lib/seo/alternates"
+import { constructMetadata } from "@/lib/construct-metadata"
+import { buildProductSchema } from "@/lib/jsonld"
 import { brand } from "@/lib/brand"
+import { getAppConfig } from "@/config/app-config"
 import { productById, prerenderSlugs } from "@/lib/catalogue"
 import { localizeProduct } from "../../../(protectedLayer)/(staff)/manage/products/_lib/localize-product"
 import { catalogueUi } from "../../_data/ui.i18n"
@@ -30,6 +33,16 @@ export async function generateStaticParams() {
   return slugs.map(slug => ({ slug }))
 }
 
+// 🔒 МЕТА СТРОИТСЯ ОБЩИМ СБОРЩИКОМ, А НЕ ОБЪЕКТОМ РУКАМИ. Написанный вручную
+// объект накрывает только те поля, которые вспомнил автор, а остальные молча
+// достаются от макета — и карточка товара в Twitter/X показывала имя и описание
+// САЙТА вместо товара. `constructMetadata` заполняет весь набор из одного
+// источника: og, twitter, robots, иконки, `metadataBase`.
+//
+// Заголовок возвращается СТРОКОЙ поверх собранного объекта намеренно: сборщик
+// отдаёт `{ default, template }`, а шаблон применяется к потомкам, не к себе, —
+// вкладка потеряла бы имя сайта («Яблоко» вместо «Яблоко | Fractera»). Строка
+// же попадает под шаблон макета.
 export async function generateMetadata(
   { params }: { params: Promise<{ lang: string; slug: string }> },
 ): Promise<Metadata> {
@@ -37,11 +50,21 @@ export async function generateMetadata(
   const row = await productById(slug)
   if (!row) return {}
   const p = localizeProduct(row, lang)
-  return {
+
+  const meta = constructMetadata({
+    lang,
     title: p.localizedName,
     description: p.localizedDescription ?? undefined,
+    image: p.media_url ?? undefined,
+    pathname: `/${lang}/products/${slug}`,
+  })
+
+  return {
+    ...meta,
+    title: p.localizedName,
+    // hreflang сборщик не умеет — он даёт только canonical. Перевод товара живёт
+    // по тому же адресу с другим языком, и об этом надо сказать явно.
     alternates: buildAlternates(lang, `/products/${slug}`),
-    openGraph: p.media_url ? { images: [p.media_url] } : undefined,
   }
 }
 
@@ -52,24 +75,26 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
   const p = localizeProduct(row, lang)
   const t = catalogueUi(lang)
   const site = brand()
+  const currency = getAppConfig().commerce.currency
 
-  // Разметка товара для поисковика. Цена здесь ПУБЛИЧНАЯ — та же, что видит
-  // человек без входа. Цена роли (скидка VIP) появляется только после
-  // гидратации: показать поисковику одну цену, а посетителю другую — это
-  // маскировка, за неё наказывают.
+  // Разметка товара — ГОТОВЫМ сборщиком `buildProductSchema`, а не своим объектом.
+  // Свой был написан здесь первым и потерял `priceCurrency`: разметка с ценой без
+  // валюты отвергается поисковиком целиком, то есть карточка не появляется, хотя
+  // разметка на странице есть. Сборщик знает про это поле, и знал всё время.
+  //
+  // Цена ПУБЛИЧНАЯ — та же, что видит человек без входа. Цена роли (скидка VIP)
+  // появляется только после гидратации: показать поисковику одну цену, а
+  // посетителю другую — это маскировка, за неё наказывают.
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: p.localizedName,
-    ...(p.localizedDescription ? { description: p.localizedDescription } : {}),
-    ...(p.media_url ? { image: site.siteUrl ? `${site.siteUrl}${p.media_url}` : p.media_url } : {}),
-    sku: p.id,
-    offers: {
-      "@type": "Offer",
+    ...buildProductSchema({
+      name: p.localizedName,
+      description: p.localizedDescription ?? undefined,
       price: p.price,
-      availability: "https://schema.org/InStock",
-      ...(site.siteUrl ? { url: `${site.siteUrl}/${lang}/products/${p.id}` } : {}),
-    },
+      currency,
+      image: p.media_url ? (site.siteUrl ? `${site.siteUrl}${p.media_url}` : p.media_url) : undefined,
+      url: site.siteUrl ? `${site.siteUrl}/${lang}/products/${p.id}` : undefined,
+    }),
+    sku: p.id,
   }
 
   return (
@@ -91,7 +116,9 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
 
           <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-2xl">{p.localizedName}</h1>
           <p className="mt-2 text-xl font-medium text-foreground">
-            {new Intl.NumberFormat(lang, { style: "decimal", minimumFractionDigits: 2 }).format(p.price)}
+            {/* Валюта показывается человеку тем же значением, что уезжает в разметку:
+                цифра без валюты не значит ничего ни для того, ни для другого. */}
+            {new Intl.NumberFormat(lang, { style: "currency", currency }).format(p.price)}
           </p>
 
           {p.localizedDescription && (

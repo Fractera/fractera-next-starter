@@ -24,10 +24,12 @@ type Row = {
 }
 
 export function LoadMore(
-  { lang, total, loaded, labels }: {
+  { lang, total, loaded, currency, labels }: {
     lang: string
     total: number
     loaded: number
+    /** Валюта витрины — пропом, потому что настройки читаются на сервере. */
+    currency: string
     labels: { more: string; loading: string; failed: string; shown: string }
   },
 ) {
@@ -36,7 +38,7 @@ export function LoadMore(
   const [failed, setFailed] = useState(false)
 
   const shown = loaded + rows.length
-  const money = new Intl.NumberFormat(lang, { style: "decimal", minimumFractionDigits: 2 })
+  const money = new Intl.NumberFormat(lang, { style: "currency", currency })
 
   async function more() {
     setBusy(true)

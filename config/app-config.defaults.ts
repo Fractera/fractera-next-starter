@@ -134,6 +134,15 @@ export interface AppConfig {
     longitude?: string;
     hours?: string;
   };
+  // Валюта витрины — ОДНА на сайт, ISO-4217 (`USD`, `EUR`, `RUB`).
+  //
+  // 🔒 ПОЧЕМУ ЭТО НАСТРОЙКА, А НЕ КОНСТАНТА. Цена без валюты не значит ничего в
+  // обеих плоскостях сразу: человек видит «1.20» и не знает, чего именно, а
+  // разметка товара БЕЗ `priceCurrency` отвергается поисковиком целиком —
+  // карточка с ценой не появляется, хотя разметка вроде бы есть. Магазин в
+  // Варшаве и магазин в Далласе ставят здесь разное, поэтому значение живёт в
+  // настройках, а не в коде.
+  commerce: { currency: string };
   contentTypeDefaults: ContentTypeDefaults;
   // Menu shell (step 160). DEPRECATED (step 161): authButton no longer drives the header —
   // public auth is now the build-time key NEXT_PUBLIC_APP_SHELL_AUTH (null|left|right), read by
@@ -211,6 +220,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   analytics: { googleAnalyticsId: undefined, enabled: false },
   jsonLd: { website: true, organization: true, localBusiness: false },
   geo: {},
+  commerce: { currency: "USD" },
   contentTypeDefaults: { blog: "blog", product: "product", documentation: "documentation" },
   menus: { authButton: false },
 };

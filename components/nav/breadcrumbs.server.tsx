@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { metaForLang } from "@/config/app-config"
+import { metaForLang, getAppConfig } from "@/config/app-config"
+import { buildBreadcrumbSchema } from "@/lib/jsonld"
 
 // Хлебные крошки — на КАЖДОЙ странице, один компонент на весь проект.
 //
@@ -18,14 +19,30 @@ import { metaForLang } from "@/config/app-config"
 // она сжимается на узком экране, чтобы длинный заголовок не выдавил строку за
 // край и не породил горизонтальную прокрутку.
 
+// 🔒 РАЗМЕТКА `BreadcrumbList` ЖИВЁТ ЗДЕСЬ, А НЕ В СТРАНИЦАХ. Поисковик показывает
+// путь вместо голого адреса только когда видит эту разметку, и она обязана
+// совпадать с тем, что видит человек. Держать её в странице значит завести две
+// копии одного пути: нарисованную и объявленную, — они разойдутся на первой же
+// правке крошек, и разойдутся молча. Компонент один на проект, поэтому и
+// разметка появляется у КАЖДОЙ страницы с крошками сразу, включая будущие.
+//
+// Последняя крошка входит в разметку без `item`: это текущая страница, ссылка на
+// саму себя в цепочке не нужна.
+
 export type Crumb = { label: string; href?: string }
 
 export function Breadcrumbs({ lang, trail }: { lang: string; trail: Crumb[] }) {
   const home: Crumb = { label: metaForLang(lang).siteName, href: `/${lang}` }
   const items = [home, ...trail]
 
+  const schema = buildBreadcrumbSchema(
+    getAppConfig(),
+    items.filter(c => c.href).map(c => ({ name: c.label, url: c.href as string })),
+  )
+
   return (
     <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <ol className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
         {items.map((c, i) => {
           const last = i === items.length - 1

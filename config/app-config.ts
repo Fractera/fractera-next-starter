@@ -51,6 +51,17 @@ function normalize(cfg: AppConfig): AppConfig {
     cfg.seo.canonicalBase = cfg.url;
   }
   if (!cfg.lang) cfg.lang = DEFAULT_APP_CONFIG.lang;
+
+  // Валюта приходит из панели свободным текстом, а `Intl.NumberFormat` на коде не
+  // формата ISO-4217 БРОСАЕТ исключение — то есть владелец, напечатавший
+  // «доллары», уронил бы каждую страницу с ценой. Тот же случай, что и с адресом
+  // выше: непригодное значение заменяется рабочим, а не доводится до рендера.
+  const cur = cfg.commerce?.currency;
+  if (typeof cur !== "string" || !/^[A-Za-z]{3}$/.test(cur)) {
+    cfg.commerce = { ...cfg.commerce, currency: DEFAULT_APP_CONFIG.commerce.currency };
+  } else {
+    cfg.commerce = { ...cfg.commerce, currency: cur.toUpperCase() };
+  }
   return cfg;
 }
 

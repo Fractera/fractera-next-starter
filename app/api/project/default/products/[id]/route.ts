@@ -57,7 +57,7 @@ export async function PATCH(
 
   // Публичные страницы обязаны увидеть правку сразу, а не через час:
   // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
-  revalidateTag(CATALOGUE_TAG)
+  revalidateTag(CATALOGUE_TAG, { expire: 0 })
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   return NextResponse.json({ product })
 }
@@ -74,7 +74,7 @@ export async function GET(
   const { id } = await params
   // Публичные страницы обязаны увидеть правку сразу, а не через час:
   // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
-  revalidateTag(CATALOGUE_TAG)
+  revalidateTag(CATALOGUE_TAG, { expire: 0 })
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 })
   return NextResponse.json({ product })
@@ -92,6 +92,6 @@ export async function DELETE(
 
   const { id } = await params
   await db.prepare("DELETE FROM products WHERE id = ?").run(id)
-  revalidateTag(CATALOGUE_TAG)
+  revalidateTag(CATALOGUE_TAG, { expire: 0 })
   return NextResponse.json({ ok: true })
 }

@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
   // Публичные страницы обязаны увидеть новый товар сразу, а не через час:
   // сбрасываем метку каталога, и ISR пересоберёт их при следующем обращении.
-  revalidateTag(CATALOGUE_TAG)
+  revalidateTag(CATALOGUE_TAG, { expire: 0 })
 
   const product = await db.prepare("SELECT * FROM products WHERE id = ?").get(id)
   return NextResponse.json({ product }, { status: 201 })

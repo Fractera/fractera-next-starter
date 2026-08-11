@@ -25,6 +25,7 @@ import { ProductsToolbar } from "./products-toolbar.client"
 import { ProductsPager } from "./products-pager.client"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
+import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
 
 export type ProductsLabels = {
   reveal: string; revealHint: string; loading: string
@@ -40,8 +41,8 @@ export type ProductsLabels = {
 }
 
 export function ProductsPanel(
-  { lang, labels, errors, billingUrl }:
-  { lang: string; labels: ProductsLabels; errors: PlatformErrors; billingUrl: string },
+  { lang, labels, errors, dialogUi, billingUrl }:
+  { lang: string; labels: ProductsLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
 ) {
   const list = useProductList(labels.failed)
   const [adding, setAdding] = useState(false)
@@ -176,6 +177,7 @@ export function ProductsPanel(
           open
           lang={lang}
           fields={[{ key: "name", label: labels.name, value: justCreated.name }]}
+          ui={dialogUi}
           errors={errors}
           billingUrl={billingUrl}
           onSkip={() => setJustCreated(null)}

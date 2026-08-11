@@ -26,7 +26,7 @@ import { SINGLE_LANG_MODE } from "@/config/translations/translations.config"
 import { adminBase } from "@/lib/runtime-urls"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import { TranslationCell } from "./translation-cell.client"
-import { translationsUi } from "./translations-dialog.i18n"
+import type { TranslationsUi } from "./translations-dialog.i18n"
 import { useTranslations, type Drafts, type TranslatableField } from "./use-translations"
 
 export type { TranslatableField, Drafts }
@@ -37,11 +37,13 @@ export type { TranslatableField, Drafts }
 // что у панели (/code/CLAUDE.md §4д).
 
 export function TranslationsDialog(
-  { open, lang, fields, errors, billingUrl, onSave, onSkip }: {
+  { open, lang, fields, ui, errors, billingUrl, onSave, onSkip }: {
     open: boolean
     /** Язык интерфейса — он же язык исходных значений. */
     lang: string
     fields: TranslatableField[]
+    /** Слова диалога на языке страницы — резолвятся на сервере (§4д). */
+    ui: TranslationsUi
     /** Сообщения об отказах на языке страницы — из lib/i18n/platform-errors. */
     errors: PlatformErrors
     billingUrl: string
@@ -50,7 +52,7 @@ export function TranslationsDialog(
     onSkip: () => void
   },
 ) {
-  const t = translationsUi(lang)
+  const t = ui
   const [active, setActive] = useState(0)
   const [savingLang, setSavingLang] = useState<string | null>(null)
   const { targets, drafts, setCell, translate, busy, error, saved, markSaved } =

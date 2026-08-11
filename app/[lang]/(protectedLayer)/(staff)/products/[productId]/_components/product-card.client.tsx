@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
+import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { useProduct } from "../_lib/use-product"
 import { EditableField } from "./editable-field.client"
 
@@ -42,8 +43,8 @@ export type CardLabels = {
 }
 
 export function ProductCard(
-  { productId, lang, labels, errors, billingUrl, backHref }:
-  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; billingUrl: string; backHref: string },
+  { productId, lang, labels, errors, dialogUi, billingUrl, backHref }:
+  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string; backHref: string },
 ) {
   const { state, saveField, saveDrafts } = useProduct(productId, lang, {
     savedLabel: labels.fieldSaved,
@@ -149,6 +150,7 @@ export function ProductCard(
           { key: "name", label: labels.name, value: p.localizedName },
           { key: "description", label: labels.descriptionField, value: p.localizedDescription ?? "", multiline: true },
         ]}
+        ui={dialogUi}
         errors={errors}
         billingUrl={billingUrl}
         onSkip={() => setTranslating(false)}

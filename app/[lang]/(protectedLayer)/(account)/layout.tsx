@@ -1,5 +1,6 @@
 import { AccessGate } from "@/components/auth/access-gate.client"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
+import { accessGateUi } from "@/components/auth/access-gate.i18n"
 
 // Дверь подгруппы «account». Форма одинакова у всех четырёх намеренно: увидев один
 // такой макет, агент понимает устройство слоя, даже если не открыл README.
@@ -16,7 +17,7 @@ export default async function Layout(
 ) {
   const { lang } = await params
   return (
-    <AccessGate roles={PROTECTED_GROUP_ROLES.account} lang={lang}>
+    <AccessGate roles={PROTECTED_GROUP_ROLES.account} lang={lang} ui={accessGateUi(lang)}>
       {children}
     </AccessGate>
   )

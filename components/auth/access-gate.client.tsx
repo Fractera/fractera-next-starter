@@ -26,15 +26,16 @@ import { Loader2, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { registerRedirectUrl } from "@/lib/runtime-urls"
-import { accessGateUi } from "./access-gate.i18n"
+import type { AccessGateUi } from "./access-gate.i18n"
 
 type Verdict = "checking" | "allowed" | "denied"
 
 export function AccessGate(
-  { roles, lang, children }: { roles: readonly string[]; lang: string; children: React.ReactNode },
+  { roles, lang, ui, children }:
+  { roles: readonly string[]; lang: string; ui: AccessGateUi; children: React.ReactNode },
 ) {
   const router = useRouter()
-  const t = accessGateUi(lang)
+  const t = ui
   const [verdict, setVerdict] = useState<Verdict>("checking")
 
   useEffect(() => {
@@ -105,8 +106,8 @@ export function AccessGate(
 }
 
 /** Полоска ожидания для страниц, которым нужно показать, что проверка идёт. */
-export function AccessChecking({ lang }: { lang: string }) {
-  const t = accessGateUi(lang)
+export function AccessChecking({ ui }: { ui: AccessGateUi }) {
+  const t = ui
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <Loader2 size={12} className="animate-spin" /> {t.checking}

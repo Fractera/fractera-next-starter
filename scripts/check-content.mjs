@@ -16,7 +16,7 @@
 // (news, docs) needs no change here — the walk finds it.
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join, relative, sep } from "node:path"
 
 const ROOT = process.cwd()
 const APP = join(ROOT, "app", "[lang]")
@@ -138,8 +138,89 @@ function checkPost(dataDir) {
   }
 }
 
+// ── ВТОРОЙ ПРОХОД: АУДИТ АРХИТЕКТУРЫ ПОВЕРХНОСТИ ────────────────────────────
+//
+// Правила выше проверяют СОДЕРЖИМОЕ поста. Этот проход проверяет саму
+// поверхность: осталась ли она статической, тонкой и самодостаточной. Семь
+// требований, из которых пять проверяются здесь, а два — сборкой и живой
+// страницей (их команды названы в `CONTENT-ENGINE.md`, §10).
+//
+// Зачем в коде, а не в чек-листе: чек-лист исполняется, пока о нём помнят.
+// Первая же правка «на минуту» вернёт `force-dynamic` в вкладку, и об этом
+// узнают через месяц по просевшей выдаче.
+
+const DYNAMIC_MARKERS = /force-dynamic|export const dynamic\s*=|cookies\(\)|headers\(\)|auth\(\)/
+const ENGINE_FILES = ["post-body", "registry", "resolve", "create-content-post", "create-content-page"]
+
+function walkFiles(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name)
+    if (statSync(p).isDirectory()) walkFiles(p, out)
+    else if (/\.(ts|tsx)$/.test(p)) out.push(p)
+  }
+  return out
+}
+
+/** Вкладка = папка под app/[lang] с постами (её _data-папки нашлись выше). */
+function auditSurface(tabDir) {
+  const files = walkFiles(tabDir)
+
+  for (const f of files) {
+    const text = readFileSync(f, "utf8")
+    // 1 — никакой динамики
+    const dyn = text.match(DYNAMIC_MARKERS)
+    if (dyn) fail(f, "surface-dynamic", `${dyn[0]} — публичная поверхность обязана оставаться статической`)
+    // 2 — ни одного клиентского компонента
+    if (/^["']use client["']/m.test(text)) fail(f, "surface-client", `"use client" — клиентский компонент во вкладке ломает работу без JS`)
+  }
+
+  // 3 — тонкий маршрут: page.tsx только реэкспортирует вход
+  for (const f of files.filter(p => p.endsWith(`${sep}page.tsx`))) {
+    const body = readFileSync(f, "utf8").split("\n").filter(l => l.trim() && !l.trim().startsWith("//"))
+    if (body.length > 12) fail(f, "route-not-thin", `${body.length} строк — page.tsx обязан только реэкспортировать ./_components`)
+  }
+
+  // 4 — движок не продублирован во вкладке
+  for (const f of files.filter(p => p.includes(`${sep}_lib${sep}`))) {
+    const base = f.split(sep).pop().replace(/\.tsx?$/, "")
+    if (ENGINE_FILES.includes(base)) fail(f, "engine-duplicated", `${base} — это файл общего движка; вкладка обязана его переиспользовать, а не копировать`)
+  }
+
+  // 5 — состав папки поста и отсутствие хвостов вне её
+  for (const slug of readdirSync(tabDir)) {
+    const postDir = join(tabDir, slug)
+    if (!statSync(postDir).isDirectory() || slug.startsWith("_") || slug.startsWith("[")) continue
+    for (const need of ["page.tsx", join("_components", "index.tsx"), join("_data", "index.ts")]) {
+      if (!existsSync(join(postDir, need))) fail(postDir, "post-incomplete", `нет ${need}`)
+    }
+    // Ссылки на пост извне его папки допустимы ровно в одном файле — в
+    // сгенерированном списке. Всё прочее означает, что удаление папки оставит
+    // висящий импорт.
+    for (const f of files) {
+      if (f.startsWith(postDir + sep) || f.endsWith("_list.generated.ts")) continue
+      if (readFileSync(f, "utf8").includes(slug)) {
+        fail(f, "post-tail", `упоминает «${slug}» вне его папки — удаление поста оставит хвост`)
+      }
+    }
+  }
+}
+
 const dirs = [...new Set(findDataDirs(APP))]
 for (const d of dirs) checkPost(d)
+
+// Вкладка = папка, которой принадлежат посты. У ПОСТА данные лежат на два
+// уровня ниже вкладки (`blog/<slug>/_data`), у самой вкладки — на один
+// (`blog/_data`). Различаем по `meta.ts`: он есть только у поста.
+//
+// Область важна: считать вкладкой языковой корень `app/[lang]` значит
+// проверять этими правилами весь публичный слой — там законно живут и
+// клиентские островки, и толстая главная страница.
+const surfaces = [...new Set(
+  dirs
+    .map(d => (existsSync(join(d, "meta.ts")) ? join(d, "..", "..") : join(d, "..")))
+    .filter(p => existsSync(p) && p !== APP && p.startsWith(APP + sep)),
+)]
+for (const s of surfaces) auditSurface(s)
 
 if (problems.length === 0) {
   console.log(`===CONTENT_OK=== проверено папок данных: ${dirs.length}, нарушений нет`)

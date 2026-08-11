@@ -53,3 +53,27 @@ edit" is almost always this: the file the app reads is not the file you edited.
 
 *Add a case when you diagnose one — symptom, cause, fix, in that order. A case written from the symptom
 alone is worse than nothing: the next session will follow it into the wrong place.*
+
+## The two commands
+
+This document has two, and they are not variants of one another — one reads it, the other writes it. Both
+are listed in the instruction-set block of `CLAUDE.md`.
+
+**"Why" — find the real cause.** The owner is looking at something that behaves wrongly on the live
+server. Load this file, look for the symptom, and answer with the CAUSE, not with a guess dressed as one.
+
+- If the symptom is here, say which entry matches and what the fix is.
+- If it is not, say so plainly, diagnose it properly — and **write the new entry** once you know the
+  cause. Symptom, cause, fix, in that order.
+- Never answer this command from memory of a similar project. A cause that was true elsewhere is a
+  hypothesis here, and this document exists because hypotheses cost days.
+
+**"Difficulties may arise here" — record the expectation.** The owner is pointing at a place he expects
+to break. Write it down: what the place is, what he expects to go wrong, and what would confirm it. Mark
+it as *expected*, not observed — the difference matters, because an expectation that never materialised
+must be deletable without arguing about it.
+
+Then say back, in one line, what you recorded — the same restatement rule as everywhere else.
+
+**Near-variants count.** Both are spoken: *"why is this happening"*, *"почему"*, *"тут будут проблемы"*,
+*"здесь могут возникнуть трудности"* — one request each.

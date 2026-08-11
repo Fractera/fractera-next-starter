@@ -20,17 +20,17 @@ import { Input } from "@/components/ui/input"
 import { projectApi } from "@/lib/architecture/project-api"
 import type { LocalizedProduct } from "@/lib/products/localize"
 
-export type PriceRowLabels = {
+export type ProductRowLabels = {
   save: string; cancel: string
   saved: string; failed: string; invalidPrice: string
 }
 
-export function PriceRow(
+export function ProductRow(
   { product, lang, currency, labels, onSaved }: {
     product: LocalizedProduct
     lang: string
     currency: string
-    labels: PriceRowLabels
+    labels: ProductRowLabels
     onSaved: (id: string, price: number) => void
   },
 ) {

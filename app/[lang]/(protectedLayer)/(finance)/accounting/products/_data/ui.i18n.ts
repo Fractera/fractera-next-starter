@@ -1,11 +1,16 @@
-// Слова страницы цен.
+// Слова страницы товаров БУХГАЛТЕРИИ.
+//
+// Форма пути повторяет слой персонала: `<раздел>/products`. Сущность одна и та
+// же, страницы разные ролью, а не сущностью, — и это должно быть видно в адресе
+// прежде, чем откроешь файл: `/manage/products` ведёт менеджер, `/accounting/products`
+// ведёт бухгалтер.
 //
 // 🔒 ЯЗЫКОВ СТОЛЬКО, СКОЛЬКО ВКЛЮЧЕНО В ПАНЕЛИ (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`,
 // сейчас `en,ru`). Это строки ОДНОЙ страницы: они рождаются вместе с ней и умрут
 // вместе с ней. Не путать с заголовками слоёв прав в ящике аккаунта — те
 // переиспользуются в каждом проекте и потому написаны на всех 82 языках.
 
-export type PricesUi = {
+export type AccountingProductsUi = {
   title: string
   subtitle: string
   reveal: string
@@ -35,9 +40,9 @@ export type PricesUi = {
   last: string
 }
 
-const UI: Record<string, PricesUi> = {
+const UI: Record<string, AccountingProductsUi> = {
   en: {
-    title: "Prices",
+    title: "Products",
     subtitle: "The same catalogue, priced. Everything else about a product belongs to the staff layer.",
     reveal: "Show prices",
     revealHint: "Nothing is requested until you ask — the page opens instantly and costs the database nothing.",
@@ -65,7 +70,7 @@ const UI: Record<string, PricesUi> = {
     last: "Last",
   },
   ru: {
-    title: "Цены",
+    title: "Товары",
     subtitle: "Тот же каталог, вид со стороны денег. Всё остальное о товаре — слой персонала.",
     reveal: "Показать цены",
     revealHint: "Пока не попросите, ничего не запрашивается — страница открывается мгновенно и не стоит базе ничего.",
@@ -94,6 +99,6 @@ const UI: Record<string, PricesUi> = {
   },
 }
 
-export function pricesUi(lang: string): PricesUi {
+export function accountingProductsUi(lang: string): AccountingProductsUi {
   return UI[lang] ?? UI[lang.slice(0, 2)] ?? UI.en
 }

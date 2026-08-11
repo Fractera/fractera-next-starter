@@ -1,9 +1,9 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { getAppConfig } from "@/config/app-config"
-import { pricesUi } from "../_data/ui.i18n"
-import { PricesPanel } from "./prices-panel.client"
+import { accountingProductsUi } from "../_data/ui.i18n"
+import { ProductsPanel } from "./products-panel.client"
 
-// Вход страницы цен — СЕРВЕРНЫЙ компонент, и всё, что он рисует, статический
+// Вход страницы товаров бухгалтерии — СЕРВЕРНЫЙ компонент, и всё, что он рисует, статический
 // каркас: крошки, заголовок, объяснение. Ни одного запроса к базе, поэтому
 // страница предрендерена на каждый язык и открывается мгновенно.
 //
@@ -12,8 +12,8 @@ import { PricesPanel } from "./prices-panel.client"
 //
 // Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,
 // импортирующий словарь, увёз бы в браузер все его языки.
-export default function PricesEntry({ lang }: { lang: string }) {
-  const t = pricesUi(lang)
+export default function ProductsEntry({ lang }: { lang: string }) {
+  const t = accountingProductsUi(lang)
   const currency = getAppConfig().commerce.currency
 
   return (
@@ -26,7 +26,7 @@ export default function PricesEntry({ lang }: { lang: string }) {
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 
-        <PricesPanel lang={lang} currency={currency} labels={t} />
+        <ProductsPanel lang={lang} currency={currency} labels={t} />
       </div>
     </main>
   )

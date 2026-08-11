@@ -17,11 +17,11 @@ import { ProductsToolbar } from "@/app/[lang]/(protectedLayer)/_components/produ
 import { ProductsPager } from "@/app/[lang]/(protectedLayer)/_components/products/products-pager.client"
 import { ProductTableSkeleton } from "@/app/[lang]/(protectedLayer)/_components/products/product-table-skeleton"
 import { localizeProduct } from "@/lib/products/localize"
-import { PriceRow } from "./price-row.client"
-import type { PricesUi } from "../_data/ui.i18n"
+import { ProductRow } from "./product-row.client"
+import type { AccountingProductsUi } from "../_data/ui.i18n"
 
-export function PricesPanel(
-  { lang, currency, labels }: { lang: string; currency: string; labels: PricesUi },
+export function ProductsPanel(
+  { lang, currency, labels }: { lang: string; currency: string; labels: AccountingProductsUi },
 ) {
   const {
     revealed, loading, products, page, pages, total, perPage,
@@ -92,7 +92,7 @@ export function PricesPanel(
                 </thead>
                 <tbody>
                   {rows.map(p => (
-                    <PriceRow
+                    <ProductRow
                       key={p.id}
                       product={p}
                       lang={lang}

@@ -12,7 +12,7 @@ item (`/[id]`), and never a folder per user — see `CONTENT-ENGINE.md` §2.
 **Boundary case — the guest with an identity.** On a page that opts into guest registration, an
 unregistered visitor is issued a permanent `user.id`: their work persists and attaches to the account
 when they sign up. Such a page is user-scoped by shape and belongs here, but its gate is weaker —
-declare `roles: ['guest', 'user']` in `_meta.ts` and say so in the page's own comment. `guest` is not
+let the subgroup's `layout.tsx` admit `guest` alongside `user`, and say so in the page's own comment. `guest` is not
 "nobody": it is somebody without an account yet.
 
 **Empty for now** — the catalogue lives in `(staff)`, because it is the business's data, not the

@@ -58,6 +58,39 @@ export const productById = unstable_cache(
   { revalidate: 3600, tags: [CATALOGUE_TAG] },
 )
 
+// ── Карта сайта: сколько файлов и какого размера ────────────────────────────
+//
+// Живёт ЗДЕСЬ, а не в самой карте, потому что потребителей у этого счёта двое:
+// `app/products/sitemap.ts` порождает файлы, а `app/robots.ts` обязан их
+// перечислить — иначе поисковик о них не узнает и разбивка окажется бесполезной.
+// Две копии этой арифметики разошлись бы молча: карта отдавала бы пять файлов,
+// robots объявлял бы четыре, и товары последней порции остались бы невидимыми.
+
+/** Предел адресов в одном файле карты — правило поисковых систем, не наше. */
+export const SITEMAP_URLS_PER_FILE = 50_000
+
+/**
+ * Сколько ТОВАРОВ помещается в одну порцию: один товар даёт по адресу на каждый
+ * включённый язык, поэтому предел делится на их число.
+ */
+export function sitemapChunkSize(languages: number): number {
+  return Math.max(1, Math.floor(SITEMAP_URLS_PER_FILE / Math.max(1, languages)))
+}
+
+/** Число товаров — счёт для разбивки карты. */
+export const productsCountForSitemap = unstable_cache(
+  async () => Number(((await db.prepare("SELECT COUNT(*) AS n FROM products").get()) as { n?: number } | null)?.n ?? 0),
+  ["catalogue-sitemap-count"],
+  { revalidate: 3600, tags: [CATALOGUE_TAG] },
+)
+
+/** Номера файлов карты товаров: `[0]`, `[0,1]`, … Всегда хотя бы один. */
+export async function productSitemapIds(languages: number): Promise<number[]> {
+  const total = await productsCountForSitemap()
+  const files = Math.max(1, Math.ceil(total / sitemapChunkSize(languages)))
+  return Array.from({ length: files }, (_, i) => i)
+}
+
 /**
  * Слаги для `generateStaticParams`.
  *

@@ -4,8 +4,9 @@
 // same role model the platform documents.
 //
 // Two layers:
-//   • Access tiers ENFORCED by the auth substrate + route gates (_meta.ts
-//     `roles`, requireRole): `guest` → `user` → `architect` (owner / top tier).
+//   • Access tiers ENFORCED by the auth substrate + the route's own gate (the
+//     subgroup `layout.tsx`, requireRole): `guest` → `user` → `architect`
+//     (owner / top tier).
 //   • The remaining entries are the business RBAC vocabulary the app can assign
 //     and gate on (customer-facing, staff/operations, admin).
 export const ALL_ROLES = [
@@ -40,9 +41,8 @@ export type AccessTier = typeof ACCESS_TIERS[number]
 //
 // One subgroup of `app/[lang]/(protectedLayer)/` = one entry here, and this is
 // the ONLY place the membership is written. The subgroup's `layout.tsx` reads
-// it, the pages' `_meta.ts` reuse it, and the access dialog lists it to the
-// visitor. Three copies of a role list drift, and the copy that drifts is
-// always the one guarding something.
+// it and the access dialog lists it to the visitor. Two copies of a role list
+// drift, and the copy that drifts is always the one guarding something.
 //
 // The dividing question is WHOSE data the page shows — not how the screen
 // looks. `(account)` shows the visitor their own; `(staff)` shows them other

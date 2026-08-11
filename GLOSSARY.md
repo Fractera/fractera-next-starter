@@ -6,9 +6,9 @@
 
 ## Layers of the application — the terms every document reuses
 
-These four definitions are the vocabulary of the architecture. When any document, page comment or
-`_meta.ts` says "public layer" or "protected layer", it means exactly what is written here — nothing is
-re-defined locally.
+These four definitions are the vocabulary of the architecture. When any document or page comment says
+"public layer" or "protected layer", it means exactly what is written here — nothing is re-defined
+locally.
 
 **Public layer.** Pages that do not depend on authorization or on a role: the pages of the top menu when
 a top menu exists, plus any page that simply sits in the file system. Everyone sees the same content, so

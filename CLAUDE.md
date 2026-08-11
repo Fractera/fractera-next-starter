@@ -363,8 +363,14 @@ mounted `<Toaster/>` + `toast()` from `sonner`). This covers menus, drawers, mod
 control. Bring non-conforming code to this standard whenever you touch it. Full mapping + recipes →
 `ui-primitives.md`.
 
-> Full route-skeleton standard — `shell-component-architecture.md` (thin `page.tsx`,
-> `_components/index.tsx`, `.client`/`.server` suffixes, typed `_meta.ts`).
+> **Route skeleton.** A thin `page.tsx` (route-segment config + params, nothing else), the real entry in
+> `_components/index.tsx`, leaves suffixed `.client`/`.server`. Segment values (`revalidate`) are declared
+> IN `page.tsx` — Next parses them statically and refuses a re-export; functions (`generateMetadata`,
+> `generateStaticParams`) may be re-exported from the entry.
+>
+> *(The `_meta.ts` route passport was removed 2026-08-11: it fed the `/architecture` cockpit, which no
+> longer exists. Nothing imported it, and 20 of 29 routes had already gone without one. Access is declared
+> where it is enforced — the subgroup `layout.tsx` — not in a file beside it. Do not recreate it.)*
 
 ---
 
@@ -379,8 +385,9 @@ Hooks & functions:
   Honors the `X-Agent-Identity` header (role `agent`); dev-bypass → `architect`; otherwise proxies
   `:3001/api/session`.
 - `/api/me` — client-side identity read (`fetch('/api/me')`).
-- Client guard (inline `/api/me`, no hook): in a `.client.tsx`, `fetch('/api/me')` + the route's `_meta.ts`
-  to apply public / public+guest / private; redirect via `registerRedirectUrl`. Never `auth()` in a page.
+- Client guard (inline `/api/me`, no hook): in a `.client.tsx`, `fetch('/api/me')` + the roles the
+  subgroup's `layout.tsx` admits (`lib/roles.ts`) to apply public / public+guest / private; redirect via
+  `registerRedirectUrl`. Never `auth()` in a page.
   Reference: `app/(service)/dashboard/_components/dashboard-app.client.tsx`. Server-only hide (architect,
   dynamic): `requireAdmin()` (`lib/auth/require-admin.ts`).
 - `/api/auth/guest?redirectUrl=…` — guest sign-in (hard navigation, sets the session cookie).
@@ -540,12 +547,13 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       starting with an unmaterialized queue is not). The frozen pipeline (owner_content_orchestrate)
       does this mechanically — persists the whole approved queue, marks the live step in-progress,
       resumes with the same plan + approve token.</action>
-    <action>if needed, change the /architecture tree: a route = _meta.ts (RouteMeta) + README.md (living
-      to-do); declare a page/endpoint = create README.md (declared node); tasks via
-      /api/project/default/architecture/tasks</action>
+    <action>declare a page/endpoint before building it: a README.md in its folder (the living to-do of
+      that route). The `/architecture` cockpit, its `_meta.ts` passports and
+      /api/project/default/architecture/tasks were removed — do not look for them, do not recreate
+      them.</action>
     <constraint>creating a page -> FIRST decide the access shape (public|private|public+guest) per
-      section 5 of this file, before code, not by guessing — this access shape becomes the
-      scaffold-declared-route-into-component-skeleton --access argument; an app that needs visitor
+      section 5 of this file, before code, not by guessing — the shape decides which subgroup of
+      `(protectedLayer)` the route joins, or that it stays public; an app that needs visitor
       accounts ALSO enables public app-shell auth (§5, manage-app-shell-auth)</constraint>
     <branch on="oversized-task">deliverable of THIS step = the step-chain + declared pages, not code</branch>
     <gate>fractera:step block parses and importance set; every declared page has an access shape</gate>
@@ -553,14 +561,13 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
 
   <stage id="6.4" name="Development cycle" repeat="as needed">
     <action>Write code per section-4 (static-first, .client/.server naming, &lt;=200 lines).</action>
-    <action>materialize the route skeleton with the scaffold-declared-route-into-component-skeleton skill (.claude/skills/scaffold-declared-route-into-component-skeleton —
-      page/entry/leaf/_meta by construction, the --access shape baked in); then write only the domain code,
-      never hand-type the skeleton</action>
-    <action>take the matching route's task from /architecture into development (get existing steps/elements
-      for the node); do the next sub-step:</action>
-    <substep id="6.4.2.1" name="finish">close the task in /architecture; clear README.md
-      (declared -> live once the real route file exists)</substep>
-    <substep id="6.4.2.2" name="decompose">add new sub-steps to NEW-STEPS/ and new to-dos to /architecture</substep>
+    <action>write the route skeleton by hand to the standard in section 4: thin `page.tsx` (segment config
+      + params only), entry in `_components/index.tsx`, leaves suffixed `.client`/`.server`. (There is no
+      scaffold skill — `.claude/skills/` holds seven skills and this is not one of them.)</action>
+    <action>take the next to-do from the route's own README.md; do the next sub-step:</action>
+    <substep id="6.4.2.1" name="finish">clear the item from README.md (declared -> live once the real
+      route file exists)</substep>
+    <substep id="6.4.2.2" name="decompose">add new sub-steps to NEW-STEPS/ and new to-dos to the route's README.md</substep>
     <action>mark each iteration in the task checklist</action>
     <action>while waiting on a deploy/feedback, don't idle; on a long step do not cross the 50% context boundary</action>
     <note name="composition">composition = assembling the page from parallel-routing slots + reusable

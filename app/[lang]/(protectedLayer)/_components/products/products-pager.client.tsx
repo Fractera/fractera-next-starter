@@ -72,7 +72,7 @@ export function ProductsPager(
               </PaginationItem>
               <PaginationItem>
                 <PaginationPrevious
-                  label={labels.prev}
+                  title={labels.prev}
                   aria-disabled={page <= 1}
                   className={page <= 1 ? "pointer-events-none opacity-40" : ""}
                   onClick={() => onPage(page - 1)}
@@ -91,7 +91,7 @@ export function ProductsPager(
               </PaginationItem>
               <PaginationItem>
                 <PaginationNext
-                  label={labels.next}
+                  title={labels.next}
                   aria-disabled={page >= pages}
                   className={page >= pages ? "pointer-events-none opacity-40" : ""}
                   onClick={() => onPage(page + 1)}

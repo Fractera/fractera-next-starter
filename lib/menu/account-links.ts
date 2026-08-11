@@ -1,6 +1,7 @@
 import { productsUi } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n"
 import { accountingProductsUi } from "@/app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n"
 import { administrationProductsUi } from "@/app/[lang]/(protectedLayer)/(admin)/administration/products/_data/ui.i18n"
+import { shoppingProductsUi } from "@/app/[lang]/(protectedLayer)/(account)/shopping/products/_data/ui.i18n"
 import type { DrawerLink } from "@/components/menu/account/account-drawer.client"
 
 // РАБОЧИЕ РАЗДЕЛЫ, которые ящик аккаунта показывает вошедшему.
@@ -32,6 +33,7 @@ import type { DrawerLink } from "@/components/menu/account/account-drawer.client
 // страницы, — не 82 впрок.
 export function accountLinks(lang: string): DrawerLink[] {
   return [
+    { href: `/${lang}/shopping/products`, label: shoppingProductsUi(lang).title, group: "account" },
     { href: `/${lang}/manage/products`, label: productsUi(lang).title, group: "staff" },
     { href: `/${lang}/accounting/products`, label: accountingProductsUi(lang).title, group: "finance" },
     { href: `/${lang}/administration/products`, label: administrationProductsUi(lang).title, group: "admin" },

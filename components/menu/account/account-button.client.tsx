@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { AccountDrawer, type DrawerLink } from "@/components/menu/account/account-drawer.client";
+import { CartButton } from "@/components/cart/cart-button.client";
+import type { CartUi } from "@/components/cart/cart.i18n";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
 
@@ -15,12 +17,15 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // the entry point too. UI standard: shadcn Button/buttonVariants + lucide icons.
 type Me = { userId?: string; email?: string; roles?: string[] } | null;
 
-export function AccountButton({ lang, side, labels, links }: {
+export function AccountButton({ lang, side, labels, links, cart, currency }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
   /** Рабочие разделы ящика: состав приходит с сервера, где известны страницы проекта. */
   links?: DrawerLink[];
+  /** Слова корзины и валюта витрины — для значка заказа слева от кнопки аккаунта. */
+  cart?: CartUi;
+  currency?: string;
 }) {
   const [me, setMe] = useState<Me>(undefined as unknown as Me);
 
@@ -34,7 +39,14 @@ export function AccountButton({ lang, side, labels, links }: {
   }, []);
 
   if (me && me.userId) {
-    return <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} />;
+    // Корзина — СЛЕВА от кнопки аккаунта и только у вошедшего. Тот же запрос
+    // `/api/me`, что и у ящика: два островка спрашивали бы одно и то же дважды.
+    return (
+      <>
+        {cart && currency && <CartButton lang={lang} currency={currency} labels={cart} />}
+        <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} />
+      </>
+    );
   }
 
   return (

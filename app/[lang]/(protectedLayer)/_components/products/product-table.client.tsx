@@ -14,20 +14,21 @@
 // её частью ссылки значило бы вести на карточку при попытке нажать «удалить».
 
 import Link from "next/link"
-import { Trash2, Loader2 } from "lucide-react"
 import type { Product } from "@/lib/products/types"
-import { localizeProduct } from "@/lib/products/localize"
+import { localizeProduct, type LocalizedProduct } from "@/lib/products/localize"
 
 // 🔒 ВОЗМОЖНОСТИ ПРИХОДЯТ СВЕРХУ, А НЕ ЗАШИТЫ В ТАБЛИЦУ. Одна и та же таблица
-// стоит в трёх слоях прав, и в каждом человек может РАЗНОЕ: персонал открывает
-// карточку и правит её, администратор только удаляет, финансист не делает ни
-// того, ни другого. Поэтому таблица не знает про роли — она принимает то, что ей
-// дали: нет `onDelete` — нет и колонки удаления; нет `hrefFor` — строки не
-// ссылки, потому что вести некуда.
+// стоит в ЧЕТЫРЁХ слоях прав, и в каждом человек может разное: персонал
+// открывает карточку и правит её, администратор удаляет, покупатель кладёт в
+// корзину, финансист не делает ни того, ни другого, ни третьего.
 //
-// Так возможность и её признак в интерфейсе — ОДНА вещь: страница, которая не
-// передала обработчик, физически не может показать кнопку. Флаг `canDelete`
-// рядом с обработчиком разошёлся бы с ним на первой же правке.
+// Поэтому таблица не знает про роли. Она знает форму: у строки МОЖЕТ быть одна
+// ячейка действия, и что в ней — решает слой (`rowAction`). Нет `rowAction` —
+// нет и колонки; нет `hrefFor` — строки не ссылки, потому что вести некуда.
+//
+// Так возможность и её признак в интерфейсе — ОДНА вещь: слой, не передавший
+// действие, физически не может показать кнопку. Флаг `canDelete` рядом с
+// обработчиком разошёлся бы с ним на первой же правке, и разошёлся бы молча.
 type Props = {
   products: Product[]
   lang: string
@@ -36,9 +37,8 @@ type Props = {
   labels: { colPhoto: string; colName: string; colPrice: string; colId: string; empty: string }
   /** Куда ведёт строка. Не передан — строки не ссылки. */
   hrefFor?: (id: string) => string
-  /** Удаление. Не передано — колонки удаления нет вовсе. */
-  onDelete?: (id: string) => void
-  deleting?: string | null
+  /** Действие строки — то, что этот слой умеет делать с товаром. */
+  rowAction?: (product: LocalizedProduct) => React.ReactNode
 }
 
 // Ячейка: ссылка, когда есть куда вести, и обычный текст, когда некуда. Пустая
@@ -59,7 +59,7 @@ function Cell(
   )
 }
 
-export function ProductTable({ products, lang, currency, labels, hrefFor, onDelete, deleting }: Props) {
+export function ProductTable({ products, lang, currency, labels, hrefFor, rowAction }: Props) {
   const money = new Intl.NumberFormat(lang, { style: "currency", currency })
   if (products.length === 0) {
     return (
@@ -78,7 +78,7 @@ export function ProductTable({ products, lang, currency, labels, hrefFor, onDele
             <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colName}</th>
             <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colPrice}</th>
             <th className="px-4 py-2.5 text-left font-mono font-medium text-muted-foreground">{labels.colId}</th>
-            {onDelete && <th className="w-10 px-4 py-2.5" />}
+            {rowAction && <th className="w-10 px-4 py-2.5" />}
           </tr>
         </thead>
         <tbody>
@@ -120,17 +120,7 @@ export function ProductTable({ products, lang, currency, labels, hrefFor, onDele
                     {p.id.slice(0, 8)}…
                   </Cell>
                 </td>
-                {onDelete && <td className={`${cell} text-right`}>
-                  <button
-                    onClick={() => onDelete(p.id)}
-                    disabled={deleting === p.id}
-                    className="text-muted-foreground transition-colors hover:text-destructive disabled:opacity-40"
-                  >
-                    {deleting === p.id
-                      ? <Loader2 size={13} className="animate-spin" />
-                      : <Trash2 size={13} />}
-                  </button>
-                </td>}
+                {rowAction && <td className={`${cell} text-right`}>{rowAction(p)}</td>}
               </tr>
             )
           })}

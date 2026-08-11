@@ -13,6 +13,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import { Trash2, Loader2 } from "lucide-react"
 import { useProductList } from "@/app/[lang]/(protectedLayer)/_lib/use-product-list"
 import { ProductsToolbar } from "@/app/[lang]/(protectedLayer)/_components/products/products-toolbar.client"
 import { ProductsPager } from "@/app/[lang]/(protectedLayer)/_components/products/products-pager.client"
@@ -93,8 +94,17 @@ export function ProductsPanel(
               colPhoto: labels.colPhoto, colName: labels.colName,
               colPrice: labels.colPrice, colId: labels.colId, empty: labels.empty,
             }}
-            onDelete={remove}
-            deleting={deleting}
+            // Действие строки этого слоя — единственное, что он умеет.
+            rowAction={(p) => (
+              <button
+                onClick={() => void remove(p.id)}
+                disabled={deleting === p.id}
+                aria-label={labels.deleted}
+                className="text-muted-foreground transition-colors hover:text-destructive disabled:opacity-40"
+              >
+                {deleting === p.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+              </button>
+            )}
           />
 
           <ProductsPager

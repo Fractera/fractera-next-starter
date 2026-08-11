@@ -11,7 +11,8 @@
     "check:encoding": "node scripts/scan-broken-characters.mjs",
     "predev": "node lib/parser-fs.mjs",
     "prebuild": "node lib/parser-fs.mjs",
-    "check:content": "node scripts/check-content.mjs"
+    "check:content": "node scripts/check-content.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

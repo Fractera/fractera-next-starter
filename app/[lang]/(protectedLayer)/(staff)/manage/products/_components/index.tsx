@@ -1,6 +1,7 @@
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { getAppConfig } from "@/config/app-config"
 import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
@@ -36,6 +37,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
 
         <ProductsPanel
           lang={lang}
+          currency={getAppConfig().commerce.currency}
           errors={errors}
           dialogUi={dialogUi}
           billingUrl={OPENAI_BILLING_URL}

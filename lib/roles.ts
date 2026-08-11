@@ -51,10 +51,19 @@ export type AccessTier = typeof ACCESS_TIERS[number]
 //
 // `architect` is in every group on purpose: the owner of the deployment is
 // never locked out of their own application.
+// 🔒 `admin` СТОИТ ТОЛЬКО В СВОЁМ СЛОЕ (решение владельца 2026-08-11). Раньше он
+// был во всех четырёх, «на всякий случай», — и это делало невозможным то, ради
+// чего роли вообще существуют: РАЗЛИЧАТЬСЯ. Требование владельца звучало так:
+// администратор умеет удалить товар и не умеет его править, персонал наоборот.
+// Пока `admin` числился в группе персонала, он получал права персонала объединением
+// и правил всё; «ограничение» жило бы только в том, что кнопку ему не нарисовали.
+//
+// `architect` остаётся везде — по-прежнему намеренно: владелец развёртывания
+// никогда не заперт снаружи собственного приложения. Он один такой.
 export const PROTECTED_GROUP_ROLES = {
-  account: ['user', 'buyer', 'vip_user', 'subscriber_lite', 'subscriber_standard', 'subscriber_max', 'admin', 'architect'],
-  staff: ['manager', 'senior_manager', 'support_manager', 'delivery_manager', 'content_editor', 'admin', 'architect'],
-  finance: ['finance', 'admin', 'architect'],
+  account: ['user', 'buyer', 'vip_user', 'subscriber_lite', 'subscriber_standard', 'subscriber_max', 'architect'],
+  staff: ['manager', 'senior_manager', 'support_manager', 'delivery_manager', 'content_editor', 'architect'],
+  finance: ['finance', 'architect'],
   admin: ['admin', 'architect'],
 } as const satisfies Record<string, readonly AppRole[]>
 

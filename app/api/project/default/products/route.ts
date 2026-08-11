@@ -17,11 +17,16 @@ import { entityId } from "@/lib/ids"
 const PAGE_SIZES = [10, 20, 50, 100]
 const DEFAULT_PAGE_SIZE = 10
 
-// Читают список ОБЕ группы: персонал ведёт карточки, финансы правят цены с той
-// же таблицы. Право ПИСАТЬ этим не расширяется — POST ниже и правка полей в
-// `[id]` решают это отдельно и по-своему.
+// Список читают ВСЕ ТРИ рабочие группы: персонал ведёт карточки, финансы правят
+// цены, администратор выбирает, что удалить. Право ПИСАТЬ этим не расширяется —
+// создание ниже и правка полей в `[id]` решают это отдельно и по-своему; видеть
+// список и менять его — разные способности.
 export async function GET(req: NextRequest) {
-  const denied = await requireRoles(req, [...PROTECTED_GROUP_ROLES.staff, ...PROTECTED_GROUP_ROLES.finance])
+  const denied = await requireRoles(req, [
+    ...PROTECTED_GROUP_ROLES.staff,
+    ...PROTECTED_GROUP_ROLES.finance,
+    ...PROTECTED_GROUP_ROLES.admin,
+  ])
   if (denied) return denied
 
   const url = new URL(req.url)

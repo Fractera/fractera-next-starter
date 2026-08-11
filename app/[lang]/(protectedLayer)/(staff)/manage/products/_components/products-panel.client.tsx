@@ -41,15 +41,14 @@ export type ProductsLabels = {
 }
 
 export function ProductsPanel(
-  { lang, labels, errors, dialogUi, billingUrl }:
-  { lang: string; labels: ProductsLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
+  { lang, currency, labels, errors, dialogUi, billingUrl }:
+  { lang: string; currency: string; labels: ProductsLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
 ) {
   const list = useProductList(labels.failed)
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: "", price: "" })
   const [uploaded, setUploaded] = useState<UploadedFile | null>(null)
   const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState<string | null>(null)
   // Созданная запись, ждущая переводов. Диалог открывается ПОСЛЕ создания, а не
   // вместо него: продукт уже существует, и закрытие диалога ничего не теряет.
   const [justCreated, setJustCreated] = useState<{ id: string; name: string } | null>(null)
@@ -110,21 +109,6 @@ export function ProductsPanel(
     }
   }
 
-  async function remove(id: string) {
-    setDeleting(id)
-    try {
-      const res = await fetch(projectApi(`/products/${id}`), { method: "DELETE" })
-      if (!res.ok) throw new Error(String(res.status))
-      toast.success(labels.deleted)
-      // Перезагружаем выборку, а не вычёркиваем строку: после удаления последней
-      // записи на странице её надо покинуть, и это знает сервер.
-      await list.load()
-    } catch {
-      toast.error(labels.failed)
-    } finally {
-      setDeleting(null)
-    }
-  }
 
   return (
     <section>
@@ -160,7 +144,16 @@ export function ProductsPanel(
         </div>
       ) : (
         <>
-          <ProductTable products={list.products} deleting={deleting} onDelete={remove} lang={lang} labels={labels} />
+          {/* Удаления здесь НЕТ и не будет: с 2026-08-11 это право слоя
+              администрирования. Таблица общая, и «нет обработчика» означает «нет
+              колонки» — способность и её признак в интерфейсе неразделимы. */}
+          <ProductTable
+            products={list.products}
+            lang={lang}
+            currency={currency}
+            labels={labels}
+            hrefFor={(id) => `/${lang}/manage/products/${id}`}
+          />
           <ProductsPager
             labels={labels}
             total={list.total}

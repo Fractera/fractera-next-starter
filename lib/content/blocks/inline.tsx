@@ -41,7 +41,7 @@ export function inline(text: string, kp: string): ReactNode[] {
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) nodes.push(text.slice(last, m.index))
     if (m[1] !== undefined) {
-      nodes.push(<strong key={`${kp}-b${i}`} className="font-semibold text-white">{m[1]}</strong>)
+      nodes.push(<strong key={`${kp}-b${i}`} className="font-semibold text-foreground">{m[1]}</strong>)
     } else {
       const href = m[3]
       const external = /^https?:/.test(href)
@@ -66,7 +66,7 @@ export function inline(text: string, kp: string): ReactNode[] {
           key={`${kp}-a${i}`}
           href={href}
           {...(external ? { target: '_blank', rel } : {})}
-          className="font-medium text-violet-400 underline decoration-violet-400/40 underline-offset-2 hover:text-violet-300"
+          className="font-medium text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
         >
           {label}
         </a>,

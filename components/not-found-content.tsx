@@ -21,7 +21,7 @@ export function NotFoundContent() {
         </p>
         <Link
           href="/"
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"
+          className="inline-flex w-fit items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-bold text-foreground transition-opacity hover:opacity-80"
         >
           Back to home
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -29,7 +29,7 @@ export function NotFoundContent() {
       </div>
 
       {/* Right — black pane with the F8 logo (hidden below md). */}
-      <div className="hidden items-center justify-center bg-black p-12 md:flex md:w-1/2">
+      <div className="hidden items-center justify-center bg-background p-12 md:flex md:w-1/2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/404-logo.png"

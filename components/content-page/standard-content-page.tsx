@@ -97,7 +97,7 @@ export function StandardContentPage({
     .map(b => ({ id: headingId(b.text), text: b.text.replace(/\*\*/g, '') }))
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-background text-foreground">
       <article className="mx-auto w-full max-w-5xl px-6 py-16 md:py-12">
 
         {/* 1. Breadcrumb — single row, never wraps, never overflows.
@@ -109,7 +109,7 @@ export function StandardContentPage({
             truncates with an ellipsis. truncate needs min-w-0 on every flex
             ancestor, otherwise the item refuses to shrink below its content and
             pushes the row past the viewport. */}
-        <nav aria-label="Breadcrumb" className="text-sm text-white/40">
+        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
           <ol className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
             {breadcrumbs.map((c, i) => {
               const isLast = i === breadcrumbs.length - 1
@@ -119,11 +119,11 @@ export function StandardContentPage({
                   className={`flex items-center gap-1.5 ${isLast ? 'min-w-0' : 'shrink-0'}`}
                 >
                   {c.href && !isLast ? (
-                    <a href={c.href} className="whitespace-nowrap hover:text-white">{c.label}</a>
+                    <a href={c.href} className="whitespace-nowrap hover:text-foreground">{c.label}</a>
                   ) : (
-                    <span aria-current="page" className="block min-w-0 truncate text-white/60">{c.label}</span>
+                    <span aria-current="page" className="block min-w-0 truncate text-muted-foreground">{c.label}</span>
                   )}
-                  {!isLast && <span aria-hidden className="shrink-0 text-white/25">/</span>}
+                  {!isLast && <span aria-hidden className="shrink-0 text-muted-foreground/60">/</span>}
                 </li>
               )
             })}
@@ -131,11 +131,11 @@ export function StandardContentPage({
         </nav>
 
         {/* 2. Header — tags + max-size H1 (homepage hero style) + subtitle + author */}
-        <header className="mt-6 flex flex-col gap-5 border-b border-white/10 pb-8">
+        <header className="mt-6 flex flex-col gap-5 border-b border-border pb-8">
           {tags && tags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               {tags.map(t => (
-                <span key={t} className="rounded-full border border-violet-500/30 bg-violet-500/[0.06] px-3 py-1 text-xs font-medium text-violet-300">
+                <span key={t} className="rounded-full border border-primary/30 bg-primary/[0.06] px-3 py-1 text-xs font-medium text-primary">
                   {t}
                 </span>
               ))}
@@ -153,16 +153,16 @@ export function StandardContentPage({
             {title}
           </h1>
           {subtitle && (
-            <p className="text-lg leading-relaxed text-white/55 md:text-base">{subtitle}</p>
+            <p className="text-lg leading-relaxed text-muted-foreground md:text-base">{subtitle}</p>
           )}
           {/* Byline — post byline (metaLine) overrides the default author line. */}
           {/* Автора может не быть вовсе — владелец не заполнил раздел в
               настройках. Тогда строки авторства нет: пустое «·» под заголовком
               выглядит поломкой, а чужое имя было бы враньём. */}
           {metaLine ?? (author.name ? (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/40">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
               {author.url ? (
-                <a href={author.url} rel="author" className="hover:text-white">{author.name}</a>
+                <a href={author.url} rel="author" className="hover:text-foreground">{author.name}</a>
               ) : (
                 <span>{author.name}</span>
               )}
@@ -185,24 +185,24 @@ export function StandardContentPage({
               src={heroImage}
               alt={heroAlt ?? title}
               loading="eager"
-              className="w-full rounded-2xl border border-white/10"
+              className="w-full rounded-2xl border border-border"
             />
           </figure>
         ))}
 
         {/* 3. Table of contents */}
         {toc.length > 0 && (
-          <nav aria-label="Contents" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-violet-400/70">
+          <nav aria-label="Contents" className="mt-8 rounded-2xl border border-border bg-muted/40 p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">
               {ui.tocHeading} · {toc.length}
             </p>
             <ol className="mt-3 flex flex-col gap-2">
               {toc.map((item, i) => (
                 <li key={item.id} className="flex gap-3 text-[15px] leading-snug">
-                  <span aria-hidden className="select-none font-mono text-sm text-white/30">
+                  <span aria-hidden className="select-none font-mono text-sm text-muted-foreground/70">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <a href={`#${item.id}`} className="text-white/65 transition-colors hover:text-violet-300">
+                  <a href={`#${item.id}`} className="text-muted-foreground transition-colors hover:text-primary">
                     {item.text}
                   </a>
                 </li>
@@ -224,13 +224,13 @@ export function StandardContentPage({
         {/* FAQ — the last CONTENT section by contract; only the back link (and the
             global footer) sit below it. */}
         {faq && faq.length > 0 && (
-          <section aria-labelledby="faq-heading" className="mt-12 border-t border-white/10 pt-10">
+          <section aria-labelledby="faq-heading" className="mt-12 border-t border-border pt-10">
             <h2 id="faq-heading" className="text-2xl font-bold tracking-tight">{ui.faqHeading}</h2>
             <dl className="mt-6 flex flex-col gap-4">
               {faq.map((f, i) => (
-                <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                  <dt className="text-base font-semibold text-white">{f.q}</dt>
-                  <dd className="mt-2 text-[15px] leading-relaxed text-white/60">{f.a}</dd>
+                <div key={i} className="rounded-2xl border border-border bg-muted/40 p-5">
+                  <dt className="text-base font-semibold text-foreground">{f.q}</dt>
+                  <dd className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{f.a}</dd>
                 </div>
               ))}
             </dl>
@@ -239,8 +239,8 @@ export function StandardContentPage({
 
         {/* Back link — the ABSOLUTE LAST item on every content page (below the FAQ).
             One level up from the current page. */}
-        <div className="mt-12 border-t border-white/10 pt-8">
-          <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-400 hover:text-violet-300">
+        <div className="mt-12 border-t border-border pt-8">
+          <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

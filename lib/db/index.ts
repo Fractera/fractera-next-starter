@@ -1,4 +1,5 @@
 import Database from "better-sqlite3"
+import { entityId } from "@/lib/ids"
 import { mkdirSync } from "fs"
 import { join, dirname } from "path"
 import { remoteDb } from "./remote-client"
@@ -132,7 +133,6 @@ function safeAddColumn(sqlite: Database.Database, sql: string) {
 // чужих лицензий, о которых потом спорят.
 const SEED = [
   {
-    id: 'seed-apple',
     name: 'Apple',
     price: 1.2,
     description: 'A crisp red apple. The reference row of this catalogue: it has a name, a price, a picture and a translation — everything a product needs to be shown on a page.',
@@ -143,7 +143,6 @@ const SEED = [
     },
   },
   {
-    id: 'seed-orange',
     name: 'Orange',
     price: 1.8,
     description: 'A ripe orange. The second row exists on purpose: one example shows the shape, two show what changes between them — here it is the price and the picture.',
@@ -162,7 +161,10 @@ function seedProducts(sqlite: Database.Database) {
     'INSERT INTO products (id, name, price, description, i18n, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
   )
   for (const p of SEED) {
-    insert.run(p.id, p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
+    // Тот же генератор, что и у настоящих записей: примеры обязаны выглядеть
+    // как всё остальное, иначе они учат неверной форме. Приставка `seed` видна
+    // в адресе и в журнале — сразу понятно, что строка пришла со стартером.
+    insert.run(entityId(p.name, 'seed'), p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
   }
 }
 

@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { getSession } from "@/lib/auth/get-session"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
+import { entityId } from "@/lib/ids"
 
 // Каталог — данные защищённого слоя, поэтому роль проверяется ЗДЕСЬ, а не только
 // на странице. Маршрутизатор требует лишь наличие сессии, то есть пускает к этим
@@ -59,7 +60,9 @@ export async function POST(req: NextRequest) {
 
   const session = await getSession(req)
   const createdBy = session?.email ?? 'unknown'
-  const id = crypto.randomUUID()
+  // Идентификатор читаемый: он попадает в адрес страницы, а адрес читают люди.
+  // Голый UUID делает все ссылки на свете одинаковыми на вид.
+  const id = entityId(String(name))
   await db.prepare(
     "INSERT INTO products (id, name, price, media_id, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?)"
   ).run(id, String(name).trim(), Number(price), media_id ?? null, media_url ?? null, createdBy)

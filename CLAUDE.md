@@ -313,6 +313,11 @@ form, a root link whose label is not `%SITE%`, a `heroVideo`/`heroPoster`/`src` 
 `public/`, the site name written into data, a declared language cell that does not exist, and a post with
 no translation at all. These are not style preferences — each rule is a defect that already shipped once.
 
+**How a post is built — `CONTENT-ENGINE.md`.** One post = one folder under `app/[lang]/<tab>/<slug>/`
+(`page.tsx` + `_components/` + `_data/`); the index list is generated at build time, never hand-edited.
+That document also carries the law of the two links and the recipe for adding a post. Read it before
+creating or changing any content page.
+
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`
 - `breadcrumb-trail.server.tsx` ✅

@@ -38,11 +38,11 @@ export type LeafBlock =
   // The LAST column is visually emphasized as the "ours/highlight" column. Cells
   // support inline markup (**bold** + links). Optional `caption` above the table.
   | { kind: 'table'; headers: string[]; rows: string[][]; caption?: string }
-  // Interactive consultation-inquiry CTA (AI Company Brain). Unlike `cta` (a plain
-  // link) this renders a client button that gates on auth and opens the inquiry
-  // drawer → POST /api/company-brain/inquiry. Used as the primary CTA of a page
-  // whose goal is to capture a consultation request.
-  | { kind: 'inquiry'; title?: string; text: string; label: string }
+  // 🪦 REMOVED ON THE WAY IN (2026-08-11): block kind `inquiry`. It rendered the
+  // platform's own consultation CTA — a client button that opened an inquiry
+  // drawer and posted to an endpoint that exists only on the marketing site. A
+  // starter has nothing to inquire about, and neither shipped post used it.
+  // Need a call to action? `cta` is the plain, portable one.
 
 // ── Container blocks (composite layouts) ─────────────────────────────────────
 // Containers hold `children: Block[]` and are rendered recursively through the

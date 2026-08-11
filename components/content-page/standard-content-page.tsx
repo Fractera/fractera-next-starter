@@ -77,7 +77,7 @@ export function StandardContentPage({
   tags,
   title,
   subtitle,
-  author = { name: projectAuthor().name, url: projectAuthor().url },
+  author = { name: projectAuthor().name, role: projectAuthor().role, url: projectAuthor().url },
   metaLine,
   heroImage,
   heroAlt,

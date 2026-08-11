@@ -128,16 +128,26 @@ export const BLOCK_RENDERERS: BlockRenderers = {
           {inline(b.text, k)}
         </p>
       </blockquote>
-      {/* Byline. The author comes from APP-CONFIG, so a project whose owner has
-          not filled it in shows the quote WITHOUT attribution — that is the
-          correct degradation: no name is honest, a borrowed name is not.
-          No avatar and no role: APP-CONFIG carries neither, and inventing the
-          fields would create settings the control panel never writes. */}
+      {/* Byline — name, photo and job title all come from the control panel
+          (App settings → Author). A project whose owner has not filled that in
+          shows the quote WITHOUT attribution: no name is honest, a borrowed one
+          is not. Each part degrades on its own — no photo still gives a name. */}
       <figcaption className="mt-7 flex flex-col items-center gap-4">
         {author().name && (
-          <span className="text-base font-light tracking-tight text-gray-400">
-            <a href={author().url} rel="author me" className="hover:text-white">{author().name}</a>
-          </span>
+          <div className="flex items-center">
+            {author().photo && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={author().photo!} alt={`${author().name} photo`} width={32} height={32} className="mr-2.5 rounded-full" />
+            )}
+            <span className="text-base font-light tracking-tight text-gray-400">
+              <a href={author().url} rel="author me" className="hover:text-white">{author().name}</a>
+              {author().role && (
+                <cite className="ml-1.5 not-italic text-gray-500 before:mr-1.5 before:inline-flex before:h-px before:w-4 before:bg-gray-500 before:align-middle">
+                  {author().role}
+                </cite>
+              )}
+            </span>
+          </div>
         )}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs text-white/40">
           {authorSocialLinks().map(s => (

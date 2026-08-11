@@ -10,10 +10,9 @@
 // platform founder's name and eight of his profile links as constants — shipping
 // that in a starter would attribute every customer's article to someone else.
 //
-// 🔒 WHAT IS NOT HERE. `APP-CONFIG` has no author photo and no author role, so
-// this module does not pretend to: a byline renders as a name and its links.
-// Adding fields the control panel never writes would create settings that are
-// permanently empty and look broken.
+// WHERE THE VALUES COME FROM: control panel → App settings → Author. That form
+// writes `APP-CONFIG/app-config.json`, which is the same file this reads — name,
+// job title, photo and the three profile links all have fields there.
 //
 // Empty is a legitimate state: a project whose owner has not filled the author
 // section gets no byline and no Person node. Better no attribution than a false
@@ -24,6 +23,10 @@ import { socialUrls } from "@/config/app-config.defaults"
 
 export type Author = {
   name: string
+  /** Job title shown under the byline. Empty when the owner left it blank. */
+  role: string
+  /** Photo URL, or null — the byline then renders without an avatar. */
+  photo: string | null
   url: string
   /** Stable id for structured data: the site origin + a fragment. */
   id: string
@@ -38,6 +41,8 @@ export function author(): Author {
   const site = siteOrigin()
   return {
     name: cfg.author?.name ?? "",
+    role: cfg.author?.jobTitle ?? "",
+    photo: cfg.author?.image ?? null,
     url: cfg.author?.url || site,
     id: `${site}/#author`,
   }

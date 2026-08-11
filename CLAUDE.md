@@ -313,10 +313,21 @@ form, a root link whose label is not `%SITE%`, a `heroVideo`/`heroPoster`/`src` 
 `public/`, the site name written into data, a declared language cell that does not exist, and a post with
 no translation at all. These are not style preferences — each rule is a defect that already shipped once.
 
-**How a post is built — `CONTENT-ENGINE.md`.** One post = one folder under `app/[lang]/<tab>/<slug>/`
-(`page.tsx` + `_components/` + `_data/`); the index list is generated at build time, never hand-edited.
-That document also carries the law of the two links and the recipe for adding a post. Read it before
-creating or changing any content page.
+**🔒 Two models of a page — decide which one you are building BEFORE writing a file.** The question is
+"does what the page shows depend on WHO is looking?".
+
+- **No — public content** (a post, a landing page): a **folder per item**, prerendered SSG/ISR, indexed.
+  The set is finite and authored, so the build can render it all ahead of time. Rules, recipe and the
+  law of the two links: **`CONTENT-ENGINE.md`**; enforced by `npm run check:content`.
+- **Yes — user-scoped** (dashboard, admin, account): a **dynamic segment** — `/[id]`, `/[slug]` —
+  resolved per request, data behind an authenticated `/api/*`, gated by role, never indexed. A site with
+  a million users has a million versions of `/dashboard`, none of which exists at build time; a folder
+  per user is not a heavy solution, it is not a solution.
+
+What both share: **the shell stays static**. A dynamic route does not license a dynamic page — the
+frame, headings and empty states are prerendered, and only the rows load into a container the visitor
+opens. Never carry `CONTENT-ENGINE.md`'s "no dynamic `[slug]`" into a dashboard: that sentence is scoped
+to public content, where an alternative exists.
 
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`

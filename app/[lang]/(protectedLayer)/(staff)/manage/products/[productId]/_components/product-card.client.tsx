@@ -31,8 +31,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
-import { useProduct } from "../_lib/use-product"
-import { EditableField } from "./editable-field.client"
+import { useProduct } from "@/app/[lang]/(protectedLayer)/_lib/use-product"
+import { EditableField } from "@/app/[lang]/(protectedLayer)/_components/products/editable-field.client"
 
 export type CardLabels = {
   name: string; price: string; colId: string

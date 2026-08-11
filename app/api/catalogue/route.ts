@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { NEXT_BATCH } from "@/lib/catalogue"
-import { localizeProduct } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_lib/localize-product"
-import type { Product } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_components/types"
+import { localizeProduct } from "@/lib/products/localize"
+import type { Product } from "@/lib/products/types"
 
 // Догрузка каталога — ПУБЛИЧНАЯ дверь, роль не проверяется: витрина открыта
 // всем, и то, что она отдаёт, уже лежит в статическом HTML первой страницы.

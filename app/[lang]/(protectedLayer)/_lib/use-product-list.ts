@@ -12,7 +12,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import { projectApi } from "@/lib/architecture/project-api"
-import type { Product } from "../_components/types"
+import type { Product } from "@/lib/products/types"
 
 // Выбранный шаг — предпочтение ЧЕЛОВЕКА, а не свойство каталога: живёт в
 // браузере, переживает перезагрузку и не попадает в базу проекта.

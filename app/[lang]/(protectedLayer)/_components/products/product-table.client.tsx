@@ -15,8 +15,8 @@
 
 import Link from "next/link"
 import { Trash2, Loader2 } from "lucide-react"
-import type { Product } from "./types"
-import { localizeProduct } from "../_lib/localize-product"
+import type { Product } from "@/lib/products/types"
+import { localizeProduct } from "@/lib/products/localize"
 
 type Props = {
   products: Product[]

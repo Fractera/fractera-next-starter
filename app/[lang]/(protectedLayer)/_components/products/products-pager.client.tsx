@@ -17,7 +17,7 @@ import {
   Pagination, PaginationContent, PaginationItem,
   PaginationNext, PaginationPrevious, PaginationFirst, PaginationLast,
 } from "@/components/ui/pagination"
-import { PAGE_SIZES } from "../_lib/use-product-list"
+import { PAGE_SIZES } from "@/app/[lang]/(protectedLayer)/_lib/use-product-list"
 
 export type PagerLabels = {
   count: string; perPage: string; prev: string; next: string; pageOf: string

@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache"
 import { db } from "@/lib/db"
-import type { Product } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_components/types"
+import type { Product } from "@/lib/products/types"
 
 // Чтение каталога для ПУБЛИЧНЫХ страниц.
 //

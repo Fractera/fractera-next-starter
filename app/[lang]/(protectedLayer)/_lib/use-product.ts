@@ -10,8 +10,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
 import { projectApi } from "@/lib/architecture/project-api"
-import type { Product } from "../../_components/types"
-import { localizeProduct, type LocalizedProduct } from "../../_lib/localize-product"
+import type { Product } from "@/lib/products/types"
+import { localizeProduct, type LocalizedProduct } from "@/lib/products/localize"
 
 export type ProductState =
   | { kind: "loading" }

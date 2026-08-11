@@ -1,4 +1,4 @@
-import type { Product } from "../_components/types"
+import type { Product } from "@/lib/products/types"
 
 // Разрешение полей продукта на язык страницы.
 //

@@ -8,7 +8,7 @@ import { buildProductSchema } from "@/lib/jsonld"
 import { brand } from "@/lib/brand"
 import { getAppConfig } from "@/config/app-config"
 import { productById, prerenderSlugs } from "@/lib/catalogue"
-import { localizeProduct } from "../../../(protectedLayer)/(staff)/manage/products/_lib/localize-product"
+import { localizeProduct } from "@/lib/products/localize"
 import { catalogueUi } from "../../_data/ui.i18n"
 
 // ПУБЛИЧНАЯ СТРАНИЦА ТОВАРА — статика через ISR.

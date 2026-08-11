@@ -33,16 +33,18 @@ export function ProductsPager(
   },
 ) {
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
       <p className="text-[10px] text-muted-foreground">
         {labels.count.replace("{count}", String(total))}
       </p>
 
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground">{labels.perPage}</span>
+      <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1">
+          {/* Подпись уходит на узком экране: рядом стоит число, и что оно
+              значит, видно из соседства с пагинацией. Место дороже слова. */}
+          <span className="hidden text-[10px] text-muted-foreground sm:inline">{labels.perPage}</span>
           <Select value={String(perPage)} onValueChange={v => onSize(Number(v))}>
-            <SelectTrigger className="h-7 w-[68px] text-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-7 w-[60px] px-2 text-xs" aria-label={labels.perPage}><SelectValue /></SelectTrigger>
             <SelectContent>
               {PAGE_SIZES.map(s => (
                 <SelectItem key={s} value={String(s)} className="text-xs">{s}</SelectItem>
@@ -77,7 +79,13 @@ export function ProductsPager(
                 />
               </PaginationItem>
               <PaginationItem>
-                <span className="px-2 text-[10px] text-muted-foreground">
+                {/* На узком экране остаётся «1/3»: слово «Страница» занимает
+                    больше места, чем сообщает, — рядом стрелки, и смысл числа
+                    очевиден из них. */}
+                <span className="px-1 text-[10px] tabular-nums text-muted-foreground sm:hidden">
+                  {page}/{pages}
+                </span>
+                <span className="hidden px-2 text-[10px] text-muted-foreground sm:inline">
                   {labels.pageOf.replace("{page}", String(page)).replace("{pages}", String(pages))}
                 </span>
               </PaginationItem>

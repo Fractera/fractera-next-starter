@@ -299,6 +299,20 @@ The full canon used to live in STATIC-FIRST.md and CRUD-DOCS; both were removed 
 
 **Build-time env vars that must survive a redeploy** (any `NEXT_PUBLIC_*`, the language set, Stripe keys + product ids, custom app vars) → use the **`persist-env-var-with-rebuild`** skill. Write the value into the slot's `app/.env.local` through the proper setter, then trigger a rebuild (the slot-scoped build bakes the slot's own `.env.local`). Never hand-wait a `pm2 restart` for a build-time value, never `force-dynamic` to "show it instantly".
 
+**Content posts — two kinds of link, and a gate that enforces them.** A post under
+`app/[lang]/<section>/<slug>/_data/` may link in exactly two ways. **External:** always absolute, with a
+host (`https://…`); it opens in a new tab and third-party domains get `rel="nofollow"`. A relative link
+is a promise about the site the post lands on, and a post travels into projects where that page does not
+exist. **Internal root:** the only relative form allowed, written `[%SITE%](/ru)` — it points at the home
+page in the language of that data cell, and the label is replaced by the site's own title from
+`APP-CONFIG`. That is how an article natively pushes weight to the home page without anyone's name being
+typed into the text. Every language cell of every post needs one.
+
+Run **`npm run check:content`** after touching any post. It fails on: a relative link that is not the root
+form, a root link whose label is not `%SITE%`, a `heroVideo`/`heroPoster`/`src` whose file is absent from
+`public/`, the site name written into data, a declared language cell that does not exist, and a post with
+no translation at all. These are not style preferences — each rule is a defect that already shipped once.
+
 **File naming (mandatory).** Every JSX file ends in `.client.tsx` or `.server.tsx`.
 Format: `[domain]-[entity]-[detail]-[role].suffix`
 - `breadcrumb-trail.server.tsx` ✅

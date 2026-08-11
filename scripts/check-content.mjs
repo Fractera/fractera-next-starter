@@ -1,0 +1,152 @@
+#!/usr/bin/env node
+// npm run check:content — mechanical gate for every co-located content post.
+//
+// 🔒 WHY THIS EXISTS. The two posts this project ships were repaired by hand
+// once: their links were relative (dead on any site that is not the platform's
+// own), their hero media was missing from `public/`, one of them had no Russian
+// cell at all, and the site name was written into the data. Repairing the two
+// posts fixes nothing durable — the owner may never touch them again, while
+// every NEW post repeats the same four mistakes, silently, and each one ships.
+//
+// So the rules live here, as a check that FAILS the build instead of a
+// paragraph nobody re-reads. A rule that is not mechanically enforced is a
+// suggestion, and suggestions lose to deadlines.
+//
+// Scope: any folder under app/[lang]/<section>/<slug>/_data. Adding a section
+// (news, docs) needs no change here — the walk finds it.
+
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs"
+import { join, relative } from "node:path"
+
+const ROOT = process.cwd()
+const APP = join(ROOT, "app", "[lang]")
+const PUBLIC = join(ROOT, "public")
+
+const problems = []
+const fail = (file, rule, detail) => problems.push({ file: relative(ROOT, file), rule, detail })
+
+/** Every `_data` folder under app/[lang], at any depth. */
+function findDataDirs(dir, out = []) {
+  if (!existsSync(dir)) return out
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name)
+    if (!statSync(p).isDirectory()) continue
+    if (name === "_data") out.push(p)
+    else out.push(...findDataDirs(p, out).slice(out.length))
+  }
+  return out
+}
+
+// ── RULE 1 — a post knows exactly TWO kinds of link ─────────────────────────
+//
+// EXTERNAL — always absolute, with a host. A relative link is a promise about
+// the site it lands on, and a post travels into projects that have no such
+// page: `/ai-development-loop` returned 404 on every customer site.
+//
+// INTERNAL ROOT — the only relative link allowed, written `[%SITE%](/ru)`. It
+// points at the home page in the language of that data cell, and its label is
+// the site's own title. This is how an article natively pushes weight to the
+// home page without anyone's name being typed into the text.
+//
+// Anything else relative is rejected.
+// Подпись и адрес не переносятся на новую строку — иначе выражение цепляет
+// открывающую скобку массива `blocks: [` и «ссылкой» становится вся статья.
+const LINK_IN_TEXT = /\[([^\]\n]+)\]\(([^)\n]+)\)/g
+const HREF_FIELD = /href:\s*'([^']+)'|href:\s*"([^"]+)"/g
+const ROOT_LINK = /^\/[a-z]{2}$/
+
+// ── RULE 2 — every local asset exists ───────────────────────────────────────
+// `heroVideo`, `heroPoster`, `src:` pointing at `/something` must resolve to a
+// file in public/. The hero of a shipped post pointed at a video that was never
+// copied: the pattern arrived broken and nobody noticed until it was opened.
+const LOCAL_ASSET = /(?:heroVideo|heroPoster|src):\s*'(\/[^']+)'|(?:heroVideo|heroPoster|src):\s*"(\/[^"]+)"/g
+
+// ── RULE 3 — the site never names itself in content ─────────────────────────
+// The blog's own data carried 'Blog | Fractera' and 'Fractera Blog', so every
+// customer's blog introduced itself with the platform's name. Identity comes
+// from APP-CONFIG at render time; data may not carry it.
+const BRAND_LITERALS = [/'[^']*\|\s*Fractera'/i, /'Fractera\s+(Blog|News|Docs)'/i]
+
+// ── RULE 4 — a declared language cell exists ────────────────────────────────
+// `_data/index.ts` lists the overrides; a listed language whose file is missing
+// is a build error, and a post with NO overrides silently serves English on
+// every language. The second is legal but must be a decision, not an oversight,
+// so it is reported as a notice rather than a failure.
+function checkPost(dataDir) {
+  const files = readdirSync(dataDir).filter(f => f.endsWith(".ts"))
+  const indexPath = join(dataDir, "index.ts")
+  if (!files.includes("index.ts")) return
+
+  // Папка данных РАЗДЕЛА (строки интерфейса индекса) отличается от папки данных
+  // ПОСТА наличием `meta.ts`. Правила про переводы и ссылку на корень —
+  // про пост: у раздела нет ни автора, ни тела статьи.
+  const isPost = files.includes("meta.ts")
+  let rootLinks = 0
+
+  for (const f of files) {
+    const p = join(dataDir, f)
+    const text = readFileSync(p, "utf8")
+
+    for (const m of text.matchAll(LINK_IN_TEXT)) {
+      const label = m[1].trim()
+      const href = m[2].trim()
+      if (ROOT_LINK.test(href)) {
+        rootLinks++
+        if (label !== "%SITE%") {
+          fail(p, "root-link-label", `[${label}](${href}) — подпись внутренней ссылки на корень обязана быть %SITE%: она подставляется названием сайта из настроек`)
+        }
+        continue
+      }
+      if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
+        fail(p, "link-not-absolute", `[…](${href}) — относительная ссылка; разрешена одна форма: [%SITE%](/${"<язык>"})`)
+      }
+    }
+    for (const m of text.matchAll(HREF_FIELD)) {
+      const href = (m[1] ?? m[2]).trim()
+      if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
+        fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка`)
+      }
+    }
+    for (const m of text.matchAll(LOCAL_ASSET)) {
+      const rel = (m[1] ?? m[2]).trim()
+      if (!existsSync(join(PUBLIC, rel))) {
+        fail(p, "asset-missing", `${rel} — файла нет в public/`)
+      }
+    }
+    for (const re of BRAND_LITERALS) {
+      const hit = text.match(re)
+      if (hit) fail(p, "brand-in-data", `${hit[0]} — имя сайта берётся из APP-CONFIG, не из данных`)
+    }
+  }
+
+  // Language cells declared in index.ts must exist as files.
+  const index = readFileSync(indexPath, "utf8")
+  for (const m of index.matchAll(/import\s*\{\s*(\w+)\s*\}\s*from\s*'\.\/(\w+)'/g)) {
+    const file = `${m[2]}.ts`
+    if (!files.includes(file)) fail(indexPath, "cell-missing", `объявлен ${file}, файла нет`)
+  }
+  if (isPost && !/overrides\s*:/.test(index)) {
+    fail(indexPath, "single-language", "нет ни одного перевода — пост будет английским на всех языках")
+  }
+
+  // ── RULE 5 — каждый пост тянет вес на главную ─────────────────────────────
+  // Внешние ссылки отдают вес наружу. Если статья не ссылается на собственную
+  // главную, сайт раздаёт и не получает. Одна ссылка на корень — минимум, и
+  // она обязана быть в КАЖДОЙ языковой ячейке, иначе половина сайта немая.
+  if (isPost && rootLinks < files.filter(f => /^(en|[a-z]{2})\.ts$/.test(f) && f !== "index.ts" && f !== "meta.ts").length) {
+    fail(indexPath, "no-root-link", `внутренних ссылок на корень: ${rootLinks}; нужна одна в каждой языковой ячейке — [%SITE%](/<язык>)`)
+  }
+}
+
+const dirs = [...new Set(findDataDirs(APP))]
+for (const d of dirs) checkPost(d)
+
+if (problems.length === 0) {
+  console.log(`===CONTENT_OK=== проверено папок данных: ${dirs.length}, нарушений нет`)
+  process.exit(0)
+}
+
+console.error(`===CONTENT_FAILED=== нарушений: ${problems.length}\n`)
+for (const p of problems) console.error(`  ${p.rule.padEnd(18)} ${p.file}\n${" ".repeat(21)}${p.detail}`)
+console.error("\nПравила — CODING-STANDARDS.md, раздел о ко-локации и ссылках.")
+process.exit(1)

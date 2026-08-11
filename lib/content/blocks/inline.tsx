@@ -7,8 +7,31 @@ export function headingId(text: string): string {
 }
 
 // Dark-theme inline renderer for content prose: **bold** and [label](url).
-// Outbound third-party links get rel="nofollow" (do not pass link weight); links
-// to our own domain (fractera.ai) stay followed.
+//
+// 🔒 ДВА ТИПА ССЫЛОК, И ЭТО ЗАКОН, А НЕ ПРИВЫЧКА.
+//
+// 1. ВНЕШНЯЯ — всегда абсолютная, с хостом. Открывается в новой вкладке.
+//    Чужому домену ставится `nofollow` (вес не отдаём), домену платформы —
+//    не ставится: туда вес уходит намеренно. Относительной внешняя ссылка быть
+//    не может: пост копируется в проект, где такой страницы нет, и ссылка
+//    ведёт в никуда — так `/ai-development-loop` отдавал 404 на каждом сайте
+//    клиента.
+//
+// 2. ВНУТРЕННЯЯ НА КОРЕНЬ — единственная разрешённая относительная ссылка, и
+//    выглядит она как `[%SITE%](/ru)`. Язык берётся из самого адреса, потому
+//    что языковая ячейка данных уже знает свой язык, а подпись `%SITE%`
+//    заменяется НАЗВАНИЕМ САЙТА на этом же языке (`APP-CONFIG`). Так каждая
+//    статья своими словами тянет вес на главную и делает это на языке
+//    читателя — а не зашивает чьё-то имя в текст.
+//
+// Проверяется механически: `npm run check:content`.
+import { metaForLang } from '@/config/app-config'
+
+/** Внутренняя ссылка на корень сайта: `/ru`, `/en`. */
+const ROOT_LINK = /^\/([a-z]{2})$/
+/** Подпись, которую заменяет название сайта на языке ссылки. */
+const SITE_TOKEN = '%SITE%'
+
 export function inline(text: string, kp: string): ReactNode[] {
   const nodes: ReactNode[] = []
   const re = /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)/g
@@ -28,6 +51,13 @@ export function inline(text: string, kp: string): ReactNode[] {
           ? 'noopener noreferrer'
           : 'noopener noreferrer nofollow'
         : undefined
+
+      // Внутренняя ссылка на корень: подпись `%SITE%` становится названием
+      // сайта на языке этой же ссылки. Название приходит из настроек проекта,
+      // поэтому в тексте статьи не остаётся ничьего имени.
+      const root = href.match(ROOT_LINK)
+      const label = root && m[2].trim() === SITE_TOKEN ? metaForLang(root[1]).title : m[2]
+
       nodes.push(
         <a
           key={`${kp}-a${i}`}
@@ -35,7 +65,7 @@ export function inline(text: string, kp: string): ReactNode[] {
           {...(external ? { target: '_blank', rel } : {})}
           className="font-medium text-violet-400 underline decoration-violet-400/40 underline-offset-2 hover:text-violet-300"
         >
-          {m[2]}
+          {label}
         </a>,
       )
     }

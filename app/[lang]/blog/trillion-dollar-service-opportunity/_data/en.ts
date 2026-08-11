@@ -62,7 +62,7 @@ export const en: BlogBase = {
     {
       kind: 'p',
       text:
-        'Fractera — a self-hosted [Agentic Engineering Infrastructure](https://www.fractera.ai/en) — was built precisely for scenarios like this. With it you can create both a site and a CRM, listen to and transcribe calls, build tables and log planned visits, send reminders to your users — or even call them. Automate campaigns with reminders or coupons. A business owner can have as many ideas here as they like.',
+        '[%SITE%](/en) — a self-hosted [Agentic Engineering Infrastructure](https://www.fractera.ai/en) — was built precisely for scenarios like this. With it you can create both a site and a CRM, listen to and transcribe calls, build tables and log planned visits, send reminders to your users — or even call them. Automate campaigns with reminders or coupons. A business owner can have as many ideas here as they like.',
     },
     {
       kind: 'p',

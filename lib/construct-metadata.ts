@@ -87,8 +87,12 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
     noFollow = false,
   } = args;
 
-  const base = cfg.seo.canonicalBase ?? cfg.url;
-  const canonical = new URL(normalizePath(pathname), base).toString();
+  // Адрес сайта может быть ещё не известен (свежее развёртывание, настройки не
+  // сохраняли). Тогда канонического адреса НЕТ — и это правильный ответ:
+  // страница без canonical считается собственной копией, страница с чужим
+  // canonical отдаёт себя чужому домену.
+  const base = cfg.seo.canonicalBase || cfg.url;
+  const canonical = base ? new URL(normalizePath(pathname), base).toString() : undefined;
   const desc = truncate(description);
   const index = !noIndex && cfg.seo.robotsIndex && cfg.seo.indexing === "allow";
   const follow = !noFollow && cfg.seo.robotsFollow;
@@ -100,13 +104,13 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
   return {
     title: { default: title, template: templateForLang || `%s | ${nameForLang}` },
     description: desc,
-    metadataBase: new URL(cfg.url),
+    ...(cfg.url ? { metadataBase: new URL(cfg.url) } : {}),
     applicationName: cfg.short_name,
     creator: cfg.short_name,
     publisher: cfg.short_name,
     ...(keywordsForLang ? { keywords: keywordsForLang } : {}),
     authors: [{ name: cfg.author.name, url: cfg.author.url }],
-    alternates: { canonical },
+    ...(canonical ? { alternates: { canonical } } : {}),
     manifest: cfg.manifest,
     icons: buildIcons(cfg),
     openGraph: {

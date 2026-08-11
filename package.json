@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "read:app-config": "node scripts/print-app-config-for-agent.mjs",
-    "check:encoding": "node scripts/scan-broken-characters.mjs"
+    "read:app-config": "node scripts/print-app-config-for-agent.mjs",
+    "check:encoding": "node scripts/scan-broken-characters.mjs",
+    "check:content": "node scripts/check-content.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

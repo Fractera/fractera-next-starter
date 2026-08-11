@@ -27,6 +27,9 @@ function urlFor(lang: string, subPath: string): string {
 // Google folded them into the home page). hreflang advertises the same page in
 // every supported language. `subPath` is '' for a home page, '/slug' otherwise.
 export function buildAlternates(lang: string, subPath = ''): Metadata['alternates'] {
+  // Адрес сайта не задан — альтернатив нет. Выдать hreflang на чужой домен
+  // значит объявить, что переводы этой страницы живут не здесь.
+  if (!base()) return undefined
   return {
     canonical: urlFor(lang, subPath),
     languages: {

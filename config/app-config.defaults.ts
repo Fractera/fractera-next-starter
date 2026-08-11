@@ -151,7 +151,12 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   short_name: "Fractera",
   description:
     "Agentic Engineering Infrastructure — your own server, your own code, run and configured from one control panel.",
-  url: "https://www.fractera.ai",
+  // 🔒 ПУСТО НАМЕРЕННО. Адрес — ФАКТ развёртывания, а не мнение: его знает
+  // сервер, а не автор шаблона. Пока он неизвестен, код не имеет права
+  // подставить чужой: отсутствующий canonical безвреден (поисковик считает
+  // страницу собственной копией сам), чужой — разрушителен, он отдаёт весь вес
+  // домену платформы и выбрасывает сайт клиента из индекса.
+  url: "",
   manifest: "/manifest.webmanifest",
   mailSupport: "admin@fractera.ai",
   lang: "en",
@@ -190,7 +195,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
     robotsIndex: true,
     robotsFollow: true,
     keywords: undefined,
-    canonicalBase: "https://www.fractera.ai",
+    canonicalBase: undefined,
     sitemapUrl: undefined,
     disallowPaths: ["/api", "/api/*", "/_next", "/_next/*"],
     locales: ["en"],

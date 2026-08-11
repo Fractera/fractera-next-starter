@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { buildAlternates } from '@/lib/seo/alternates'
+import { metaForLang } from '@/config/app-config'
 import { brand } from '@/lib/brand'
 import { blogList } from '../_lib/post'
 import { getBlogUi } from '../_data'
@@ -50,7 +51,9 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
       <main className="min-h-screen bg-black text-white">
         <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-20 md:py-14">
           <header className="flex flex-col gap-3">
-            <p className="text-xs uppercase tracking-widest text-violet-400/70">{ui.eyebrow}</p>
+            {/* Надзаголовок: раздел + название сайта из настроек. В данных раздела
+                имени сайта нет — иначе блог каждого клиента звался бы чужим именем. */}
+            <p className="text-xs uppercase tracking-widest text-violet-400/70">{ui.eyebrow} · {metaForLang(lang).title}</p>
             <h1 className="text-4xl font-bold tracking-tight md:text-3xl">{ui.indexTitle}</h1>
             <p className="max-w-2xl text-base text-white/50">{ui.indexIntro}</p>
           </header>

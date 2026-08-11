@@ -6,7 +6,7 @@ export const en: BlogUi = {
   metaTitle: 'Blog',
   metaDescription:
     'Field notes on agentic AI development, loop engineering and autonomous coding agents — from the team building an Open Code (source-available), self-hosted AI workspace.',
-  eyebrow: 'Fractera blog',
+  eyebrow: 'Blog',
   indexTitle: 'Building in loops',
   indexIntro:
     'Field notes on agentic AI development, loop engineering and autonomous coding agents — from the team building an Open Code (source-available), self-hosted AI workspace.',

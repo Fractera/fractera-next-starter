@@ -106,7 +106,7 @@ export const en: BlogBase = {
     },
     {
       kind: 'p',
-      text: 'Close a loop around a single model and you hit the real-world walls fast: context-window degradation, hallucinatory death spirals, and no memory across a project. At **Fractera**, we spent the last year treating Cherny’s philosophy not as a prediction but as an **architectural blueprint** — and built the Fractera Development Loop to survive exactly those failure modes.',
+      text: 'Close a loop around a single model and you hit the real-world walls fast: context-window degradation, hallucinatory death spirals, and no memory across a project. At [%SITE%](/en), we spent the last year treating Cherny’s philosophy not as a prediction but as an **architectural blueprint** — and built the Fractera Development Loop to survive exactly those failure modes.',
     },
     {
       kind: 'figure',

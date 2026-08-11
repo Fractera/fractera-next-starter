@@ -109,7 +109,16 @@ export function createContentPost(config: ContentPostConfig) {
     const seoTitle = post.seoTitle ?? post.title
     const ogImage = snippetImage(post)
     return {
-      title: `${seoTitle} | ${titleSuffix(lang)}`,
+      // 🔒 `absolute` — ИНАЧЕ ИМЯ САЙТА ПОДСТАВЛЯЕТСЯ ДВАЖДЫ (2026-08-11).
+      // Корневые метаданные объявляют шаблон `%s | <имя сайта>`
+      // (`lib/construct-metadata.ts`), и Next применяет его к любому обычному
+      // заголовку. Пост уже несёт собственный суффикс раздела, поэтому выходило
+      // «Статья | Блог Fractera | Fractera». `absolute` говорит фреймворку, что
+      // заголовок готов и достраивать его не нужно.
+      // Имя сайта берётся из настроек проекта, а не из строк раздела: в
+      // исходной версии оно было вписано в данные («Fractera Blog»), и блог
+      // любого клиента представлялся бы чужим именем.
+      title: { absolute: `${seoTitle} | ${titleSuffix(lang)} | ${brand().name}` },
       description: post.description,
       ...(post.keywords ? { keywords: post.keywords } : {}),
       alternates: buildAlternates(lang, subPath),

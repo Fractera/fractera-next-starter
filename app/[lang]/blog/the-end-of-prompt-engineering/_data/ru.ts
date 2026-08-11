@@ -118,8 +118,8 @@ export const ru: BlogOverride = {
       media: 'image',
       src: 'https://www.fractera.ai/Fractera-Development-Loop.jpg',
       alt: 'Схема цикла разработки Fractera — один запрос проходит через оркестрацию, кодовых агентов и графовую память до протестированного, развёрнутого кода',
-      caption: 'Цикл разработки Fractera — идея Черного, разведённая в рабочем пространстве, которым вы владеете. [Посмотреть полную анатомию](/ai-development-loop).',
-      href: '/ai-development-loop',
+      caption: 'Цикл разработки Fractera — идея Черного, разведённая в рабочем пространстве, которым вы владеете. [Посмотреть полную анатомию](https://www.fractera.ai/ai-development-loop).',
+      href: 'https://www.fractera.ai/ai-development-loop',
     },
     { kind: 'h3', text: 'Анатомия цикла продакшн-уровня' },
     {
@@ -147,7 +147,7 @@ export const ru: BlogOverride = {
     {
       kind: 'cta',
       text: 'Хотите заглянуть под капот — оркестрация, графовая память и круг «собери — проверь — исправь» в строгих инженерных подробностях?',
-      href: '/ai-development-loop',
+      href: 'https://www.fractera.ai/ai-development-loop',
       label: 'Разобрать анатомию автономных циклов ИИ',
     },
     {

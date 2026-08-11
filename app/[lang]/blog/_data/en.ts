@@ -3,7 +3,7 @@ import type { BlogUi } from '../_lib/types'
 // English UI chrome for the Blog index (rule 4а — localized data, never hardcoded
 // in _components). One file per language; index.ts exposes getBlogUi(lang).
 export const en: BlogUi = {
-  metaTitle: 'Blog | Fractera',
+  metaTitle: 'Blog',
   metaDescription:
     'Field notes on agentic AI development, loop engineering and autonomous coding agents — from the team building an Open Code (source-available), self-hosted AI workspace.',
   eyebrow: 'Fractera blog',
@@ -15,5 +15,5 @@ export const en: BlogUi = {
   minRead: 'min read',
   read: 'Read',
   backToBlog: 'Back to all articles',
-  titleSuffix: 'Fractera Blog',
+  titleSuffix: 'Blog',
 }

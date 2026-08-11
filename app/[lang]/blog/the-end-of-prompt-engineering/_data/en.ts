@@ -113,8 +113,8 @@ export const en: BlogBase = {
       media: 'image',
       src: 'https://www.fractera.ai/Fractera-Development-Loop.jpg',
       alt: 'Fractera Development Loop diagram — one request flows through Hermes orchestration, coding agents and LightRAG graph memory to tested, deployed code',
-      caption: 'The Fractera Development Loop — Cherny’s idea, wired into a workspace you actually own. [See the full anatomy](/ai-development-loop).',
-      href: '/ai-development-loop',
+      caption: 'The Fractera Development Loop — Cherny’s idea, wired into a workspace you actually own. [See the full anatomy](https://www.fractera.ai/ai-development-loop).',
+      href: 'https://www.fractera.ai/ai-development-loop',
     },
     { kind: 'h3', text: 'The anatomy of a production-grade loop' },
     {
@@ -142,7 +142,7 @@ export const en: BlogBase = {
     {
       kind: 'cta',
       text: 'Want to look under the hood — the orchestration, the graph memory, and the build-test-correct cycle, in rigorous engineering detail?',
-      href: '/ai-development-loop',
+      href: 'https://www.fractera.ai/ai-development-loop',
       label: 'Dive into the anatomy of autonomous AI loops',
     },
     {

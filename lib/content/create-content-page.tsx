@@ -84,7 +84,9 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
     // scrapers ignore relative og:image paths. (JSON-LD below already uses abs().)
     const ogImageUrl = abs(meta.ogImage)
     return {
-      title: `${seoTitle} | ${brand().name}`,
+      // `absolute` по той же причине, что и у поста: корневой шаблон
+      // `%s | <имя сайта>` иначе добавит имя второй раз.
+      title: { absolute: `${seoTitle} | ${brand().name}` },
       description: c.description,
       keywords: c.keywords,
       alternates: buildAlternates(lang, meta.subPath),

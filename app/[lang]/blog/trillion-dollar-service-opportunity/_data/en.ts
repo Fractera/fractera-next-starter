@@ -62,7 +62,7 @@ export const en: BlogBase = {
     {
       kind: 'p',
       text:
-        'Fractera — a self-hosted [Agentic Engineering Infrastructure](/en) — was built precisely for scenarios like this. With it you can create both a site and a CRM, listen to and transcribe calls, build tables and log planned visits, send reminders to your users — or even call them. Automate campaigns with reminders or coupons. A business owner can have as many ideas here as they like.',
+        'Fractera — a self-hosted [Agentic Engineering Infrastructure](https://www.fractera.ai/en) — was built precisely for scenarios like this. With it you can create both a site and a CRM, listen to and transcribe calls, build tables and log planned visits, send reminders to your users — or even call them. Automate campaigns with reminders or coupons. A business owner can have as many ideas here as they like.',
     },
     {
       kind: 'p',
@@ -72,7 +72,7 @@ export const en: BlogBase = {
     {
       kind: 'p',
       text:
-        'Fractera also frees you from having to remember which services you are supposed to pay for. Most of the cloud services that turn into regular payments and make up the lion’s share of your costs — databases, a CRM subscription, and many others — are already included as ordinary features of your application. They require no separate payment and run in the background. You will not have to deal with the difficulty of connecting a server, an AI model and a domain — it all happens automatically; you only have to wait ten minutes and you can [deploy it on your own VPS](/en/deployments/vps).',
+        'Fractera also frees you from having to remember which services you are supposed to pay for. Most of the cloud services that turn into regular payments and make up the lion’s share of your costs — databases, a CRM subscription, and many others — are already included as ordinary features of your application. They require no separate payment and run in the background. You will not have to deal with the difficulty of connecting a server, an AI model and a domain — it all happens automatically; you only have to wait ten minutes and you can [deploy it on your own VPS](https://www.fractera.ai/en/deployments/vps).',
     },
 
     { kind: 'h2', text: 'One of many. You can find them every day.' },

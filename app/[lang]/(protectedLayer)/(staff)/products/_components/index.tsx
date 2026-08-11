@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { productsUi } from "../_data/products.i18n"
 import { ProductsPanel } from "./products-panel.client"
 
@@ -19,11 +20,10 @@ export default function ProductsEntry({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-6 py-10">
-        <header className="mb-8">
-          <a href={`/${lang}`} className="font-mono text-xs text-muted-foreground transition-colors hover:text-foreground">
-            ←
-          </a>
-          <h1 className="mt-1 text-xl font-semibold text-foreground">{t.title}</h1>
+        <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
+
+        <header className="mb-8 mt-4">
+          <h1 className="text-xl font-semibold text-foreground">{t.title}</h1>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 

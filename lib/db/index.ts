@@ -8,6 +8,11 @@ const SCHEMA = `
     id         TEXT PRIMARY KEY NOT NULL,
     name       TEXT NOT NULL,
     price      REAL NOT NULL DEFAULT 0,
+    description TEXT,
+    -- Переводы полей одной колонкой JSON: { "name": { "ru": "…" }, "description": { "ru": "…" } }.
+    -- Так же переводы хранит и платформа в APP-CONFIG (ветка i18n). Колонка на
+    -- язык не масштабируется: каждый новый язык требовал бы миграции схемы.
+    i18n       TEXT,
     media_id   TEXT,
     media_url  TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -112,6 +117,55 @@ function safeAddColumn(sqlite: Database.Database, sql: string) {
   }
 }
 
+
+// ── Два примера в пустой базе ────────────────────────────────────────────────
+//
+// Стартер приезжает с работающим примером, а не с пустым экраном: увидеть, как
+// устроен продукт с переводами и картинкой, дешевле, чем прочитать об этом.
+//
+// 🔒 ТОЛЬКО В ПУСТУЮ ТАБЛИЦУ. Ни одной строки не трогаем, если каталог уже
+// начат: посев, повторяющийся при каждом старте, однажды затрёт настоящий товар
+// клиента, и заметят это не сразу.
+//
+// Переводы лежат в колонке i18n тем же способом, что и в APP-CONFIG. Картинки —
+// собственные SVG в public/seed: без внешних ссылок, которые ломаются, и без
+// чужих лицензий, о которых потом спорят.
+const SEED = [
+  {
+    id: 'seed-apple',
+    name: 'Apple',
+    price: 1.2,
+    description: 'A crisp red apple. The reference row of this catalogue: it has a name, a price, a picture and a translation — everything a product needs to be shown on a page.',
+    media_url: '/seed/apple.svg',
+    i18n: {
+      name: { ru: 'Яблоко' },
+      description: { ru: 'Хрустящее красное яблоко. Образцовая строка каталога: у неё есть название, цена, изображение и перевод — всё, что нужно продукту, чтобы попасть на страницу.' },
+    },
+  },
+  {
+    id: 'seed-orange',
+    name: 'Orange',
+    price: 1.8,
+    description: 'A ripe orange. The second row exists on purpose: one example shows the shape, two show what changes between them — here it is the price and the picture.',
+    media_url: '/seed/orange.svg',
+    i18n: {
+      name: { ru: 'Апельсин' },
+      description: { ru: 'Спелый апельсин. Вторая строка нужна не для количества: один пример показывает форму, два показывают, что между ними меняется — здесь это цена и изображение.' },
+    },
+  },
+]
+
+function seedProducts(sqlite: Database.Database) {
+  const row = sqlite.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }
+  if (row?.n > 0) return
+  const insert = sqlite.prepare(
+    'INSERT INTO products (id, name, price, description, i18n, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  )
+  for (const p of SEED) {
+    insert.run(p.id, p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
+  }
+}
+
 function makeLocalDb() {
   const dbPath = process.env.APP_DB_PATH ?? join(process.cwd(), "data", "app.db")
   mkdirSync(dirname(dbPath), { recursive: true })
@@ -124,6 +178,10 @@ function makeLocalDb() {
   if (!cols.has('media_id'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_id   TEXT`)
   if (!cols.has('media_url'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_url  TEXT`)
   if (!cols.has('created_by')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'`)
+  if (!cols.has('description')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN description TEXT`)
+  if (!cols.has('i18n'))        safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN i18n       TEXT`)
+
+  seedProducts(sqlite)
   // (step 500) The ALTER blocks for deployment_records / telegram_notes / automation_finance
   // / automation_images are gone with their tables — those warehouses belonged to the
   // removed projects layer and to the Deployments journal.

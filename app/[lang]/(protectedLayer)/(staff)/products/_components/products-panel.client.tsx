@@ -33,6 +33,7 @@ export type ProductsLabels = {
   created: string; deleted: string; failed: string
   searchPlaceholder: string; find: string; nothingFound: string
   perPage: string; prev: string; next: string; pageOf: string
+  first: string; last: string
 }
 
 export function ProductsPanel({ labels }: { labels: ProductsLabels }) {

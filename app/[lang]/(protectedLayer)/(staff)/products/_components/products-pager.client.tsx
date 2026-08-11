@@ -15,12 +15,13 @@ import {
 } from "@/components/ui/select"
 import {
   Pagination, PaginationContent, PaginationItem,
-  PaginationNext, PaginationPrevious,
+  PaginationNext, PaginationPrevious, PaginationFirst, PaginationLast,
 } from "@/components/ui/pagination"
 import { PAGE_SIZES } from "../_lib/use-product-list"
 
 export type PagerLabels = {
   count: string; perPage: string; prev: string; next: string; pageOf: string
+  first: string; last: string
 }
 
 export function ProductsPager(
@@ -53,6 +54,19 @@ export function ProductsPager(
         {pages > 1 && (
           <Pagination className="mx-0 w-auto justify-end">
             <PaginationContent>
+              {/* Четыре края движения: в начало · шаг назад · шаг вперёд · в
+                  конец. Крайние появляются только когда страниц больше двух —
+                  на двух они дублируют соседний шаг и лишь добавляют шума. */}
+              {pages > 2 && (
+                <PaginationItem>
+                  <PaginationFirst
+                    title={labels.first}
+                    aria-disabled={page <= 1}
+                    className={page <= 1 ? "pointer-events-none opacity-40" : ""}
+                    onClick={() => onPage(1)}
+                  />
+                </PaginationItem>
+              )}
               <PaginationItem>
                 <PaginationPrevious
                   label={labels.prev}
@@ -74,6 +88,16 @@ export function ProductsPager(
                   onClick={() => onPage(page + 1)}
                 />
               </PaginationItem>
+              {pages > 2 && (
+                <PaginationItem>
+                  <PaginationLast
+                    title={labels.last}
+                    aria-disabled={page >= pages}
+                    className={page >= pages ? "pointer-events-none opacity-40" : ""}
+                    onClick={() => onPage(pages)}
+                  />
+                </PaginationItem>
+              )}
             </PaginationContent>
           </Pagination>
         )}

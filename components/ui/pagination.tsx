@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -67,6 +67,25 @@ function PaginationNext({ className, label, ...props }: React.ComponentProps<typ
   )
 }
 
+// Края списка — «в начало» и «в конец». Одного шага мало: на сотне страниц
+// вернуться к первой можно было только сотней нажатий. Двойная стрелка —
+// узнаваемая форма этого действия, поэтому иконка, а не слово.
+function PaginationFirst({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+  return (
+    <PaginationLink aria-label="Go to first page" className={cn(className)} {...props}>
+      <ChevronsLeft />
+    </PaginationLink>
+  )
+}
+
+function PaginationLast({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+  return (
+    <PaginationLink aria-label="Go to last page" className={cn(className)} {...props}>
+      <ChevronsRight />
+    </PaginationLink>
+  )
+}
+
 function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span aria-hidden className={cn("flex size-9 items-center justify-center", className)} {...props}>
@@ -83,5 +102,7 @@ export {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
+  PaginationFirst,
+  PaginationLast,
   PaginationEllipsis,
 }

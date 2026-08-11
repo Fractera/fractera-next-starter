@@ -35,3 +35,27 @@ export type AppRole = typeof ALL_ROLES[number]
 // The three tiers the auth substrate actually enforces at the page/API gate.
 export const ACCESS_TIERS = ['guest', 'user', 'architect'] as const
 export type AccessTier = typeof ACCESS_TIERS[number]
+
+// ── Role groups of the protected layer ──────────────────────────────────────
+//
+// One subgroup of `app/[lang]/(protectedLayer)/` = one entry here, and this is
+// the ONLY place the membership is written. The subgroup's `layout.tsx` reads
+// it, the pages' `_meta.ts` reuse it, and the access dialog lists it to the
+// visitor. Three copies of a role list drift, and the copy that drifts is
+// always the one guarding something.
+//
+// The dividing question is WHOSE data the page shows — not how the screen
+// looks. `(account)` shows the visitor their own; `(staff)` shows them other
+// people's, on duty; `(finance)` moves money; `(admin)` administers the project
+// itself. Full reasoning: each subgroup's README.md.
+//
+// `architect` is in every group on purpose: the owner of the deployment is
+// never locked out of their own application.
+export const PROTECTED_GROUP_ROLES = {
+  account: ['user', 'buyer', 'vip_user', 'subscriber_lite', 'subscriber_standard', 'subscriber_max', 'admin', 'architect'],
+  staff: ['manager', 'senior_manager', 'support_manager', 'delivery_manager', 'content_editor', 'admin', 'architect'],
+  finance: ['finance', 'admin', 'architect'],
+  admin: ['admin', 'architect'],
+} as const satisfies Record<string, readonly AppRole[]>
+
+export type ProtectedGroup = keyof typeof PROTECTED_GROUP_ROLES

@@ -16,6 +16,8 @@ import { buildOrganizationSchema, buildWebSiteSchema, buildLocalBusinessSchema }
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config";
 import { readBannerConfig } from "./_components/legal/banner-config";
 import { CookieBanner } from "./_components/legal/cookie-banner.client";
+import { bannerUi } from "./_components/legal/cookie-banner.i18n";
+import { featureOn } from "@/config/platform-config";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/
 // <body> — the language comes from the [lang] route param (known at build), NOT from
@@ -65,7 +67,11 @@ export default async function LangLayout({
   const cfg = getAppConfig();
   // Cookie-banner strings for this language (step 305) — merged config over the shipped default.
   const banner = readBannerConfig();
-  const bannerStrings = banner.languages[lang] ?? banner.languages.en;
+  // Слова баннера: СВОИ на 82 языках, поверх них — то, что владелец изменил в
+  // панели. Порядок именно такой: пустая настройка не имеет права оставить
+  // баннер без текста, а он делит сообщение по метке ссылки и упал бы.
+  const bannerOn = featureOn("cookieBanner");
+  const bannerStrings = { ...bannerUi(lang), ...(banner.languages[lang] ?? {}) };
   const ld: Record<string, unknown>[] = [];
   if (cfg.jsonLd.website) ld.push(buildWebSiteSchema(cfg));
   if (cfg.jsonLd.organization) ld.push(buildOrganizationSchema(cfg));
@@ -116,7 +122,10 @@ export default async function LangLayout({
             {/* Cookie-consent banner (step 305) — on every public page via this layout. Strings are
                 server-provided per language (readBannerConfig, ISR) so anonymous visitors get a fully
                 localized banner without hitting the gated /api. */}
-            <CookieBanner lang={lang} strings={bannerStrings} />
+            {/* Выключатель панели решает, есть ли баннер вообще. До 2026-08-12
+                он не проверялся: баннер показывался всегда, а переключатель в
+                панели не значил ничего. */}
+            {bannerOn && <CookieBanner lang={lang} strings={bannerStrings} />}
             <Toaster position="bottom-right" richColors closeButton />
           </DrawerProvider>
         </ThemeProvider>

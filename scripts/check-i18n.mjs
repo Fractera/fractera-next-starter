@@ -24,6 +24,10 @@ const FILES = [
   // компонента на шести языках — то есть на семьдесят шестом рынке бургер молча
   // звался "Menu". Переиспользуемая часть продукта обязана говорить на всех.
   ["components/menu/top/top-menu.i18n.ts", "TopMenuUi", 82],
+  // Согласие на cookie, написанное не на языке посетителя, юридически
+  // бесполезно — это не «непереведённая строка», а несостоявшееся согласие.
+  ["app/[lang]/_components/legal/cookie-banner.i18n.ts", "BannerStrings", 82],
+  ["components/menu/footer/cookie-settings-button.i18n.ts", "CookieButtonUi", 82],
   ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
   // Словарь ОДНОЙ страницы — идёт по включённому набору
   // (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`), сегодня `en,ru`. Число здесь стоит

@@ -10,6 +10,13 @@ import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client
 import { footerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
+import { CookieSettingsButton } from "@/components/menu/footer/cookie-settings-button.client";
+import { cookieButtonUi } from "@/components/menu/footer/cookie-settings-button.i18n";
+import { AccountButton } from "@/components/menu/account/account-button.client";
+import { appShellAuthSide } from "@/components/menu/account/account-config";
+import { accountLabels } from "@/components/menu/account/account-menu.i18n";
+import { accountLinks } from "@/lib/menu/account-links";
+import { cartUi } from "@/components/cart/cart.i18n";
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
 // (re-programmed, not copied). Three sections:
@@ -54,6 +61,13 @@ export function FooterMenu({ lang }: { lang: string }) {
   const socials = socialLinks(cfg.seo?.social);
   const address = cfg.geo?.address;
 
+  // Кнопка настроек cookie появляется РОВНО тогда, когда есть сам баннер: она
+  // его и открывает. Баннер выключен — кнопка вела бы в никуда.
+  const bannerOn = featureOn("cookieBanner");
+  // Вход/аккаунт в подвале — та же кнопка, что и в шапке, и тот же ящик:
+  // человек, докрутивший до низа страницы, не должен возвращаться наверх.
+  const authSide = appShellAuthSide();
+
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
       {/* data-app-column: the footer content follows the same width as the page content;
@@ -83,6 +97,25 @@ export function FooterMenu({ lang }: { lang: string }) {
             подвала — обычные страницы сайта, и живут они в секции 1 выше, где их
             собирает владелец. Второй список ссылок делил подвал по признаку,
             которого в настройках не существует. */}
+
+        {/* Полоса действий: вход и настройки cookie. Обе появляются только когда
+            включены соответствующие возможности, поэтому у проекта без них
+            подвал выглядит ровно как раньше — пустой полосы не остаётся. */}
+        {(authSide || bannerOn) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {authSide && (
+              <AccountButton
+                lang={lang}
+                side={authSide}
+                labels={accountLabels(lang)}
+                links={accountLinks(lang)}
+                cart={cartUi(lang)}
+                currency={cfg.commerce.currency}
+              />
+            )}
+            {bannerOn && <CookieSettingsButton label={cookieButtonUi(lang).settings} />}
+          </div>
+        )}
 
         {/* Section 3 — company: copyright + address, social, theme toggle, language.
             One row on every width (© + name on the left, controls on the right).

@@ -1,7 +1,7 @@
 import { createContentPage } from '@/lib/content/create-content-page'
 import { brand } from '@/lib/brand'
-import { footerPage, panelNotice } from '../../_lib/page'
-import { noticeUi } from '../../_lib/notice.i18n'
+import { footerPage, panelNotice } from '@/lib/pages/footer-page'
+import { noticeUi } from '@/lib/pages/notice.i18n'
 import { data } from '../_data'
 
 // Точка входа страницы подвала. Всё, что делает статику и SEO — предрендер по

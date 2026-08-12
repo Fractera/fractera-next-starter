@@ -270,6 +270,17 @@ The pages that stood here before were dynamic — five of five declared `force-d
 params and no structured data, so they were nearly invisible to search engines while looking perfectly
 fine. **Anything footer-page-shaped → load the `manage-footer-pages` skill first.**
 
+### 🔒 The cookie banner exists — switch it, never rebuild or delete it
+
+The consent strip, its 82-language wording, the footer's **Cookie settings** button that re-opens
+it, and the policy page in `app/[lang]/(cookie)/` all ship with the project. It is turned on and off
+in the panel (`featureOn("cookieBanner")`), so deleting the component to "disable" it takes the
+toggle away from every project built afterwards.
+
+Consent written in a language the visitor cannot read is not a missing translation — it is consent
+that never happened, so this banner's dictionary is held to all 82 languages by `npm run check:i18n`.
+**Anything consent-shaped → load the `manage-cookie-banner` skill first.**
+
 ### `APP-CONFIG` — the settings you cannot edit from here
 
 The app's name, description, address, logo and images, icons and PWA, author, social profiles, SEO,

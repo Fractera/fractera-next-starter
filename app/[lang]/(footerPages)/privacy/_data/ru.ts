@@ -1,4 +1,4 @@
-import type { FooterPageCell } from '../../_lib/page'
+import type { FooterPageCell } from '@/lib/pages/footer-page'
 
 // Языковая ячейка: переводится только то, что нужно. Непереведённое поле
 // возьмётся из английской основы тем же резолвером, что и у постов блога.

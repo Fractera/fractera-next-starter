@@ -1,4 +1,4 @@
-import type { FooterPageCell } from '../../_lib/page'
+import type { FooterPageCell } from '@/lib/pages/footer-page'
 
 export const en: FooterPageCell = {
   title: 'Privacy Policy',

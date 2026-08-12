@@ -20,6 +20,10 @@ const FILES = [
   // Переиспользуемые части продукта — всегда 82 (правило 4д).
   ["components/cart/cart.i18n.ts", "CartUi", 82],
   ["components/menu/account/account-menu.i18n.ts", "AccountLabels", 82],
+  // Служебные слова верхнего меню: бургер и aria-подписи ящиков. Жили внутри
+  // компонента на шести языках — то есть на семьдесят шестом рынке бургер молча
+  // звался "Menu". Переиспользуемая часть продукта обязана говорить на всех.
+  ["components/menu/top/top-menu.i18n.ts", "TopMenuUi", 82],
   ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
   // Словарь ОДНОЙ страницы — идёт по включённому набору
   // (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`), сегодня `en,ru`. Число здесь стоит

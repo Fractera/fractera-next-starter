@@ -11,6 +11,7 @@ import { accountLinks } from "@/lib/menu/account-links";
 import { cartUi } from "@/components/cart/cart.i18n";
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 import { featureOn } from "@/config/platform-config";
+import { topMenuUi } from "@/components/menu/top/top-menu.i18n";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
 // group enables the top/left/right slot or the app turns on the auth button. Server
@@ -20,15 +21,11 @@ import { featureOn } from "@/config/platform-config";
 // side's menu has a group; the icon flips when its drawer is open). The header is ALSO
 // force-rendered when public auth is enabled (NEXT_PUBLIC_APP_SHELL_AUTH=left|right, step
 // 161) even with zero groups, so the account control always has a home. Account strings are
-// co-located in components/menu/account/ (82 languages); only the drawer aria-labels stay here.
-const UI_LABELS: Record<string, { menu: string; openLeft: string; closeLeft: string; openRight: string; closeRight: string }> = {
-  en: { menu: "Menu", openLeft: "Open left menu", closeLeft: "Close left menu", openRight: "Open right menu", closeRight: "Close right menu" },
-  es: { menu: "Menú", openLeft: "Abrir menú izquierdo", closeLeft: "Cerrar menú izquierdo", openRight: "Abrir menú derecho", closeRight: "Cerrar menú derecho" },
-  ru: { menu: "Меню", openLeft: "Открыть левое меню", closeLeft: "Закрыть левое меню", openRight: "Открыть правое меню", closeRight: "Закрыть правое меню" },
-  hy: { menu: "Մենյու", openLeft: "Բացել ձախ մենյուն", closeLeft: "Փակել ձախ մենյուն", openRight: "Բացել աջ մենյուն", closeRight: "Փակել աջ մենյուն" },
-  fr: { menu: "Menu", openLeft: "Ouvrir le menu gauche", closeLeft: "Fermer le menu gauche", openRight: "Ouvrir le menu droit", closeRight: "Fermer le menu droit" },
-  de: { menu: "Menü", openLeft: "Linkes Menü öffnen", closeLeft: "Linkes Menü schließen", openRight: "Rechtes Menü öffnen", closeRight: "Rechtes Menü schließen" },
-};
+// co-located in components/menu/account/ (82 languages), and the drawer aria-labels now live
+// beside them in top-menu.i18n.ts — also 82. They used to sit inline here in six languages,
+// which meant that on the seventy-sixth market the burger silently read "Menu" and a
+// screen-reader user heard an English "Open left menu". A reusable part of the product must
+// speak every language the owner can switch on (rule 4д).
 
 export async function TopMenu({ lang }: { lang: string }) {
   const cfg = getAppConfig();
@@ -72,7 +69,7 @@ export async function TopMenu({ lang }: { lang: string }) {
     );
   }
 
-  const ui = UI_LABELS[lang] ?? UI_LABELS.en;
+  const ui = topMenuUi(lang);
   // The account drawer's Projects entry is a plain launcher into the projects service (:3003,
   // step 197) — no build-time manifest fs-scan here anymore (the zone left the slot).
 

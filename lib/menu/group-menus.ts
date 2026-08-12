@@ -11,7 +11,13 @@ import { MENU_SLOTS, type MenuSlot } from "./menu-types";
 // No DB, no dynamic functions → the [lang] tree stays statically prerendered.
 
 export type { MenuSlot };
-export type MenuChild = { slug: string; title: string };
+
+// `href` НЕОБЯЗАТЕЛЕН И ПОЯВИЛСЯ ПОЗЖЕ (2026-08-12). Пункт, пришедший из
+// манифеста группы на диске, живёт по адресу `/<язык>/<slug>` — там и лежит его
+// папка. Пункт, собранный владельцем в панели, адрес несёт свой: группа может
+// быть виртуальной («Компания»), а её дети — вести куда угодно. Отсутствие
+// поля означает прежнее правило, поэтому старые вызовы не тронуты.
+export type MenuChild = { slug: string; title: string; href?: string };
 export type MenuGroup = {
   slug: string;
   label: string;
@@ -19,6 +25,7 @@ export type MenuGroup = {
   childrenAsDropdown: boolean;
   roles: string;
   children: MenuChild[];
+  href?: string;
 };
 
 const LANG_ROOT = join(process.cwd(), "app", "[lang]");

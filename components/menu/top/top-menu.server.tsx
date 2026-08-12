@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups, slotHasGroups } from "@/lib/menu/group-menus";
+import { navGroupsFromConfig } from "@/lib/menu/nav-config";
 import { DesktopNav } from "@/components/menu/top/desktop-nav.client";
 import { MobileMenu } from "@/components/menu/top/mobile-menu.client";
 import { AccountButton } from "@/components/menu/account/account-button.client";
@@ -38,8 +39,12 @@ export async function TopMenu({ lang }: { lang: string }) {
   // 🔒 ВЫКЛЮЧАТЕЛЬ ПАНЕЛИ РЕШАЕТ, ЕСТЬ ЛИ ВЕРХНЕЕ МЕНЮ ВООБЩЕ (2026-08-12).
   // Выключено — пунктов нет, даже если манифесты групп на диске их объявляют:
   // владелец сказал «не показывать», и диск с ним не спорит.
+  // Источник пунктов: настройки панели, а если владелец их ещё не открывал —
+  // прежние манифесты на диске. Различие «ветки нет» и «ветка пуста» разобрано
+  // в `nav-config.ts`; без него каждый существующий проект потерял бы меню.
   const menuOn = featureOn("topMenu");
-  const groups = menuOn ? getMenuGroups("top", lang) : [];
+  const fromConfig = menuOn ? navGroupsFromConfig(lang) : null;
+  const groups = menuOn ? (fromConfig ?? getMenuGroups("top", lang)) : [];
 
   // Полоса шапки нужна, когда её кто-то населяет: само меню (даже пустое — это
   // состояние, а не ошибка) или ящик сбоку, которому нужен переключатель.

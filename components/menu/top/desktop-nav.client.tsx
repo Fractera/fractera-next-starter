@@ -17,7 +17,7 @@ export function DesktopNav({ lang, groups }: { lang: string; groups: MenuGroup[]
       <span className="hidden min-[780px]:block h-5 w-px bg-border" aria-hidden />
       <nav className="hidden min-[780px]:flex items-center gap-3 flex-wrap">
         {visible.map((g) => (
-          <MenuDropdown key={g.slug} lang={lang} slug={g.slug} label={g.label} items={g.children} asDropdown={g.childrenAsDropdown} />
+          <MenuDropdown key={g.slug} lang={lang} slug={g.slug} href={g.href} label={g.label} items={g.children} asDropdown={g.childrenAsDropdown} />
         ))}
       </nav>
     </>

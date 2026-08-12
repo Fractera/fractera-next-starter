@@ -28,7 +28,7 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
             {visible.map((g) => (
               <div key={g.slug} className="flex flex-col">
                 <Link
-                  href={`/${lang}/${g.slug}`}
+                  href={g.href ? `/${lang}${g.href}` : `/${lang}/${g.slug}`}
                   onClick={() => setOpen(false)}
                   className="py-2.5 text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors"
                 >
@@ -37,7 +37,7 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
                 {g.childrenAsDropdown && g.children.map((c) => (
                   <Link
                     key={c.slug}
-                    href={`/${lang}/${g.slug}/${c.slug}`}
+                    href={c.href ? `/${lang}${c.href}` : `/${lang}/${g.slug}/${c.slug}`}
                     onClick={() => setOpen(false)}
                     className="py-2 pl-4 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors truncate"
                   >

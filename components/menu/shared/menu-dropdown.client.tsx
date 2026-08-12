@@ -16,18 +16,21 @@ import {
 // childrenAsDropdown it opens a dropdown of its child pages; otherwise it is a plain
 // link (Button asChild) to the group index. no-JS degradation (sub-step 4) layers on
 // later — the static HTML already carries the group-root link for the non-dropdown case.
-export type MenuChildLink = { slug: string; title: string };
+export type MenuChildLink = { slug: string; title: string; href?: string };
 
 export function MenuDropdown({
-  lang, slug, label, items, asDropdown,
+  lang, slug, label, items, asDropdown, href,
 }: {
   lang: string;
   slug: string;
   label: string;
   items: MenuChildLink[];
   asDropdown: boolean;
+  /** Адрес из настроек панели. Нет — значит пункт с диска, `/<язык>/<slug>`. */
+  href?: string;
 }) {
-  const groupHref = `/${lang}/${slug}`;
+  const groupHref = href ? `/${lang}${href}` : `/${lang}/${slug}`;
+  const childHref = (c: MenuChildLink) => (c.href ? `/${lang}${c.href}` : `${groupHref}/${c.slug}`);
 
   if (!asDropdown || items.length === 0) {
     // Button is Base UI (no asChild); a link styled as a button uses buttonVariants().
@@ -53,7 +56,7 @@ export function MenuDropdown({
         <DropdownMenuSeparator />
         {items.map((c) => (
           <DropdownMenuItem key={c.slug} asChild>
-            <Link href={`${groupHref}/${c.slug}`} className="truncate">{c.title}</Link>
+            <Link href={childHref(c)} className="truncate">{c.title}</Link>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

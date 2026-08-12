@@ -20,8 +20,13 @@ const FILES = [
   // Переиспользуемые части продукта — всегда 82 (правило 4д).
   ["components/cart/cart.i18n.ts", "CartUi", 82],
   ["components/menu/account/account-menu.i18n.ts", "AccountLabels", 82],
-  ["app/[lang]/_data/home.i18n.ts", "HomeUi", 82],
   ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
+  // Словарь ОДНОЙ страницы — идёт по включённому набору
+  // (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`), сегодня `en,ru`. Число здесь стоит
+  // намеренно маленькое: требовать 82 от страничного словаря значит объявлять
+  // долгом работу, которой никто не заказывал. Владелец включит третий язык —
+  // поднимет и это число.
+  ["app/[lang]/_data/home.i18n.ts", "HomeUi", 2],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

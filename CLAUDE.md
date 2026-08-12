@@ -260,6 +260,16 @@ The skill holds the whole procedure: how to read the real state, which of three 
 are actually looking at (a setting / a restyle / a structural change), what breaks if you build your own
 bar, and how to restyle the existing one safely. `npm run check:menu` enforces the rule mechanically.
 
+### 🔒 Footer pages are static pages of the site — never dynamic ones
+
+The project ships three (`privacy`, `terms`, `cookies`) in the route group
+`app/[lang]/(footerPages)/` as a WORKING PATTERN; a fourth is made by copying one. Their text lives
+beside them in language cells, like a blog post. Their LINKS are the owner's setting in the panel.
+
+The pages that stood here before were dynamic — five of five declared `force-dynamic`, had no static
+params and no structured data, so they were nearly invisible to search engines while looking perfectly
+fine. **Anything footer-page-shaped → load the `manage-footer-pages` skill first.**
+
 ### `APP-CONFIG` — the settings you cannot edit from here
 
 The app's name, description, address, logo and images, icons and PWA, author, social profiles, SEO,
@@ -574,7 +584,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       several tools of the same purpose differ only in their contracts, and the Limits section is what
       decides between them. Choosing by folder name is how the wrong cropper gets used.</action>
     <action>WHENEVER the request touches the app shell — a top menu, navigation, a header, "add a link to
-      the site" — LOAD THE `manage-top-menu` SKILL and run `npm run read:menu` BEFORE writing anything.
+      the site" — LOAD THE `manage-top-menu` SKILL (or `manage-footer-pages` when the request is about the bottom of the site) and run `npm run read:menu` BEFORE writing anything.
       The menu already exists and its buttons are the OWNER's setting, held in files outside git; the
       repository alone shows an empty header and leads you to build a second one. The skill carries the
       procedure so this instruction does not have to; section 3 holds only the rule.</action>

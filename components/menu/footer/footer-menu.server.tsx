@@ -2,13 +2,12 @@ import Link from "next/link";
 import { Github, Twitter, Linkedin, Facebook } from "lucide-react";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups } from "@/lib/menu/group-menus";
-import { navGroupsFromConfig } from "@/lib/menu/nav-config";
+import { navGroupsFromConfig, defaultFooterGroups } from "@/lib/menu/nav-config";
 import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
-import { FooterLayersNav } from "@/components/menu/footer/footer-layers-nav.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, layerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 
@@ -46,7 +45,11 @@ export function FooterMenu({ lang }: { lang: string }) {
   // существующий проект потерял бы ссылки подвала молча.
   const pagesOn = featureOn("footerPages");
   const fromConfig = pagesOn ? navGroupsFromConfig("footer", lang) : null;
-  const groups = pagesOn ? (fromConfig ?? getMenuGroups("footer", lang)) : [];
+  // Владелец раздел не открывал — показываем три страницы, которые в проекте
+  // уже есть. Плюс группы с диска, если разработчик их объявил.
+  const groups = pagesOn
+    ? (fromConfig ?? [...defaultFooterGroups(lang), ...getMenuGroups("footer", lang)])
+    : [];
   const ui = footerLabels(lang);
   const socials = socialLinks(cfg.seo?.social);
   const address = cfg.geo?.address;
@@ -71,12 +74,10 @@ export function FooterMenu({ lang }: { lang: string }) {
           </div>
         )}
 
-        {/* Section 2 (now ABOVE the legal block — owner reorder) — the app's MAIN AREAS
-            navigator ("service pages"): Home + role-gated Admin/Design/Projects cockpit
-            layers. Rendered on EVERY page (not home-only like the old scroll nav); a
-            responsive 3/2/1-column grid; unauthorized clicks get a red toast, authorized
-            ones redirect to the layer. */}
-        <FooterLayersNav lang={lang} labels={layerLabels(lang)} />
+        {/* 🪦 Навигатор «слоёв» удалён 2026-08-12 по слову владельца. Он вёл на
+            Admin :3002, Design :3004 и слой проектов :3003 — два последних снесены
+            шагом 500. Ссылка в никуда на каждой странице сайта хуже отсутствующей:
+            посетитель считает её поломкой сайта, а не следом старой архитектуры. */}
 
         {/* Отдельной «правовой» полосы здесь больше нет (2026-08-12). Страницы
             подвала — обычные страницы сайта, и живут они в секции 1 выше, где их

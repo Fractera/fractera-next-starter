@@ -121,31 +121,9 @@ export function footerLabels(lang: string): FooterLabels {
 // Home (public) + the role-gated cockpit layers Admin / Design / Projects. Owner-facing
 // cockpit navigation → the admin-layers ten (rule 4г: en,es,fr,it,ru,de,pt,pl,tr,nl);
 // any other language falls back to English. `denied` is the red toast on insufficient role.
-export type LayerLabels = {
-  heading: string;
-  home: string;
-  admin: string;
-  design: string;
-  // step 500: `projects` removed with the projects layer; key kept out of the type.
-  denied: string;
-};
-
-const LAYER_LABELS: Record<string, LayerLabels> = {
-  en: { heading: "Sections", home: "Home", admin: "Admin panel", design: "Design", denied: "Access denied — insufficient permissions" },
-  es: { heading: "Secciones", home: "Inicio", admin: "Panel de administración", design: "Diseño", denied: "Acceso denegado: permisos insuficientes" },
-  fr: { heading: "Sections", home: "Accueil", admin: "Panneau d'administration", design: "Design", denied: "Accès refusé — droits insuffisants" },
-  it: { heading: "Sezioni", home: "Home", admin: "Pannello di amministrazione", design: "Design", denied: "Accesso negato — autorizzazioni insufficienti" },
-  ru: { heading: "Разделы", home: "Главная", admin: "Административная панель", design: "Дизайн", denied: "Доступ запрещён — недостаточно прав" },
-  de: { heading: "Bereiche", home: "Startseite", admin: "Administrationsbereich", design: "Design", denied: "Zugriff verweigert — unzureichende Berechtigungen" },
-  pt: { heading: "Seções", home: "Início", admin: "Painel de administração", design: "Design", denied: "Acesso negado — permissões insuficientes" },
-  pl: { heading: "Sekcje", home: "Strona główna", admin: "Panel administracyjny", design: "Projektowanie", denied: "Odmowa dostępu — niewystarczające uprawnienia" },
-  tr: { heading: "Bölümler", home: "Ana sayfa", admin: "Yönetim paneli", design: "Tasarım", denied: "Erişim reddedildi — yetersiz izin" },
-  nl: { heading: "Secties", home: "Home", admin: "Beheerpaneel", design: "Ontwerp", denied: "Toegang geweigerd — onvoldoende rechten" },
-};
-
-export function layerLabels(lang: string): LayerLabels {
-  return LAYER_LABELS[lang] ?? LAYER_LABELS.en;
-}
+// 🪦 Слова навигатора «слоёв» удалены 2026-08-12 вместе с самим навигатором:
+// он вёл на Design :3004 и слой проектов :3003, снесённые шагом 500. Словарь
+// без потребителя гниёт молча — следующая сессия принимает его за нужный.
 
 // ─── Content-width toggle (footer) ───────────────────────────────────────────
 // aria-label/title for the wide/narrow screen-width button (ported from the Projects

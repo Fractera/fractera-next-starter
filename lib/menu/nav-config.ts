@@ -87,6 +87,35 @@ function toChild(slot: NavSlot, raw: RawItem, lang: string): MenuChild | null {
  * источник — манифесты на диске. Не различай мы их, каждый существующий проект
  * потерял бы своё меню в момент обновления, молча.
  */
+/**
+ * Страницы подвала, которые проект показывает БЕЗ всякой настройки.
+ *
+ * 🔒 СВЕЖИЙ ПРОЕКТ ОБЯЗАН ВЫГЛЯДЕТЬ ГОТОВЫМ (владелец, 2026-08-12). Три страницы
+ * лежат в дереве с первой минуты, и подвал без ссылок на них выглядел бы
+ * поломкой: страницы есть, а дойти до них неоткуда. Владелец откроет раздел
+ * панели — его набор станет главным, и этот список больше не применяется.
+ *
+ * Подписи берутся из тех же ключей перевода, что и у настроенных пунктов,
+ * поэтому ничего специального для языков здесь нет.
+ */
+const DEFAULT_FOOTER: { id: string; href: string; label: string }[] = [
+  { id: "privacy", href: "/privacy", label: "Privacy" },
+  { id: "terms", href: "/terms", label: "Terms" },
+  { id: "cookies", href: "/cookies", label: "Cookies" },
+];
+
+export function defaultFooterGroups(lang: string): MenuGroup[] {
+  return DEFAULT_FOOTER.map((p, i) => ({
+    slug: p.id,
+    href: p.href,
+    label: labelFor("footer", p.id, p.label, p.href, lang),
+    order: (i + 1) * 10,
+    childrenAsDropdown: false,
+    roles: "public",
+    children: [],
+  }));
+}
+
 export function navGroupsFromConfig(slot: NavSlot, lang: string): MenuGroup[] | null {
   const nav = (getAppConfig() as { nav?: Record<string, unknown> }).nav;
   const list = nav?.[slot];

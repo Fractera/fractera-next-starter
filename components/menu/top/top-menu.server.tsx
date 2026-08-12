@@ -9,6 +9,7 @@ import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { accountLinks } from "@/lib/menu/account-links";
 import { cartUi } from "@/components/cart/cart.i18n";
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
+import { featureOn } from "@/config/platform-config";
 
 // Always-present TOP menu (step 160). Exists in every project, renders NOTHING until a
 // group enables the top/left/right slot or the app turns on the auth button. Server
@@ -30,13 +31,41 @@ const UI_LABELS: Record<string, { menu: string; openLeft: string; closeLeft: str
 
 export async function TopMenu({ lang }: { lang: string }) {
   const cfg = getAppConfig();
-  const groups = getMenuGroups("top", lang);
   const authSide = appShellAuthSide();
   const leftHas = slotHasGroups("left", lang);
   const rightHas = slotHasGroups("right", lang);
 
-  // Not in the render tree until something asks for it (top nav, auth, or a side drawer).
-  if (groups.length === 0 && !authSide && !leftHas && !rightHas) return null;
+  // 🔒 ВЫКЛЮЧАТЕЛЬ ПАНЕЛИ РЕШАЕТ, ЕСТЬ ЛИ ВЕРХНЕЕ МЕНЮ ВООБЩЕ (2026-08-12).
+  // Выключено — пунктов нет, даже если манифесты групп на диске их объявляют:
+  // владелец сказал «не показывать», и диск с ним не спорит.
+  const menuOn = featureOn("topMenu");
+  const groups = menuOn ? getMenuGroups("top", lang) : [];
+
+  // Полоса шапки нужна, когда её кто-то населяет: само меню (даже пустое — это
+  // состояние, а не ошибка) или ящик сбоку, которому нужен переключатель.
+  const barNeeded = menuOn || leftHas || rightHas;
+
+  if (!barNeeded) {
+    // 🔒 МЕНЮ ВЫКЛЮЧЕНО, А ВХОД ВКЛЮЧЁН — кнопка живёт сама, абсолютным
+    // позиционированием в правом верхнем углу (требование владельца
+    // 2026-08-12). Рисовать ради одной кнопки полосу во всю ширину значит
+    // навязать сайту шапку, которую владелец выключил.
+    // Место то же, что и у кнопки внутри полосы, поэтому включение меню
+    // визуально не сдвигает её.
+    if (!authSide) return null;
+    return (
+      <div className="absolute top-0 right-0 z-40 h-14 px-6 md:px-8 flex items-center">
+        <AccountButton
+          lang={lang}
+          side={authSide}
+          labels={accountLabels(lang)}
+          links={accountLinks(lang)}
+          cart={cartUi(lang)}
+          currency={cfg.commerce.currency}
+        />
+      </div>
+    );
+  }
 
   const ui = UI_LABELS[lang] ?? UI_LABELS.en;
   // The account drawer's Projects entry is a plain launcher into the projects service (:3003,

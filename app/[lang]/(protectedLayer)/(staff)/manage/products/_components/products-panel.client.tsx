@@ -111,9 +111,21 @@ export function ProductsPanel(
   return (
     <section>
       <ProductsToolbar
-        labels={labels}
-        revealed={liscommon.revealed}
-        loading={liscommon.loading}
+        labels={{
+          // Общие слова тулбара живут в общем словаре слоя, свои — в словаре
+          // страницы. Раньше здесь стоял `labels={labels}`: страничный словарь
+          // не несёт слов таблицы, и сборка падала на типах.
+          tableTitle: common.tableTitle,
+          reveal: common.reveal,
+          loading: common.loading,
+          add: labels.add,
+          cancelAdd: labels.cancelAdd,
+          searchPlaceholder: common.searchPlaceholder,
+          find: common.find,
+          reset: common.reset,
+        }}
+        revealed={list.revealed}
+        loading={list.loading}
         adding={adding}
         query={list.query}
         applied={list.applied}
@@ -121,7 +133,7 @@ export function ProductsPanel(
         onReveal={() => list.load({ page: 1 })}
         onToggleAdd={() => setAdding(v => !v)}
         onSearch={list.search}
-        onReset={liscommon.resetSearch}
+        onReset={list.resetSearch}
       />
 
       {adding && (
@@ -131,7 +143,7 @@ export function ProductsPanel(
         />
       )}
 
-      {!liscommon.revealed ? (
+      {!list.revealed ? (
         <>
           <ProductTableSkeleton labels={labels} />
           <p className="mt-2 text-center text-[10px] text-muted-foreground">{common.revealHint}</p>
@@ -157,7 +169,7 @@ export function ProductsPanel(
             total={list.total}
             page={list.page}
             pages={list.pages}
-            perPage={liscommon.perPage}
+            perPage={list.perPage}
             onPage={p => list.load({ page: p })}
             onSize={list.changeSize}
           />

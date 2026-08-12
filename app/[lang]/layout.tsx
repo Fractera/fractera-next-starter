@@ -14,7 +14,7 @@ import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
 import { buildOrganizationSchema, buildWebSiteSchema, buildLocalBusinessSchema } from "@/lib/jsonld";
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config";
-import { readBannerConfig } from "./_components/legal/legal-config";
+import { readBannerConfig } from "./_components/legal/banner-config";
 import { CookieBanner } from "./_components/legal/cookie-banner.client";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/

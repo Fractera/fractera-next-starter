@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Github, Twitter, Linkedin, Facebook } from "lucide-react";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups } from "@/lib/menu/group-menus";
+import { navGroupsFromConfig } from "@/lib/menu/nav-config";
+import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { FooterLayersNav } from "@/components/menu/footer/footer-layers-nav.client";
@@ -9,7 +11,6 @@ import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client
 import { footerLabels, layerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
-import { LegalFooterNav } from "@/app/[lang]/_components/legal/legal-footer-nav.server";
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
 // (re-programmed, not copied). Three sections:
@@ -38,7 +39,14 @@ function socialLinks(social: { twitter?: string; github?: string; linkedin?: str
 
 export function FooterMenu({ lang }: { lang: string }) {
   const cfg = getAppConfig();
-  const groups = getMenuGroups("footer", lang);
+  // 🔒 ТОТ ЖЕ МЕХАНИЗМ, ЧТО У ВЕРХНЕГО МЕНЮ (2026-08-12). Ссылки подвала —
+  // настройка владельца в панели, а не манифесты на диске. Различие «ветки нет»
+  // и «ветка пуста» сохранено: пусто — владелец убрал все ссылки, нет ветки —
+  // он раздел не открывал, и работает прежний источник. Иначе каждый
+  // существующий проект потерял бы ссылки подвала молча.
+  const pagesOn = featureOn("footerPages");
+  const fromConfig = pagesOn ? navGroupsFromConfig("footer", lang) : null;
+  const groups = pagesOn ? (fromConfig ?? getMenuGroups("footer", lang)) : [];
   const ui = footerLabels(lang);
   const socials = socialLinks(cfg.seo?.social);
   const address = cfg.geo?.address;
@@ -55,7 +63,7 @@ export function FooterMenu({ lang }: { lang: string }) {
             <p className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{ui.footerPages}</p>
             <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground font-medium">
               {groups.map((g) => (
-                <Link key={g.slug} href={`/${lang}/${g.slug}`} className="hover:text-primary transition-colors">
+                <Link key={g.slug} href={g.href ? `/${lang}${g.href}` : `/${lang}/${g.slug}`} className="hover:text-primary transition-colors">
                   {g.label}
                 </Link>
               ))}
@@ -70,9 +78,10 @@ export function FooterMenu({ lang }: { lang: string }) {
             ones redirect to the layer. */}
         <FooterLayersNav lang={lang} labels={layerLabels(lang)} />
 
-        {/* Legal section (step 305) — the required compliance pages, on every public page via the layout.
-            Sits BELOW the areas navigator per the owner's ordering. */}
-        <LegalFooterNav lang={lang} />
+        {/* Отдельной «правовой» полосы здесь больше нет (2026-08-12). Страницы
+            подвала — обычные страницы сайта, и живут они в секции 1 выше, где их
+            собирает владелец. Второй список ссылок делил подвал по признаку,
+            которого в настройках не существует. */}
 
         {/* Section 3 — company: copyright + address, social, theme toggle, language.
             One row on every width (© + name on the left, controls on the right).

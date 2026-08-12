@@ -40,7 +40,7 @@ export async function TopMenu({ lang }: { lang: string }) {
   // прежние манифесты на диске. Различие «ветки нет» и «ветка пуста» разобрано
   // в `nav-config.ts`; без него каждый существующий проект потерял бы меню.
   const menuOn = featureOn("topMenu");
-  const fromConfig = menuOn ? navGroupsFromConfig(lang) : null;
+  const fromConfig = menuOn ? navGroupsFromConfig("top", lang) : null;
   const groups = menuOn ? (fromConfig ?? getMenuGroups("top", lang)) : [];
 
   // Полоса шапки нужна, когда её кто-то населяет: само меню (даже пустое — это

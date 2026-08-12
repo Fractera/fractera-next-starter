@@ -21,6 +21,17 @@ import type { MenuGroup, MenuChild } from "./group-menus";
 // зовёт `/api/revalidate`, который сбрасывает кэш именно этого макета. Значит
 // изменение видно на следующей загрузке, без пересборки и без `force-dynamic`.
 
+/**
+ * Слот меню, которым управляет владелец из панели.
+ *
+ * Их ровно два, и это не заготовка на будущее: верхняя полоса и подвал — разные
+ * места с разным смыслом, но одной машиной. Боковые ящики (`left`/`right`)
+ * по-прежнему живут манифестами групп на диске: их наполняет разработчик, а не
+ * владелец, и тащить их в настройки значило бы дать владельцу рычаг от того,
+ * чего он не создавал.
+ */
+export type NavSlot = "top" | "footer";
+
 type RawItem = {
   id?: unknown;
   href?: unknown;
@@ -47,8 +58,8 @@ function clamp(text: string): string {
 }
 
 /** Подпись пункта на языке: перевод, иначе базовое значение, иначе адрес. */
-function labelFor(id: string, base: string, href: string, lang: string): string {
-  const translated = configValueForLang(`nav.top.${id}.label`, lang);
+function labelFor(slot: NavSlot, id: string, base: string, href: string, lang: string): string {
+  const translated = configValueForLang(`nav.${slot}.${id}.label`, lang);
   if (translated.trim() !== "") return clamp(translated);
   if (base.trim() !== "") return clamp(base);
   // Пункт без подписи вообще — показываем его адрес, а не пустую кнопку:
@@ -56,14 +67,14 @@ function labelFor(id: string, base: string, href: string, lang: string): string 
   return clamp(href.replace(/^\//, "") || id);
 }
 
-function toChild(raw: RawItem, lang: string): MenuChild | null {
+function toChild(slot: NavSlot, raw: RawItem, lang: string): MenuChild | null {
   const id = typeof raw.id === "string" ? raw.id : "";
   const href = typeof raw.href === "string" ? raw.href : "";
   if (!id || !href) return null;
   return {
     slug: id,
     href,
-    title: labelFor(id, typeof raw.label === "string" ? raw.label : "", href, lang),
+    title: labelFor(slot, id, typeof raw.label === "string" ? raw.label : "", href, lang),
   };
 }
 
@@ -76,19 +87,20 @@ function toChild(raw: RawItem, lang: string): MenuChild | null {
  * источник — манифесты на диске. Не различай мы их, каждый существующий проект
  * потерял бы своё меню в момент обновления, молча.
  */
-export function navGroupsFromConfig(lang: string): MenuGroup[] | null {
-  const nav = (getAppConfig() as { nav?: { top?: unknown } }).nav;
-  if (!nav || !Array.isArray(nav.top)) return null;
+export function navGroupsFromConfig(slot: NavSlot, lang: string): MenuGroup[] | null {
+  const nav = (getAppConfig() as { nav?: Record<string, unknown> }).nav;
+  const list = nav?.[slot];
+  if (!nav || !Array.isArray(list)) return null;
 
   const groups: MenuGroup[] = [];
-  for (const entry of nav.top as RawItem[]) {
+  for (const entry of list as RawItem[]) {
     if (!entry || typeof entry !== "object") continue;
     const id = typeof entry.id === "string" ? entry.id : "";
     if (!id) continue;
 
     const href = typeof entry.href === "string" ? entry.href : "";
     const children = Array.isArray(entry.children)
-      ? (entry.children as RawItem[]).map((c) => toChild(c, lang)).filter((c): c is MenuChild => c !== null)
+      ? (entry.children as RawItem[]).map((c) => toChild(slot, c, lang)).filter((c): c is MenuChild => c !== null)
       : [];
 
     // Группа без собственного адреса ведёт на первого ребёнка: заголовок,
@@ -99,7 +111,7 @@ export function navGroupsFromConfig(lang: string): MenuGroup[] | null {
     groups.push({
       slug: id,
       href: target,
-      label: labelFor(id, typeof entry.label === "string" ? entry.label : "", target, lang),
+      label: labelFor(slot, id, typeof entry.label === "string" ? entry.label : "", target, lang),
       order: typeof entry.order === "number" ? entry.order : 0,
       childrenAsDropdown: children.length > 0,
       // Кандидатами в меню становятся только публичные маршруты — отбор делает

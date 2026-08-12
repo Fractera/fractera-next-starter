@@ -161,6 +161,11 @@ function checkPost(dataDir) {
 const DYNAMIC_MARKERS = /force-dynamic|export const dynamic\s*=|cookies\(\)|headers\(\)|auth\(\)/
 const ENGINE_FILES = ["post-body", "registry", "resolve", "create-content-post", "create-content-page"]
 
+/** Убрать комментарии, чтобы проверка смотрела на код, а не на объяснения к нему. */
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "")
+}
+
 function walkFiles(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
@@ -176,8 +181,14 @@ function auditSurface(tabDir) {
 
   for (const f of files) {
     const text = readFileSync(f, "utf8")
-    // 1 — никакой динамики
-    const dyn = text.match(DYNAMIC_MARKERS)
+    // 1 — никакой динамики.
+    //
+    // 🔒 ИЩЕМ В КОДЕ, А НЕ В КОММЕНТАРИЯХ (2026-08-12). Раньше проверялся весь
+    // файл целиком, и сторож ловил собственное имя дефекта в объяснении, почему
+    // так делать нельзя: строка «никакого force-dynamic» в комментарии считалась
+    // нарушением. Сторож, запрещающий ГОВОРИТЬ о проблеме, заставляет писать
+    // код без объяснений — а объяснение здесь ценнее самой проверки.
+    const dyn = stripComments(text).match(DYNAMIC_MARKERS)
     if (dyn) fail(f, "surface-dynamic", `${dyn[0]} — публичная поверхность обязана оставаться статической`)
     // 2 — ни одного клиентского компонента
     if (/^["']use client["']/m.test(text)) fail(f, "surface-client", `"use client" — клиентский компонент во вкладке ломает работу без JS`)

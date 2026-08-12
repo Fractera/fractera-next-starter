@@ -248,6 +248,46 @@ panel, the installer, ports, the domain and certificates. These are changed by t
 behaviour is to say plainly which layer the request belongs to and wait — not to improvise a local
 imitation of it.
 
+### 🔒 The top menu already exists — you never build a second one
+
+**"Add a top menu" is not a coding task here.** The header ships with the project
+(`components/menu/top/top-menu.server.tsx`), and its buttons are assembled by the OWNER in the control
+panel: which pages they point at, their order, which collapse into a dropdown, and their translations.
+
+**Before you touch anything menu-shaped, run one command:**
+
+```
+npm run read:menu
+```
+
+It prints what is actually there — whether the menu is switched on, where its buttons come from, what is
+in it right now, in which languages, and where it is changed. **You cannot learn this from the code**: the
+buttons live in `APP-CONFIG/app-config.json` and the switch in `PLATFORM-CONFIG/platform-config.json`,
+both on the server and outside git. Read the repository alone and you see a header with no items, draw
+the only conclusion available to you — "there is no menu, I must write one" — and ship a second one.
+
+**Then answer by the request, not by the phrasing:**
+
+| The owner wants | What that is | What you do |
+|---|---|---|
+| different pages / order / grouping / labels | a **setting** | say so and point at the panel — one sentence, no code |
+| a different look: colours, height, typography, a logo treatment | **your work** | restyle the existing component; do not fork it |
+| something structural the panel cannot express (a mega-menu, a search field in the bar) | **a real change** | extend the existing header, still one header |
+
+**Two conflicts this prevents, both of which look like nothing until a human opens the page:**
+
+- **Two bars.** You add your own header; later the owner switches the platform one on, or already had it
+  on. The page now has two navigation strips, and the one you wrote answers to nobody — the panel cannot
+  edit it, so the owner's changes silently do nothing.
+- **Static generation quietly lost.** A hand-rolled menu reaches for the current path to highlight the
+  active link, that pulls in a client component owning the route, and the page stops being prerendered.
+  The platform header avoids this deliberately: it resolves everything on the server and hands finished
+  strings to small islands. Rebuild it yourself and you will rediscover that trap from the inside.
+
+**`npm run check:menu` enforces the first of those mechanically** — it fails on a second header that
+sticks to the top of the window and carries links. Run it after touching the shell. It is deliberately
+narrow: page headings are legitimate and it ignores them.
+
 ### `APP-CONFIG` — the settings you cannot edit from here
 
 The app's name, description, address, logo and images, icons and PWA, author, social profiles, SEO,
@@ -561,8 +601,14 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       whether one exists — RE-READ PLATFORM-TOOLS.md before writing code. Listing `tools/` is not enough:
       several tools of the same purpose differ only in their contracts, and the Limits section is what
       decides between them. Choosing by folder name is how the wrong cropper gets used.</action>
+    <action>WHENEVER the request touches the app shell — a top menu, navigation, a header, "add a link to
+      the site" — RUN `npm run read:menu` BEFORE writing anything. The menu already exists and its buttons
+      are the OWNER's setting, held in files outside git; the repository alone shows an empty header and
+      leads you to build a second one. The command says what is really there and which of the three cases
+      you are in (setting / restyle / structural change) — section 3 of this file holds the rule.</action>
     <gate>every memory-derived claim used was re-checked against the source on disk; if a tool is involved,
-      PLATFORM-TOOLS.md was re-read and the chosen tool named with the reason it fits</gate>
+      PLATFORM-TOOLS.md was re-read and the chosen tool named with the reason it fits; if the shell or its
+      navigation is involved, `npm run read:menu` was run and its answer stated</gate>
   </stage>
 
   <stage id="6.3" name="Open a step">

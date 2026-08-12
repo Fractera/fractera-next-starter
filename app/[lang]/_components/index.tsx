@@ -1,6 +1,6 @@
 import { getAppConfig } from "@/config/app-config"
 import { DEFAULT_APP_CONFIG } from "@/config/app-config.defaults"
-import { adminUrlFromSite } from "@/lib/runtime-urls"
+import { adminUrlFromSite } from "@/lib/site-urls"
 import { ALL_ROLES } from "@/lib/roles"
 import { homeUi } from "../_data/home.i18n"
 

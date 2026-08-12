@@ -11,18 +11,10 @@
 //   `<host>:3001` on a domain yields https://admin.<domain>:3001 →
 //   ERR_SSL_PROTOCOL_ERROR (3001 has no TLS).
 
-// Service subdomain prefixes — used to recover the apex from any service host
-// (e.g. admin.aifa.dev → aifa.dev) in domain/Secure mode.
-const KNOWN_PREFIXES = ["www", "auth", "admin", "data", "hermes", "lightrag", "projects", "design"];
-
-function isIpHost(hostname: string): boolean {
-  return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname) || hostname === "localhost";
-}
-
-function apexFrom(hostname: string): string {
-  const labels = hostname.split(".");
-  return KNOWN_PREFIXES.includes(labels[0]) ? labels.slice(1).join(".") : hostname;
-}
+// Помощники живут в `lib/site-urls.ts` — модуле БЕЗ `"use client"`, потому что
+// они нужны и серверу тоже. Держать здесь вторую копию значит однажды починить
+// одну и забыть другую.
+import { isIpHost, apexFrom } from "./site-urls";
 
 // Public base URL of the Auth service as the BROWSER must reach it.
 export function authBase(): string {
@@ -68,24 +60,5 @@ export function registerRedirectUrl(callbackUrl: string, requireRole: "user" | "
   return url.toString();
 }
 
-// Адрес панели, выведенный ИЗ АДРЕСА САЙТА, а не из окна браузера.
-//
-// 🔒 ЗАЧЕМ ВТОРАЯ ФОРМА. `adminBase()` выше читает `window.location`, поэтому
-// работает только после гидратации — а главная странице обязана отдать ссылку на
-// панель в СТАТИЧЕСКОМ HTML: её читает и человек с выключенным JS, и поисковик.
-// Здесь адрес берётся из настроек (`APP-CONFIG.url`), которые сервер знает на
-// рендере, и страница остаётся статической.
-//
-// Пустой адрес — законный исход свежего сервера, где настройки ещё не сохраняли:
-// возвращаем пустую строку, а вызывающий показывает шаг без ссылки. Выдуманный
-// адрес панели хуже отсутствующего: он ведёт человека в никуда на первом же шаге.
-export function adminUrlFromSite(siteUrl: string | undefined): string {
-  if (!siteUrl) return "";
-  try {
-    const { protocol, hostname } = new URL(siteUrl);
-    if (isIpHost(hostname)) return `${protocol}//${hostname}:3002`;
-    return `${protocol}//admin.${apexFrom(hostname)}`;
-  } catch {
-    return "";
-  }
-}
+// `adminUrlFromSite()` переехала в `lib/site-urls.ts`: её вызывает СЕРВЕРНЫЙ
+// компонент главной, а отсюда, из-под `"use client"`, серверу её брать нельзя.

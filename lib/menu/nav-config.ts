@@ -29,14 +29,31 @@ type RawItem = {
   children?: unknown;
 };
 
+/**
+ * 🔒 ПРЕДЕЛ ДЛИНЫ ПОДПИСИ — 12 ЗНАКОВ (владелец, 2026-08-12).
+ *
+ * Ограничение стоит ЗДЕСЬ, на рендере, а не только в поле ввода панели: подпись
+ * может приехать из перевода, из конфига, набранного руками, или из заголовка
+ * страницы — а полоса меню одна, и один длинный пункт разносит её на телефоне.
+ * Проверка в интерфейсе подсказывает, проверка здесь гарантирует.
+ */
+const LABEL_MAX = 12;
+
+function clamp(text: string): string {
+  const t = text.trim();
+  // Многоточие — один знак, поэтому режем до предела и добавляем его: строка
+  // ровно предельной длины остаётся целой и без «хвоста».
+  return t.length <= LABEL_MAX ? t : `${t.slice(0, LABEL_MAX - 1).trimEnd()}…`;
+}
+
 /** Подпись пункта на языке: перевод, иначе базовое значение, иначе адрес. */
 function labelFor(id: string, base: string, href: string, lang: string): string {
   const translated = configValueForLang(`nav.top.${id}.label`, lang);
-  if (translated.trim() !== "") return translated;
-  if (base.trim() !== "") return base;
+  if (translated.trim() !== "") return clamp(translated);
+  if (base.trim() !== "") return clamp(base);
   // Пункт без подписи вообще — показываем его адрес, а не пустую кнопку:
   // пустая кнопка выглядит поломкой вёрстки, а адрес хотя бы объясняет себя.
-  return href.replace(/^\//, "") || id;
+  return clamp(href.replace(/^\//, "") || id);
 }
 
 function toChild(raw: RawItem, lang: string): MenuChild | null {

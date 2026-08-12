@@ -47,9 +47,11 @@ export async function TopMenu({ lang }: { lang: string }) {
   // состояние, а не ошибка) или ящик сбоку, которому нужен переключатель.
   const barNeeded = menuOn || leftHas || rightHas;
 
-  // Кнопка аккаунта собирается ОДИН раз и ставится в ту сторону, которую выбрал
-  // владелец: два одинаковых вызова в разных ветках разошлись бы при первой же
-  // правке пропсов.
+  // 🔒 КНОПКА АККАУНТА И КОРЗИНА ВСЕГДА СПРАВА (владелец, 2026-08-12).
+  // Настройка стороны решает ОДНО: с какой стороны выезжает ящик. Сама кнопка
+  // не переезжает никогда — это место, к которому человек привык на любом сайте,
+  // и менять его ради настройки ящика значит ломать привычку ради мелочи.
+  // (Я успел сделать наоборот и был поправлен: настройка двигала и кнопку.)
   const account = authSide ? (
     <AccountButton
       lang={lang}
@@ -69,11 +71,7 @@ export async function TopMenu({ lang }: { lang: string }) {
     // полосы, поэтому включение меню визуально её не сдвигает.
     if (!account) return null;
     return (
-      <div
-        className={`absolute top-0 z-40 h-14 px-6 md:px-8 flex items-center ${
-          authSide === "left" ? "left-0" : "right-0"
-        }`}
-      >
+      <div className="absolute top-0 right-0 z-40 h-14 px-6 md:px-8 flex items-center">
         {account}
       </div>
     );
@@ -87,12 +85,6 @@ export async function TopMenu({ lang }: { lang: string }) {
     <header className="w-full border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="w-full px-6 md:px-8 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          {/* 🔒 СТОРОНА ДВИГАЕТ И КНОПКУ, А НЕ ТОЛЬКО ВЫЕЗЖАЮЩУЮ ПАНЕЛЬ (2026-08-12).
-              Раньше настройка меняла лишь сторону, с которой выезжает ящик, — а он
-              виден только вошедшему пользователю. Владелец переключал «слева» и не
-              видел ровно ничего: кнопка оставалась справа, а ящика у гостя нет вовсе.
-              Настройка, у которой нет видимого следствия, читается как сломанная. */}
-          {authSide === "left" && account}
           {leftHas && <DrawerToggle side="left" labels={{ open: ui.openLeft, close: ui.closeLeft }} />}
 
           {/* Brand: the SHORT company name is ALWAYS shown; the logo sits beside it when
@@ -109,7 +101,7 @@ export async function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authSide === "right" && account}
+          {account}
           {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
               the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}

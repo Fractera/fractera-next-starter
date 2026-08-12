@@ -145,7 +145,7 @@ export function ProductsPanel(
 
       {!list.revealed ? (
         <>
-          <ProductTableSkeleton labels={labels} />
+          <ProductTableSkeleton labels={common} />
           <p className="mt-2 text-center text-[10px] text-muted-foreground">{common.revealHint}</p>
         </>
       ) : list.products.length === 0 ? (
@@ -161,11 +161,11 @@ export function ProductsPanel(
             products={list.products}
             lang={lang}
             currency={currency}
-            labels={labels}
+            labels={common}
             hrefFor={(id) => `/${lang}/manage/products/${id}`}
           />
           <ProductsPager
-            labels={labels}
+            labels={common}
             total={list.total}
             page={list.page}
             pages={list.pages}

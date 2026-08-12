@@ -47,24 +47,34 @@ export async function TopMenu({ lang }: { lang: string }) {
   // состояние, а не ошибка) или ящик сбоку, которому нужен переключатель.
   const barNeeded = menuOn || leftHas || rightHas;
 
+  // Кнопка аккаунта собирается ОДИН раз и ставится в ту сторону, которую выбрал
+  // владелец: два одинаковых вызова в разных ветках разошлись бы при первой же
+  // правке пропсов.
+  const account = authSide ? (
+    <AccountButton
+      lang={lang}
+      side={authSide}
+      labels={accountLabels(lang)}
+      links={accountLinks(lang)}
+      cart={cartUi(lang)}
+      currency={cfg.commerce.currency}
+    />
+  ) : null;
+
   if (!barNeeded) {
     // 🔒 МЕНЮ ВЫКЛЮЧЕНО, А ВХОД ВКЛЮЧЁН — кнопка живёт сама, абсолютным
-    // позиционированием в правом верхнем углу (требование владельца
-    // 2026-08-12). Рисовать ради одной кнопки полосу во всю ширину значит
-    // навязать сайту шапку, которую владелец выключил.
-    // Место то же, что и у кнопки внутри полосы, поэтому включение меню
-    // визуально не сдвигает её.
-    if (!authSide) return null;
+    // позиционированием в верхнем углу (требование владельца 2026-08-12).
+    // Рисовать ради одной кнопки полосу во всю ширину значит навязать сайту
+    // шапку, которую владелец выключил. Угол — тот же, что и у кнопки внутри
+    // полосы, поэтому включение меню визуально её не сдвигает.
+    if (!account) return null;
     return (
-      <div className="absolute top-0 right-0 z-40 h-14 px-6 md:px-8 flex items-center">
-        <AccountButton
-          lang={lang}
-          side={authSide}
-          labels={accountLabels(lang)}
-          links={accountLinks(lang)}
-          cart={cartUi(lang)}
-          currency={cfg.commerce.currency}
-        />
+      <div
+        className={`absolute top-0 z-40 h-14 px-6 md:px-8 flex items-center ${
+          authSide === "left" ? "left-0" : "right-0"
+        }`}
+      >
+        {account}
       </div>
     );
   }
@@ -77,6 +87,12 @@ export async function TopMenu({ lang }: { lang: string }) {
     <header className="w-full border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="w-full px-6 md:px-8 h-14 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
+          {/* 🔒 СТОРОНА ДВИГАЕТ И КНОПКУ, А НЕ ТОЛЬКО ВЫЕЗЖАЮЩУЮ ПАНЕЛЬ (2026-08-12).
+              Раньше настройка меняла лишь сторону, с которой выезжает ящик, — а он
+              виден только вошедшему пользователю. Владелец переключал «слева» и не
+              видел ровно ничего: кнопка оставалась справа, а ящика у гостя нет вовсе.
+              Настройка, у которой нет видимого следствия, читается как сломанная. */}
+          {authSide === "left" && account}
           {leftHas && <DrawerToggle side="left" labels={{ open: ui.openLeft, close: ui.closeLeft }} />}
 
           {/* Brand: the SHORT company name is ALWAYS shown; the logo sits beside it when
@@ -93,16 +109,7 @@ export async function TopMenu({ lang }: { lang: string }) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {authSide && (
-            <AccountButton
-              lang={lang}
-              side={authSide}
-              labels={accountLabels(lang)}
-              links={accountLinks(lang)}
-              cart={cartUi(lang)}
-              currency={cfg.commerce.currency}
-            />
-          )}
+          {authSide === "right" && account}
           {/* Mobile burger BEFORE the right drawer toggle, so the right-drawer icon is
               the rightmost control in the header (req: right drawer = last icon). */}
           {groups.length > 0 && <MobileMenu lang={lang} groups={groups} label={ui.menu} />}

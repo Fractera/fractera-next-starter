@@ -141,10 +141,16 @@ export function StandardContentPage({
               ))}
             </div>
           )}
+          {/* 🔒 ЦВЕТ ЗАГОЛОВКА БЕРЁТСЯ ИЗ ТЕМЫ, А НЕ ЗАДАЁТСЯ БЕЛЫМ (2026-08-12).
+              Здесь стояло `color: 'white'` инлайном — то есть заголовок оставался
+              белым и на светлой теме, где фон тоже белый: текст исчезал. Инлайн-
+              стиль сильнее любого класса, поэтому переключатель темы на него не
+              влиял никак. `text-foreground` — та же переменная, что у остального
+              текста страницы: она меняется вместе с темой сама.
+              Обводка и свечение остаются: они фиолетовые и читаются на обоих фонах. */}
           <h1
-            className="text-3xl font-bold font-serif leading-tight tracking-tight md:text-4xl lg:text-5xl"
+            className="text-3xl font-bold font-serif leading-tight tracking-tight md:text-4xl lg:text-5xl text-foreground"
             style={{
-              color: 'white',
               WebkitTextStroke: '1px rgba(139,92,246,0.8)',
               paintOrder: 'stroke fill',
               textShadow: '0 0 18px rgba(139,92,246,0.55), 0 0 36px rgba(139,92,246,0.28)',

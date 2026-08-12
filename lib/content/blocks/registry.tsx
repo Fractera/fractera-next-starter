@@ -93,7 +93,14 @@ export const BLOCK_RENDERERS: BlockRenderers = {
       <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>
       <a
         href={b.href}
-        className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-foreground hover:bg-primary"
+        // 🔒 ТЕКСТ НА ЗАЛИВКЕ — `text-primary-foreground`, А НЕ `text-foreground`
+        // (2026-08-12). Здесь стояло `text-foreground`: цвет обычного текста
+        // СТРАНИЦЫ, то есть тёмный на светлой теме. На тёмной заливке кнопки он
+        // сливался с ней. Переменные ходят парой — фон `primary` и текст на нём
+        // `primary-foreground`, — и это единственный способ остаться читаемым в
+        // обеих темах. Значок наследует цвет текста (`currentColor`), поэтому
+        // чинится вместе с надписью.
+        className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
       >
         {b.label}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>

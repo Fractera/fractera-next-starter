@@ -39,7 +39,10 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
                     key={c.slug}
                     href={c.href ? `/${lang}${c.href}` : `/${lang}/${g.slug}/${c.slug}`}
                     onClick={() => setOpen(false)}
-                    className="py-2 pl-4 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors truncate"
+                    // Полный текст, как и в выпадающем списке на десктопе: здесь
+                    // ширина экрана и так узкая, поэтому название переносится по
+                    // словам, а не обрывается многоточием.
+                    className="py-2 pl-4 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors whitespace-normal break-words leading-snug"
                   >
                     {c.title}
                   </Link>

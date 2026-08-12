@@ -49,14 +49,29 @@ export function MenuDropdown({
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 max-h-[600px] overflow-y-auto">
+      {/* 🔒 ПОЛНЫЙ ТЕКСТ ССЫЛКИ, БЕЗ ОБРЕЗКИ (владелец, 2026-08-12). Здесь стояли
+          фиксированная ширина `w-64` и `truncate`: длинное название обрывалось
+          многоточием — а человек открыл список именно затем, чтобы его ПРОЧИТАТЬ.
+          Обрезка уместна у кнопки в горизонтальной полосе, где места нет; в
+          вертикальном списке места по высоте сколько угодно.
+          Ширина ограничена экраном (`calc(100vw-2rem)`), а название переносится
+          по словам — поэтому на телефоне список не вылезает за край и не рвёт
+          вёрстку, каким бы длинным ни было название. */}
+      <DropdownMenuContent
+        align="start"
+        className="w-[min(22rem,calc(100vw-2rem))] max-h-[600px] overflow-y-auto"
+      >
         <DropdownMenuItem asChild>
-          <Link href={groupHref} className="font-semibold">{label}</Link>
+          <Link href={groupHref} className="font-semibold whitespace-normal break-words leading-snug">
+            {label}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {items.map((c) => (
           <DropdownMenuItem key={c.slug} asChild>
-            <Link href={childHref(c)} className="truncate">{c.title}</Link>
+            <Link href={childHref(c)} className="whitespace-normal break-words leading-snug py-1.5">
+              {c.title}
+            </Link>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

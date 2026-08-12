@@ -40,9 +40,12 @@ export type FooterPageCell = {
  */
 export function panelNotice(lang: string, texts: { title: string; text: string; label: string }): Block {
   const admin = adminUrlFromSite(getAppConfig().url)
-  void lang
+  // 🔒 ЯЗЫКОВОЙ ПРЕФИКС ОБЯЗАТЕЛЕН (2026-08-12). Здесь стоял адрес
+  // `<панель>/footer-pages` — без языка, и он отдавал 404: все страницы панели
+  // живут под `/<язык>/`. Язык берём тот же, на котором читают страницу, — тогда
+  // человек попадает в панель на своём языке, а не на чужом.
   return admin
-    ? { kind: 'cta', text: `${texts.title} ${texts.text}`, href: `${admin}/footer-pages`, label: texts.label }
+    ? { kind: 'cta', text: `${texts.title} ${texts.text}`, href: `${admin}/${lang}/footer-pages`, label: texts.label }
     : { kind: 'note', text: `${texts.title} ${texts.text}` }
 }
 

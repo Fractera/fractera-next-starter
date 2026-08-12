@@ -41,12 +41,18 @@ type RawItem = {
 };
 
 /**
- * 🔒 ПРЕДЕЛ ДЛИНЫ ПОДПИСИ — 12 ЗНАКОВ (владелец, 2026-08-12).
+ * 🔒 ПРЕДЕЛ ДЛИНЫ — ТОЛЬКО У КНОПОК В ПОЛОСЕ (владелец, 2026-08-12).
  *
- * Ограничение стоит ЗДЕСЬ, на рендере, а не только в поле ввода панели: подпись
- * может приехать из перевода, из конфига, набранного руками, или из заголовка
- * страницы — а полоса меню одна, и один длинный пункт разносит её на телефоне.
- * Проверка в интерфейсе подсказывает, проверка здесь гарантирует.
+ * Полоса меню одна и горизонтальна: один длинный пункт разносит её на телефоне,
+ * поэтому кнопки верхнего уровня режутся до двенадцати знаков с многоточием.
+ *
+ * 🔒 ПУНКТЫ ВЫПАДАЮЩЕГО СПИСКА НЕ РЕЖУТСЯ (уточнение владельца 2026-08-12).
+ * Список вертикальный, места по высоте сколько угодно, и обрезанный там текст —
+ * чистая потеря смысла: человек уже открыл список, чтобы ПРОЧИТАТЬ названия.
+ * За ширину отвечает вёрстка списка, а не обрезка строки.
+ *
+ * Ограничение стоит здесь, на рендере, а не только в поле ввода панели: подпись
+ * может приехать из перевода или из конфига, набранного руками.
  */
 const LABEL_MAX = 12;
 
@@ -58,10 +64,11 @@ function clamp(text: string): string {
 }
 
 /** Подпись пункта на языке: перевод, иначе базовое значение, иначе адрес. */
-function labelFor(slot: NavSlot, id: string, base: string, href: string, lang: string): string {
+function labelFor(slot: NavSlot, id: string, base: string, href: string, lang: string, full = false): string {
+  const cut = (t: string) => (full ? t.trim() : clamp(t));
   const translated = configValueForLang(`nav.${slot}.${id}.label`, lang);
-  if (translated.trim() !== "") return clamp(translated);
-  if (base.trim() !== "") return clamp(base);
+  if (translated.trim() !== "") return cut(translated);
+  if (base.trim() !== "") return cut(base);
   // Пункт без подписи вообще — показываем его адрес, а не пустую кнопку:
   // пустая кнопка выглядит поломкой вёрстки, а адрес хотя бы объясняет себя.
   return clamp(href.replace(/^\//, "") || id);
@@ -74,7 +81,7 @@ function toChild(slot: NavSlot, raw: RawItem, lang: string): MenuChild | null {
   return {
     slug: id,
     href,
-    title: labelFor(slot, id, typeof raw.label === "string" ? raw.label : "", href, lang),
+    title: labelFor(slot, id, typeof raw.label === "string" ? raw.label : "", href, lang, true),
   };
 }
 

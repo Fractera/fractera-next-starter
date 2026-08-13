@@ -1,12 +1,28 @@
 import type { NextConfig } from "next";
-import { withWorkflow } from "workflow/next";
+
+// 🔒 ЗДЕСЬ БЫЛА ОБЁРТКА `withWorkflow` — СНЯТА 2026-08-13 (уборка перед
+// развёртыванием, вопрос владельца про `app/.well-known`).
+//
+// Workflow DevKit пришёл в проект шагом 183 ради агентных сценариев: он ставит
+// в сборку своё преобразование (директивы «use workflow» / «use step») и
+// открывает наружу внутренние адреса `/.well-known/workflow/*`.
+//
+// К этому дню он не делал ничего. Проверено тремя фактами: в порождённом
+// манифесте `"workflows": {}` — пусто, ни одной директивы «use workflow» или
+// «use step» во всём коде нет, а сама папка `app/.well-known` не отслеживается
+// git (внутри собственный `.gitignore` с `*`), то есть рождается сборкой и
+// живёт только на диске.
+//
+// Итог: преобразование выполнялось в каждой сборке, служебные адреса были
+// открыты наружу, и всё это ради подсистемы, которой в продукте нет с шага 500
+// вместе с агентами. Пустая обёртка опаснее отсутствующей: следующая сессия
+// принимает её за используемую и строит вокруг.
+//
+// Папку можно удалить с диска — она не вернётся, потому что её больше некому
+// порождать.
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["better-sqlite3"],
 };
 
-// 183.B — withWorkflow wires the Workflow DevKit build transform (the "use
-// workflow"/"use step" directives) and injects the internal /.well-known/workflow
-// endpoints. Proven by Vercel's own Next 16.2.4 examples on the default Turbopack
-// build, so no --webpack fallback is expected. Keep it as the outermost wrapper.
-export default withWorkflow(nextConfig);
+export default nextConfig;

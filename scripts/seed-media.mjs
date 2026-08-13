@@ -135,7 +135,14 @@ try {
     const link = LINK.find(l => l.match.test(String(row.name ?? "")));
     if (!link?.media) continue;
     const url = `/api/media/${link.media.id}/file`;
-    if (row.media_url === url) { console.log(`  товар уже связан: ${row.name}`); continue; }
+    // 🔒 СВЕРЯЕМ НЕ ТОЛЬКО АДРЕС (найдено на живом сервере 2026-08-13). Сначала
+    // здесь стояло сравнение одного , и связывание, прошедшее ДО
+    // появления колонок размеров, считалось выполненным навсегда: адрес совпал,
+    // скрипт сказал «уже связан», а товар остался без подложки. Проверка обязана
+    // спрашивать про ВСЁ, что она записывает, иначе идемпотентность превращается
+    // в отказ доделать начатое.
+    const done = row.media_url === url && row.media_width === link.media.width && Boolean(row.media_blur);
+    if (done) { console.log(`  товар уже связан: ${row.name}`); continue; }
     const patch = await fetch(`${DATA_URL}/db/tables/products/rows/${encodeURIComponent(row.id)}`, {
       method: "PATCH",
       headers: { ...headers(), "Content-Type": "application/json" },

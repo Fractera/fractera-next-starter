@@ -79,7 +79,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
                     ленивая загрузка здесь отложила бы ровно то, ради чего человек
                     пришёл. Ширина в вёрстке — половина полосы на широком экране. */}
                 <StaticImage
-                  src={featured.ogImage}
+                  src={featured.image}
                   alt={featured.title}
                   fill
                   priority
@@ -132,7 +132,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
                         размытая копия, а не пустой прямоугольник. Ширина в вёрстке
                         фиксирована контейнером, отсюда точные `sizes`. */}
                     <StaticImage
-                      src={post.ogImage}
+                      src={post.image}
                       alt={post.title}
                       fill
                       sizes="(max-width: 640px) 6rem, 12rem"

@@ -116,7 +116,7 @@ export const ru: BlogOverride = {
     {
       kind: 'figure',
       media: 'image',
-      src: '/blog-media/development-loop.jpg',
+      src: 'media:development-loop.jpg',
       alt: 'Схема цикла разработки Fractera — один запрос проходит через оркестрацию, кодовых агентов и графовую память до протестированного, развёрнутого кода',
       caption: 'Цикл разработки Fractera — идея Черного, разведённая в рабочем пространстве, которым вы владеете. [Посмотреть полную анатомию](https://www.fractera.ai/ai-development-loop).',
       href: 'https://www.fractera.ai/ai-development-loop',

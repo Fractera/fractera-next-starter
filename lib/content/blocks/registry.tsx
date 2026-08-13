@@ -4,6 +4,8 @@ import type { PostBodyUi } from '@/lib/content/post-body-ui'
 import { inline, headingId } from './inline'
 import { author, authorSocialLinks } from '@/lib/author'
 import { StaticImage } from '@/components/media/static-image.server'
+import { StoredImage } from '@/components/media/stored-image.server'
+import { isMediaRef, mediaRefName } from '@/lib/media/by-name'
 
 // PORTED (2026-08-11). One block kind was dropped on the way in: `inquiry`,
 // which rendered the platform's own "company brain" call to action. A starter
@@ -83,6 +85,20 @@ export const BLOCK_RENDERERS: BlockRenderers = {
         <a href={b.href} className="block overflow-hidden rounded-2xl border border-border">
           <StaticImage src={b.src} alt={b.alt} sizes="(max-width: 768px) 100vw, 48rem" className="w-full h-auto" />
         </a>
+      ) : isMediaRef(b.src) ? (
+        /* 🔒 ДВА ПУТИ, И ОБА ЗДЕСЬ НАМЕРЕННО (владелец 2026-08-13).
+           `media:<файл>` — картинка из ХРАНИЛИЩА: её меняет владелец в панели, и
+           материал при этом не трогают вовсе. Обычный путь — файл проекта, он
+           правится вместе с текстом. Материал выбирает вид ссылки, а не способ
+           показа: на экране оба дают одно и то же — размеры, подложку,
+           оптимизацию. Именно эту развилку и обязан повторить агент, читающий
+           наш пример. */
+        <StoredImage
+          name={mediaRefName(b.src)}
+          alt={b.alt}
+          sizes="(max-width: 768px) 100vw, 48rem"
+          className="w-full h-auto rounded-2xl border border-border"
+        />
       ) : (
         <StaticImage
           src={b.src}

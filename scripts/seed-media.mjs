@@ -60,6 +60,11 @@ const SEEDS = [
 
 const SIZE = 1024;
 
+// Картинки МАТЕРИАЛОВ — те же правила, другой источник: они не рисуются здесь, а
+// едут с проектом файлами и загружаются в хранилище как есть. Материал ссылается
+// на них по имени (media:<файл>), поэтому имя тут и есть договор.
+const FILE_SEEDS = ["development-loop.jpg"];
+
 /** Плод: круг, черенок, лист. Тот же рисунок, что был в SVG-заглушках. */
 function fruitSvg({ body, stem, leaf }) {
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 100 100">
@@ -91,7 +96,7 @@ async function existingByName(name) {
 
 async function upload(name, buffer) {
   const form = new FormData();
-  form.append("file", new Blob([buffer], { type: "image/png" }), name);
+  form.append("file", new Blob([buffer], { type: name.endsWith(".jpg") ? "image/jpeg" : "image/png" }), name);
   form.append("title", name.replace(/^seed-|\.png$/g, ""));
   const res = await fetch(`${DATA_URL}/media/upload`, { method: "POST", headers: headers(), body: form });
   const data = await res.json().catch(() => ({}));
@@ -111,6 +116,24 @@ for (const seed of SEEDS) {
   const item = await upload(seed.file, png);
   console.log(`  загружено: ${seed.file} → ${item.id} (${item.width}×${item.height}, подложка ${item.blur ? "есть" : "НЕТ"})`);
   out.push(item);
+}
+
+// ── Картинки материалов ──────────────────────────────────────────────────────
+//
+// Иллюстрации статей едут с проектом файлами и загружаются в хранилище как есть:
+// рисовать их, как плоды выше, нечего — это готовые изображения. Материал
+// ссылается на них по ИМЕНИ (`media:<файл>`), поэтому имя здесь и есть договор
+// между содержимым и хранилищем.
+for (const name of FILE_SEEDS) {
+  const found = await existingByName(name);
+  if (found) { console.log(`  уже в хранилище: ${name} (${found.id})`); continue; }
+  try {
+    const buf = readFileSync(new URL(`../public/blog-media/${name}`, import.meta.url));
+    const item = await upload(name, buf);
+    console.log(`  загружено: ${name} → ${item.id} (${item.width}×${item.height}, подложка ${item.blur ? "есть" : "НЕТ"})`);
+  } catch (e) {
+    console.log(`  картинка материала пропущена: ${name} (${e.message})`);
+  }
 }
 
 // ── Привязка посевных товаров к этим картинкам ───────────────────────────────

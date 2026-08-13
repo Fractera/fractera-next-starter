@@ -78,5 +78,53 @@ for (const t of TARGETS) {
   made.push(`${t.file} (${fs.statSync(out).size} байт)`)
 }
 
+// ── Заставки iOS ────────────────────────────────────────────────────────────
+//
+// ЗАЧЕМ. Приложение, установленное на iPhone, показывает при запуске картинку
+// `apple-touch-startup-image`. Её нет — Safari рисует БЕЛЫЙ ЭКРАН, и на тёмной
+// теме запуск выглядит как вспышка и поломка. Android берёт цвет фона из
+// манифеста и в картинке не нуждается; iOS требует растр под КАЖДОЕ разрешение —
+// именно поэтому этот пункт обычно и не делают.
+//
+// Размеры — устройства, а не абстрактные числа: те, что реально в руках у людей.
+// Для каждого нужны портрет и альбом, поэтому файлов вдвое больше строк.
+const SPLASH = [
+  { w: 1290, h: 2796, name: 'iphone-15-pro-max' },
+  { w: 1179, h: 2556, name: 'iphone-15' },
+  { w: 1170, h: 2532, name: 'iphone-13' },
+  { w: 1125, h: 2436, name: 'iphone-x' },
+  { w: 828, h: 1792, name: 'iphone-xr' },
+  { w: 750, h: 1334, name: 'iphone-8' },
+  { w: 1536, h: 2048, name: 'ipad' },
+  { w: 1668, h: 2388, name: 'ipad-pro-11' },
+  { w: 2048, h: 2732, name: 'ipad-pro-12' },
+]
+
+const SPLASH_OUT = path.join(ROOT, 'public', 'splash')
+fs.mkdirSync(SPLASH_OUT, { recursive: true })
+
+/** Знак по центру полотна устройства: доля от МЕНЬШЕЙ стороны, иначе на альбомной ориентации он растянется. */
+async function splash(w, h, file) {
+  const mark = Math.round(Math.min(w, h) * 0.28)
+  await sharp({ create: { width: w, height: h, channels: 4, background: BG } })
+    .composite([
+      {
+        input: await sharp(markSvg(mark, 0.08, false)).png().toBuffer(),
+        top: Math.round((h - mark) / 2),
+        left: Math.round((w - mark) / 2),
+      },
+    ])
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(SPLASH_OUT, file))
+}
+
+const splashes = []
+for (const s of SPLASH) {
+  await splash(s.w, s.h, `${s.name}-portrait.png`)
+  await splash(s.h, s.w, `${s.name}-landscape.png`)
+  splashes.push(`${s.name} (${s.w}×${s.h} и наоборот)`)
+}
+
 console.log(`стартовые иконки записаны в public/icons:\n  ${made.join('\n  ')}`)
+console.log(`\nзаставки iOS записаны в public/splash (${splashes.length * 2} файла):\n  ${splashes.join('\n  ')}`)
 console.log('\n===ICONS_OK===')

@@ -19,6 +19,9 @@ import { CookieBanner } from "./_components/legal/cookie-banner.client";
 import { bannerUi } from "./_components/legal/cookie-banner.i18n";
 import { featureOn } from "@/config/platform-config";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw.client";
+import { InstallPrompt } from "@/components/pwa/install-prompt.client";
+import { installUi } from "@/components/pwa/install-prompt.i18n";
+import { IosSplash } from "@/components/pwa/ios-splash";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/
 // <body> — the language comes from the [lang] route param (known at build), NOT from
@@ -95,6 +98,9 @@ export default async function LangLayout({
       <head>
         <meta name="generator" content="Fractera" />
         <ThemeInit />
+        {/* Заставки iOS: без них Safari рисует при запуске установленного
+            приложения белый экран — на тёмной теме это выглядит поломкой. */}
+        <IosSplash />
         <AppWidthInit />
         {ld.map((schema, i) => (
           <script
@@ -139,6 +145,11 @@ export default async function LangLayout({
                 повторное открытие. Стратегия — сеть первой для страниц, поэтому
                 устаревшая страница невозможна (см. public/sw.js). */}
             <RegisterServiceWorker />
+            {/* Предложение установить приложение. Слова резолвятся на СЕРВЕРЕ и
+                едут пропсом: словарь на 82 языка не имеет права оказаться в
+                браузере. Кнопка появляется, только когда браузер сам сообщил,
+                что сайт устанавливаем. */}
+            <InstallPrompt strings={installUi(lang)} />
           </DrawerProvider>
         </ThemeProvider>
       </body>

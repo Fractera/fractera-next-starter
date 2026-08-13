@@ -60,6 +60,26 @@ if (declaredIcons.length && !/icon512Maskable/.test(defaults)) {
   errors.push("среди стартовых иконок нет maskable — на Android значок обрежется по чужой форме");
 }
 
+// 2b — ЗАСТАВКИ iOS: объявленное и лежащее на диске совпадают.
+//
+// Расхождение здесь невидимо: часть устройств получит ссылку на несуществующую
+// картинку и покажет при запуске белый экран — ровно то, ради чего заставки и
+// делались. Заметит это только владелец такого телефона.
+const splashDecl = read(path.join(ROOT, "components", "pwa", "ios-splash.tsx"));
+const splashNames = [...splashDecl.matchAll(/name:\s*'([a-z0-9-]+)'/g)].map(m => m[1]);
+if (!splashNames.length) {
+  errors.push("нет объявлений заставок iOS — установленное приложение покажет при запуске белый экран");
+}
+for (const n of splashNames) {
+  for (const o of ["portrait", "landscape"]) {
+    const f = path.join(ROOT, "public", "splash", n + "-" + o + ".png");
+    if (!fs.existsSync(f)) errors.push("заставка " + n + "-" + o + ".png объявлена, а файла нет — запустите npm run icons:default");
+  }
+}
+if (splashDecl && !/apple-mobile-web-app-status-bar-style/.test(splashDecl)) {
+  warnings.push("не задан стиль полосы состояния iOS — поверх заставки останется светлая планка");
+}
+
 // 3 — макет ссылается на языковой манифест.
 const layout = read(path.join(ROOT, "app", "[lang]", "layout.tsx"));
 if (layout && !/manifest:\s*`\/\$\{lang\}\/manifest\.webmanifest`/.test(layout)) {

@@ -111,7 +111,7 @@ export const en: BlogBase = {
     {
       kind: 'figure',
       media: 'image',
-      src: 'https://www.fractera.ai/Fractera-Development-Loop.jpg',
+      src: '/blog-media/development-loop.jpg',
       alt: 'Fractera Development Loop diagram — one request flows through Hermes orchestration, coding agents and LightRAG graph memory to tested, deployed code',
       caption: 'The Fractera Development Loop — Cherny’s idea, wired into a workspace you actually own. [See the full anatomy](https://www.fractera.ai/ai-development-loop).',
       href: 'https://www.fractera.ai/ai-development-loop',

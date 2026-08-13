@@ -23,7 +23,8 @@
     "images:previews": "node scripts/generate-image-previews.mjs",
     "seed:media": "node scripts/seed-media.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "prestart": "node scripts/seed-media-when-ready.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

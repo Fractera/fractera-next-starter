@@ -29,11 +29,7 @@ export const FIRST_BATCH = 24
 /** Сколько добавляет каждое нажатие «показать ещё». */
 export const NEXT_BATCH = 24
 
-export type CatalogueRow = Pick<Product, "id" | "name" | "description" | "i18n" | "price" | "media_url"> & {
-  media_width?: number | null
-  media_height?: number | null
-  media_blur?: string | null
-}
+export type CatalogueRow = Pick<Product, "id" | "name" | "description" | "i18n" | "price" | "media_url" | "media_width" | "media_height" | "media_blur">
 
 // Размеры и подложка едут ВМЕСТЕ со строкой: без них картинка товара рисуется
 // обычным <img>, то есть без подложки и с прыжком вёрстки.

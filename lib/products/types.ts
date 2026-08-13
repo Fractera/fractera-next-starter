@@ -25,5 +25,11 @@ export type Product = {
   i18n: string | null
   media_id: string | null
   media_url: string | null
+  /** Размеры и размытая подложка картинки — из записи хранилища, скопированы сюда
+   *  при её прикреплении. Читаются вместе со строкой: страница каталога иначе
+   *  делала бы по обращению к хранилищу на каждый товар. */
+  media_width?: number | null
+  media_height?: number | null
+  media_blur?: string | null
   created_at: string
 }

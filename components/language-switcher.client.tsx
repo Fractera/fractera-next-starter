@@ -96,7 +96,7 @@ function LanguageSwitcherInner() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-border text-foreground/80 hover:text-foreground hover:bg-muted transition-all"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-border text-foreground hover:text-foreground hover:bg-muted transition-all"
         title={currentMeta?.englishName ?? "Switch language"}
         aria-label="Switch language"
       >
@@ -196,7 +196,7 @@ function LangRow({
       className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors text-left ${
         isActive
           ? "bg-primary/15 text-primary"
-          : "text-foreground/80 hover:bg-muted hover:text-foreground"
+          : "text-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
       <span className="text-base leading-none">{flag}</span>

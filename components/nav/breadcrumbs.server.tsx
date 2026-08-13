@@ -51,9 +51,9 @@ export function Breadcrumbs({ lang, trail }: { lang: string; trail: Crumb[] }) {
               {c.href && !last ? (
                 <Link href={c.href} className="whitespace-nowrap hover:text-foreground">{c.label}</Link>
               ) : (
-                <span aria-current="page" className="block min-w-0 truncate text-foreground/80">{c.label}</span>
+                <span aria-current="page" className="block min-w-0 truncate text-foreground">{c.label}</span>
               )}
-              {!last && <span aria-hidden className="shrink-0 text-muted-foreground/40">/</span>}
+              {!last && <span aria-hidden className="shrink-0 text-muted-foreground">/</span>}
             </li>
           )
         })}

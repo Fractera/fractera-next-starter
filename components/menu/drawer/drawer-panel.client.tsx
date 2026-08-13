@@ -46,7 +46,7 @@ export function DrawerPanel({
                   key={c.slug}
                   href={`/${lang}/${g.slug}/${c.slug}`}
                   onClick={() => close(side)}
-                  className="px-3 py-2 pl-6 rounded-lg text-sm font-medium text-foreground/75 hover:bg-accent hover:text-foreground transition-colors truncate"
+                  className="px-3 py-2 pl-6 rounded-lg text-sm font-medium text-foreground hover:bg-accent hover:text-foreground transition-colors truncate"
                 >
                   {c.title}
                 </Link>

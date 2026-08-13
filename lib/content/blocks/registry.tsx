@@ -61,7 +61,7 @@ export const BLOCK_RENDERERS: BlockRenderers = {
         “{inline(b.text, k)}”
       </blockquote>
       {b.cite && (
-        <figcaption className="mt-3 text-sm font-medium text-primary/80">{b.cite}</figcaption>
+        <figcaption className="mt-3 text-sm font-medium text-primary">{b.cite}</figcaption>
       )}
     </figure>
   ),
@@ -145,7 +145,7 @@ export const BLOCK_RENDERERS: BlockRenderers = {
   code: (b, { key: k }) => (
     <pre
       key={k}
-      className="overflow-x-auto rounded-2xl border border-border bg-muted/40 p-5 text-[12.5px] leading-snug text-foreground/80"
+      className="overflow-x-auto rounded-2xl border border-border bg-muted/40 p-5 text-[12.5px] leading-snug text-foreground"
     >
       <code className="whitespace-pre font-mono">{b.text}</code>
     </pre>
@@ -231,7 +231,7 @@ export const BLOCK_RENDERERS: BlockRenderers = {
                 <th
                   key={ci}
                   scope="col"
-                  className={`px-4 py-3 align-bottom font-semibold ${ci === lastCol ? 'bg-primary/10 text-foreground' : 'text-foreground/80'}`}
+                  className={`px-4 py-3 align-bottom font-semibold ${ci === lastCol ? 'bg-primary/10 text-foreground' : 'text-foreground'}`}
                 >
                   {inline(h, `${k}-h${ci}`)}
                 </th>
@@ -246,7 +246,7 @@ export const BLOCK_RENDERERS: BlockRenderers = {
                     key={ci}
                     className={`px-4 py-3 align-top leading-relaxed ${
                       ci === 0
-                        ? 'font-medium text-foreground/80'
+                        ? 'font-medium text-foreground'
                         : ci === lastCol
                           ? 'bg-primary/5 text-foreground'
                           : 'text-muted-foreground'
@@ -265,7 +265,7 @@ export const BLOCK_RENDERERS: BlockRenderers = {
   docref: (b, { key: k, ui }) => (
     <aside key={k} className="my-6 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.05] p-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-col gap-1.5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">
           {b.kicker ?? ui.fullDocumentation}
         </p>
         <p className="text-base font-semibold text-foreground">{b.title}</p>

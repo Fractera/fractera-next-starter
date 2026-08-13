@@ -77,7 +77,7 @@ export function LoadMore(
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.name} sizes="(max-width: 640px) 50vw, 280px" className="h-full w-full object-contain" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-muted-foreground/40">—</div>
+                    <div className="flex h-full items-center justify-center text-muted-foreground">—</div>
                   )}
                 </div>
                 <div className="border-t border-border p-3">

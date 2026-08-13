@@ -124,7 +124,7 @@ export function StandardContentPage({
                   ) : (
                     <span aria-current="page" className="block min-w-0 truncate text-muted-foreground">{c.label}</span>
                   )}
-                  {!isLast && <span aria-hidden className="shrink-0 text-muted-foreground/60">/</span>}
+                  {!isLast && <span aria-hidden className="shrink-0 text-muted-foreground">/</span>}
                 </li>
               )
             })}
@@ -203,7 +203,7 @@ export function StandardContentPage({
         {/* 3. Table of contents */}
         {toc.length > 0 && (
           <nav aria-label="Contents" className="mt-8 rounded-2xl border border-border bg-muted/40 p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary/70">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
               {ui.tocHeading} · {toc.length}
             </p>
             <ol className="mt-3 flex flex-col gap-2">

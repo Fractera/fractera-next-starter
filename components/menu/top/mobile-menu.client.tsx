@@ -30,7 +30,7 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
                 <Link
                   href={g.href ? `/${lang}${g.href}` : `/${lang}/${g.slug}`}
                   onClick={() => setOpen(false)}
-                  className="py-2.5 text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors"
+                  className="py-2.5 text-sm font-semibold text-foreground hover:text-foreground transition-colors"
                 >
                   {g.label}
                 </Link>
@@ -42,7 +42,7 @@ export function MobileMenu({ lang, groups, label }: { lang: string; groups: Menu
                     // Полный текст, как и в выпадающем списке на десктопе: здесь
                     // ширина экрана и так узкая, поэтому название переносится по
                     // словам, а не обрывается многоточием.
-                    className="py-2 pl-4 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors whitespace-normal break-words leading-snug"
+                    className="py-2 pl-4 text-sm font-medium text-foreground hover:text-foreground transition-colors whitespace-normal break-words leading-snug"
                   >
                     {c.title}
                   </Link>

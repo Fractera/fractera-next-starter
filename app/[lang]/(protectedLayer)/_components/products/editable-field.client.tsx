@@ -52,7 +52,7 @@ export function EditableField(
           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
           {/* Пустое поле показывается чертой, а не пустотой: иначе неясно, есть
               ли здесь значение вообще и можно ли его задать. */}
-          <p className={`mt-0.5 text-sm ${value ? "text-foreground" : "text-muted-foreground/50"}`}>
+          <p className={`mt-0.5 text-sm ${value ? "text-foreground" : "text-muted-foreground"}`}>
             {value || "—"}
           </p>
         </div>

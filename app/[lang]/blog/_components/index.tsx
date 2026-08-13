@@ -64,7 +64,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
           <header className="flex flex-col gap-3">
             {/* Надзаголовок: раздел + название сайта из настроек. В данных раздела
                 имени сайта нет — иначе блог каждого клиента звался бы чужим именем. */}
-            <p className="text-xs uppercase tracking-widest text-primary/70">{ui.eyebrow} · {metaForLang(lang).title}</p>
+            <p className="text-xs uppercase tracking-widest text-primary">{ui.eyebrow} · {metaForLang(lang).title}</p>
             <h1 className="text-4xl font-bold tracking-tight md:text-3xl">{ui.indexTitle}</h1>
             <p className="max-w-2xl text-base text-muted-foreground">{ui.indexIntro}</p>
           </header>

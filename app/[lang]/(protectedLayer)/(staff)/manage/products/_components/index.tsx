@@ -53,7 +53,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
           }}
         />
 
-        <p className="mt-6 text-center font-mono text-[10px] text-muted-foreground/50">{t.storageNote}</p>
+        <p className="mt-6 text-center font-mono text-[10px] text-muted-foreground">{t.storageNote}</p>
       </div>
     </main>
   )

@@ -20,7 +20,7 @@ export function SegToggle<T extends string | boolean>({
           key={String(o.value)}
           onClick={() => onChange(o.value)}
           className={`${pad} transition-colors ${
-            value === o.value ? "bg-foreground text-background" : "text-foreground/70 hover:bg-muted"
+            value === o.value ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
           }`}
         >
           {o.label}

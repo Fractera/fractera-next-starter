@@ -172,7 +172,76 @@ export default function HomeEntry({ lang }: { lang: string }) {
           </div>
         </section>
 
-        {/* Третья секция — ответ на вопрос «что я вообще держу в руках».
+        {/* 🔒 QUIZ — ТРЕТЬИМ, И ПОРЯДОК ЗДЕСЬ СОДЕРЖАТЕЛЬНЫЙ (владелец 2026-08-13).
+            Он не может стоять выше секции с ключом OpenAI: без ключа он просто не
+            работает — вопросы задаёт модель. Поэтому сначала «поставьте ключ»,
+            потом «вот что он открывает».
+
+            ОФОРМЛЕНИЕ — ЕДИНСТВЕННОЕ ИСКЛЮЧЕНИЕ НА СТРАНИЦЕ, и оно намеренное.
+            Весь сайт выдержан в спокойной рамке; выделять всё — значит не
+            выделить ничего. Здесь свечение оправдано тем, что это единственная
+            часть страницы, где работает модель, и оно решает главную проблему
+            начала — «с чего начать».
+
+            Свечение сделано ГРАДИЕНТАМИ И ТЕНЬЮ, без анимации и без единой
+            строки скрипта: движущийся фон под текстом мешает читать, а на слабом
+            телефоне ещё и стоит кадров. Цвета взяты из токенов темы (`primary`),
+            поэтому в светлой и тёмной теме секция выглядит своей, а не
+            наклеенной. */}
+        <section className="relative mt-8 overflow-hidden rounded-2xl border border-primary/30 p-6 sm:p-8">
+          {/* Три мягких пятна света под содержимым. `aria-hidden` — они
+              декоративны, читалке о них знать нечего. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_15%_0%,var(--color-primary)_0%,transparent_60%),radial-gradient(50%_50%_at_100%_100%,var(--color-primary)_0%,transparent_55%)] opacity-[0.07]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-px rounded-2xl ring-1 ring-inset ring-primary/20"
+          />
+
+          <div className="relative">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{t.quizEyebrow}</p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{t.quizTitle}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.quizLead}</p>
+
+            {/* Три шага — сеткой, а не списком: они равноправны и читаются
+                параллельно, в отличие от нумерованных шагов «Как начать». */}
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {[
+                { n: "01", title: t.quizStep1Title, body: t.quizStep1 },
+                { n: "02", title: t.quizStep2Title, body: t.quizStep2 },
+                { n: "03", title: t.quizStep3Title, body: t.quizStep3 },
+              ].map(step => (
+                <div key={step.n} className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
+                  <p className="font-mono text-[11px] tabular-nums text-primary">{step.n}</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">{step.body}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-5 border-l-2 border-primary/50 pl-4 text-sm leading-relaxed text-foreground">
+              {t.quizGate}
+            </p>
+
+            {admin ? (
+              <a
+                href={`${admin}/${lang}/doc-use-cases`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                {t.quizLink}
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
+            ) : null}
+          </div>
+        </section>
+
+        {/* Четвёртая секция — ответ на вопрос «что я вообще держу в руках».
             Технически, без обещаний: что за скелет, где пишется код и почему он
             не ломается на росте. */}
         <section className="mt-8 rounded-2xl border border-border p-6 sm:p-8">

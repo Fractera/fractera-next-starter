@@ -210,57 +210,90 @@ both posts were written and translated, `check:seo` was green — and neither po
 Nothing looked broken, which is the whole difficulty. **`npm run check:seo` now refuses a section that
 appears in no map**, so the next collection cannot repeat it.
 
-### 4c. 🔒 Where a post's images live — and how they are saved and read back
+### 4c. 🔒 A post's images — the STORE is the default, `public/` is the exception
 
-**Two homes, and picking the wrong one is the defect this section exists to prevent.**
+**Read this before writing any post that has a picture. The shipped post is not an article — it is the
+specimen you are meant to copy, and it demonstrates both paths on purpose.**
 
-| Home | Written by | Changed by | Preview computed |
-|---|---|---|---|
-| `public/…` — ships with the repository | you, in the editor | a code change + rebuild | at build (`prebuild`) |
-| the media store — the data layer's own storage | a person, through the panel | the panel, no rebuild | at upload |
+Two homes exist, and the earlier version of this section had the emphasis backwards. It reasoned about
+posts in general and recommended `public/` — the way every web project already works, and the one thing
+an agent does not need to be taught. What is specific to this product, and therefore what this document
+owes you, is the other one.
 
-**The test is one question: after the site is live, who changes this picture?** If the answer is "the
-owner, from the panel" — it belongs in the media store, and shipping it in `public/` hands them a
-picture they cannot replace without touching code. If the answer is "whoever edits the repository" —
-an icon, a diagram belonging to the text — `public/` is right.
+| | **The store — default** | `public/` — exception |
+|---|---|---|
+| Written by | a person, in the panel | you, in the editor |
+| Changed by | the panel, **no rebuild** | a code change + rebuild |
+| Referenced as | `src: "media:<file-name>"` | `src: "/blog-media/<file>"` |
+| Suits | anything the owner will ever want to swap | icons, diagrams that belong to the sentence |
 
-#### Saving: what happens when a file is uploaded
+**Why the default is the store.** This product exists so a non-coder can run a site from the panel. A
+picture in `public/` cannot be replaced without editing a repository — which means every such picture
+is a small promise the product does not keep. Pick `public/` only when the picture is inseparable from
+the text: a diagram the paragraph explains, a decorative mark.
 
-1. The browser posts the file to `/api/media/upload`, a thin proxy on the app's own origin.
-2. The **data layer** (`services/data`, port 3300) receives it and does the work in one place:
-   writes the bytes to its storage directory under a generated key, measures `width`/`height` with
-   `sharp`, applies a crop if one was requested, and computes a tiny blurred copy (12px webp, a few
-   hundred bytes) into the `blur` column.
-3. It inserts one row into `media` — id, name, mime, size, dimensions, blur, storage key — and returns
-   that row. **The row is the picture's identity from then on; the file on disk is an implementation
-   detail of the data layer.**
+#### Referencing by NAME, not by id
 
-Two rules follow, and both have a cost attached. The blurred copy is computed **after** the crop, from
-the buffer that actually lands on disk — computed earlier, it would show a frame the file no longer
-contains. And a failure to compute it never fails the upload: a picture without a placeholder works,
-an upload that refuses because of a placeholder does not.
+```ts
+{ kind: 'figure', src: 'media:development-loop.jpg', alt: '…' }
+```
 
-#### Reading back: what a page does
+An id is born at upload and is **different on every server**; a post lives in the repository and is
+identical everywhere. Writing an id into content would point at nothing on the second server. The file
+name is ours and stays fixed, so it is the only stable link from content to the store.
 
-The page asks the data layer for the row and renders `<MediaImage media={row} …>`
-(`components/media/media-image.server.tsx`). The component supplies what `next/image` cannot know for
-a runtime source — the dimensions and the blurred string — and Next does the rest.
+Rendering resolves it: `StoredImage` (`components/media/stored-image.server.tsx`) looks the row up
+through `lib/media/by-name.ts` — a cached lookup, because a page with an article is prepared ahead and
+must not fetch per view — and hands the url, dimensions and blurred copy to `next/image`.
 
-**Resizing needs no machinery of ours.** Media is served from `/api/media/<id>/file`, the app's own
-origin, so the optimizer treats it as a local source: no `remotePatterns`, no second image service.
-It negotiates the format and the size the visitor's screen actually needs.
+#### The shipped file does not disappear — it changes role
 
-**Never render a stored picture with a bare `<img>` and never guess its dimensions.** A wrong aspect
-ratio reserves the wrong height, the page jumps, and the jump is exactly what this whole mechanism is
-built to remove. When the row has no dimensions, `MediaImage` falls back to a plain `<img>` on purpose
-— honest degradation beats a confident wrong number.
+A picture referenced as `media:` still ships in `public/blog-media/`. It is **seed material**, and it
+does two jobs: `npm run seed:media` uploads it to the store on first run (the same script that seeds
+the catalogue), and until that has happened `StoredImage` falls back to the file. Without this, a fresh
+server would open the article on an empty database and show a hole.
+
+#### Saving: what happens on upload
+
+1. The browser posts to `/api/media/upload`, a thin proxy on the app's own origin.
+2. The **data layer** (`services/data`, :3300) writes the bytes, measures `width`/`height` with `sharp`,
+   applies a crop if asked, and computes a tiny blurred copy (12px webp, a few hundred bytes) into the
+   `blur` column.
+3. It inserts one row into `media` and returns it. **The row is the picture's identity from then on;
+   the file on disk is the data layer's business.**
+
+The blurred copy is computed **after** the crop, from the buffer that lands on disk — computed earlier
+it would show a frame the file no longer contains. A failure to compute it never fails the upload.
+
+#### Reading back
+
+`StoredImage` for `media:` references, `StaticImage` for `public/` paths. Both end at `next/image` and
+produce the same thing on screen: reserved space, a blurred placeholder inside the HTML, a file sized
+for the visitor's screen.
+
+**Resizing needs no machinery of ours.** Media is served from `/api/media/<id>/file` — the app's own
+origin — so the optimizer treats it as local: no `remotePatterns`, no second image service.
+
+🔒 **That path must stay public.** `proxy.ts` gates all of `/api/*`; the read of one file by id is
+exempted there deliberately. Remove the exemption and every stored picture answers 401 to visitors and
+400 through the optimizer — which is exactly what shipped once, leaving a catalogue of empty squares.
+
+#### Two traps this specimen already fell into
+
+**A link on the picture is not a source of the picture.** The figure renderer branched on `href` first
+and drew the image itself, skipping `media:` resolution — the raw string reached the HTML. The defect
+was visible only on the one block where both conditions met.
+
+**A video's poster is not an image.** `<video poster="…">` cannot take a blurred placeholder or the
+optimizer, wherever the file lives. That is the element's nature, not a gap in this pipeline — say so
+plainly rather than promising every picture gets a placeholder.
 
 #### What a post stores
 
-A post's data cell holds the **address**, never the bytes and never a base64 blob: `heroPoster:
-'/blog-media/…'` for a shipped file, or the media URL for an uploaded one. `npm run check:content`
-fails on a `heroVideo`/`heroPoster`/`src` whose file is missing from `public/`, which is how a shipped
-picture that never got committed is caught before the post ships.
+The **address**, never the bytes and never a base64 blob. `npm run check:content` fails on a
+`heroVideo`/`heroPoster`/`src` whose file is missing from `public/`, catching a shipped picture that was
+never committed.
+
 
 ## 5. 🔒 The law of the two links
 

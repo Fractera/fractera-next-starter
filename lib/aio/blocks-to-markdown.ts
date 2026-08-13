@@ -1,4 +1,4 @@
-import type { Block } from '@/lib/content/blocks/types'
+import type { Block, FaqPair } from '@/lib/content/blocks/types'
 
 // Блоки страницы → markdown (шаг 505, AIO).
 //
@@ -71,8 +71,14 @@ export function blocksToMarkdown(blocks: Block[]): string {
     .trim()
 }
 
-/** Вопросы и ответы отдельным разделом — их формат в блоках не описан. */
-export function faqToMarkdown(faq?: { question: string; answer: string }[]): string {
+/**
+ * Вопросы и ответы отдельным разделом.
+ *
+ * Форма пары — `{ q, a }` из общего каталога блоков (`FaqPair`), а не
+ * `{ question, answer }`: типы поймали это на сборке, и подгонять надо код под
+ * каталог, а не наоборот — каталог читают ещё и разметка страницы, и JSON-LD.
+ */
+export function faqToMarkdown(faq?: FaqPair[]): string {
   if (!faq?.length) return ''
-  return ['## FAQ', '', ...faq.flatMap(f => [`### ${f.question}`, '', f.answer, ''])].join('\n').trim()
+  return ['## FAQ', '', ...faq.flatMap(f => [`### ${f.q}`, '', f.a, ''])].join('\n').trim()
 }

@@ -41,7 +41,10 @@ export function buildLlmsTxt(lang: string): string {
   const cfg = getAppConfig()
   const meta = metaForLang(lang)
   const surfaces = publicSurfaces(lang)
-  const out: string[] = [`# ${meta.title}`, '', `> ${meta.description}`, '']
+  // 🔒 ЗАГОЛОВОК КАРТЫ — ИМЯ САЙТА, А НЕ ЗАГОЛОВОК СТРАНИЦЫ. `metaForLang().title`
+  // пропущен через шаблон (`%s | Сайт`), и на живом сайте H1 карты вышел как
+  // «Fractera — … | Fractera»: имя дважды. Тот же класс ошибки уже был в манифесте.
+  const out: string[] = [`# ${meta.siteName}`, '', `> ${meta.description}`, '']
 
   // Абзацы без заголовков — по спецификации здесь можно дать ориентиры, которые
   // не являются ссылками. Даём ровно два факта, которые агенту нужны раньше
@@ -76,7 +79,7 @@ export function buildLlmsFullTxt(lang: string): string {
   const meta = metaForLang(lang)
   const surfaces = publicSurfaces(lang)
   const out: string[] = [
-    `# ${meta.title}`,
+    `# ${meta.siteName}`,
     '',
     `> ${meta.description}`,
     '',

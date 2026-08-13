@@ -52,7 +52,9 @@ export function publicSurfaces(lang: string): Surface[] {
   const surfaces: Surface[] = [
     {
       subPath: '',
-      title: home.title,
+      // Имя сайта, а не заголовок страницы: последний пропущен через шаблон
+      // (`%s | Сайт`) и в карте читался бы как имя, повторённое дважды.
+      title: home.siteName,
       description: home.description,
       section: 'main',
       // У главной нет собственного текста в блоках: её содержимое — это
@@ -60,7 +62,7 @@ export function publicSurfaces(lang: string): Surface[] {
       // перечнем разделов, чем выдумать текст, которого на странице нет.
       body: () =>
         [
-          `# ${home.title}`,
+          `# ${home.siteName}`,
           '',
           `> ${home.description}`,
           '',

@@ -182,6 +182,34 @@ its markdown twin.**
 Copying the folder of an existing post brings this file with it. Forgetting it is caught before the
 post ships, not after.
 
+### 4b. 🔒 The post must be FINDABLE — the sitemap is part of the engine
+
+A post that exists, reads well and has a perfect markdown twin is still invisible if no map points at
+it. Search engines find pages two ways: by following links, and by reading the sitemap. The first is
+slow and guarantees nothing — a page nobody has linked to yet can wait months.
+
+**For posts you write nothing.** `app/sitemap.ts` builds the blog section and every post from
+`_list.generated.ts` — the same inventory that feeds the blog page — for each enabled language, with
+`lastModified` taken from the post's `meta.date`. A new post enters the map by the fact of existing.
+There is no second source of truth about posts, and that is the point.
+
+**For a NEW COLLECTION you write one line.** Adding a section beside `blog` (say `news` or `guides`)
+means adding it to `app/sitemap.ts`. Two shapes, and the choice is not stylistic:
+
+- **authored, finite set** (posts, pages) → the main map, `app/sitemap.ts`;
+- **grows at runtime and multiplies by language** (a catalogue) → its own chunked map,
+  `app/<section>/sitemap.ts`, like products. One file holds 50,000 addresses, and past that limit a
+  search engine discards the file ENTIRELY — pages and posts along with it.
+
+**Never in the map:** anything behind authorization. Account, panel, checkout, sign-in. Such a page
+differs per visitor, does not exist at build time, and returns a login form to a crawler. Promising an
+address where a lock awaits wastes the crawl and fills reports with errors instead of pages.
+
+**Why this is a rule and not a nicety.** It was found live on 2026-08-13: `/ru/blog` returned 200,
+both posts were written and translated, `check:seo` was green — and neither post was in any sitemap.
+Nothing looked broken, which is the whole difficulty. **`npm run check:seo` now refuses a section that
+appears in no map**, so the next collection cannot repeat it.
+
 ## 5. 🔒 The law of the two links
 
 A post links in **exactly two ways**. This is enforced, not advised — `npm run check:content` rejects

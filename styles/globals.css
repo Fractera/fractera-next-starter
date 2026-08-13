@@ -92,3 +92,77 @@ html[data-app-width="wide"] { --app-w: calc(100vw - 64px - var(--app-sbw, 0px));
 @media (max-width: 767px) {
   :root, html[data-app-width="wide"] { --app-w: 100%; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ЛЕЙБЛ-ПИЛЮЛЯ С РАДУЖНОЙ КАЁМКОЙ (владелец 2026-08-13).
+ *
+ * Стоит над заголовком главной и говорит, на чём построен проект. Форма взята с
+ * витрин, где такой знак принято ставить над первым экраном, но реализация
+ * СВОЯ и на порядок дешевле оригинала: там пилюля собрана из вложенных `svg`,
+ * фильтров размытия, масок и `foreignObject` с конической заливкой — десятки
+ * узлов и постоянная перерисовка.
+ *
+ * Здесь всё делает ОДИН элемент и две псевдо-строки:
+ *   • каёмка — коническая заливка, показанная через `mask` только по контуру;
+ *   • свечение — та же заливка, размытая и приглушённая.
+ * Ни одного скрипта, ни одного лишнего узла в разметке.
+ *
+ * 🔒 ДВИЖЕНИЕ — ТОЛЬКО ТЕМ, КТО ЕГО НЕ ЗАПРЕЩАЛ. Вращение включается через
+ * `@property`, и там, где его нет, каёмка просто стоит неподвижно — вид тот же,
+ * анимации нет. При `prefers-reduced-motion: reduce` вращение выключается: у
+ * части людей движение вызывает тошноту и головную боль, и «красиво» этого не
+ * стоит.
+ */
+@property --pill-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.pill-ai {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Каёмка. Заливка обрезается маской так, что видна только полоса шириной 1px по
+ * периметру — рамка есть, а фон под текстом остаётся фоном страницы. */
+.pill-ai::before,
+.pill-ai::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--pill-angle),
+    oklch(0.62 0.19 250),
+    oklch(0.68 0.24 330),
+    oklch(0.72 0.19 60),
+    oklch(0.68 0.16 285),
+    oklch(0.62 0.19 250)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: pill-spin 8s linear infinite;
+}
+
+/* Второй слой — то же самое, но размытое: мягкое свечение под каёмкой. */
+.pill-ai::after {
+  padding: 0;
+  filter: blur(7px);
+  opacity: 0.35;
+  z-index: -1;
+  -webkit-mask: none;
+  mask: none;
+}
+
+@keyframes pill-spin {
+  to { --pill-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill-ai::before,
+  .pill-ai::after { animation: none; }
+}

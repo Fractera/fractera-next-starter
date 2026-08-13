@@ -85,6 +85,31 @@ export default function HomeEntry({ lang }: { lang: string }) {
             loading="eager"
             className="mx-auto mb-6 size-18 rounded-full object-contain p-1.5 ring-1 ring-border"
           />
+          {/* 🔒 ЛЕЙБЛ МЕЖДУ ЗНАКОМ И ЗАГОЛОВКОМ (владелец 2026-08-13).
+              Порядок задан им же: знак бренда → лейбл → заголовок. Смысл порядка
+              в том, что сначала человек видит ЧЕЙ это сайт, и только потом — на
+              чём он построен; обратный порядок читался бы как реклама платформы
+              на чужой странице.
+
+              ССЫЛКА ОБЫЧНАЯ, БЕЗ `nofollow`, и это осознанно: она передаёт вес
+              платформе, и в этом её вторая задача. Стоит `rel="noopener"` —
+              требование безопасности при `target="_blank"`, оно на передачу веса
+              не влияет.
+
+              Каёмка живёт в `styles/globals.css` (`.pill-ai`): один элемент, две
+              псевдо-строки, ноль скриптов. */}
+          <a
+            href="https://www.fractera.ai"
+            target="_blank"
+            rel="noopener"
+            className="pill-ai mx-auto mb-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-foreground transition-colors hover:text-primary"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden className="shrink-0 text-primary">
+              <path d="M12 2l2.1 5.6L20 9.7l-5.9 2.1L12 17.4l-2.1-5.6L4 9.7l5.9-2.1z" />
+            </svg>
+            {t.heroPill}
+          </a>
+
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
           {subtitle ? (
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">{subtitle}</p>

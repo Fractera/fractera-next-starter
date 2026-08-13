@@ -8,6 +8,9 @@
 // embed in its own _components. No central registry; the index reads generated POSTS.
 
 import { resolveEntry } from '@/lib/content/resolve'
+import { VideoCover } from '@/components/media/video-cover.client'
+import { StaticImage } from '@/components/media/static-image.server'
+import { getBlogUi } from '../_data'
 import type { BlogMeta, BlogBase, BlogOverride } from './types'
 import type { ContentPost } from '@/lib/content/create-content-post'
 
@@ -49,26 +52,29 @@ export function blogPost(data: BlogData, lang: string): ContentPost {
             className="overflow-hidden rounded-2xl border border-border shadow-[0_0_60px_-15px_rgba(167,139,250,0.35)]"
             style={meta.heroAspect ? { aspectRatio: meta.heroAspect } : undefined}
           >
-            <video
+            {/* 🔒 ОБЛОЖКА — КАРТИНКА, А НЕ АТРИБУТ `poster` (отчёт проверки
+                2026-08-13, экономия 61 КБ на этой странице).
+                Атрибут не изображение: ни размытой подложки, ни размера под
+                экран, ни современного формата к нему не применить, и файл уезжал
+                как есть — 82 КБ ради места 444×290. Он же был самым крупным
+                элементом страницы, по которому меряют скорость.
+                Поэтому до нажатия стоит обычная картинка, проходящая весь наш
+                путь, а тег `video` появляется в тот момент, когда его попросили.
+                Субтитры едут вместе с ним: видео без них недоступно глухому
+                посетителю. Пустую дорожку не подставляем — заглушка объявляет
+                субтитры существующими, и человек открывает пустоту. */}
+            <VideoCover
               src={meta.heroVideo}
               poster={meta.heroPoster}
-              controls
-              playsInline
-              preload="none"
-              className="h-full w-full bg-background object-cover"
-            >
-              {/* 🔒 ДОРОЖКА СУБТИТРОВ, КОГДА АВТОР ЕЁ ДАЛ (проверка доступности
-                  2026-08-13). Видео без субтитров недоступно глухому посетителю —
-                  и это не придирка проверяющего, а половина содержимого, до
-                  которой он не доберётся.
-                  Пустую дорожку сюда НЕ подставляем: файл-заглушка объявляет
-                  субтитры существующими, читалка их предлагает, посетитель
-                  открывает пустоту. Отсутствие честнее подделки, поэтому шаблон
-                  даёт автору поле `heroCaptions` и молчит, пока оно пустое. */}
-              {meta.heroCaptions && (
-                <track kind="captions" src={meta.heroCaptions} srcLang={lang} label={lang} default />
-              )}
-            </video>
+              captions={meta.heroCaptions}
+              lang={lang}
+              label={getBlogUi(lang).playVideo}
+              cover={
+                meta.heroPoster
+                  ? <StaticImage src={meta.heroPoster} alt="" priority sizes="(max-width: 768px) 100vw, 48rem" className="h-full w-full object-cover" />
+                  : null
+              }
+            />
           </div>
           {r.heroCaption && (
             <figcaption className="text-center text-sm text-muted-foreground">{r.heroCaption}</figcaption>

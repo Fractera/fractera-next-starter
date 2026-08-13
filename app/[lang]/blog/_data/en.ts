@@ -16,5 +16,6 @@ export const en: BlogUi = {
   read: 'Read',
   backToBlog: 'Back to all articles',
   watchVideo: 'Watch the video',
+  playVideo: 'Play the video',
   titleSuffix: 'Blog',
 }

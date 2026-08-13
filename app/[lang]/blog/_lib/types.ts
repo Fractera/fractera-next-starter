@@ -66,5 +66,6 @@ export type BlogUi = {
   backToBlog: string
   /** Подпись на обложке видео: без скриптов это текст ссылки на страницу видео. */
   watchVideo: string
+  playVideo: string
   titleSuffix: string
 }

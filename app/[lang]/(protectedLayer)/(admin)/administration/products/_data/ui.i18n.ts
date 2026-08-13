@@ -20,8 +20,8 @@ export type AdministrationProductsUi = {
 
 const UI: Record<string, AdministrationProductsUi> = {
   en: {
-    title: "Products",
-    subtitle: "The catalogue as the administrator sees it: one action, and it is the irreversible one.",
+    title: "Administration",
+    subtitle: "The administrative layer: one action, and it is irreversible. You delete products — there is no undo, no bin and no restore, which is exactly why deletion lives in its own role rather than beside editing. Everything else is read-only here: names, descriptions and prices belong to staff and finance. A layer whose only power is destruction is given out to few people on purpose.",
     deleteOnly: "You may delete a product — and nothing else: the name, price and description are edited by the staff and finance layers, and the server refuses any edit from this page. Deleting has no undo, which is why it is a separate role.",
     confirm: "Delete this product? This cannot be undone.",
     deleted: "Product deleted",
@@ -55,8 +55,8 @@ const UI: Record<string, AdministrationProductsUi> = {
   ga: { title: "Táirgí", subtitle: "An catalóg mar a fheiceann an riarthóir í: gníomh amháin, agus is é an ceann do-aisiompaithe é.", deleteOnly: "Is féidir leat táirge a scriosadh — agus dada eile: an t-ainm, an praghas agus an cur síos, cuireann na sraitheanna foirne agus airgeadais in eagar iad, agus diúltaíonn an freastalaí d'aon eagarthóireacht ón leathanach seo. Níl aon chealú ag scriosadh, agus sin an fáth a bhfuil sé scartha ina ról ar leith.", confirm: "An táirge seo a scriosadh? Ní féidir é seo a chealú.", deleted: "Táirge scriosta" },
   eu: { title: "Produktuak", subtitle: "Katalogoa administratzaileak ikusten duen bezala: ekintza bakarra, eta atzeraezina da.", deleteOnly: "Produktu bat ezaba dezakezu — eta besterik ez: izena, prezioa eta deskribapena langile eta finantza geruzek editatzen dituzte, eta zerbitzariak orri honetatik edozein edizio ukatzen du. Ezabatzeak ez du desegiterik, horregatik dago rol bereizi batean.", confirm: "Produktu hau ezabatu? Hau ezin da desegin.", deleted: "Produktua ezabatuta" },
   ru: {
-    title: "Товары",
-    subtitle: "Каталог глазами администратора: одно действие, и оно необратимое.",
+    title: "Администрирование",
+    subtitle: "Административный слой: одно действие, и оно необратимое. Вы удаляете товары — без «отменить», без корзины и без восстановления, и именно поэтому удаление вынесено в отдельную роль, а не поставлено рядом с правкой. Всё прочее здесь только для чтения: названия, описания и цены принадлежат персоналу и финансам. Слой, единственная сила которого — разрушение, раздаётся немногим намеренно.",
     deleteOnly: "Вам доступно удаление товара — и больше ничего: название, цену и описание правят слои персонала и финансов, а серверу этой страницы правка запрещена. У удаления нет «отменить», поэтому оно и вынесено в отдельную роль.",
     confirm: "Удалить товар? Отменить это будет нельзя.",
     deleted: "Товар удалён",

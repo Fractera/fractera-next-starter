@@ -17,8 +17,8 @@ export type ShoppingProductsUi = {
 
 const UI: Record<string, ShoppingProductsUi> = {
   en: {
-    title: "Products",
-    subtitle: "The catalogue as a customer sees it: choose a quantity and put it in the order.",
+    title: "Shopping",
+    subtitle: "Your personal layer: here you are the customer. Pick quantities and collect an order — the cart travels with you across the site and survives a page reload. Everything else about a product is somebody else's job: names, prices, photographs and the catalogue itself are edited in the staff, finance and administration layers, and the server refuses those changes from this page even if the request is forged.",
     buyOnly: "You may add products to your order. Names, prices and the catalogue itself belong to the staff, finance and administration layers — the server refuses any change from this page.",
   },
   fr: { title: "Produits", subtitle: "Le catalogue tel que le voit un client : choisissez une quantité et ajoutez-la à la commande.", buyOnly: "Vous pouvez ajouter des produits à votre commande. Les noms, les prix et le catalogue lui-même appartiennent aux niveaux personnel, finances et administration — le serveur refuse toute modification depuis cette page." },
@@ -50,8 +50,8 @@ const UI: Record<string, ShoppingProductsUi> = {
   ga: { title: "Táirgí", subtitle: "An catalóg mar a fheiceann custaiméir í: roghnaigh méid agus cuir san ordú é.", buyOnly: "Is féidir leat táirgí a chur le d’ordú. Baineann na hainmneacha, na praghsanna agus an catalóg féin le sraitheanna na foirne, an airgeadais agus an riaracháin — diúltaíonn an freastalaí d’aon athrú ón leathanach seo." },
   eu: { title: "Produktuak", subtitle: "Katalogoa bezeroaren begiekin: aukeratu kopurua eta gehitu eskarian.", buyOnly: "Produktuak zure eskariari gehi diezazkiokezu. Izenak, prezioak eta katalogoa bera langile-, finantza- eta administrazio-geruzenak dira — zerbitzariak orri honetatik datorren edozein aldaketa ukatzen du." },
   ru: {
-    title: "Товары",
-    subtitle: "Каталог глазами покупателя: выберите количество и положите в заказ.",
+    title: "Покупка",
+    subtitle: "Ваш личный слой: здесь вы покупатель. Выбирайте количество и собирайте заказ — корзина ходит с вами по сайту и переживает перезагрузку страницы. Всё остальное о товаре — не ваша забота: названия, цены, фотографии и сам каталог правятся в слоях персонала, финансов и администрирования, и сервер отклонит такое изменение с этой страницы, даже если запрос подделать.",
     buyOnly: "Вам доступно добавление товаров в заказ. Названия, цены и сам каталог принадлежат слоям персонала, финансов и администрирования — серверу этой страницы любое изменение запрещено.",
   },
   uk: { title: "Товари", subtitle: "Каталог очима покупця: виберіть кількість і додайте до замовлення.", buyOnly: "Вам доступне додавання товарів до замовлення. Назви, ціни та сам каталог належать шарам персоналу, фінансів та адміністрування — сервер цієї сторінки відхиляє будь-яку зміну." },

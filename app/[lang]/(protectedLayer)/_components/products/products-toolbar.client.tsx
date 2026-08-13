@@ -27,7 +27,14 @@ export function ProductsToolbar(
     revealed: boolean; loading: boolean; adding: boolean; query: string; applied: string
     onQuery: (v: string) => void
     onReveal: () => void
-    onToggleAdd: () => void
+    /** 🔒 НЕТ ОБРАБОТЧИКА — НЕТ КНОПКИ (владелец 2026-08-13).
+     * Три группы прав из четырёх передавали сюда пустую функцию: кнопка «Добавить»
+     * рисовалась, человек нажимал и не происходило НИЧЕГО. Кнопка, которая ничего
+     * не делает, хуже отсутствующей — она обещает право, которого нет, и человек
+     * решает, что сломан продукт, а не что ему сюда нельзя.
+     * Проп необязателен намеренно: право добавлять описывается ЕГО НАЛИЧИЕМ, а не
+     * отдельным флагом, который однажды разойдётся с обработчиком. */
+    onToggleAdd?: () => void
     onSearch: () => void
     onReset: () => void
   },
@@ -42,12 +49,12 @@ export function ProductsToolbar(
               {loading ? <Loader2 size={12} className="animate-spin" /> : <Eye size={12} />}
               {loading ? labels.loading : labels.reveal}
             </Button>
-          ) : (
+          ) : onToggleAdd ? (
             <Button size="sm" variant="outline" onClick={onToggleAdd}>
               {adding ? <X size={12} /> : <Plus size={12} />}
               {adding ? labels.cancelAdd : labels.add}
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
 

@@ -155,7 +155,15 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
             {/* Sign out mirrors sign-in (step 169): a RELATIVE /logout link that proxy.ts
                 (AUTH_FORM_PATHS) redirects to the auth service with an absolute redirectUrl
                 back to this site. Never a bare /api/auth/* path — this app has none (404). */}
-            <Link href={`/logout?lang=${lang}`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}>
+            {/* 🔒 prefetch={false} — ОБЯЗАТЕЛЕН НА ВСЕХ АДРЕСАХ АВТОРИЗАЦИИ (владелец нашёл
+                в консоли 2026-08-13, тот же класс, что у /login часом раньше).
+                Next заранее тянет страницы по видимым ссылкам, а /logout уводит
+                переадресацией на ДРУГОЙ домен — слой авторизации. Браузер видит
+                запрос через границу источника, не находит разрешающего заголовка
+                и пишет ошибку CORS. Ошибок было девять на страницу, и все они —
+                предзагрузка, которой никто не просил: выйти можно только нажав.
+                Список таких адресов уже есть — AUTH_FORM_PATHS в proxy.ts. */}
+            <Link href={`/logout?lang=${lang}`} prefetch={false} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "w-full justify-start")}>
               <LogOut />{labels.signOut}
             </Link>
           </div>

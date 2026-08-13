@@ -48,7 +48,6 @@ export function ProductsPanel(
         applied={list.applied}
         onQuery={list.setQuery}
         onReveal={() => void list.load({ page: 1 })}
-        onToggleAdd={() => {}}
         onSearch={() => void list.search()}
         onReset={() => void list.resetSearch()}
       />

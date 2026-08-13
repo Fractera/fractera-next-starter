@@ -17,10 +17,12 @@ import { SUPPORTED_LANGUAGES } from '@/config/translations/translations.config'
 // существующими страницами: `page.tsx` и общий `route.ts` на одном сегменте
 // конфликтуют.
 
+// 🔒 ЗНАЧЕНИЯ СЕГМЕНТА ЗДЕСЬ НЕ ЖИВУТ. Next разбирает `dynamic` и `dynamicParams`
+// СТАТИЧЕСКИ, до выполнения кода, и переэкспорт из объекта не понимает — сборка
+// падает с «needs to be a static boolean». Поэтому каждый маршрут объявляет их
+// литералами у себя, а отсюда берёт только функции: их переэкспортировать можно.
 export function markdownRoute(subPath: string) {
   return {
-    dynamic: 'force-static' as const,
-    dynamicParams: false as const,
     generateStaticParams() {
       return SUPPORTED_LANGUAGES.map(lang => ({ lang }))
     },

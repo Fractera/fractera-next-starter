@@ -137,6 +137,17 @@ a request to the server, and this project has already paid for each of them:
 - **The page AFTER the scripts run.** `curl` returns the initial markup; a person sees what the code
   produced. The defect usually lives in the second.
 
+**Report the answer once, so the panel stops asking.** The control panel cannot see your browser —
+it runs on the server. It only knows what you tell it, so send the result of the check:
+
+```
+POST <admin>/api/dev-tools/browser   { "connected": true }   // or false
+```
+
+Send it EVERY session, with whatever you actually found. A mark that is only ever set would age into a
+claim about a browser that has since been removed — the exact kind of stale green this project refuses.
+The panel keeps an amber reminder while the mark is absent and drops it the moment you report a live link.
+
 **Use it to verify, not to guess.** When the owner reports "the button does nothing", walk the same path
 and watch. One look replaces an hour of reading.
 

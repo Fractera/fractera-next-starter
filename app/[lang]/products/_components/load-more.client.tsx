@@ -22,6 +22,12 @@ type Row = {
   name: string
   price: number
   media_url: string | null
+  // Приезжают вместе со строкой из того же ответа, что и остальные поля: без них
+  // догруженная карточка рисовалась бы без подложки, и вторая половина каталога
+  // выглядела бы иначе, чем первая.
+  media_width?: number | null
+  media_height?: number | null
+  media_blur?: string | null
 }
 
 export function LoadMore(

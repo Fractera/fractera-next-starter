@@ -18,12 +18,15 @@ export async function GET(req: NextRequest) {
   const offset = Math.max(0, Math.min(100_000, Number(url.searchParams.get("offset")) || 0))
 
   const rows = (await db.prepare(
-    "SELECT id, name, description, i18n, price, media_url FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    "SELECT id, name, description, i18n, price, media_url, media_width, media_height, media_blur FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?"
   ).all(NEXT_BATCH, offset)) as unknown as Product[]
 
   const products = rows.map(r => {
     const p = localizeProduct(r, lang)
-    return { id: p.id, name: p.localizedName, price: p.price, media_url: p.media_url }
+    // Подложка и размеры едут дальше вместе со строкой: догруженная карточка обязана
+    // выглядеть так же, как та, что приехала в первом HTML.
+    return { id: p.id, name: p.localizedName, price: p.price, media_url: p.media_url,
+             media_width: p.media_width, media_height: p.media_height, media_blur: p.media_blur }
   })
   return NextResponse.json({ products })
 }

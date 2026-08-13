@@ -46,8 +46,12 @@ export function buildManifest(lang: string): MetadataRoute.Manifest {
     // `start_url`, и смена стартового адреса превращается в ВТОРОЕ приложение
     // рядом с первым вместо обновления существующего.
     id: start,
-    name: meta.title,
-    short_name: cfg.short_name,
+    // 🔒 ИМЯ — БЕЗ ШАБЛОНА ЗАГОЛОВКА. `metaForLang().title` возвращает название,
+    // пропущенное через шаблон страницы (`%s | Сайт`), и на домашнем экране это
+    // выглядело как «Proof Site | Fractera» — заголовок вкладки вместо имени
+    // приложения. Найдено живой проверкой манифеста. Для значка нужно имя сайта.
+    name: meta.siteName,
+    short_name: cfg.short_name || meta.siteName,
     description: meta.description,
     lang,
     dir: 'auto',

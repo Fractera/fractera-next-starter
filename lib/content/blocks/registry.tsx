@@ -81,9 +81,20 @@ export const BLOCK_RENDERERS: BlockRenderers = {
           загрузка по умолчанию, размытая копия вместо пустого места. Размеры
           берутся из карты превью, поэтому текст под картинкой не подпрыгивает,
           когда она приходит. */}
+      {/* 🔒 ССЫЛКА НЕ ОТМЕНЯЕТ РАЗБОР `media:` (найдено на живом сайте 2026-08-13).
+          Сначала ветка со ссылкой стояла первой и рисовала картинку сама — а
+          иллюстрация нашей же статьи как раз со ссылкой, и в HTML уехало
+          `<img src="media:development-loop.jpg">` дословно. Ветвление по НАЛИЧИЮ
+          ССЫЛКИ не имеет права решать, ОТКУДА берётся картинка: это два разных
+          вопроса, и смешение их даёт дефект, который виден только на том блоке,
+          где сошлись оба условия. */}
       {b.href ? (
         <a href={b.href} className="block overflow-hidden rounded-2xl border border-border">
-          <StaticImage src={b.src} alt={b.alt} sizes="(max-width: 768px) 100vw, 48rem" className="w-full h-auto" />
+          {isMediaRef(b.src) ? (
+            <StoredImage name={mediaRefName(b.src)} alt={b.alt} sizes="(max-width: 768px) 100vw, 48rem" className="w-full h-auto" />
+          ) : (
+            <StaticImage src={b.src} alt={b.alt} sizes="(max-width: 768px) 100vw, 48rem" className="w-full h-auto" />
+          )}
         </a>
       ) : isMediaRef(b.src) ? (
         /* 🔒 ДВА ПУТИ, И ОБА ЗДЕСЬ НАМЕРЕННО (владелец 2026-08-13).

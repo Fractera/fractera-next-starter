@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { brand } from "@/lib/brand"
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
+import { urlFor } from "@/lib/seo/alternates"
 
 // ГЛАВНАЯ КАРТА САЙТА — страницы, множество которых конечно и авторское.
 //
@@ -15,10 +16,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const site = brand().siteUrl
   if (!site) return []
 
+  // 🔒 АДРЕСА СТРОЯТСЯ ТЕМ ЖЕ `urlFor`, ЧТО И КАНОНИЧЕСКИЕ (шаг 503). Здесь стояла
+  // своя склейка `${site}/${lang}${путь}` — второй источник правды об адресах, и он
+  // разошёлся с первым ровно там, где это дороже всего: в одноязычном режиме прокси
+  // убирает языковой сегмент, и каждая строка этой карты вела на 301. Карта сайта,
+  // перечисляющая редиректы, обесценивает сама себя, а расхождение с каноническим
+  // адресом поисковик читает как противоречие в сигналах.
   const out: MetadataRoute.Sitemap = []
   for (const lang of SUPPORTED_LANGUAGES) {
-    out.push({ url: `${site}/${lang}`, changeFrequency: "daily", priority: 1 })
-    out.push({ url: `${site}/${lang}/products`, changeFrequency: "daily", priority: 0.8 })
+    out.push({ url: urlFor(lang, ""), changeFrequency: "daily", priority: 1 })
+    out.push({ url: urlFor(lang, "/products"), changeFrequency: "daily", priority: 0.8 })
   }
-  return out
+  // В одноязычном режиме `urlFor` для каждого языка даёт один и тот же адрес — но
+  // язык там ровно один, так что дубликатов не возникает. Страховка на случай
+  // будущей правки: карта обязана быть множеством, а не списком.
+  return out.filter((row, i) => out.findIndex(r => r.url === row.url) === i)
 }

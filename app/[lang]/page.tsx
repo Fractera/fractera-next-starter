@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import HomeEntry from "./_components"
 import { getAppConfig, metaForLang } from "@/config/app-config"
+import { buildAlternates } from "@/lib/seo/alternates"
 
 // Thin server entry — a page is never a client component. All logic and markup
 // live in the route's entry component (_components/index.tsx).
@@ -15,6 +16,18 @@ export const dynamicParams = true
 // при двух языках испанская страница получала английский заголовок и описание, то
 // есть объявляла себя англоязычной. Перевод берётся из `i18n` конфига, а если его
 // нет — основное значение (правило «нет перевода → основной язык»).
+//
+// 🔒 СВОИ АЛЬТЕРНАТИВЫ — ШАГ 503, И ЭТО БЫЛА САМАЯ ДОРОГАЯ ПРОПАЖА ПРОЕКТА.
+// Здесь их не было, и главная брала канонический адрес у макета — а он один на всё
+// дерево и равен корню сайта. То есть КАЖДЫЙ языковой вариант главной объявлял
+// каноническим английский корень: `/ru` дословно говорил поисковику «я копия `/`,
+// индексируй не меня». Плюс ни одного `hreflang` — переводы друг о друге не знали.
+// Набор одинаковых по смыслу адресов, ни один из которых не назвал себя оригиналом,
+// — это то, что поисковик называет дорвеем, и теряется при этом не позиция, а
+// присутствие целых языков.
+//
+// Заметить это глазами нельзя: страницы открываются, переключатель работает, сайт
+// выглядит исправным. Поэтому проверка машинная — `npm run check:seo`.
 export async function generateMetadata(
   { params }: { params: Promise<{ lang: string }> },
 ): Promise<Metadata> {
@@ -23,6 +36,9 @@ export async function generateMetadata(
   return {
     title,
     description,
+    // Главная — пустой `subPath`: `/` для языка по умолчанию, `/<язык>` для
+    // остальных, и просто `/` в одноязычном режиме.
+    alternates: buildAlternates(lang, ""),
     openGraph: { title, description, siteName, locale: lang },
   }
 }

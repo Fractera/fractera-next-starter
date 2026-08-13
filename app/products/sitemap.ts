@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { brand } from "@/lib/brand"
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
 import { productSitemapIds, sitemapChunkSize } from "@/lib/catalogue"
+import { urlFor } from "@/lib/seo/alternates"
 
 // КАРТА ТОВАРОВ — отдельная от главной и РАЗБИТАЯ НА ПОРЦИИ.
 //
@@ -43,11 +44,14 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
     "SELECT id, created_at FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?"
   ).all(size, index * size)) as unknown as { id: string; created_at: string }[]
 
+  // Адрес — тем же `urlFor`, что и канонический адрес самой карточки (шаг 503):
+  // в одноязычном режиме языкового сегмента нет, и склеенный вручную путь вёл бы
+  // на 301 для каждого товара разом.
   const out: MetadataRoute.Sitemap = []
   for (const r of rows) {
     for (const lang of SUPPORTED_LANGUAGES) {
       out.push({
-        url: `${site}/${lang}/products/${r.id}`,
+        url: urlFor(lang, `/products/${r.id}`),
         lastModified: r.created_at ? new Date(`${r.created_at}Z`) : undefined,
         changeFrequency: "weekly",
         priority: 0.6,

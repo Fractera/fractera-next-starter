@@ -91,8 +91,16 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
   // сохраняли). Тогда канонического адреса НЕТ — и это правильный ответ:
   // страница без canonical считается собственной копией, страница с чужим
   // canonical отдаёт себя чужому домену.
+  //
+  // 🔒 БЕЗ `pathname` КАНОНИЧЕСКОГО АДРЕСА НЕТ ВООБЩЕ (шаг 503). Раньше здесь
+  // стояло значение по умолчанию «/», и это молча ломало всё дерево: макет
+  // `[lang]/layout.tsx` зовёт сборщик без пути, а метаданные в Next НАСЛЕДУЮТСЯ —
+  // значит любая страница, забывшая объявить свои альтернативы, получала
+  // канонический адрес КОРНЯ САЙТА и объявляла себя его копией. Ошибочный
+  // канонический адрес хуже отсутствующего: отсутствие поисковик трактует как
+  // «страница сама себе оригинал», а чужой адрес — как просьбу её не индексировать.
   const base = cfg.seo.canonicalBase || cfg.url;
-  const canonical = base ? new URL(normalizePath(pathname), base).toString() : undefined;
+  const canonical = base && pathname ? new URL(normalizePath(pathname), base).toString() : undefined;
   const desc = truncate(description);
   const index = !noIndex && cfg.seo.robotsIndex && cfg.seo.indexing === "allow";
   const follow = !noFollow && cfg.seo.robotsFollow;

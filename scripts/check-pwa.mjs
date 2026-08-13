@@ -40,6 +40,26 @@ if (builder && !/purpose:\s*['"]maskable['"]/.test(builder)) {
   errors.push("нет иконки maskable — на Android значок обрежется по чужой форме");
 }
 
+// 2a — СТАРТОВЫЕ ИКОНКИ СУЩЕСТВУЮТ НА ДИСКЕ.
+//
+// Правило написано по замеру на живом сайте: манифест отдавался с нулём иконок,
+// то есть приложение нельзя было установить, хотя весь остальной PWA работал.
+// Умолчание, ссылающееся на несуществующий файл, — та же пустота, только
+// незаметная: она не видна ни в коде, ни в браузере разработчика.
+const defaults = read(path.join(ROOT, "config", "app-config.defaults.ts"));
+const declaredIcons = [...defaults.matchAll(/"(\/icons\/[^"]+)"/g)].map(m => m[1]);
+if (!declaredIcons.length) {
+  errors.push("в умолчаниях нет стартовых иконок — манифест свежего проекта уедет пустым, и приложение не установится");
+}
+for (const icon of declaredIcons) {
+  if (!fs.existsSync(path.join(ROOT, "public", icon))) {
+    errors.push(`умолчание ссылается на ${icon}, а файла нет — запустите npm run icons:default`);
+  }
+}
+if (declaredIcons.length && !/icon512Maskable/.test(defaults)) {
+  errors.push("среди стартовых иконок нет maskable — на Android значок обрежется по чужой форме");
+}
+
 // 3 — макет ссылается на языковой манифест.
 const layout = read(path.join(ROOT, "app", "[lang]", "layout.tsx"));
 if (layout && !/manifest:\s*`\/\$\{lang\}\/manifest\.webmanifest`/.test(layout)) {

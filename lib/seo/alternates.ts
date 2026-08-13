@@ -43,7 +43,19 @@ export function urlFor(lang: string, subPath: string): string {
  * динамического сегмента.
  */
 export function mdUrlFor(lang: string, subPath: string): string {
-  return `${urlFor(lang, subPath).replace(/\/$/, '')}/index.md`
+  // 🔒 ЯЗЫКОВОЙ СЕГМЕНТ ЗДЕСЬ ЕСТЬ ВСЕГДА — в отличие от адреса самой страницы.
+  //
+  // Найдено живой проверкой: карта `llms.txt` печатала главную как `/index.md`,
+  // потому что человеческий адрес английской главной — голый корень. Но `proxy.ts`
+  // НЕ ТРОГАЕТ пути с точкой (его матчер исключает `.*\..*` — то же исключение, по
+  // которому работает `/llms.txt`), значит переписать `/index.md` в `/en/index.md`
+  // некому, и агент, пришедший по карте, получал 404 на первой же ссылке.
+  //
+  // Машинная поверхность живёт по адресу СВОЕГО МАРШРУТА, а не по красивому
+  // адресу страницы: маршруты лежат под `app/[lang]/…`, поэтому язык в адресе
+  // обязателен даже в одноязычном режиме.
+  const BASE = base()
+  return `${BASE}/${lang}${subPath}/index.md`
 }
 
 // Per-page canonical + hreflang. Each page declares ITSELF as canonical (fixing

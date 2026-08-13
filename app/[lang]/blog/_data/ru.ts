@@ -14,5 +14,6 @@ export const ru: BlogUi = {
   minRead: 'мин чтения',
   read: 'Читать',
   backToBlog: 'Ко всем статьям',
+  watchVideo: 'Смотреть видео',
   titleSuffix: 'Блог',
 }

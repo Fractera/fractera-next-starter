@@ -15,5 +15,6 @@ export const en: BlogUi = {
   minRead: 'min read',
   read: 'Read',
   backToBlog: 'Back to all articles',
+  watchVideo: 'Watch the video',
   titleSuffix: 'Blog',
 }

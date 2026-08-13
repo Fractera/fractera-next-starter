@@ -62,5 +62,7 @@ export type BlogUi = {
   minRead: string
   read: string
   backToBlog: string
+  /** Подпись на обложке видео: без скриптов это текст ссылки на страницу видео. */
+  watchVideo: string
   titleSuffix: string
 }

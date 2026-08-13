@@ -1,4 +1,5 @@
 import { createContentPost } from '@/lib/content/create-content-post'
+import { VideoFacade } from '@/components/media/video-facade.client'
 import { blogPost } from '../../_lib/post'
 import { getBlogUi } from '../../_data'
 import { brand } from '@/lib/brand'
@@ -10,23 +11,27 @@ import { data } from '../_data'
 // referenced on the homepage link (t=4119s → ?start=4119), so the moment plays from
 // the same point.
 const VIDEO_EMBED = 'https://www.youtube.com/embed/BYXbuik3dgA?start=4119'
+// Куда ведёт обложка, когда скрипты выключены: страница видео, тот же момент.
+const VIDEO_WATCH = 'https://www.youtube.com/watch?v=BYXbuik3dgA&t=4119s'
 
 const post = createContentPost({
   format: 'blog',
   subPath: `/blog/${data.meta.slug}`,
   resolve: lang => ({
     ...blogPost(data, lang),
+    // 🔒 ОБЛОЖКА, А НЕ ГОЛЫЙ ПЛЕЕР (дефект найден владельцем 2026-08-13).
+    // Здесь стоял `<iframe>` YouTube. С выключенным JavaScript YouTube отдаёт в
+    // него свою страницу ошибки — «Произошла ошибка. Включите JavaScript…», — и
+    // на месте видео посетитель видел сообщение о поломке. Проект обещает работу
+    // без скриптов, и материал обязан это обещание держать.
     hero: (
-      <div className="my-8 w-full aspect-video rounded-2xl overflow-hidden border border-border bg-background">
-        <iframe
-          src={VIDEO_EMBED}
-          title="Elon Musk — Dwarkesh Patel interview (the moment)"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-          className="h-full w-full"
-        />
-      </div>
+      <VideoFacade
+        embedSrc={VIDEO_EMBED}
+        watchHref={VIDEO_WATCH}
+        poster={data.meta.heroPoster!}
+        title="Elon Musk — Dwarkesh Patel interview (the moment)"
+        label={getBlogUi(lang).watchVideo}
+      />
     ),
   }),
   chrome: (lang, p) => {

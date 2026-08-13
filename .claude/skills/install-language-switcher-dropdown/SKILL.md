@@ -68,7 +68,10 @@ import { LanguageSwitcher } from "@/components/language-switcher.client";
 </div>
 ```
 
-The starter mounts it on the home (`app/[lang]/_components/shell-home.client.tsx`).
+The starter mounts it in the top menu (`components/menu/top/`), not on the home page. This line used to
+name `app/[lang]/_components/shell-home.client.tsx` — a file nothing imported, left behind by an earlier
+home page. It was deleted on 2026-08-13 after it cost a session an edit to the wrong component: the live
+home is `app/[lang]/_components/index.tsx`.
 Mount it on whatever header/layout you want it visible on. Because it returns `null`
 in single-language mode, you can mount it unconditionally.
 

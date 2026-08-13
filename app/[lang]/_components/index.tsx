@@ -1,5 +1,5 @@
 import { getAppConfig } from "@/config/app-config"
-import { DEFAULT_APP_CONFIG } from "@/config/app-config.defaults"
+import { DEFAULT_APP_CONFIG, iconUrl } from "@/config/app-config.defaults"
 import { adminUrlFromSite } from "@/lib/site-urls"
 import { ALL_ROLES } from "@/lib/roles"
 import { homeUi } from "../_data/home.i18n"
@@ -64,6 +64,27 @@ export default function HomeEntry({ lang }: { lang: string }) {
     <main data-app-column className="flex-1 px-6 py-20" lang={lang}>
       <div className="mx-auto max-w-3xl">
         <header className="text-center">
+          {/* 🔒 ЗНАК БРЕНДА ЕСТЬ ВСЕГДА (шаг 506.1, владелец 2026-08-13).
+              Логотип и набор иконок живут в `APP-CONFIG` ВНЕ репозитория, поэтому
+              проект, который ещё не брендировали, не имеет ни того, ни другого — и
+              главная показывала НИ ОДНОЙ картинки. Владелец прочитал это как
+              сломанную сборку, и был прав в том, что проверять было нечего.
+              Запасной вариант — нейтральная заглушка, которая едет с проектом
+              (`npm run icons:default`) и уже стоит в манифесте: главная и
+              установленное приложение показывают один знак, а не спорят.
+              Заглушка НЕ несёт чужого бренда: шаблон уезжает клиенту в его
+              репозиторий.
+              `width`/`height` обязательны — без них заголовок подпрыгивает, пока
+              знак грузится, и этот прыжок измеряется поисковиком. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={config.logo ?? iconUrl(config, "icon_192") ?? "/icons/icon-192.png"}
+            alt=""
+            width={72}
+            height={72}
+            loading="eager"
+            className="mx-auto mb-6 size-18 rounded-full object-contain p-1.5 ring-1 ring-border"
+          />
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
           {subtitle ? (
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">{subtitle}</p>

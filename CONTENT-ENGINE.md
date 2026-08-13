@@ -210,6 +210,58 @@ both posts were written and translated, `check:seo` was green — and neither po
 Nothing looked broken, which is the whole difficulty. **`npm run check:seo` now refuses a section that
 appears in no map**, so the next collection cannot repeat it.
 
+### 4c. 🔒 Where a post's images live — and how they are saved and read back
+
+**Two homes, and picking the wrong one is the defect this section exists to prevent.**
+
+| Home | Written by | Changed by | Preview computed |
+|---|---|---|---|
+| `public/…` — ships with the repository | you, in the editor | a code change + rebuild | at build (`prebuild`) |
+| the media store — the data layer's own storage | a person, through the panel | the panel, no rebuild | at upload |
+
+**The test is one question: after the site is live, who changes this picture?** If the answer is "the
+owner, from the panel" — it belongs in the media store, and shipping it in `public/` hands them a
+picture they cannot replace without touching code. If the answer is "whoever edits the repository" —
+an icon, a diagram belonging to the text — `public/` is right.
+
+#### Saving: what happens when a file is uploaded
+
+1. The browser posts the file to `/api/media/upload`, a thin proxy on the app's own origin.
+2. The **data layer** (`services/data`, port 3300) receives it and does the work in one place:
+   writes the bytes to its storage directory under a generated key, measures `width`/`height` with
+   `sharp`, applies a crop if one was requested, and computes a tiny blurred copy (12px webp, a few
+   hundred bytes) into the `blur` column.
+3. It inserts one row into `media` — id, name, mime, size, dimensions, blur, storage key — and returns
+   that row. **The row is the picture's identity from then on; the file on disk is an implementation
+   detail of the data layer.**
+
+Two rules follow, and both have a cost attached. The blurred copy is computed **after** the crop, from
+the buffer that actually lands on disk — computed earlier, it would show a frame the file no longer
+contains. And a failure to compute it never fails the upload: a picture without a placeholder works,
+an upload that refuses because of a placeholder does not.
+
+#### Reading back: what a page does
+
+The page asks the data layer for the row and renders `<MediaImage media={row} …>`
+(`components/media/media-image.server.tsx`). The component supplies what `next/image` cannot know for
+a runtime source — the dimensions and the blurred string — and Next does the rest.
+
+**Resizing needs no machinery of ours.** Media is served from `/api/media/<id>/file`, the app's own
+origin, so the optimizer treats it as a local source: no `remotePatterns`, no second image service.
+It negotiates the format and the size the visitor's screen actually needs.
+
+**Never render a stored picture with a bare `<img>` and never guess its dimensions.** A wrong aspect
+ratio reserves the wrong height, the page jumps, and the jump is exactly what this whole mechanism is
+built to remove. When the row has no dimensions, `MediaImage` falls back to a plain `<img>` on purpose
+— honest degradation beats a confident wrong number.
+
+#### What a post stores
+
+A post's data cell holds the **address**, never the bytes and never a base64 blob: `heroPoster:
+'/blog-media/…'` for a shipped file, or the media URL for an uploaded one. `npm run check:content`
+fails on a `heroVideo`/`heroPoster`/`src` whose file is missing from `public/`, which is how a shipped
+picture that never got committed is caught before the post ships.
+
 ## 5. 🔒 The law of the two links
 
 A post links in **exactly two ways**. This is enforced, not advised — `npm run check:content` rejects

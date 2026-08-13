@@ -10,7 +10,7 @@
     "read:app-config": "node scripts/print-app-config-for-agent.mjs",
     "check:encoding": "node scripts/scan-broken-characters.mjs",
     "predev": "node lib/parser-fs.mjs",
-    "prebuild": "node lib/parser-fs.mjs",
+    "prebuild": "node lib/parser-fs.mjs && node scripts/check-seo.mjs && node scripts/check-aio.mjs && node scripts/check-pwa.mjs",
     "check:content": "node scripts/check-content.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:seo": "node scripts/check-seo.mjs",

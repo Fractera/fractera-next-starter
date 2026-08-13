@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import HomeEntry from "./_components"
 import { getAppConfig, metaForLang } from "@/config/app-config"
-import { buildAlternates } from "@/lib/seo/alternates"
+import { buildAlternates, urlFor } from "@/lib/seo/alternates"
 
 // Thin server entry — a page is never a client component. All logic and markup
 // live in the route's entry component (_components/index.tsx).
@@ -39,7 +39,13 @@ export async function generateMetadata(
     // Главная — пустой `subPath`: `/` для языка по умолчанию, `/<язык>` для
     // остальных, и просто `/` в одноязычном режиме.
     alternates: buildAlternates(lang, ""),
-    openGraph: { title, description, siteName, locale: lang },
+    // 🔒 `og:url` ОБЪЯВЛЯЕТСЯ ЗДЕСЬ, А НЕ НАСЛЕДУЕТСЯ. Раньше он приезжал из
+    // макета вместе с его каноническим адресом — то есть на всех языках указывал
+    // на корень сайта, и русская карточка в мессенджере вела на английскую
+    // страницу. Когда умолчание макета убрали (шаг 503), неверный адрес честно
+    // исчез, а верный обязан появиться здесь: тот же `urlFor`, что и у
+    // канонического адреса, поэтому разойтись они не могут.
+    openGraph: { title, description, siteName, locale: lang, url: urlFor(lang, "") },
   }
 }
 

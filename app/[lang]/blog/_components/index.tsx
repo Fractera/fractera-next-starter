@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { buildAlternates } from '@/lib/seo/alternates'
+import { buildAlternates, urlFor } from '@/lib/seo/alternates'
 import { metaForLang } from '@/config/app-config'
 import { brand } from '@/lib/brand'
 import { blogList } from '../_lib/post'
@@ -14,10 +14,20 @@ import { POSTS } from '../_list.generated'
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params
   const ui = getBlogUi(lang)
+  // `og:url` — свой, тем же `urlFor`, что и канонический адрес. Прежде он
+  // наследовался от макета и указывал на корень сайта на всех языках: ссылка из
+  // карточки в мессенджере вела не на список постов (шаг 503).
   return {
     title: ui.metaTitle,
     description: ui.metaDescription,
     alternates: buildAlternates(lang, '/blog'),
+    openGraph: {
+      title: ui.metaTitle,
+      description: ui.metaDescription,
+      siteName: brand().name,
+      locale: lang,
+      url: urlFor(lang, '/blog'),
+    },
   }
 }
 

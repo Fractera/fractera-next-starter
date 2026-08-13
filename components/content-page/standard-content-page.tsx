@@ -6,6 +6,7 @@ import type { Block, FaqPair } from '@/lib/content/blocks/types'
 import { author as projectAuthor } from '@/lib/author'
 import { getPageUi } from '@/lib/content/page-ui'
 import { PostBody, headingId } from './post-body'
+import { StaticImage } from '@/components/media/static-image.server'
 
 // PORTED FROM THE PLATFORM'S MARKETING SITE (2026-08-11). Three couplings were
 // cut on the way in, and none of them is a loss for a starter: a sponsorship
@@ -186,12 +187,15 @@ export function StandardContentPage({
             default image hero. */}
         {hero ?? (heroImage && (
           <figure className="my-8">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            {/* Герой стоит на первом экране — `priority`, а не ленивая загрузка:
+                это, как правило, самый крупный элемент страницы, и именно по нему
+                поисковик меряет скорость её появления. */}
+            <StaticImage
               src={heroImage}
               alt={heroAlt ?? title}
-              loading="eager"
-              className="w-full rounded-2xl border border-border"
+              priority
+              sizes="(max-width: 768px) 100vw, 48rem"
+              className="w-full h-auto rounded-2xl border border-border"
             />
           </figure>
         ))}

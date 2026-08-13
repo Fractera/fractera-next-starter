@@ -5,6 +5,7 @@ import { brand } from '@/lib/brand'
 import { blogList } from '../_lib/post'
 import { getBlogUi } from '../_data'
 import { POSTS } from '../_list.generated'
+import { StaticImage } from '@/components/media/static-image.server'
 
 // Entry for the /blog router page. Standard router shape: page.tsx is thin and
 // re-exports this. The post list is auto-discovered: POSTS comes from
@@ -74,10 +75,15 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
               className="group grid grid-cols-1 overflow-hidden rounded-3xl border border-border transition-colors hover:border-foreground/30 md:grid-cols-2"
             >
               <div className="relative aspect-video overflow-hidden bg-muted md:aspect-auto">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                {/* Главная карточка стоит на первом экране, поэтому `priority`:
+                    ленивая загрузка здесь отложила бы ровно то, ради чего человек
+                    пришёл. Ширина в вёрстке — половина полосы на широком экране. */}
+                <StaticImage
                   src={featured.ogImage}
                   alt={featured.title}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                 />
                 <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
@@ -121,10 +127,15 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
                       makes the 4:3 height — and thus the whole card's height —
                       constant at any screen width (8rem→6rem tall, sm 12rem→9rem). */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    {/* Карточки списка лежат ниже сгиба — грузятся лениво (по
+                        умолчанию у `next/image`), и до загрузки на их месте стоит
+                        размытая копия, а не пустой прямоугольник. Ширина в вёрстке
+                        фиксирована контейнером, отсюда точные `sizes`. */}
+                    <StaticImage
                       src={post.ogImage}
                       alt={post.title}
+                      fill
+                      sizes="(max-width: 640px) 6rem, 12rem"
                       className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                     />
                   </div>

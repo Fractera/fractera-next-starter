@@ -3,6 +3,7 @@ import type { Block } from './types'
 import type { PostBodyUi } from '@/lib/content/post-body-ui'
 import { inline, headingId } from './inline'
 import { author, authorSocialLinks } from '@/lib/author'
+import { StaticImage } from '@/components/media/static-image.server'
 
 // PORTED (2026-08-11). One block kind was dropped on the way in: `inquiry`,
 // which rendered the platform's own "company brain" call to action. A starter
@@ -74,14 +75,21 @@ export const BLOCK_RENDERERS: BlockRenderers = {
   ),
   figure: (b, { key: k }) => (
     <figure key={k} className="my-4 flex flex-col gap-3">
+      {/* Иллюстрации внутри материала лежат ниже сгиба почти всегда: ленивая
+          загрузка по умолчанию, размытая копия вместо пустого места. Размеры
+          берутся из карты превью, поэтому текст под картинкой не подпрыгивает,
+          когда она приходит. */}
       {b.href ? (
         <a href={b.href} className="block overflow-hidden rounded-2xl border border-border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={b.src} alt={b.alt} className="w-full" />
+          <StaticImage src={b.src} alt={b.alt} sizes="(max-width: 768px) 100vw, 48rem" className="w-full h-auto" />
         </a>
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={b.src} alt={b.alt} className="w-full rounded-2xl border border-border" />
+        <StaticImage
+          src={b.src}
+          alt={b.alt}
+          sizes="(max-width: 768px) 100vw, 48rem"
+          className="w-full h-auto rounded-2xl border border-border"
+        />
       )}
       {b.caption && (
         <figcaption className="text-center text-sm text-muted-foreground">{inline(b.caption, `${k}-cap`)}</figcaption>

@@ -158,7 +158,16 @@ function checkPost(dataDir) {
 // Первая же правка «на минуту» вернёт `force-dynamic` в вкладку, и об этом
 // узнают через месяц по просевшей выдаче.
 
-const DYNAMIC_MARKERS = /force-dynamic|export const dynamic\s*=|cookies\(\)|headers\(\)|auth\(\)/
+// 🔒 `force-static` — ЭТО НЕ ДИНАМИКА, А ЕЁ ПРОТИВОПОЛОЖНОСТЬ (2026-08-13).
+//
+// Здесь стояло `export const dynamic\s*=` без разбора значения, и сторож объявлял
+// нарушением ровно ту строку, которой добиваются: `export const dynamic =
+// "force-static"` в markdown-версиях страниц (шаг 505). Гейт был красным шесть
+// маршрутов подряд и оставался незамеченным, потому что в `prebuild` его нет.
+//
+// Красный гейт, который все привыкли игнорировать, хуже отсутствующего: он
+// обесценивает и те проверки, что говорят правду.
+const DYNAMIC_MARKERS = /force-dynamic|export const dynamic\s*=\s*["'](?!force-static)[^"']*["']|cookies\(\)|headers\(\)|auth\(\)/
 const ENGINE_FILES = ["post-body", "registry", "resolve", "create-content-post", "create-content-page"]
 
 /** Убрать комментарии, чтобы проверка смотрела на код, а не на объяснения к нему. */
@@ -209,7 +218,11 @@ function auditSurface(tabDir) {
   // 5 — состав папки поста и отсутствие хвостов вне её
   for (const slug of readdirSync(tabDir)) {
     const postDir = join(tabDir, slug)
-    if (!statSync(postDir).isDirectory() || slug.startsWith("_") || slug.startsWith("[")) continue
+    // Папка `index.md/` — это МАШИННЫЙ МАРШРУТ раздела (markdown-версия страницы,
+    // шаг 505), а не пост: внутри один `route.ts`, и требовать от неё `page.tsx`
+    // с языковыми ячейками бессмысленно. Отличается по имени, а не по содержимому,
+    // потому что имя папки здесь и есть адрес.
+    if (!statSync(postDir).isDirectory() || slug.startsWith("_") || slug.startsWith("[") || slug.endsWith(".md")) continue
     for (const need of ["page.tsx", join("_components", "index.tsx"), join("_data", "index.ts")]) {
       if (!existsSync(join(postDir, need))) fail(postDir, "post-incomplete", `нет ${need}`)
     }

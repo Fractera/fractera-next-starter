@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { MediaImage } from "@/components/media/media-image.server"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
@@ -109,8 +110,7 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
         <article className="mt-6">
           {p.media_url && (
             <figure className="mb-6 overflow-hidden rounded-2xl border border-border bg-muted/30">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.media_url} alt={p.localizedName} className="mx-auto h-72 w-full object-contain p-6" />
+              <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} fill sizes="(max-width: 640px) 50vw, 280px" className="mx-auto h-72 w-full object-contain p-6" />
             </figure>
           )}
 

@@ -113,6 +113,46 @@ for (const seed of SEEDS) {
   out.push(item);
 }
 
+// ── Привязка посевных товаров к этим картинкам ───────────────────────────────
+//
+// 🔒 БЕЗ ЭТОГО ШАГА ВСЯ РАБОТА НЕ ВИДНА. Картинки лежали бы в хранилище с
+// размерами и подложкой, а каталог продолжал смотреть на старые SVG в `public/` —
+// то есть образец работы с базой существовал бы, и его никто бы не увидел.
+//
+// Размеры и подложка КОПИРУЮТСЯ в строку товара, а не запрашиваются при показе:
+// на странице каталога две дюжины товаров, и два десятка обращений к хранилищу за
+// размерами превратили бы заранее собранную страницу в цепочку запросов.
+const LINK = [
+  { match: /apple/i, media: out.find(i => i.name === "seed-apple.png") },
+  { match: /orange/i, media: out.find(i => i.name === "seed-orange.png") },
+];
+
+try {
+  const res = await fetch(`${DATA_URL}/db/tables/products`, { headers: headers() });
+  const rows = res.ok ? ((await res.json()).rows ?? []) : [];
+  const products = Array.isArray(rows) ? rows : [];
+  for (const row of products) {
+    const link = LINK.find(l => l.match.test(String(row.name ?? "")));
+    if (!link?.media) continue;
+    const url = `/api/media/${link.media.id}/file`;
+    if (row.media_url === url) { console.log(`  товар уже связан: ${row.name}`); continue; }
+    const patch = await fetch(`${DATA_URL}/db/tables/products/rows/${encodeURIComponent(row.id)}`, {
+      method: "PATCH",
+      headers: { ...headers(), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        media_id: link.media.id,
+        media_url: url,
+        media_width: link.media.width,
+        media_height: link.media.height,
+        media_blur: link.media.blur ?? "",
+      }),
+    });
+    console.log(`  товар связан: ${row.name} → ${link.media.name} (${patch.ok ? "ok" : "ОТКАЗ " + patch.status})`);
+  }
+} catch (e) {
+  console.log(`  привязка товаров пропущена: ${e.message}`);
+}
+
 // Печатаем итог машиночитаемо: посев товаров подставляет эти адреса, и второго
 // источника правды об адресах быть не должно.
 console.log(`===SEED_MEDIA_OK=== ${JSON.stringify(out.map(i => ({ id: i.id, name: i.name, width: i.width, height: i.height, hasBlur: Boolean(i.blur) })))}`);

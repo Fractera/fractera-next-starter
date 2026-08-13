@@ -16,6 +16,14 @@ const SCHEMA = `
     i18n       TEXT,
     media_id   TEXT,
     media_url  TEXT,
+    -- Размеры и размытая подложка картинки товара. Лежат ЗДЕСЬ, а не берутся
+    -- запросом к хранилищу на каждую строку: страница каталога показывает две
+    -- дюжины товаров сразу, и два десятка обращений за размерами превратили бы
+    -- заранее собранную страницу в цепочку запросов. Записываются в тот момент,
+    -- когда картинку прикрепляют к товару.
+    media_width  INTEGER,
+    media_height INTEGER,
+    media_blur   TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS site_settings (
@@ -179,6 +187,9 @@ function makeLocalDb() {
   )
   if (!cols.has('media_id'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_id   TEXT`)
   if (!cols.has('media_url'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_url  TEXT`)
+  if (!cols.has('media_width'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_width  INTEGER`)
+  if (!cols.has('media_height')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_height INTEGER`)
+  if (!cols.has('media_blur'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_blur   TEXT`)
   if (!cols.has('created_by')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'`)
   if (!cols.has('description')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN description TEXT`)
   if (!cols.has('i18n'))        safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN i18n       TEXT`)

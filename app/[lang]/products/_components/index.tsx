@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { MediaImage } from "@/components/media/media-image.server"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { buildAlternates } from "@/lib/seo/alternates"
@@ -96,7 +97,7 @@ export default async function Catalogue({ lang }: { lang: string }) {
                     <div className="aspect-square bg-muted/30 p-4">
                       {p.media_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img src={p.media_url} alt={p.localizedName} className="h-full w-full object-contain" />
+                        <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} fill sizes="(max-width: 640px) 50vw, 280px" className="h-full w-full object-contain" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-muted-foreground/40">—</div>
                       )}

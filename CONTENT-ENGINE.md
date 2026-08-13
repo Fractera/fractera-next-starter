@@ -150,6 +150,38 @@ slug remains anywhere in the tree.
 **Copy an existing post folder as the starting point.** The two shipped posts differ in exactly the
 ways a new post may differ: one has a video hero, the other a YouTube poster; both carry `en` + `ru`.
 
+### 4a. 🔒 The post must also exist for machines — and one file makes that automatic
+
+A post is read by two audiences: people, through the page, and models, through its **markdown twin**
+and the site's `llms.txt` map. The second audience is why `AIO.md` exists, and the rule here is short:
+
+```
+app/[lang]/blog/<new-slug>/index.md/route.ts     ← 5 lines, copied from a neighbour
+```
+
+```ts
+import { markdownRoute } from "@/lib/aio/md-route"
+const md = markdownRoute("/blog/<new-slug>")
+
+export const dynamic = "force-static"
+export const dynamicParams = false
+export const generateStaticParams = md.generateStaticParams
+export const GET = md.GET
+```
+
+You write nothing else. The text of the markdown twin is generated from the **same blocks** as the
+page (`lib/aio/blocks-to-markdown.ts`), so the two cannot drift; the post appears in `/llms.txt` by
+itself, because the map is built from the same list of public surfaces.
+
+**Why this is a rule and not a nicety.** A model that reaches an HTML page spends half its context on
+the menu, the footer, the consent banner and the scripts. A model that reaches a 404 — which is what
+a map entry without a route is — leaves and quotes somebody else. Neither failure is visible in a
+browser, which is precisely why the gate exists: **`npm run check:aio` refuses a public page without
+its markdown twin.**
+
+Copying the folder of an existing post brings this file with it. Forgetting it is caught before the
+post ships, not after.
+
 ## 5. 🔒 The law of the two links
 
 A post links in **exactly two ways**. This is enforced, not advised — `npm run check:content` rejects
@@ -233,6 +265,15 @@ and leave the blocks, and only the translated keys change. Consequences to know:
 
 A rule that is not mechanically enforced is a suggestion, and suggestions lose to deadlines. That is
 why these live in a script that fails, not in a paragraph nobody re-reads.
+
+**Two more gates apply to every post, and they belong to the same discipline:**
+
+| Command | Rejects |
+|---|---|
+| `npm run check:aio` | a public page with no markdown twin (§4a) — the map would send an agent to a 404 |
+| `npm run check:seo` | a page with no `generateMetadata`, no `alternates`, or an `openGraph` without `url` — the post would declare itself a copy of another page, or hand social networks the wrong link |
+
+Run all three before calling a post done. They are cheap: they read files, they do not build.
 
 ## 9. Scaling — and what it costs
 

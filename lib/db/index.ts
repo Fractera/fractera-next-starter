@@ -144,7 +144,8 @@ const SEED = [
     name: 'Apple',
     price: 1.2,
     description: 'A crisp red apple. The reference row of this catalogue: it has a name, a price, a picture and a translation — everything a product needs to be shown on a page.',
-    media_url: '/seed/apple.svg',
+    // Картинка прикрепляется посевом (см. комментарий выше), а не путём в public/.
+    media_url: null,
     i18n: {
       name: { ru: 'Яблоко' },
       description: { ru: 'Хрустящее красное яблоко. Образцовая строка каталога: у неё есть название, цена, изображение и перевод — всё, что нужно продукту, чтобы попасть на страницу.' },
@@ -154,7 +155,7 @@ const SEED = [
     name: 'Orange',
     price: 1.8,
     description: 'A ripe orange. The second row exists on purpose: one example shows the shape, two show what changes between them — here it is the price and the picture.',
-    media_url: '/seed/orange.svg',
+    media_url: null,
     i18n: {
       name: { ru: 'Апельсин' },
       description: { ru: 'Спелый апельсин. Вторая строка нужна не для количества: один пример показывает форму, два показывают, что между ними меняется — здесь это цена и изображение.' },

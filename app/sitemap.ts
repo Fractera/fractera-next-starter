@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next"
 import { brand } from "@/lib/brand"
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
 import { urlFor } from "@/lib/seo/alternates"
+import { POSTS } from "./[lang]/blog/_list.generated"
 
 // ГЛАВНАЯ КАРТА САЙТА — страницы, множество которых конечно и авторское.
 //
@@ -26,6 +27,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const lang of SUPPORTED_LANGUAGES) {
     out.push({ url: urlFor(lang, ""), changeFrequency: "daily", priority: 1 })
     out.push({ url: urlFor(lang, "/products"), changeFrequency: "daily", priority: 0.8 })
+    // 🔒 БЛОГ И ЕГО ПОСТЫ — ЗДЕСЬ, А НЕ В КАРТЕ ТОВАРОВ (найдено 2026-08-13).
+    //
+    // Карта перечисляла главную и товары, а блога не знала вовсе: раздел
+    // отдавал 200, посты были написаны и переведены — и ни один поисковик не
+    // узнавал о них из карты. Это ровно то множество, ради которого карта и
+    // существует: конечное, авторское, известное на сборке. Товары вынесены
+    // отдельно из-за роста в рантайме, посты — нет, их пишет человек.
+    //
+    // Список берётся из `_list.generated.ts` — того же файла, что питает саму
+    // страницу блога. Второго источника правды о постах нет: новый пост
+    // попадает в карту фактом своего появления, без правки этого файла.
+    out.push({ url: urlFor(lang, "/blog"), changeFrequency: "daily", priority: 0.8 })
+    for (const post of POSTS) {
+      out.push({
+        url: urlFor(lang, `/blog/${post.meta.slug}`),
+        lastModified: post.meta.date,
+        changeFrequency: "monthly",
+        priority: 0.7,
+      })
+    }
   }
   // В одноязычном режиме `urlFor` для каждого языка даёт один и тот же адрес — но
   // язык там ровно один, так что дубликатов не возникает. Страховка на случай

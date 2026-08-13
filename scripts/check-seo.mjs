@@ -133,6 +133,45 @@ if (fs.existsSync(layout)) {
   }
 }
 
+// 5 — КАЖДЫЙ ПУБЛИЧНЫЙ РАЗДЕЛ ПРЕДСТАВЛЕН В КАРТЕ САЙТА (добавлено 2026-08-13).
+//
+// Проверки 1-4 стерегут КАЧЕСТВО сигналов у страницы, которая до карты дошла, и
+// молчат о странице, которой в карте нет вовсе. Так и вышло: блог отдавал 200,
+// посты были написаны и переведены, `check:seo` был зелёным — а карта знала
+// только главную и товары. Ненайденная страница не выигрывает от идеального
+// `hreflang`, и цена ошибки выше, чем у всего, что ловят проверки выше.
+//
+// Раздел считается представленным, если карта упоминает его путь — своя карта
+// (`<раздел>/sitemap.ts`) засчитывается наравне с общей: товары вынесены
+// отдельно намеренно, из-за роста в рантайме.
+{
+  const mainMap = path.join(ROOT, "app", "sitemap.ts");
+  // Комментарии и импорты — не карта. Первый негативный контроль этой проверки
+  // прошёл ЗЕЛЁНЫМ именно из-за импорта `./[lang]/blog/_list.generated`: строка
+  // `/blog` в нём засчитывалась за присутствие раздела в карте. Проверка, которую
+  // удовлетворяет строка импорта, не проверяет ничего.
+  const mainText = (fs.existsSync(mainMap) ? codeOnly(fs.readFileSync(mainMap, "utf8")) : "")
+    .split("\n")
+    .filter(line => !line.trim().startsWith("import"))
+    .join("\n");
+  // Раздел — это директория со СТРАНИЦЕЙ. Рядом лежат машинные маршруты
+  // (`llms.txt/`, `manifest.webmanifest/`, `index.md/` — папки с route.ts): они
+  // сами являются служебными файлами и в карте страниц им делать нечего.
+  const sections = fs
+    .readdirSync(LANG_DIR, { withFileTypes: true })
+    .filter(d => d.isDirectory() && !d.name.startsWith("_") && !d.name.startsWith("("))
+    .filter(d => fs.existsSync(path.join(LANG_DIR, d.name, "page.tsx")))
+    .map(d => d.name);
+
+  for (const section of sections) {
+    const ownMap = fs.existsSync(path.join(ROOT, "app", section, "sitemap.ts"));
+    if (ownMap || mainText.includes(`/${section}`)) continue;
+    errors.push(
+      `раздел /${section} не представлен ни в app/sitemap.ts, ни своей картой — поисковик о нём не узнает`,
+    );
+  }
+}
+
 console.log(`публичных страниц: ${pages.filter(p => !PRIVATE_MARKERS.some(m => rel(p).includes(m))).length}`);
 for (const w of warnings) console.log(`  предупреждение: ${w}`);
 for (const e of errors) console.log(`  ОШИБКА: ${e}`);

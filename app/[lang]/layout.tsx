@@ -82,6 +82,10 @@ export default async function LangLayout({
   // панели. Порядок именно такой: пустая настройка не имеет права оставить
   // баннер без текста, а он делит сообщение по метке ссылки и упал бы.
   const bannerOn = featureOn("cookieBanner");
+  // Копия сайта на устройстве посетителя — решение владельца, а не наше
+  // умолчание (2026-08-13). Выключенный режим не просто «не регистрируем»: он
+  // СНИМАЕТ воркер и стирает кеши у тех, кому он уже достался.
+  const offlineOn = featureOn("offlineCache");
   const bannerStrings = { ...bannerUi(lang), ...(banner.languages[lang] ?? {}) };
   const ld: Record<string, unknown>[] = [];
   if (cfg.jsonLd.website) ld.push(buildWebSiteSchema(cfg));
@@ -144,7 +148,7 @@ export default async function LangLayout({
             {/* Сервис-воркер: офлайн для уже виденных страниц и мгновенное
                 повторное открытие. Стратегия — сеть первой для страниц, поэтому
                 устаревшая страница невозможна (см. public/sw.js). */}
-            <RegisterServiceWorker />
+            <RegisterServiceWorker enabled={offlineOn} />
             {/* Предложение установить приложение. Слова резолвятся на СЕРВЕРЕ и
                 едут пропсом: словарь на 82 языка не имеет права оказаться в
                 браузере. Кнопка появляется, только когда браузер сам сообщил,

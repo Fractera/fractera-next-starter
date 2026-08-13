@@ -35,7 +35,8 @@ export type FeatureKey =
   | "languageSwitcher"
   | "topMenu"
   | "footerPages"
-  | "cookieBanner";
+  | "cookieBanner"
+  | "offlineCache";
 
 /**
  * Состояние проекта, который ещё ни разу не настраивали.
@@ -49,6 +50,7 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   topMenu: true,
   footerPages: true,
   cookieBanner: false,
+  offlineCache: true,
   auth: false,
   breadcrumbs: false,
   faq: false,

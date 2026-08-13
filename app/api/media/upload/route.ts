@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const DATA_URL    = process.env.REMOTE_DATA_URL ?? "http://localhost:3300"
-const DATA_SECRET = process.env.DATA_API_KEY ?? ""
+// 🔒 ИМЯ КЛЮЧА — DATA_SECRET (найдено на живом сайте 2026-08-13). Здесь стояло
+// DATA_API_KEY: такой переменной в окружении сервера нет, ключ получался пустым,
+// и прокси пересылал в слой данных COOKIE ПОСЕТИТЕЛЯ. У анонимного гостя сессии
+// нет — картинка отвечала 401, а оптимизатор поверх неё 400. То есть ни одно
+// изображение из хранилища никогда не было видно публике; не всплывало это лишь
+// потому, что показывали статические файлы из public/.
+// Оба имени приняты: старое могло попасть в чьё-то окружение.
+const DATA_SECRET = process.env.DATA_SECRET || process.env.DATA_API_KEY || ""
 const IS_REMOTE   = !!process.env.REMOTE_DATA_URL
 
 export async function POST(req: NextRequest) {

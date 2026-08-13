@@ -110,7 +110,7 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
         <article className="mt-6">
           {p.media_url && (
             <figure className="mb-6 overflow-hidden rounded-2xl border border-border bg-muted/30">
-              <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} fill sizes="(max-width: 640px) 50vw, 280px" className="mx-auto h-72 w-full object-contain p-6" />
+              <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} sizes="(max-width: 640px) 50vw, 280px" className="mx-auto h-72 w-full object-contain p-6" />
             </figure>
           )}
 

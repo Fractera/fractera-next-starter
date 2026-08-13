@@ -25,10 +25,31 @@
 // повторная загрузка плодила бы дубликаты в хранилище при каждом старте.
 // Опознаём по имени файла: оно наше и постоянное.
 
+import { readFileSync } from "node:fs";
 import sharp from "sharp";
 
 const DATA_URL = process.env.REMOTE_DATA_URL ?? "http://localhost:3300";
-const DATA_SECRET = process.env.DATA_API_KEY ?? "";
+// 🔒 ИМЯ КЛЮЧА — `DATA_SECRET`, и оно читается ИЗ `.env.local` САМИМ СКРИПТОМ.
+// Первый заход отбило `Unauthorized`: скрипт спрашивал `DATA_API_KEY` — имя,
+// которое встречается в прокси приложения, но в окружении сервера его нет. Слой
+// данных сверяет заголовок `x-data-secret` с `DATA_SECRET`, и это единственное
+// имя, у которого здесь есть право быть.
+const DATA_SECRET = process.env.DATA_SECRET ?? readEnvLocal("DATA_SECRET");
+
+/** Скрипт запускают напрямую (`npm run seed:media`), вне окружения Next, поэтому
+ *  `.env.local` никто за нас не прочитает. */
+function readEnvLocal(key) {
+  try {
+    const text = readFileSync(new URL("../.env.local", import.meta.url), "utf8");
+    for (const line of text.split("\n")) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      const eq = t.indexOf("=");
+      if (eq > 0 && t.slice(0, eq).trim() === key) return t.slice(eq + 1).trim();
+    }
+  } catch { /* нет файла — работаем без ключа, слой данных ответит сам */ }
+  return "";
+}
 
 // Имя в хранилище — оно же признак «уже посеяно». Меняя его, вы получите вторую
 // копию картинки, а не замену первой.

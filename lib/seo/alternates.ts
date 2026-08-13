@@ -34,6 +34,18 @@ export function urlFor(lang: string, subPath: string): string {
   return `${BASE}/${lang}${subPath}`
 }
 
+/**
+ * Адрес markdown-версии страницы (шаг 505, AIO): `<адрес страницы>/index.md`.
+ *
+ * Форма из спецификации llmstxt.org: markdown-версия живёт рядом со страницей, а
+ * для адреса-каталога добавляется `index.md`. Мы применяем вторую форму ко всем
+ * страницам разом — она работает одинаково везде и не требует точки внутри
+ * динамического сегмента.
+ */
+export function mdUrlFor(lang: string, subPath: string): string {
+  return `${urlFor(lang, subPath).replace(/\/$/, '')}/index.md`
+}
+
 // Per-page canonical + hreflang. Each page declares ITSELF as canonical (fixing
 // the old bug where every sub-page inherited canonical = the language root, so
 // Google folded them into the home page). hreflang advertises the same page in
@@ -50,12 +62,20 @@ export function buildAlternates(lang: string, subPath = ''): Metadata['alternate
   // значит объявить, что переводы этой страницы живут не здесь.
   if (!base()) return undefined
 
+  // Машинная версия той же страницы объявляется РЯДОМ с человеческой (шаг 505).
+  // Модель, пришедшая за содержимым, иначе разбирает разметку вместе с меню,
+  // подвалом, баннером согласия и скриптами — и тратит половину контекста на то,
+  // что к содержимому отношения не имеет. Ссылка обычная, `rel="alternate"` с
+  // типом: ничего не изобретено, это тот же механизм, которым объявляют переводы.
+  const types = { 'text/markdown': mdUrlFor(lang, subPath) }
+
   // Одноязычный сайт: перевода нет, и объявлять его нечем. `hreflang` из одной
   // записи — не сигнал, а шум; канонический адрес при этом обязателен и остаётся.
-  if (SINGLE_LANG_MODE) return { canonical: urlFor(lang, subPath) }
+  if (SINGLE_LANG_MODE) return { canonical: urlFor(lang, subPath), types }
 
   return {
     canonical: urlFor(lang, subPath),
+    types,
     languages: {
       'x-default': urlFor(DEFAULT_LANGUAGE, subPath),
       ...Object.fromEntries(SUPPORTED_LANGS.map(l => [l, urlFor(l, subPath)])),

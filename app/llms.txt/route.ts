@@ -1,31 +1,25 @@
-import { getAppConfig } from "@/config/app-config";
+import { buildLlmsTxt } from "@/lib/aio/llms";
+import { DEFAULT_LANGUAGE } from "@/config/translations/translations.config";
 
-// /llms.txt — concise AI-discovery summary (step 131). Config-driven generic template
-// describing THIS workspace (name/description/url from Site Settings), not any vendor
-// marketing. Owners edit Site Settings (or this file) to fit their project.
+// `/llms.txt` — карта сайта для модели, на языке по умолчанию (шаг 505).
+//
+// Прежде здесь стояла ЗАГОТОВКА: она называла сайт «self-hosted AI workspace»,
+// рассказывала про архитектуру Fractera и перечисляла ровно одну ссылку — на
+// главную. На сайте пекарни это описание чужого продукта, и агенту, пришедшему
+// за содержимым, оно не давало ничего. Теперь файл собирается из настоящего
+// перечня страниц (`lib/aio/surfaces.ts`) — того же, из которого берутся
+// markdown-версии и полный текст.
+//
+// Языковые версии живут по своим адресам: `/<язык>/llms.txt`. Спецификация
+// разрешает файл на любом подпути прямо.
+//
+// Статика с суточным обновлением: содержимое меняется вместе с настройками и
+// постами, а не на каждый запрос.
 export const dynamic = "force-static";
 export const revalidate = 86_400;
 
 export async function GET() {
-  const cfg = getAppConfig();
-  const body = `# ${cfg.name}
-
-> ${cfg.description}
-
-- **Site:** ${cfg.url}
-- **Full version:** ${cfg.url}/llms-full.txt
-
-## About
-${cfg.name} is a self-hosted AI workspace. The public site is statically rendered and
-works without JavaScript; content is served as complete HTML for readers and machines.
-
-## Primary pages
-- Home: ${cfg.url}/
-
-## Contact
-${cfg.mailSupport}
-`;
-  return new Response(body, {
+  return new Response(buildLlmsTxt(DEFAULT_LANGUAGE), {
     headers: { "Content-Type": "text/plain; charset=utf-8" },
   });
 }

@@ -56,7 +56,19 @@ export function blogPost(data: BlogData, lang: string): ContentPost {
               playsInline
               preload="none"
               className="h-full w-full bg-background object-cover"
-            />
+            >
+              {/* 🔒 ДОРОЖКА СУБТИТРОВ, КОГДА АВТОР ЕЁ ДАЛ (проверка доступности
+                  2026-08-13). Видео без субтитров недоступно глухому посетителю —
+                  и это не придирка проверяющего, а половина содержимого, до
+                  которой он не доберётся.
+                  Пустую дорожку сюда НЕ подставляем: файл-заглушка объявляет
+                  субтитры существующими, читалка их предлагает, посетитель
+                  открывает пустоту. Отсутствие честнее подделки, поэтому шаблон
+                  даёт автору поле `heroCaptions` и молчит, пока оно пустое. */}
+              {meta.heroCaptions && (
+                <track kind="captions" src={meta.heroCaptions} srcLang={lang} label={lang} default />
+              )}
+            </video>
           </div>
           {r.heroCaption && (
             <figcaption className="text-center text-sm text-muted-foreground">{r.heroCaption}</figcaption>

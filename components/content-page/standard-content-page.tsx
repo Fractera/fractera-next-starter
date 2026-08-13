@@ -209,7 +209,11 @@ export function StandardContentPage({
             <ol className="mt-3 flex flex-col gap-2">
               {toc.map((item, i) => (
                 <li key={item.id} className="flex gap-3 text-[15px] leading-snug">
-                  <span aria-hidden className="select-none font-mono text-sm text-muted-foreground/70">
+                  {/* Контраст поднят до полного `muted-foreground` (проверка доступности
+                      2026-08-13): при /70 отношение падало ниже порога. Значок
+                      декоративный и скрыт от чтения с экрана, но глазами его читают
+                      все, и слабовидящим он не должен исчезать. */}
+                  <span aria-hidden className="select-none font-mono text-sm text-muted-foreground">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <a href={`#${item.id}`} className="text-muted-foreground transition-colors hover:text-primary">

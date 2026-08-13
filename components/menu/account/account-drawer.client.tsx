@@ -126,7 +126,7 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
                     ))}
                   </nav>
                 ) : (
-                  <p className="mt-1.5 px-2 text-xs text-muted-foreground/70">{labels.groupEmpty}</p>
+                  <p className="mt-1.5 px-2 text-xs text-muted-foreground">{labels.groupEmpty}</p>
                 )}
               </section>
             ))}

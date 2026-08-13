@@ -30,10 +30,21 @@ export function NotFoundContent() {
 
       {/* Right — black pane with the F8 logo (hidden below md). */}
       <div className="hidden items-center justify-center bg-background p-12 md:flex md:w-1/2">
+        {/* 🔒 `loading="lazy"` ЗДЕСЬ НЕ ПРО СКОРОСТЬ ЭТОЙ СТРАНИЦЫ (найдено в
+            отчёте проверки 2026-08-13). Экран «страница не найдена» входит в
+            дерево КАЖДОЙ страницы как запасной вид, поэтому его картинка
+            предзагружалась всюду — браузер писал в консоль «загружено и не
+            использовано» на всех страницах сайта разом. Отложенная загрузка
+            снимает предзагрузку; на самой 404 картинка приходит тут же, потому
+            что она в поле зрения. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/404-logo.png"
           alt="404 — page not found"
+          width={512}
+          height={512}
+          loading="lazy"
+          decoding="async"
           className="w-auto max-w-[60%] object-contain"
         />
       </div>

@@ -26,6 +26,8 @@ export type BlogMeta = {
   /** Self-hosted video hero (optional — a post may override the hero with an embed). */
   heroVideo?: string
   heroPoster?: string
+  /** Файл субтитров (WebVTT) к видео-обложке. Нет файла — нет и дорожки. */
+  heroCaptions?: string
   heroAspect?: string
   ogImage: string
 }

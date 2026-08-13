@@ -131,6 +131,58 @@ export default function HomeEntry({ lang }: { lang: string }) {
             ))}
           </ol>
         </section>
+
+        {/* 🔒 ВТОРАЯ СЕКЦИЯ = ОРАНЖЕВЫЕ ТРЕБОВАНИЯ ПАНЕЛИ (владелец 2026-08-13).
+            Первая повторяет красные — то, без чего начинать нельзя. Эти два не
+            блокируют ничего, и потому их откладывают; а откладывать дороже всего
+            именно их: ключ открывает думающую половину продукта, домен меняет
+            адрес КАЖДОЙ страницы, и после индексации это уже переезд, а не
+            настройка. Разделение цветов взято из `admin-warnings.ts`, чтобы
+            страница и панель говорили одно и то же. */}
+        <section className="mt-8 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-6 sm:p-8">
+          <h2 className="text-xl font-semibold tracking-tight">{t.advisedTitle}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.advisedIntro}</p>
+
+          <div className="mt-6 flex flex-col gap-5">
+            {[
+              { title: t.advisedOpenaiTitle, body: t.advisedOpenai, link: t.advisedOpenaiLink, href: admin ? `${admin}/${lang}/openai` : undefined },
+              { title: t.advisedDomainTitle, body: t.advisedDomain, link: t.advisedDomainLink, href: admin ? `${admin}/${lang}/domain` : undefined },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-3">
+                <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-500" />
+                <p className="text-sm leading-relaxed text-foreground">
+                  <strong className="font-semibold">{item.title}</strong>{" "}
+                  <span className="text-muted-foreground">{item.body}</span>
+                  {item.href ? (
+                    <>
+                      {" "}
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-primary underline underline-offset-2"
+                      >
+                        {item.link}
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Третья секция — ответ на вопрос «что я вообще держу в руках».
+            Технически, без обещаний: что за скелет, где пишется код и почему он
+            не ломается на росте. */}
+        <section className="mt-8 rounded-2xl border border-border p-6 sm:p-8">
+          <h2 className="text-xl font-semibold tracking-tight">{t.archTitle}</h2>
+          <div className="mt-3 flex flex-col gap-3 text-sm leading-relaxed text-muted-foreground">
+            <p>{t.archScale}</p>
+            <p>{t.archLoop}</p>
+            <p>{t.archSkeleton}</p>
+          </div>
+        </section>
       </div>
     </main>
   )

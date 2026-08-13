@@ -42,6 +42,38 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(keys.filter((k) => k !== PAGES && k !== ASSETS).map((k) => caches.delete(k)));
       await self.clients.claim();
+
+      // 🔒 СТРАНИЦА ПЕРВОГО ВИЗИТА — ИНАЧЕ ОБЕЩАНИЕ ОФЛАЙНА ЛОЖНО.
+      //
+      // Воркер рождается ПОСЛЕ загрузки страницы, ради которой посетитель
+      // пришёл, — значит та страница прошла мимо него и в кеш не попала. В кеше
+      // оказываются только СЛЕДУЮЩИЕ переходы, и посетитель, потерявший сеть на
+      // первой же странице, получает ошибку браузера на том, что видел секунду
+      // назад. Дефект найден руками 2026-08-13: сайт был открыт, а в офлайне не
+      // открылся.
+      //
+      // Закону «ничего не предзагружаем» это не противоречит. Предзагрузка —
+      // догадка о страницах, которые посетителю ПОНАДОБЯТСЯ; здесь же мы
+      // спрашиваем браузер, что открыто ПРЯМО СЕЙЧАС, и сохраняем ровно это.
+      // Догадки нет: страница уже на экране.
+      //
+      // Сбой не имеет права свалить активацию — воркер без одной записи в кеше
+      // полезнее, чем воркер, который не активировался.
+      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const pages = await caches.open(PAGES);
+      await Promise.all(
+        clients.map(async (client) => {
+          const url = new URL(client.url);
+          if (url.origin !== self.location.origin) return;
+          if (await pages.match(url.href)) return;
+          try {
+            const res = await fetch(url.href, { credentials: "same-origin" });
+            if (res.ok) await pages.put(url.href, res);
+          } catch {
+            /* сети нет или страница отказала — не повод ломать активацию */
+          }
+        }),
+      );
     })(),
   );
 });
@@ -81,7 +113,12 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       } catch {
-        const cached = await caches.match(req);
+        // Два чтения, а не одно: запись могла лечь сюда либо навигационным
+        // запросом (обычный переход), либо строковым адресом (страница первого
+        // визита, сохранённая при активации). Ключи разной природы, и
+        // сопоставление по объекту запроса не обязано находить строковый ключ —
+        // цена промаха тут ровно та ошибка браузера, ради которой всё и писано.
+        const cached = (await caches.match(req)) || (await caches.match(req.url));
         if (cached) return cached;
         throw new Error("offline and not cached");
       }

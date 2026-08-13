@@ -1,43 +1,15 @@
 import type { MetadataRoute } from "next";
-import { getAppConfig } from "@/config/app-config";
-import { iconUrl } from "@/config/app-config.defaults";
+import { buildManifest } from "@/lib/pwa/manifest";
+import { DEFAULT_LANGUAGE } from "@/config/translations/translations.config";
 
-// PWA manifest served at /manifest.webmanifest. Static-first canon: time-based ISR (revalidate = 600)
-// — regenerated lazily on the first request after the window, never on an idle timer. Site Settings
-// changes reflect within the window. Never force-dynamic. (STATIC-FIRST.md)
+// `/manifest.webmanifest` — манифест на языке по умолчанию.
+//
+// Страницы ссылаются на СВОЙ языковой манифест (`app/[lang]/layout.tsx`), а этот
+// остаётся адресом по умолчанию: на него приходят браузеры и каталоги, пришедшие
+// в корень сайта. Содержимое собирает общий строитель, поэтому два манифеста
+// разойтись не могут.
 export const revalidate = 600;
 
 export default function manifest(): MetadataRoute.Manifest {
-  const cfg = getAppConfig();
-
-  const icons: NonNullable<MetadataRoute.Manifest["icons"]> = [];
-  const add = (name: string, sizes: string, purpose?: "any" | "maskable") => {
-    const url = iconUrl(cfg, name) ?? cfg.icons[name === "icon_512" ? "icon512" : "icon192"];
-    if (url) icons.push({ src: url, sizes, type: "image/png", purpose });
-  };
-  if (cfg.iconSet) {
-    add("icon_192", "192x192", "any");
-    add("icon_512", "512x512", "any");
-    const maskable = iconUrl(cfg, "icon_512");
-    if (maskable) icons.push({ src: maskable, sizes: "512x512", type: "image/png", purpose: "maskable" });
-  } else {
-    if (cfg.icons.icon192) icons.push({ src: cfg.icons.icon192, sizes: "192x192", type: "image/png", purpose: "any" });
-    if (cfg.icons.icon512) icons.push({ src: cfg.icons.icon512, sizes: "512x512", type: "image/png", purpose: "any" });
-    if (cfg.icons.icon512Maskable)
-      icons.push({ src: cfg.icons.icon512Maskable, sizes: "512x512", type: "image/png", purpose: "maskable" });
-  }
-
-  return {
-    name: cfg.name,
-    short_name: cfg.short_name,
-    description: cfg.description,
-    start_url: cfg.pwa.startUrl,
-    scope: cfg.pwa.scope ?? "/",
-    display: cfg.pwa.display,
-    orientation: cfg.pwa.orientation,
-    theme_color: cfg.pwa.themeColor,
-    background_color: cfg.pwa.backgroundColor,
-    icons,
-    categories: ["productivity", "utilities"],
-  };
+  return buildManifest(DEFAULT_LANGUAGE);
 }

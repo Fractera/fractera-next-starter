@@ -18,6 +18,7 @@ import { readBannerConfig } from "./_components/legal/banner-config";
 import { CookieBanner } from "./_components/legal/cookie-banner.client";
 import { bannerUi } from "./_components/legal/cookie-banner.i18n";
 import { featureOn } from "@/config/platform-config";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw.client";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/
 // <body> — the language comes from the [lang] route param (known at build), NOT from
@@ -40,7 +41,14 @@ export async function generateMetadata(
   { params }: { params: Promise<{ lang: string }> },
 ): Promise<Metadata> {
   const { lang } = await params;
-  return constructMetadata({ lang });
+  return {
+    ...constructMetadata({ lang }),
+    // Манифест — СВОЙ на каждый язык (шаг 504). Установленное приложение
+    // подписано на домашнем экране именем отсюда и открывается с его
+    // `start_url`; общий манифест ставил всем английское имя и английскую
+    // главную, а переименовать значок пользователь уже не сможет.
+    manifest: `/${lang}/manifest.webmanifest`,
+  };
 }
 
 export function generateViewport(): Viewport {
@@ -127,6 +135,10 @@ export default async function LangLayout({
                 панели не значил ничего. */}
             {bannerOn && <CookieBanner lang={lang} strings={bannerStrings} />}
             <Toaster position="bottom-right" richColors closeButton />
+            {/* Сервис-воркер: офлайн для уже виденных страниц и мгновенное
+                повторное открытие. Стратегия — сеть первой для страниц, поэтому
+                устаревшая страница невозможна (см. public/sw.js). */}
+            <RegisterServiceWorker />
           </DrawerProvider>
         </ThemeProvider>
       </body>

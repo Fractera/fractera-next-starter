@@ -30,8 +30,18 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
 
   const t = getHomeStrings(lang);
 
-  // The brand mark, only when the owner has uploaded one (logo wins, else the generated icon).
-  const iconSrc = config.logo ?? iconUrl(config, "icon_192");
+  // The brand mark. Owner's logo wins, then their generated icon set, and failing both the
+  // neutral placeholder that ships with the project (`npm run icons:default`, step 504).
+  //
+  // 🔒 THE FALLBACK IS THE POINT (owner, 2026-08-13). Before it, a fresh server showed NO image at
+  // all: both slots live in `APP-CONFIG` outside the repository, and a project nobody has branded
+  // yet has neither. That reads as a broken build — the owner reported exactly that — and it also
+  // leaves nothing to verify image work against. The same placeholder is already in the manifest,
+  // so the home page and the installed app now show one mark instead of disagreeing.
+  //
+  // Deliberately NOT the Fractera logo: this template leaves for the customer's own repository, and
+  // somebody else's brand shipped inside it is a defect found by hand later.
+  const iconSrc = config.logo ?? iconUrl(config, "icon_192") ?? "/icons/icon-192.png";
 
   // Wordmark: the owner's custom brand name, or the "Your Company App" placeholder when they
   // have not set one yet (the shipped default counts as unset).
@@ -85,22 +95,29 @@ export function ShellHome({ config, lang = "en" }: { config: AppConfig; lang?: s
           </span>
         </motion.div>
 
-        {/* Brand icon — only when the owner uploaded a logo / generated an icon set */}
-        {iconSrc && (
-          <motion.div
-            initial={false}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.14, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="-mb-3"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={iconSrc}
-              alt={`${config.short_name} icon`}
-              className="size-20 rounded-2xl object-contain ring-1 ring-foreground/10 shadow-xl shadow-primary/10 bg-background/40 backdrop-blur-sm p-1.5"
-            />
-          </motion.div>
-        )}
+        {/* Brand mark — always present now: owner's logo, their icon set, or the shipped
+            placeholder. The `{iconSrc && …}` guard that stood here became permanently true with the
+            fallback, and a condition that cannot be false reads as if the image were still optional. */}
+        <motion.div
+          initial={false}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.14, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="-mb-3"
+        >
+          {/* Explicit width/height reserve the box before the file arrives: without them the
+              heading below jumps down as the mark loads, and that jump is measured — it is the
+              layout-shift part of Core Web Vitals. `eager` on purpose: this mark sits at the top
+              of the page, so deferring it would only delay what the visitor came to see. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={iconSrc}
+            alt={`${config.short_name} icon`}
+            width={80}
+            height={80}
+            loading="eager"
+            className="size-20 rounded-full object-contain ring-1 ring-foreground/10 shadow-xl shadow-primary/10 bg-background/40 backdrop-blur-sm p-1.5"
+          />
+        </motion.div>
 
         {/* Wordmark + tagline */}
         <motion.div

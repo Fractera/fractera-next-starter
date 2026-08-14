@@ -223,4 +223,34 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'hero',
+    when: 'First screen of a landing: the project mark comes from settings, never from content.',
+    blocks: [{ kind: 'hero', pill: 'Eyebrow above the title', title: 'The page title', subtitle: 'One sentence saying what this is.' }],
+  },
+  {
+    kind: 'badges',
+    when: 'A row of capability labels. The tone is a MEANING group, not a colour.',
+    blocks: [
+      {
+        kind: 'badges',
+        items: [
+          { label: 'Reach', tone: 'reach' },
+          { label: 'Data', tone: 'data' },
+          { label: 'Access', tone: 'access' },
+          { label: 'Code', tone: 'code' },
+          { label: 'And more', tone: 'muted' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'panel',
+    when: 'A bordered section holding any blocks. Three tones: plain, warn, accent.',
+    blocks: [
+      { kind: 'panel', title: 'A plain panel', children: [{ kind: 'p', text: 'The sections of a landing page are all this one kind, differing by tone and contents.' }] },
+      { kind: 'panel', tone: 'warn', title: 'Worth doing', children: [{ kind: 'p', text: 'Something that is not blocking, but is expensive to postpone.' }] },
+      { kind: 'panel', tone: 'accent', eyebrow: 'The one place', title: 'Where the model works', children: [{ kind: 'p', text: 'The only glow on the page: highlighting everything highlights nothing.' }] },
+    ],
+  },
 ]

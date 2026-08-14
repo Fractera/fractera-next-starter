@@ -44,6 +44,17 @@ export type LeafBlock =
   // starter has nothing to inquire about, and neither shipped post used it.
   // Need a call to action? `cta` is the plain, portable one.
 
+  // ── Виды, которыми говорит ГЛАВНАЯ (шаг 508) ───────────────────────────────
+  // Первый экран: знак проекта, заголовок и подпись. Знак и адрес берутся из
+  // настроек — материал их не несёт и нести не может: у каждого проекта они свои.
+  | { kind: 'hero'; pill?: string; title: string; subtitle: string }
+  // Ряд ярлыков возможностей. `tone` — СМЫСЛОВАЯ группа, а не цвет: одиннадцать
+  // слов делятся на четыре кучки, которые глаз читает без чтения. Имя группы
+  // остаётся в данных, а какой она получит цвет — дело секции и темы.
+  | {
+      kind: 'badges'
+      items: { label: string; tone: 'data' | 'reach' | 'access' | 'code' | 'muted' }[]
+    }
 // ── Container blocks (composite layouts) ─────────────────────────────────────
 // Containers hold `children: Block[]` and are rendered recursively through the
 // same registry, so ANY block (including another container) can be nested inside
@@ -55,6 +66,12 @@ export type ContainerBlock =
   | { kind: 'columns'; children: Block[]; cols?: 2 | 3 }
   // Plain vertical grouping (semantic wrapper / a single column's contents).
   | { kind: 'group'; children: Block[] }
+  // Панель в рамке: заголовок, необязательный надзаголовок и любое содержимое.
+  // Ею собрана вся главная ниже первого экрана — четыре секции отличаются только
+  // тоном и начинкой, а не устройством. `tone` снова смысловой: `plain` — обычный
+  // раздел, `warn` — то, что стоит сделать, но не блокирует, `accent` — место, где
+  // работает модель (единственное на странице выделение свечением).
+  | { kind: 'panel'; tone?: 'plain' | 'warn' | 'accent'; eyebrow?: string; title: string; children: Block[] }
 
 export type Block = LeafBlock | ContainerBlock
 

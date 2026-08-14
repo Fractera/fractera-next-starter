@@ -103,6 +103,15 @@ const LINK_IN_TEXT = /\[([^\]\n]+)\]\(([^)\n]+)\)/g
 const HREF_FIELD = /href:\s*'([^']+)'|href:\s*"([^"]+)"/g
 const ROOT_LINK = /^\/[a-z]{2}$/
 
+// 🔒 ТРЕТЬЯ ЗАКОННАЯ ФОРМА — СЕРВЕРНАЯ ПОДСТАНОВКА `{admin}` (шаг 508).
+// Адрес панели управления у каждого проекта свой и появляется только после того,
+// как владелец сохранил настройки. Вписать его в языковую ячейку нельзя — он
+// уехал бы во все остальные проекты вместе с шаблоном. Поэтому в данных стоит
+// метка, а раскрывает её страница; панели нет — ссылка вырезается вместе с
+// подписью, а не ведёт в никуда. Для проверки это АБСОЛЮТНЫЙ адрес:
+// относительным он не бывает ни при каком исходе.
+const ADMIN_LINK = /^\{admin\}/
+
 // ── RULE 2 — every local asset exists ───────────────────────────────────────
 // `heroVideo`, `heroPoster`, `src:` pointing at `/something` must resolve to a
 // file in public/. The hero of a shipped post pointed at a video that was never
@@ -146,6 +155,7 @@ function checkPost(dataDir) {
         }
         continue
       }
+      if (ADMIN_LINK.test(href)) continue
       if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
         fail(p, "link-not-absolute", `[…](${href}) — относительная ссылка; разрешена одна форма: [%SITE%](/${"<язык>"})`)
       }
@@ -159,6 +169,7 @@ function checkPost(dataDir) {
       // которой некуда указать внутри собственного сайта, — это дефект правила,
       // а не выбор автора.)
       if (ROOT_LINK.test(href)) continue
+      if (ADMIN_LINK.test(href)) continue
       if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
         fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка; внутри сайта разрешена одна форма: '/<язык>'`)
       }

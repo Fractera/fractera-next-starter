@@ -38,6 +38,11 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  /* Тона смысловых групп — определены в теме проекта (config/design/*.css). */
+  --color-tone-data: var(--tone-data);
+  --color-tone-reach: var(--tone-reach);
+  --color-tone-access: var(--tone-access);
+  --color-tone-code: var(--tone-code);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);

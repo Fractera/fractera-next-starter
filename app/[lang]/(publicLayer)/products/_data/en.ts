@@ -1,10 +1,9 @@
-// Подпись группы «Продукты» в меню (владелец 2026-08-14).
-//
-// Отдельный минимальный файл, а не поле внутри `ui.i18n.ts`: сканер меню
-// (`lib/menu/group-menus.ts`) читает `eyebrow` из `_data/<язык>.ts` ТЕКСТОМ, без
-// импорта — тот же приём, что уже применён к блогу. Смешивать этот ключ со
-// строками самой страницы каталога значило бы завести два разных потребителя
-// одного файла.
-export const meta = {
+import type { CatalogueUi } from '../_lib/types'
+
+// Английская основа слов каталога. Форма — как у индекса блога:
+// строки живут в ячейке языка, `index.ts` отдаёт их наружу одной функцией.
+// `eyebrow` читает сканер меню (`lib/menu/group-menus.ts`) ТЕКСТОМ, без импорта.
+export const en: CatalogueUi = {
   eyebrow: 'Products',
+  title: 'Products', subtitle: 'Everything we offer, in one place.', metaTitle: 'Products', metaDescription: 'Browse the full catalogue.', empty: 'The catalogue is empty for now.', loadMore: 'Show more', loading: 'Loading…', failed: 'Could not load more. Try again.', shown: 'Showing {shown} of {total}', backToCatalogue: 'Back to the catalogue',
 }

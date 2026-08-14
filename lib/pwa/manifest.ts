@@ -3,7 +3,7 @@ import { getAppConfig, metaForLang } from '@/config/app-config'
 import { iconUrl } from '@/config/app-config.defaults'
 import { urlFor } from '@/lib/seo/alternates'
 import { getBlogUi } from '@/app/[lang]/(publicLayer)/blog/_data'
-import { catalogueUi } from '@/app/[lang]/(publicLayer)/products/_data/ui.i18n'
+import { catalogueUi } from '@/app/[lang]/(publicLayer)/products/_data'
 
 // Манифест устанавливаемого приложения — НА ЯЗЫК (шаг 504).
 //

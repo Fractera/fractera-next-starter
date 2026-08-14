@@ -500,6 +500,23 @@ the other, and the surfaces drift apart silently — exactly how the home page e
 translation architecture. One factory, one data contract (per-language cells), one section layer, one set
 of gates.
 
+**🔒 Two shapes for translated strings, and the choice is not a matter of taste.**
+
+| | **Language cells** — `_data/en.ts`, `ru.ts`, … + `index.ts` | **One file with a language map** — `<name>.i18n.ts` |
+|---|---|---|
+| Holds | **content**: prose, blocks, the words of a page | **a matrix of labels**: buttons, toasts, table headers |
+| Written by | a person, often partially, falling back to the base language | filled whole, by a translation model |
+| How many languages | the ENABLED set (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`) — it is authored | all 82 — it ships with the product and must speak the minute the owner enables a language |
+| Examples | a blog post, the home page, the catalogue chrome, the footer pages | the cart, the top menu, the cookie banner, the four permission-group pages |
+
+The test: **does a person write these words for THIS project?** The title of their blog — yes, cells. The
+label on our own "Save" button — no, matrix. Splitting 28 button labels into 82 files would be a cost with
+no benefit; keeping a customer's article in one 82-key object would make partial translation impossible.
+
+`npm run check:i18n` checks **both** shapes — a folder of cells and a file with a map — so neither can drift
+unnoticed. Before step 508 it knew only the second, and the blog index and catalogue were verified by
+nothing at all.
+
 **🔒 A permission group NEVER imports from a sibling group.** `(protectedLayer)` holds four groups —
 `(account)`, `(staff)`, `(finance)`, `(admin)` — and the same business entity usually appears in several
 of them: staff edit the whole product card, finance edit only its price. The shared part rises to the

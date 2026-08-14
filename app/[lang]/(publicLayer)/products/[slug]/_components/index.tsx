@@ -10,7 +10,7 @@ import { brand } from "@/lib/brand"
 import { getAppConfig } from "@/config/app-config"
 import { productById, prerenderSlugs } from "@/lib/catalogue"
 import { localizeProduct } from "@/lib/products/localize"
-import { catalogueUi } from "../../_data/ui.i18n"
+import { catalogueUi } from "../../_data"
 
 // ПУБЛИЧНАЯ СТРАНИЦА ТОВАРА — статика через ISR.
 //

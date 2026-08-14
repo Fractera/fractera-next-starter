@@ -33,7 +33,6 @@ const FILES = [
   // слой, тот же набор из десяти готовых переводов (шаг 507). До этого шага их
   // не проверял никто: словарь каталога отсутствовал в списке, а два словаря
   // движка были написаны в форме, которой сторож не понимает.
-  ["app/[lang]/(publicLayer)/products/_data/ui.i18n.ts", "CatalogueUi", 10],
   ["lib/content/page-ui.ts", "PageUi", 10],
   ["lib/content/post-body-ui.ts", "PostBodyUi", 10],
   // Каталог секций — страница архитектора, но слова у неё такие же страничные.
@@ -43,6 +42,22 @@ const FILES = [
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(admin)/administration/products/_data/ui.i18n.ts", "AdministrationProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(account)/shopping/products/_data/ui.i18n.ts", "ShoppingProductsUi", 82],
+]
+
+/**
+ * ВТОРАЯ ФОРМА СЛОВАРЯ — ЯЗЫКОВЫЕ ЯЧЕЙКИ (шаг 508).
+ *
+ * 🔒 ЗАЧЕМ ОТДЕЛЬНЫЙ СПИСОК. Публичные поверхности хранят слова не одним файлом
+ * с картой языков, а ПАПКОЙ: `_data/en.ts`, `ru.ts`, … — по файлу на язык, как
+ * у поста блога. Сторож, знающий только первую форму, такие словари не видел
+ * вовсе: у индекса блога и у каталога не проверялся НИ ОДИН ключ, и пропущенная
+ * строка в девятом языке доехала бы до клиента.
+ *
+ * [папка, файл типа, имя типа, сколько языков]
+ */
+const CELLS = [
+  ["app/[lang]/(publicLayer)/blog/_data", "app/[lang]/(publicLayer)/blog/_lib/types.ts", "BlogUi", 10],
+  ["app/[lang]/(publicLayer)/products/_data", "app/[lang]/(publicLayer)/products/_lib/types.ts", "CatalogueUi", 10],
 ]
 
 // 🔒 ЦИФРЫ В ИМЕНИ КЛЮЧА ОБЯЗАТЕЛЬНЫ В ШАБЛОНЕ. `step1`, `step2` — обычные
@@ -127,6 +142,37 @@ for (const [file, type, want] of FILES) {
   if (!ok) bad++
   const head = ok ? "  OK   " : "  БЕДА "
   let line = `${head} ${file}\n         языков ${langs.length}/${want}, ключей ${keys.length}`
+  if (!keys.length) line += " — ТИП НЕ РАЗОБРАН"
+  if (holes.length) {
+    line += `\n         не хватает: ${holes.slice(0, 8).join(", ")}`
+    if (holes.length > 8) line += ` (+${holes.length - 8})`
+  }
+  console.log(line)
+}
+
+// ── Вторая форма: языковые ячейки ──────────────────────────────────────────
+for (const [dir, typeFile, type, want] of CELLS) {
+  if (!fs.existsSync(dir) || !fs.existsSync(typeFile)) {
+    console.log(`  НЕТ ПАПКИ  ${dir}`)
+    bad++
+    continue
+  }
+  const typeSrc = fs.readFileSync(typeFile, "utf8")
+  const block = typeSrc.match(new RegExp(`export type ${type} = \\{([\\s\\S]*?)\\n\\}`))
+  const keys = block ? [...block[1].matchAll(KEY_RE)].map(m => m[1]) : []
+  const cells = fs.readdirSync(dir).filter(f => /^[a-z]{2}\.ts$/.test(f)).map(f => f.replace(".ts", ""))
+
+  const holes = []
+  for (const lang of cells) {
+    const body = fs.readFileSync(`${dir}/${lang}.ts`, "utf8")
+    for (const k of keys) {
+      if (!new RegExp(`[{,\\s]${k}:`).test(body)) holes.push(`${lang}.${k}`)
+    }
+  }
+
+  const ok = cells.length === want && keys.length > 0 && holes.length === 0
+  if (!ok) bad++
+  let line = `${ok ? "  OK   " : "  БЕДА "} ${dir}/\n         языков ${cells.length}/${want}, ключей ${keys.length} (ячейки)`
   if (!keys.length) line += " — ТИП НЕ РАЗОБРАН"
   if (holes.length) {
     line += `\n         не хватает: ${holes.slice(0, 8).join(", ")}`

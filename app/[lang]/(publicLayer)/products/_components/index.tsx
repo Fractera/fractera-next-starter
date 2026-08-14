@@ -8,7 +8,7 @@ import { getAppConfig } from "@/config/app-config"
 import { firstProducts, productsTotal, FIRST_BATCH } from "@/lib/catalogue"
 import { localizeProduct } from "@/lib/products/localize"
 import type { Product } from "@/lib/products/types"
-import { catalogueUi } from "../_data/ui.i18n"
+import { catalogueUi } from "../_data"
 import { LoadMore } from "./load-more.client"
 
 // ПУБЛИЧНАЯ ВИТРИНА КАТАЛОГА — одна страница, без пагинации (владелец

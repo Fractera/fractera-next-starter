@@ -453,6 +453,34 @@ sample — or the build stops), and **no solid `bg-primary` fill carries page-co
 its text are a pair; `bg-primary` goes with `text-primary-foreground`, and a tinted `bg-primary/10`
 backdrop is not a fill and is left alone).
 
+### 8b. 🔒 Two factories, and the pair is closed
+
+Every public page is built by one of exactly two:
+
+| Factory | Renders | Used by |
+|---|---|---|
+| `createContentPost` | a post inside a collection | the blog posts |
+| `createContentPage` | everything else | the home page, privacy, terms, cookies |
+
+**A page that needs less simply passes less.** Breadcrumbs, the back link, tags, the hero, the FAQ and the
+table of contents are all optional; absent chrome renders nothing, and the structured data drops the
+`BreadcrumbList` with it rather than emitting an empty one.
+
+**Why this is written down.** On 2026-08-14 the home page was given its own entry, justified as *"a landing
+has a different anatomy from a document"*, and a third factory `createLandingPage` was proposed to make
+that official. The claim was false: of the fifteen props on `StandardContentPage`, fourteen already
+degraded to nothing when omitted; the three that did not — `breadcrumbs`, `backHref`, `backLabel` — were
+`required` **in our own code**. Nothing about a landing page prevented it from going through the existing
+factory.
+
+**The rule that generalises from it: required-ness is a property of the code, not of the domain.** When a
+surface looks like it needs its own machinery, ask what *physically* stops it from using what exists. If
+the answer is a constraint you wrote yourself, remove the constraint.
+
+**And the cost is not duplication.** It is that a rule added to one factory never reaches the other, so the
+surfaces drift apart with nothing red anywhere — the same way the home page kept its own translation
+architecture for months while the blog moved to language cells.
+
 ## 9. Scaling — and what it costs
 
 **A new post** creates exactly one folder. **Zero existing files are edited.** The index learns about

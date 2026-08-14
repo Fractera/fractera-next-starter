@@ -458,6 +458,24 @@ frame, headings and empty states are prerendered, and only the rows load into a 
 opens. Never carry `CONTENT-ENGINE.md`'s "no dynamic `[slug]`" into a dashboard: that sentence is scoped
 to public content, where an alternative exists.
 
+**🔒 ONE FACTORY FOR EVERY PUBLIC PAGE. Never write a second one.** Two exist and the pair is closed:
+`createContentPost` (a post in a collection) and `createContentPage` (everything else — the home page,
+the footer pages, any landing). A page that needs no breadcrumbs, no back link, no FAQ, no hero simply
+does not pass them: **the chrome is optional and absent chrome renders nothing.**
+
+The temptation looks reasonable and is not: *"a landing has a different anatomy from a document, let me
+add `createLandingPage`."* That sentence was written in this project on 2026-08-14 and it was false — of
+the fifteen props on the page template, fourteen already disappeared on their own when omitted, and the
+three that did not were `required` by our own code, not by the nature of the page. **Required-ness is a
+property of the code, not of the domain.** Ask what physically prevents the page from going through the
+existing factory; if the answer is "three props I marked required", the fix is one word, not a new
+factory.
+
+The cost of getting this wrong is not duplication. It is that a rule added to one factory never reaches
+the other, and the surfaces drift apart silently — exactly how the home page ended up with its own
+translation architecture. One factory, one data contract (per-language cells), one section layer, one set
+of gates.
+
 **🔒 A permission group NEVER imports from a sibling group.** `(protectedLayer)` holds four groups —
 `(account)`, `(staff)`, `(finance)`, `(admin)` — and the same business entity usually appears in several
 of them: staff edit the whole product card, finance edit only its price. The shared part rises to the

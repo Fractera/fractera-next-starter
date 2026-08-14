@@ -125,6 +125,35 @@ export function footerLabels(lang: string): FooterLabels {
 // он вёл на Design :3004 и слой проектов :3003, снесённые шагом 500. Словарь
 // без потребителя гниёт молча — следующая сессия принимает его за нужный.
 
+// ─── Ссылка на панель управления (футер) ─────────────────────────────────────
+//
+// 🔒 ЭТО НАДПИСЬ ДЛЯ ВЛАДЕЛЬЦА, А НЕ ДЛЯ ПОСЕТИТЕЛЯ (владелец 2026-08-14).
+// Панель закрыта авторизацией, поэтому ссылку осмысленно читает тот, у кого
+// есть доступ, — а он работает в языках кокпита. Отсюда те же десять языков,
+// что у соседнего переключателя ширины (правило 4г), с английским запасным.
+//
+// Это НЕ воскрешение снесённого «навигатора слоёв»: тот вёл на Design :3004 и
+// слой проектов :3003, которых больше нет, и был удалён именно за ссылки в
+// никуда. Здесь одна ссылка на одну живую службу.
+export type AdminLinkLabels = { admin: string };
+
+const ADMIN_LINK: Record<string, AdminLinkLabels> = {
+  en: { admin: "Control panel" },
+  es: { admin: "Panel de control" },
+  fr: { admin: "Panneau de contrôle" },
+  it: { admin: "Pannello di controllo" },
+  ru: { admin: "Панель управления" },
+  de: { admin: "Kontrollzentrum" },
+  pt: { admin: "Painel de controlo" },
+  pl: { admin: "Panel sterowania" },
+  tr: { admin: "Kontrol paneli" },
+  nl: { admin: "Configuratiescherm" },
+};
+
+export function adminLinkLabels(lang: string): AdminLinkLabels {
+  return ADMIN_LINK[lang] ?? ADMIN_LINK.en;
+}
+
 // ─── Content-width toggle (footer) ───────────────────────────────────────────
 // aria-label/title for the wide/narrow screen-width button (ported from the Projects
 // zone). Admin-layers ten (rule 4г); English fallback for any other language.

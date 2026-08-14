@@ -7,7 +7,8 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels } from "@/components/menu/footer/footer-menu.i18n";
+import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 import { CookieSettingsButton } from "@/components/menu/footer/cookie-settings-button.client";
@@ -67,6 +68,9 @@ export function FooterMenu({ lang }: { lang: string }) {
   // Вход/аккаунт в подвале — та же кнопка, что и в шапке, и тот же ящик:
   // человек, докрутивший до низа страницы, не должен возвращаться наверх.
   const authSide = appShellAuthSide();
+  // Адрес панели выводится из адреса сайта, а не из окна браузера: подвал —
+  // серверная разметка, и ссылка обязана быть в статическом HTML.
+  const adminUrl = adminUrlFromSite(cfg.url);
 
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
@@ -101,7 +105,7 @@ export function FooterMenu({ lang }: { lang: string }) {
         {/* Полоса действий: вход и настройки cookie. Обе появляются только когда
             включены соответствующие возможности, поэтому у проекта без них
             подвал выглядит ровно как раньше — пустой полосы не остаётся. */}
-        {(authSide || bannerOn) && (
+        {(authSide || bannerOn || adminUrl) && (
           <div className="flex flex-wrap items-center gap-2">
             {authSide && (
               <AccountButton
@@ -114,6 +118,27 @@ export function FooterMenu({ lang }: { lang: string }) {
               />
             )}
             {bannerOn && <CookieSettingsButton label={cookieButtonUi(lang).settings} />}
+
+            {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).
+                Панель закрыта авторизацией: без входа она уводит на страницу
+                регистрации, поэтому видимая ссылка ничего не открывает
+                постороннему — она лишь избавляет ВЛАДЕЛЬЦА от необходимости
+                помнить адрес поддомена.
+                Адрес выводится из адреса сайта (`adminUrlFromSite`), а не
+                зашит: на домене это admin.<домен>, на голом IP — <ip>:3002.
+                Настроек ещё нет — адрес пуст, и ссылки просто не будет:
+                выдуманный адрес панели хуже отсутствующего.
+                `rel="nofollow"` — служебная страница не должна утаскивать вес
+                сайта на поддомен, который поисковику всё равно закрыт. */}
+            {adminUrl && (
+              <a
+                href={adminUrl}
+                rel="nofollow"
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                {adminLinkLabels(lang).admin}
+              </a>
+            )}
           </div>
         )}
 

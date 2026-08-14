@@ -1,9 +1,8 @@
 // check:sections — сторож слоя секций (шаг 508; вырос из `check:blocks`).
 //
-// 🔒 ЗАЧЕМ. Дизайн приезжает извне: пользователь берёт навык и приводит свой
-// набор секций. Значит границы слоя обязаны держаться проверкой, а не доверием к
-// автору, которого мы не видели. Четыре правила, и каждое — уже оплаченный
-// дефект либо прямое следствие архитектуры (`SECTIONS.md`).
+// 🔒 ЗАЧЕМ. Секции — единственное место, где живёт вёрстка материала, и правки
+// туда вносит агент, который видит один файл, а не страницу целиком. Три
+// правила, и каждое — уже оплаченный дефект.
 //
 // 1. У КАЖДОГО ВИДА КАТАЛОГА ЕСТЬ ОБРАЗЕЦ. Пять видов из шестнадцати не
 //    рисовались нигде и никогда — в одном из них так и лежал дефект контраста.
@@ -12,15 +11,13 @@
 // 2. НА СПЛОШНОЙ ЗАЛИВКЕ — ПАРНЫЙ ЦВЕТ. `bg-primary` ходит с
 //    `text-primary-foreground`. Пара `bg-primary` + `text-foreground` читается
 //    только в одной теме из двух, и в какой именно — зависит от палитры проекта,
-//    то есть автор дизайна своей ошибки не увидит.
+//    то есть автор своей ошибки не увидит.
 //
-// 3. ВНУТРИ ПАПКИ ДИЗАЙНА — ТОЛЬКО ТОКЕНЫ. Абсолютный цвет не меняется со
+// 3. ВНУТРИ СЕКЦИИ — ТОЛЬКО ТОКЕНЫ ТЕМЫ. Абсолютный цвет не меняется со
 //    сменой темы по определению: так блог оставался чёрным под светлой темой.
-//    В чужом дизайне это вернётся первым, потому что рисовать абсолютным цветом
-//    — привычка любого, кто пришёл из обычной вёрстки.
+//    Возвращается это первым делом: рисовать абсолютным цветом — привычка
+//    любого, кто пришёл из обычной вёрстки.
 //
-// 4. МАНИФЕСТ НЕ ОБЕЩАЕТ НЕСУЩЕСТВУЮЩЕГО. Дизайн, объявивший вид, которого в
-//    каталоге нет, обещает то, чего платформа не просила и не понимает.
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs"
 import { join } from "node:path"
@@ -88,7 +85,7 @@ for (const file of [...walk(SECTIONS), PAGE_SHELL]) {
   }
 }
 
-// ── 3. Внутри дизайна — только токены темы ──────────────────────────────────
+// ── 3. Внутри секции — только токены темы ──────────────────────────────────
 const ABSOLUTE_COLOUR = /\b(?:bg|text|border|from|to|via)-(?:black|white|(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3})\b/
 // 🔒 ЦВЕТ ПРЯЧЕТСЯ НЕ ТОЛЬКО В КЛАССАХ (шаг 508). Первая версия правила смотрела
 // один `className` — и пропустила фиолетовый градиент, записанный прямо в
@@ -101,7 +98,7 @@ for (const file of walk(SECTIONS)) {
   for (const cls of classNames(src)) {
     const hit = cls.match(ABSOLUTE_COLOUR)
     if (hit) {
-      fail("absolute-colour", `${file.replace(ROOT, ".")}: «${hit[0]}» — внутри дизайна цвет берётся токеном темы, иначе секция не меняется вместе с темой`)
+      fail("absolute-colour", `${file.replace(ROOT, ".")}: «${hit[0]}» — цвет секции берётся токеном темы, иначе секция не меняется вместе с темой`)
     }
   }
   const inlineHit = src.match(INLINE_COLOUR)
@@ -110,24 +107,9 @@ for (const file of walk(SECTIONS)) {
   }
 }
 
-// ── 4. Манифест не обещает того, чего нет в каталоге ────────────────────────
-for (const file of walk(SECTIONS).filter(f => f.endsWith(join("sections", "index.ts")) === false && /index\.ts$/.test(f))) {
-  const src = read(file)
-  const setBlock = src.match(/export const set: SectionSet = \{([\s\S]*?)\n\}/)
-  if (!setBlock) continue
-  const declared = [...setBlock[1].matchAll(/([a-z][a-z0-9]*)\s*(?:,|:|$)/gm)].map(m => m[1])
-  for (const kind of new Set(declared)) {
-    if (!kinds.includes(kind)) {
-      fail("manifest-unknown-kind", `${file.replace(ROOT, ".")}: '${kind}' — такого вида нет в каталоге lib/content/blocks/types.ts`)
-    }
-  }
-}
-
 if (problems.length === 0) {
-  const designs = existsSync(SECTIONS)
-    ? readdirSync(SECTIONS).filter(n => statSync(join(SECTIONS, n)).isDirectory())
-    : []
-  console.log(`===SECTIONS_OK=== видов: ${kinds.length}, у каждого есть образец; дизайнов: ${designs.length} (${designs.join(", ")}); цвета и пары — нарушений нет`)
+  const files = walk(SECTIONS).filter(f => f.includes("blocks")).length
+  console.log(`===SECTIONS_OK=== видов: ${kinds.length}, рендереров: ${files}, у каждого есть образец; цвета и пары — нарушений нет`)
   process.exit(0)
 }
 

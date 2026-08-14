@@ -13,7 +13,6 @@
     "prebuild": "node lib/parser-fs.mjs && node scripts/generate-image-previews.mjs && node scripts/check-content.mjs && node scripts/check-sections.mjs && node scripts/check-seo.mjs && node scripts/check-aio.mjs && node scripts/check-pwa.mjs && node scripts/check-contrast.mjs && node scripts/check-links.mjs && node scripts/seed-media.mjs",
     "check:content": "node scripts/check-content.mjs --strict",
     "check:sections": "node scripts/check-sections.mjs",
-    "read:sections": "node scripts/read-sections.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:seo": "node scripts/check-seo.mjs",
     "check:aio": "node scripts/check-aio.mjs",

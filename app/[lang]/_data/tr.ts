@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const tr: Partial<HomeCell> = {
   title: 'Bu sizin uygulamanız',
   description: 'Kendi sunucunuzda çalışır ve başka kimseye hesap vermez. Kontrol panelinde ona bir isim verin — bu satır kaybolacak.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Etmen mühendisliği altyapısı', title: 'Bu sizin uygulamanız', subtitle: 'Kendi sunucunuzda çalışır ve başka kimseye hesap vermez. Kontrol panelinde ona bir isim verin — bu satır kaybolacak.' },
+  { kind: 'hero', pill: 'Etmen mühendisliği altyapısı' },
   {
     kind: 'badges',
     items: [

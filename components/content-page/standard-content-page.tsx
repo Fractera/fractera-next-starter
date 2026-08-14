@@ -39,7 +39,14 @@ export type Breadcrumb = { label: string; href?: string }
 export type StandardContentPageProps = {
   lang: string
   /** Ordered breadcrumb trail; the LAST item is the current page (no href). */
-  breadcrumbs: Breadcrumb[]
+  /**
+   * Крошки. НЕОБЯЗАТЕЛЬНЫ (шаг 508): у корня сайта нет уровня выше, крошка
+   * «Главная → Главная» была бы ложью. Но из этого следует «крошек нет», а не
+   * «нужен второй шаблон страницы»: из пятнадцати свойств этого блока
+   * четырнадцать уже исчезали сами, когда их не дают, и обязательность
+   * оставшихся была свойством кода, а не устройства страницы.
+   */
+  breadcrumbs?: Breadcrumb[]
   tags?: string[]
   /** H1 — rendered at the homepage hero's maximum size. */
   title: string
@@ -60,9 +67,9 @@ export type StandardContentPageProps = {
   hero?: ReactNode
   blocks: Block[]
   faq?: FaqPair[]
-  /** Back link target — one level up from the current page. */
-  backHref: string
-  backLabel: string
+  /** Ссылка «назад» — на уровень выше. Нет уровня выше — нет и ссылки. */
+  backHref?: string
+  backLabel?: string
   /**
    * Open slot for architect-discretion sections (e.g. the sponsorship section),
    * injected by the route entry and rendered directly ABOVE the FAQ. May be one
@@ -110,6 +117,7 @@ export function StandardContentPage({
             truncates with an ellipsis. truncate needs min-w-0 on every flex
             ancestor, otherwise the item refuses to shrink below its content and
             pushes the row past the viewport. */}
+        {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
           <ol className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
             {breadcrumbs.map((c, i) => {
@@ -130,6 +138,7 @@ export function StandardContentPage({
             })}
           </ol>
         </nav>
+        )}
 
         {/* 2. Header — tags + max-size H1 (homepage hero style) + subtitle + author */}
         <header className="mt-6 flex flex-col gap-5 border-b border-border pb-8">
@@ -150,12 +159,14 @@ export function StandardContentPage({
               текста страницы: она меняется вместе с темой сама.
               Обводка и свечение остаются: они фиолетовые и читаются на обоих фонах. */}
           <h1
-            className="text-3xl font-bold font-serif leading-tight tracking-tight md:text-4xl lg:text-5xl text-foreground"
-            style={{
-              WebkitTextStroke: '1px rgba(139,92,246,0.8)',
-              paintOrder: 'stroke fill',
-              textShadow: '0 0 18px rgba(139,92,246,0.55), 0 0 36px rgba(139,92,246,0.28)',
-            } as React.CSSProperties}
+            // 🔒 ОБВОДКА И СВЕЧЕНИЕ — ИЗ ТОКЕНА ТЕМЫ, А НЕ ФИОЛЕТОВЫМ ЧИСЛОМ
+            // (шаг 508). Здесь стояли `rgba(139,92,246,…)` прямо в `style`: цвет
+            // платформы, одинаковый во всех темах и во всех проектах, — и
+            // инлайн-стиль сильнее любого класса, поэтому тема на него не влияла
+            // вовсе. Заголовок клиента светился нашим фиолетовым, что бы он ни
+            // выбрал в настройках. Класс `.h1-glow` (styles/globals.css) делает
+            // то же самое цветом `--color-primary`.
+            className="h1-glow text-3xl font-bold font-serif leading-tight tracking-tight md:text-4xl lg:text-5xl text-foreground"
           >
             {title}
           </h1>
@@ -251,16 +262,19 @@ export function StandardContentPage({
           </section>
         )}
 
-        {/* Back link — the ABSOLUTE LAST item on every content page (below the FAQ).
-            One level up from the current page. */}
-        <div className="mt-12 border-t border-border pt-8">
-          <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            {backLabel}
-          </a>
-        </div>
+        {/* Ссылка «назад» — последний элемент страницы, ниже вопросов. Ведёт на
+            уровень выше; у корня сайта такого уровня нет, поэтому её может не
+            быть вовсе (шаг 508). */}
+        {backHref && (
+          <div className="mt-12 border-t border-border pt-8">
+            <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              {backLabel}
+            </a>
+          </div>
+        )}
 
       </article>
     </main>

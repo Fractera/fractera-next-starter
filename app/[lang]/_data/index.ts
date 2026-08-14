@@ -31,6 +31,8 @@ import { nl } from './nl'
 export type HomeCell = {
   title: string
   description: string
+  /** Ключевые слова страницы — того же вида, что у правовых страниц. */
+  keywords: string
   blocks: Block[]
 }
 
@@ -77,20 +79,23 @@ function fillBlocks(blocks: Block[], admin: string, lang: string): Block[] {
 /** Содержимое главной на языке: перевод, иначе английская основа. */
 export function homePage(lang: string): HomeCell {
   const override = data.overrides[lang]
-  const fields = resolveFields(data.en, override ?? {}, ['title', 'description'] as const)
+  const fields = resolveFields(data.en, override ?? {}, ['title', 'description', 'keywords'] as const)
   const body = resolveLocalizedBody({ blocks: data.en.blocks }, override ? { blocks: override.blocks } : undefined)
 
   const cfg = getAppConfig()
   const admin = adminUrlFromSite(cfg.url) ?? ''
 
-  // 🔒 ЗАГОЛОВОК ГЕРОЯ — ДВА СОСТОЯНИЯ, И ЭТО СМЫСЛОВАЯ РАЗНИЦА. Пока имя в
-  // настройках не менялось, стоит не «Fractera», а «Это ваше приложение»: имя
-  // шаблона на чужом сайте — реклама платформы за счёт клиента. Сохранил своё
-  // имя — оно и в заголовке, а текст-заглушка исчезает навсегда.
+  // 🔒 ЗАГОЛОВОК — ДВА СОСТОЯНИЯ, И ЭТО СМЫСЛОВАЯ РАЗНИЦА. Пока имя в настройках
+  // не менялось, стоит не «Fractera», а «Это ваше приложение»: имя шаблона на
+  // чужом сайте — реклама платформы за счёт клиента. Сохранил своё имя — оно и в
+  // заголовке, а текст-заглушка исчезает навсегда.
+  //
+  // Подменяются ПОЛЯ СТРАНИЦЫ, а не блок: заголовок рисует фабрика, одна на
+  // посты, правовые страницы и главную.
   const named = Boolean(cfg.name) && cfg.name !== DEFAULT_APP_CONFIG.name
-  const blocks = fillBlocks(body.blocks, admin, lang).map(b =>
-    b.kind === 'hero' && named ? { ...b, title: cfg.name, subtitle: cfg.description ?? b.subtitle } : b,
-  )
+  const blocks = fillBlocks(body.blocks, admin, lang)
 
-  return { ...fields, blocks }
+  return named
+    ? { ...fields, title: cfg.name, description: cfg.description ?? fields.description, blocks }
+    : { ...fields, blocks }
 }

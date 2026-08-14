@@ -35,16 +35,25 @@ export type ContentPageContent = {
 
 /** Page-specific, localized chrome (breadcrumb trail + back link). */
 export type ContentPageChrome = {
-  breadcrumbs: Breadcrumb[]
-  backHref: string
-  backLabel: string
+  breadcrumbs?: Breadcrumb[]
+  backHref?: string
+  backLabel?: string
 }
 
 export type ContentPageConfig<C extends ContentPageContent> = {
   /** Per-document, per-language resolver (resolveEntry-based). */
   resolve: (lang: string) => C
-  /** Localized breadcrumb trail + back link for this page. */
-  chrome: (lang: string, content: C) => ContentPageChrome
+  /**
+   * Крошки и ссылка «назад». НЕОБЯЗАТЕЛЬНЫ (шаг 508).
+   *
+   * 🔒 ПОЧЕМУ ЭТО ВАЖНЕЕ, ЧЕМ ВЫГЛЯДИТ. Ровно эта обязательность была
+   * единственным, что мешало главной идти через ту же фабрику, что посты и
+   * правовые страницы, — и едва не стала поводом завести вторую фабрику «для
+   * лендингов». Из пятнадцати свойств шаблона четырнадцать уже исчезали сами,
+   * когда их не дают; обязательность оставшихся была свойством кода, а не
+   * устройства страницы. Второй стандарт на ровном месте — начало четвёртого.
+   */
+  chrome?: (lang: string, content: C) => ContentPageChrome
   /** Non-translatable per-page fields. */
   meta: {
     subPath: string
@@ -110,7 +119,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
   async function Page({ params }: { params: Promise<{ lang: string }> }) {
     const { lang } = await params
     const c = resolve(lang)
-    const { breadcrumbs, backHref, backLabel } = chrome(lang, c)
+    const { breadcrumbs, backHref, backLabel } = chrome?.(lang, c) ?? {}
     const url = `${SITE}/${lang}${meta.subPath}`
     const ogImageUrl = abs(meta.ogImage)
 
@@ -138,16 +147,23 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
         keywords: c.keywords,
         image: ogImageUrl,
       },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: breadcrumbs.map((b, i) => ({
-          '@type': 'ListItem',
-          position: i + 1,
-          name: b.label,
-          item: i === breadcrumbs.length - 1 ? url : abs(b.href ?? meta.subPath),
-        })),
-      },
+      // 🔒 РАЗМЕТКИ КРОШЕК НЕТ, КОГДА НЕТ САМИХ КРОШЕК (шаг 508). Пустой
+      // `BreadcrumbList` — это объявление «у страницы есть путь из ниоткуда»:
+      // поисковик получает структуру без единого элемента и справедливо считает
+      // разметку сломанной. У корня сайта пути наверх нет, и честнее его не
+      // объявлять вовсе, чем объявлять пустым.
+      ...(breadcrumbs && breadcrumbs.length > 0
+        ? [{
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: breadcrumbs.map((b, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: b.label,
+              item: i === breadcrumbs.length - 1 ? url : abs(b.href ?? meta.subPath),
+            })),
+          }]
+        : []),
       ...(c.faq && c.faq.length > 0
         ? [{
             '@context': 'https://schema.org',

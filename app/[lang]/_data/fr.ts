@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const fr: Partial<HomeCell> = {
   title: 'Voici votre application',
   description: 'Elle fonctionne sur votre propre serveur et ne rend de comptes à personne d\'autre. Donnez-lui un nom dans le panneau de contrôle — cette ligne disparaîtra.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastructure d\'ingénierie agentique', title: 'Voici votre application', subtitle: 'Elle fonctionne sur votre propre serveur et ne rend de comptes à personne d\'autre. Donnez-lui un nom dans le panneau de contrôle — cette ligne disparaîtra.' },
+  { kind: 'hero', pill: 'Infrastructure d\'ingénierie agentique' },
   {
     kind: 'badges',
     items: [

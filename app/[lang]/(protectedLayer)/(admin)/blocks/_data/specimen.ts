@@ -225,8 +225,8 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'hero',
-    when: 'First screen of a landing: the project mark comes from settings, never from content.',
-    blocks: [{ kind: 'hero', pill: 'Eyebrow above the title', title: 'The page title', subtitle: 'One sentence saying what this is.' }],
+    when: 'The project mark and the eyebrow above the H1. The mark comes from settings, never from content; the H1 itself is drawn by the page factory.',
+    blocks: [{ kind: 'hero', pill: 'Eyebrow above the title' }],
   },
   {
     kind: 'badges',

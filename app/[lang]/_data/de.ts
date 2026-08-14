@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const de: Partial<HomeCell> = {
   title: 'Dies ist Ihre Anwendung',
   description: 'Sie läuft auf Ihrem eigenen Server und ist niemandem sonst rechenschaftspflichtig. Geben Sie ihr einen Namen im Kontrollzentrum — diese Zeile verschwindet dann.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastruktur für agentisches Engineering', title: 'Dies ist Ihre Anwendung', subtitle: 'Sie läuft auf Ihrem eigenen Server und ist niemandem sonst rechenschaftspflichtig. Geben Sie ihr einen Namen im Kontrollzentrum — diese Zeile verschwindet dann.' },
+  { kind: 'hero', pill: 'Infrastruktur für agentisches Engineering' },
   {
     kind: 'badges',
     items: [

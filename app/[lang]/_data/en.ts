@@ -5,8 +5,9 @@ import type { HomeCell } from './index'
 export const en: HomeCell = {
   title: 'This is your application',
   description: 'It runs on your own server and answers to nobody else. Give it a name in the control panel — this line will disappear.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Agentic engineering infrastructure', title: 'This is your application', subtitle: 'It runs on your own server and answers to nobody else. Give it a name in the control panel — this line will disappear.' },
+  { kind: 'hero', pill: 'Agentic engineering infrastructure' },
   {
     kind: 'badges',
     items: [

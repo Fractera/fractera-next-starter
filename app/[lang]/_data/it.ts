@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const it: Partial<HomeCell> = {
   title: 'Questa è la tua applicazione',
   description: 'Funziona sul tuo server e non risponde a nessun altro. Dalle un nome nel pannello di controllo — questa riga scomparirà.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastruttura di ingegneria agentica', title: 'Questa è la tua applicazione', subtitle: 'Funziona sul tuo server e non risponde a nessun altro. Dalle un nome nel pannello di controllo — questa riga scomparirà.' },
+  { kind: 'hero', pill: 'Infrastruttura di ingegneria agentica' },
   {
     kind: 'badges',
     items: [

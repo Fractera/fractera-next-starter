@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const nl: Partial<HomeCell> = {
   title: 'Dit is uw toepassing',
   description: 'Ze draait op uw eigen server en legt aan niemand anders verantwoording af. Geef haar een naam in het configuratiescherm — deze regel verdwijnt dan.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastructuur voor agentische engineering', title: 'Dit is uw toepassing', subtitle: 'Ze draait op uw eigen server en legt aan niemand anders verantwoording af. Geef haar een naam in het configuratiescherm — deze regel verdwijnt dan.' },
+  { kind: 'hero', pill: 'Infrastructuur voor agentische engineering' },
   {
     kind: 'badges',
     items: [

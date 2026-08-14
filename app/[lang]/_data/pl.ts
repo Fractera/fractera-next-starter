@@ -4,8 +4,9 @@ import type { HomeCell } from './index'
 export const pl: Partial<HomeCell> = {
   title: 'To jest Twoja aplikacja',
   description: 'Działa na Twoim własnym serwerze i nie odpowiada przed nikim innym. Nadaj jej nazwę w panelu sterowania — ta linia zniknie.',
+  keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastruktura inżynierii agentowej', title: 'To jest Twoja aplikacja', subtitle: 'Działa na Twoim własnym serwerze i nie odpowiada przed nikim innym. Nadaj jej nazwę w panelu sterowania — ta linia zniknie.' },
+  { kind: 'hero', pill: 'Infrastruktura inżynierii agentowej' },
   {
     kind: 'badges',
     items: [

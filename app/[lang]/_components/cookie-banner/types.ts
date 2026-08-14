@@ -6,7 +6,7 @@
 // (`markup.tsx`) для тела этих конфигов.
 //
 // Ничего этого больше нет: правовых страниц три, они живут в
-// `app/[lang]/(footerPages)/` и `(cookie)/` языковыми ячейками с блоками — как
+// `app/[lang]/(footerPages)/` языковыми ячейками с блоками — как
 // пост блога, — а разметку внутри текста делает общий `lib/content/blocks/inline`.
 // Экспорты `LEGAL_LANGS`, `CONTENT_DOCS`, `ALL_DOCS`, `LegalConfig`,
 // `LegalLangEntry`, `isContentDoc` не звал НИКТО; `markup.tsx` удалён целиком.

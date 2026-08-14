@@ -319,6 +319,12 @@ The project ships three (`privacy`, `terms`, `cookies`) in the route group
 `app/[lang]/(footerPages)/` as a WORKING PATTERN; a fourth is made by copying one. Their text lives
 beside them in language cells, like a blog post. Their LINKS are the owner's setting in the panel.
 
+🔒 **All three live in ONE group, and that is the point.** `cookies` used to sit alone in its own
+`(cookie)` group while this instruction already claimed all three were together — the instruction was
+right about the intent and wrong about the disk. A route group that holds one page and carries no
+`layout.tsx` does nothing at all except pose a question with no answer: which group does the fourth page
+go into? Route groups are for pages that share a layout or a guard, never for keeping one page company.
+
 The pages that stood here before were dynamic — five of five declared `force-dynamic`, had no static
 params and no structured data, so they were nearly invisible to search engines while looking perfectly
 fine. **Anything footer-page-shaped → load the `manage-footer-pages` skill first.**
@@ -326,7 +332,7 @@ fine. **Anything footer-page-shaped → load the `manage-footer-pages` skill fir
 ### 🔒 The cookie banner exists — switch it, never rebuild or delete it
 
 The consent strip, its 82-language wording, the footer's **Cookie settings** button that re-opens
-it, and the policy page in `app/[lang]/(cookie)/` all ship with the project. It is turned on and off
+it, and the policy page in `app/[lang]/(footerPages)/cookies/` all ship with the project. It is turned on and off
 in the panel (`featureOn("cookieBanner")`), so deleting the component to "disable" it takes the
 toggle away from every project built afterwards.
 

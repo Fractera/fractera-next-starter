@@ -8,7 +8,7 @@ import { catalogueUi } from '@/app/[lang]/products/_data/ui.i18n'
 import { footerPage } from '@/lib/pages/footer-page'
 import { data as privacyData } from '@/app/[lang]/(footerPages)/privacy/_data'
 import { data as termsData } from '@/app/[lang]/(footerPages)/terms/_data'
-import { data as cookiesData } from '@/app/[lang]/(cookie)/cookies/_data'
+import { data as cookiesData } from '@/app/[lang]/(footerPages)/cookies/_data'
 
 // ПЕРЕЧЕНЬ ПУБЛИЧНЫХ ПОВЕРХНОСТЕЙ — ОДИН НА ВЕСЬ AIO (шаг 505).
 //

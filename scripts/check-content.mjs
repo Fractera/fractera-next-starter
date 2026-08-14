@@ -64,23 +64,52 @@ function enabledLanguages() {
   return []
 }
 
-// 🔒 ЗАЩИЩЁННЫЙ СЛОЙ СЮДА НЕ ВХОДИТ. Эти правила описывают ПУБЛИЧНЫЙ контент:
-// страницу, одинаковую для всех, предрендеренную и индексируемую. У страницы за
-// авторизацией законны и клиентский островок, и динамический сегмент — там иначе
-// нельзя. Проверка, зашедшая в `(protectedLayer)`, объявляет нарушением ровно то,
-// что этот слой обязан делать, и «починка» по её отчёту сломала бы страницу.
+// 🔒 ПРОВЕРЯЕТСЯ ТОЛЬКО ПУБЛИЧНЫЙ СЛОЙ, И ОН НАЗВАН ЯВНО (шаг 508).
+//
+// Эти правила описывают ПУБЛИЧНЫЙ контент: страницу, одинаковую для всех,
+// предрендеренную и индексируемую. У страницы за авторизацией законны и
+// клиентский островок, и динамический сегмент — там иначе нельзя, и проверка,
+// зашедшая туда, объявила бы нарушением ровно то, что тот слой обязан делать.
+//
+// 🔒 БЕЛЫЙ СПИСОК ВМЕСТО ЧЁРНОГО. Раньше обход брал ВСЁ под `[lang]` и вычитал
+// `(protectedLayer)` по имени. Разница не в стиле: при вычитании новая папка,
+// заведённая завтра, МОЛЧА считается публичным контентом и проверяется правилами,
+// которые к ней могут не подходить, — а публичная поверхность, оказавшаяся вне
+// обхода, не проверяется ничем. При белом списке всё, что не попало ни в одну
+// группу, — состояние «не классифицировано», и его видно.
+//
 // Граница описана в `CONTENT-ENGINE.md` §2.
-const PROTECTED_GROUP = "(protectedLayer)"
+const PUBLIC_GROUP = "(publicLayer)"
 
-/** Every `_data` folder under app/[lang], at any depth, outside the protected layer. */
+/** Каждая папка `_data` внутри публичного слоя, на любой глубине. */
 function findDataDirs(dir, out = []) {
   if (!existsSync(dir)) return out
   for (const name of readdirSync(dir)) {
-    if (name === PROTECTED_GROUP) continue
     const p = join(dir, name)
     if (!statSync(p).isDirectory()) continue
     if (name === "_data") out.push(p)
     else out.push(...findDataDirs(p, out).slice(out.length))
+  }
+  return out
+}
+
+/**
+ * Маршрут, не попавший ни в публичную группу, ни в защищённую, — это НЕ «прочее»,
+ * а незаданный вопрос: одинакова ли эта страница для всех? От ответа зависит,
+ * статикой она рендерится или за авторизацией. Пока ответа нет, её не проверяет
+ * никто, и заметить это можно только специально.
+ */
+function unclassifiedRoutes(langDir) {
+  const KNOWN = new Set([PUBLIC_GROUP, "(protectedLayer)"])
+  const out = []
+  if (!existsSync(langDir)) return out
+  for (const name of readdirSync(langDir)) {
+    if (KNOWN.has(name) || name.startsWith("_") || name.startsWith("[")) continue
+    const p = join(langDir, name)
+    if (!statSync(p).isDirectory()) continue
+    // Папка-маршрут опознаётся по `page.tsx`; служебные (`index.md`, `llms.txt`)
+    // страницами не являются и в классификации не нуждаются.
+    if (existsSync(join(p, "page.tsx"))) out.push(name)
   }
   return out
 }
@@ -220,7 +249,7 @@ function checkPost(dataDir) {
   // требовать ссылки страницы на саму себя: она ничего не даёт поисковику и
   // читается как ошибка вёрстки. Исключение по СМЫСЛУ, а не по удобству —
   // проверяется положением папки, а не списком имён.
-  const isLanguageRoot = relative(APP, dataDir) === "_data"
+  const isLanguageRoot = relative(join(APP, PUBLIC_GROUP), dataDir) === "_data"
   if (isPost && !isLanguageRoot) {
     for (const cell of languageCells(files)) {
       if (!rootLinksIn.get(cell)) {
@@ -327,7 +356,12 @@ function auditSurface(tabDir) {
 }
 
 const LANGS = enabledLanguages()
-const dirs = [...new Set(findDataDirs(APP))]
+const dirs = [...new Set(findDataDirs(join(APP, PUBLIC_GROUP)))]
+
+// Маршрут вне обеих групп — не «прочее», а незаданный вопрос (см. выше).
+for (const name of unclassifiedRoutes(APP)) {
+  fail(join(APP, name), "route-unclassified", `маршрут не лежит ни в ${PUBLIC_GROUP}, ни в (protectedLayer) — не сказано, одинакова ли страница для всех, и потому её не проверяет ни один набор правил`)
+}
 for (const d of dirs) checkPost(d)
 
 // Вкладка = папка, которой принадлежат посты. У ПОСТА данные лежат на два

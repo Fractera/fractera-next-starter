@@ -33,7 +33,7 @@ const FILES = [
   // слой, тот же набор из десяти готовых переводов (шаг 507). До этого шага их
   // не проверял никто: словарь каталога отсутствовал в списке, а два словаря
   // движка были написаны в форме, которой сторож не понимает.
-  ["app/[lang]/products/_data/ui.i18n.ts", "CatalogueUi", 10],
+  ["app/[lang]/(publicLayer)/products/_data/ui.i18n.ts", "CatalogueUi", 10],
   ["lib/content/page-ui.ts", "PageUi", 10],
   ["lib/content/post-body-ui.ts", "PostBodyUi", 10],
   // Каталог секций — страница архитектора, но слова у неё такие же страничные.

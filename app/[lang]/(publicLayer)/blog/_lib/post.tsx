@@ -1,5 +1,5 @@
 // Co-located blog helpers. Each blog post lives in its own static route folder
-// (app/[lang]/blog/<slug>/ with page.tsx + _components + _data). Blog is bilingual
+// (app/[lang]/(publicLayer)/blog/<slug>/ with page.tsx + _components + _data). Blog is bilingual
 // by construction (news/doc pattern): _data is meta.ts + en.ts (+ optional <lang>.ts
 // override) assembled into a BlogData; resolveEntry merges per key with EN fallback.
 // These helpers map a post to the normalized ContentPost the factory renders

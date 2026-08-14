@@ -448,6 +448,24 @@ form, a root link whose label is not `%SITE%`, a `heroVideo`/`heroPoster`/`src` 
 `public/`, the site name written into data, a declared language cell that does not exist, and a post with
 no translation at all. These are not style preferences — each rule is a defect that already shipped once.
 
+**🔒 The two models are VISIBLE ON DISK — every route lives in one of two groups.**
+
+```
+app/[lang]/
+  (publicLayer)/      the same for everyone · static · indexed
+  (protectedLayer)/   depends on who is looking · role-gated · never indexed
+  layout.tsx, llms.txt, manifest.webmanifest   site-level, not pages
+```
+
+A route folder in neither group is not "other" — it is **an unasked question**: is this page the same for
+everyone? The answer decides whether it renders statically or behind authentication, and until it is given
+the page is audited by nobody. `npm run check:content` reports it as `route-unclassified`.
+
+Why the groups and not a naming convention: the gates used to walk everything under `[lang]` and *subtract*
+`(protectedLayer)` by name. A blocklist means a folder added tomorrow is silently treated as public content
+and checked by rules that may not fit it — or a public surface lands outside the walk and is checked by
+nothing. The allowlist makes both states impossible to reach quietly.
+
 **🔒 Two models of a page — decide which one you are building BEFORE writing a file.** The question is
 "does what the page shows depend on WHO is looking?".
 

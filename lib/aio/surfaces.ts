@@ -1,14 +1,14 @@
 import { blocksToMarkdown, faqToMarkdown } from './blocks-to-markdown'
 import { urlFor, mdUrlFor } from '@/lib/seo/alternates'
 import { getAppConfig, metaForLang } from '@/config/app-config'
-import { blogPost } from '@/app/[lang]/blog/_lib/post'
-import { POSTS } from '@/app/[lang]/blog/_list.generated'
-import { getBlogUi } from '@/app/[lang]/blog/_data'
-import { catalogueUi } from '@/app/[lang]/products/_data/ui.i18n'
+import { blogPost } from '@/app/[lang]/(publicLayer)/blog/_lib/post'
+import { POSTS } from '@/app/[lang]/(publicLayer)/blog/_list.generated'
+import { getBlogUi } from '@/app/[lang]/(publicLayer)/blog/_data'
+import { catalogueUi } from '@/app/[lang]/(publicLayer)/products/_data/ui.i18n'
 import { footerPage } from '@/lib/pages/footer-page'
-import { data as privacyData } from '@/app/[lang]/(footerPages)/privacy/_data'
-import { data as termsData } from '@/app/[lang]/(footerPages)/terms/_data'
-import { data as cookiesData } from '@/app/[lang]/(footerPages)/cookies/_data'
+import { data as privacyData } from '@/app/[lang]/(publicLayer)/(footerPages)/privacy/_data'
+import { data as termsData } from '@/app/[lang]/(publicLayer)/(footerPages)/terms/_data'
+import { data as cookiesData } from '@/app/[lang]/(publicLayer)/(footerPages)/cookies/_data'
 
 // ПЕРЕЧЕНЬ ПУБЛИЧНЫХ ПОВЕРХНОСТЕЙ — ОДИН НА ВЕСЬ AIO (шаг 505).
 //

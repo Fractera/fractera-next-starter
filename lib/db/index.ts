@@ -1,5 +1,5 @@
 import Database from "better-sqlite3"
-import { entityId } from "@/lib/ids"
+import { slugify } from "@/lib/ids"
 import { mkdirSync } from "fs"
 import { join, dirname } from "path"
 import { remoteDb } from "./remote-client"
@@ -163,17 +163,43 @@ const SEED = [
   },
 ]
 
+/**
+ * Идентификатор посевной строки — ПОСТОЯННЫЙ, а не случайный (владелец 2026-08-14,
+ * по факту дублей на живом сервере).
+ *
+ * 🔒 ЧТО БЫЛО НЕ ТАК. Здесь стоял `entityId(p.name, 'seed')` — тот же генератор,
+ * что у настоящих товаров, со случайным хвостом: `seed-apple-6EM2RM`. Настоящей
+ * записи такой хвост нужен (двух «Apple» создать надо, и переименование не
+ * должно ломать ссылку), а посеву он ВРЕДЕН: при повторной вставке рождается
+ * НОВАЯ строка вместо конфликта первичного ключа. На сервере владельца это дало
+ * ровно то, что он и увидел, — по два яблока и апельсина:
+ *
+ *   seed-apple-6EM2RM · seed-apple-T4VrcM · seed-orange-7FvyJo · seed-orange-O3MJwx
+ *
+ * Защита `COUNT(*) > 0` от этого не спасает: она не атомарна (два процесса,
+ * стартующие одновременно, оба видят пустую таблицу) и вообще не срабатывает,
+ * когда база создаётся заново рядом с уже наполненной.
+ *
+ * Постоянный идентификатор делает дубль ФИЗИЧЕСКИ НЕВОЗМОЖНЫМ: вторая вставка
+ * упирается в первичный ключ, и `INSERT OR IGNORE` молча её отбрасывает. Это
+ * защита на уровне базы, а не на уровне удачного порядка выполнения.
+ *
+ * Приставка `seed` сохранена: она видна в адресе и в журнале, поэтому сразу
+ * понятно, что строка пришла со стартером, а не заведена клиентом.
+ */
+const seedId = (name: string) => `seed-${slugify(name)}`
+
 function seedProducts(sqlite: Database.Database) {
+  // Проверка остаётся первой линией: она дешёвая и не даёт трогать каталог,
+  // который клиент уже начал вести. Но теперь она не единственная — за ней
+  // стоит первичный ключ, который держит, даже если проверка не сработала.
   const row = sqlite.prepare('SELECT COUNT(*) AS n FROM products').get() as { n: number }
   if (row?.n > 0) return
   const insert = sqlite.prepare(
-    'INSERT INTO products (id, name, price, description, i18n, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    'INSERT OR IGNORE INTO products (id, name, price, description, i18n, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
   )
   for (const p of SEED) {
-    // Тот же генератор, что и у настоящих записей: примеры обязаны выглядеть
-    // как всё остальное, иначе они учат неверной форме. Приставка `seed` видна
-    // в адресе и в журнале — сразу понятно, что строка пришла со стартером.
-    insert.run(entityId(p.name, 'seed'), p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
+    insert.run(seedId(p.name), p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
   }
 }
 

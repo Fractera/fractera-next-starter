@@ -29,13 +29,12 @@ instruction-set block below. Kept in one place on purpose — two copies of a la
 It is the authority on WHICH of this project's documents exist for you at all. A document listed as
 switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `development-docs/DEVELOPMENT-STEPS/`, `CODE-SAMPLES/`
+**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `development-docs/DEVELOPMENT-STEPS/`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `development-docs/DYNAMIC-WORKFLOWS.md`, `development-docs/CONTEXT-STATE.md`
 
 Active does NOT mean "load at session entry". Each document keeps the reading rule this instruction
-gives it: most are read on entry, `development-docs/TROUBLESHOOTING.md` only on demand, `CODE-SAMPLES/` only when the
-owner names a sample. This block answers "may I use it at all", stage 6.0 answers "when".
+gives it: most are read on entry, `development-docs/TROUBLESHOOTING.md` only on demand. This block answers "may I use it at all", stage 6.0 answers "when".
 
 A switched-off document is a deliberate choice of the owner, usually to keep a small task cheap. It is
 not a missing document: never offer to recreate it and never work around its absence.
@@ -183,19 +182,6 @@ the deciding part — what it refuses to do.
 
 So: seeing the folder is not knowing the tools. Read the entry, compare the **Limits** sections, then
 choose. If nothing fits, say so plainly and name what is missing rather than improvising a fifth cropper.
-
-### 🧩 `CODE-SAMPLES/` — the owner's earlier work, used only when asked
-
-A folder of finished pieces the owner brought with them: a home page from a previous project, a set of
-styles, a component they are happy with. It exists so that work already done is not done twice.
-
-**Do not read it on your own.** Not at session start, not "to see what is there". A library of past work
-can be any size, and carrying it through a session means paying context for material the current task may
-not need at all.
-
-**Use it when the owner asks and names the sample** — "build the hero from `landing-hero.html`", "use the
-styles in `tokens.css`". Then read that file, follow its patterns, and say what you took from it. If a
-named sample does not exist, say so rather than improvising something similar.
 
 ### 📕 `development-docs/TROUBLESHOOTING.md` — read it ON DEMAND, never at session start
 

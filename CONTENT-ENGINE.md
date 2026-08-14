@@ -148,7 +148,14 @@ everywhere — that is verified, not assumed: remove it, run the generator, and 
 slug remains anywhere in the tree.
 
 **Copy an existing post folder as the starting point.** The two shipped posts differ in exactly the
-ways a new post may differ: one has a video hero, the other a YouTube poster; both carry `en` + `ru`.
+ways a new post may differ: one has a video hero, the other a YouTube poster.
+
+**One cell per ENABLED language.** The set is `NEXT_PUBLIC_SUPPORTED_LANGUAGES`, and a language the owner
+switched on but nobody wrote is not a smaller version of the post — it is the English post at a foreign
+address, announcing itself as a translation to every search engine. `translation-coverage` reports it (§8).
+
+**The byline is not part of the post.** Leave `meta.author` out and the name comes from the project's
+settings; fill it in only for a genuine guest author.
 
 ### 4a. 🔒 The post must also exist for machines — and one file makes that automatic
 
@@ -235,7 +242,7 @@ the text: a diagram the paragraph explains, a decorative mark.
 #### Referencing by NAME, not by id
 
 ```ts
-{ kind: 'figure', src: 'media:development-loop.jpg', alt: '…' }
+{ kind: 'figure', src: 'media:development-loop-2026.jpg', alt: '…' }
 ```
 
 An id is born at upload and is **different on every server**; a post lives in the repository and is
@@ -306,9 +313,14 @@ anything else, and each rule below is a defect that already shipped once.
 '… a self-hosted [Agentic Engineering Infrastructure](https://www.fractera.ai/en) …'
 ```
 
-It carries a host. It opens in a new tab. `lib/content/blocks/inline.tsx` adds
-`rel="noopener noreferrer nofollow"` to third-party domains and **omits `nofollow` for the platform's
-domain**, because weight going there is intentional.
+It carries a host. It opens in a new tab. `lib/content/blocks/links.ts` adds
+`rel="noopener noreferrer nofollow"` to third-party domains and **omits `nofollow` for this project's own
+domain**, which it reads from `APP-CONFIG` — the same source as every canonical URL.
+
+🔒 That last clause used to say "the platform's domain", and it was written into the engine as a literal
+`fractera.ai`. On a customer's site the effect was exactly inverted: the platform's domain received
+unrestricted weight and the customer's own domain was treated as a stranger. Identity comes from settings
+(§6) — including the engine's own idea of whose site this is.
 
 **A relative external link is a bug, not a shortcut.** A post travels into projects that do not have
 the page it points at: `[…](/ai-development-loop)` returned 404 on every site but the one it was
@@ -323,7 +335,12 @@ page the sentence was about.
 ```
 
 - The href is the **site root in the language of that data cell**. The cell already knows its
-  language, so nothing has to be threaded through the renderer.
+  language, so nothing has to be threaded through the renderer. In a one-language project the proxy
+  strips the segment from public addresses, so the renderer resolves `/en` to `/` — otherwise every
+  article would link home through a redirect.
+- The same form is legal in an `href:` **field** — the `cta` button and a linked `figure`. Until step 507
+  those fields accepted absolute URLs only, so the one legal target for a button was somebody else's site,
+  and both shipped posts duly pointed at the platform's.
 - The label is the literal token `%SITE%`, replaced at render time by the **site's own name** for that
   language (`metaForLang(lang).siteName`, from `APP-CONFIG`).
 - Every language cell of every post carries **one**. An article that links out but never links home
@@ -340,6 +357,7 @@ The engine reads who this project is at render time:
 |---|---|---|
 | site name, canonical origin, logo | `lib/brand.ts` → `APP-CONFIG` | a constant in `lib/` |
 | author name, job title, photo, profiles | `lib/author.ts` → `APP-CONFIG` (App settings → Author) | `meta.ts`, unless the post genuinely has its own author |
+| a post's byline | `meta.author` when the post has a guest author, otherwise the project author above | a name typed into `meta.ts` "because that is who wrote it here" — both shipped posts carried the platform team and the platform founder's job title, so every customer's blog was signed by a stranger |
 | page title | `create-content-post.tsx`: `<title> \| <section> \| <site name>` | the site name written into `_data` |
 
 `check:content` rejects a site name found in `_data`. The blog's own strings once read
@@ -361,6 +379,11 @@ and leave the blocks, and only the translated keys change. Consequences to know:
   are the **pattern**, not the content: two cells are enough to show how a cell works.
 - Diagrams and code blocks are content too. An ASCII diagram left in English inside a Russian article
   reads as an unfinished translation — translate the labels with the prose.
+- **A heading in a non-Latin script still needs an anchor.** `headingId` builds a readable slug out of
+  Latin letters and falls back to a stable hash of the heading text when nothing usable remains. Before
+  step 507 it simply returned an empty string: on `/ru` every `<h2>` shipped `id=""` and the whole table
+  of contents linked to `#`. Nothing was red — the defect lived only on the language that was written
+  second, and translating into eight more would have multiplied it by eight.
 
 ## 8. What the gate checks
 
@@ -374,10 +397,24 @@ and leave the blocks, and only the translated keys change. Consequences to know:
 | `brand-in-data` | the site's name written into `_data` |
 | `cell-missing` | `_data/index.ts` imports a language file that does not exist |
 | `single-language` | a post with no translation at all |
-| `no-root-link` | a language cell with no internal link home |
+| `no-root-link` | a language cell with no internal link home — counted **per file**, so two links in `en.ts` do not cover an empty `ru.ts` |
+| `translation-coverage` | a language the project has ENABLED for which this folder has no cell |
 
 A rule that is not mechanically enforced is a suggestion, and suggestions lose to deadlines. That is
-why these live in a script that fails, not in a paragraph nobody re-reads.
+why these live in a script that fails, not in a paragraph nobody re-reads. **The gate now runs inside
+`prebuild`**, beside the SEO and AIO checks — for six months it existed only as a command someone had to
+remember, and the file itself recorded that six routes stayed red unnoticed because of it.
+
+**One rule is deliberately softer than the rest.** `translation-coverage` prints a warning during a build
+and fails only under `npm run check:content` (which passes `--strict`). Every other rule catches a
+structural defect its author can fix in a minute; a missing translation is prose somebody has to write,
+and failing the build for it would take a working site down the minute its owner enables a new language
+in the panel. Warning in the build, refusal in the deliberate run.
+
+**Why the rule exists at all.** It was found live on 2026-08-14: ten languages were enabled, the posts had
+two cells, and eight addresses served English while `hreflang` called them translations, the sitemap listed
+them and the structured data stamped `inLanguage: es` on an English article. Nothing was red — the old rule
+knew "no translation at all" and did not know "no cell for a language the owner switched on".
 
 **Two more gates apply to every post, and they belong to the same discipline:**
 

@@ -147,8 +147,18 @@ const SEED = [
     // Картинка прикрепляется посевом (см. комментарий выше), а не путём в public/.
     media_url: null,
     i18n: {
-      name: { ru: 'Яблоко' },
-      description: { ru: 'Хрустящее красное яблоко. Образцовая строка каталога: у неё есть название, цена, изображение и перевод — всё, что нужно продукту, чтобы попасть на страницу.' },
+      name: { ru: 'Яблоко', es: 'Manzana', fr: 'Pomme', it: 'Mela', de: 'Apfel', pt: 'Maçã', pl: 'Jabłko', tr: 'Elma', nl: 'Appel' },
+      description: {
+        ru: 'Хрустящее красное яблоко. Образцовая строка каталога: у неё есть название, цена, изображение и перевод — всё, что нужно продукту, чтобы попасть на страницу.',
+        es: 'Una manzana roja y crujiente. La fila de referencia de este catálogo: tiene nombre, precio, imagen y traducción — todo lo que un producto necesita para aparecer en una página.',
+        fr: 'Une pomme rouge et croquante. La ligne de référence de ce catalogue : elle a un nom, un prix, une image et une traduction — tout ce dont un produit a besoin pour apparaître sur une page.',
+        it: "Una mela rossa e croccante. La riga di riferimento di questo catalogo: ha un nome, un prezzo, un'immagine e una traduzione — tutto ciò di cui un prodotto ha bisogno per comparire su una pagina.",
+        de: 'Ein knackiger roter Apfel. Die Referenzzeile dieses Katalogs: Sie hat einen Namen, einen Preis, ein Bild und eine Übersetzung — alles, was ein Produkt braucht, um auf einer Seite angezeigt zu werden.',
+        pt: 'Uma maçã vermelha e estaladiça. A linha de referência deste catálogo: tem nome, preço, imagem e tradução — tudo o que um produto precisa para aparecer numa página.',
+        pl: 'Chrupiące czerwone jabłko. Wzorcowy wiersz tego katalogu: ma nazwę, cenę, obraz i tłumaczenie — wszystko, czego produkt potrzebuje, żeby trafić na stronę.',
+        tr: 'Çıtır kırmızı bir elma. Bu kataloğun referans satırı: bir adı, bir fiyatı, bir görseli ve bir çevirisi var — bir ürünün bir sayfada gösterilmesi için gereken her şey.',
+        nl: 'Een knapperige rode appel. De referentierij van deze catalogus: hij heeft een naam, een prijs, een afbeelding en een vertaling — alles wat een product nodig heeft om op een pagina te verschijnen.',
+      },
     },
   },
   {
@@ -157,8 +167,18 @@ const SEED = [
     description: 'A ripe orange. The second row exists on purpose: one example shows the shape, two show what changes between them — here it is the price and the picture.',
     media_url: null,
     i18n: {
-      name: { ru: 'Апельсин' },
-      description: { ru: 'Спелый апельсин. Вторая строка нужна не для количества: один пример показывает форму, два показывают, что между ними меняется — здесь это цена и изображение.' },
+      name: { ru: 'Апельсин', es: 'Naranja', fr: 'Orange', it: 'Arancia', de: 'Orange', pt: 'Laranja', pl: 'Pomarańcza', tr: 'Portakal', nl: 'Sinaasappel' },
+      description: {
+        ru: 'Спелый апельсин. Вторая строка нужна не для количества: один пример показывает форму, два показывают, что между ними меняется — здесь это цена и изображение.',
+        es: 'Una naranja madura. La segunda fila existe a propósito: un ejemplo muestra la forma, dos muestran qué cambia entre ellos — aquí es el precio y la imagen.',
+        fr: 'Une orange mûre. La seconde ligne existe volontairement : un exemple montre la forme, deux montrent ce qui change entre eux — ici c\'est le prix et l\'image.',
+        it: 'Un\'arancia matura. La seconda riga esiste apposta: un esempio mostra la forma, due mostrano cosa cambia tra loro — qui è il prezzo e l\'immagine.',
+        de: 'Eine reife Orange. Die zweite Zeile gibt es nicht wegen der Menge: Ein Beispiel zeigt die Form, zwei zeigen, was sich zwischen ihnen ändert — hier sind es der Preis und das Bild.',
+        pt: 'Uma laranja madura. A segunda linha existe de propósito: um exemplo mostra a forma, dois mostram o que muda entre eles — aqui é o preço e a imagem.',
+        pl: 'Dojrzała pomarańcza. Drugi wiersz istnieje celowo: jeden przykład pokazuje kształt, dwa pokazują, co się między nimi zmienia — tutaj to cena i obraz.',
+        tr: 'Olgun bir portakal. İkinci satır sayı için değil, bilinçli olarak var: bir örnek şekli gösterir, iki örnek aralarında neyin değiştiğini gösterir — burada bu, fiyat ve görsel.',
+        nl: 'Een rijpe sinaasappel. De tweede rij bestaat bewust, niet vanwege het aantal: het ene voorbeeld toont de vorm, twee tonen wat er tussen hen verandert — hier is dat de prijs en de afbeelding.',
+      },
     },
   },
 ]

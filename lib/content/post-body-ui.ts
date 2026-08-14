@@ -14,6 +14,14 @@ export type PostBodyUi = {
 const UI: Record<string, PostBodyUi> = {
   en: { fullDocumentation: 'Full documentation', downloadMd: 'Download .md' },
   ru: { fullDocumentation: 'Полная документация', downloadMd: 'Скачать .md' },
+  es: { fullDocumentation: 'Documentación completa', downloadMd: 'Descargar .md' },
+  fr: { fullDocumentation: 'Documentation complète', downloadMd: 'Télécharger .md' },
+  it: { fullDocumentation: 'Documentazione completa', downloadMd: 'Scarica .md' },
+  de: { fullDocumentation: 'Vollständige Dokumentation', downloadMd: '.md herunterladen' },
+  pt: { fullDocumentation: 'Documentação completa', downloadMd: 'Descarregar .md' },
+  pl: { fullDocumentation: 'Pełna dokumentacja', downloadMd: 'Pobierz .md' },
+  tr: { fullDocumentation: 'Tam dokümantasyon', downloadMd: '.md indir' },
+  nl: { fullDocumentation: 'Volledige documentatie', downloadMd: '.md downloaden' },
 }
 
 export function getPostBodyUi(lang: string): PostBodyUi {

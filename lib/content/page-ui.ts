@@ -16,6 +16,14 @@ export type PageUi = {
 const UI: Record<string, PageUi> = {
   en: { tocHeading: 'On this page', faqHeading: 'Frequently asked questions' },
   ru: { tocHeading: 'На этой странице', faqHeading: 'Частые вопросы' },
+  es: { tocHeading: 'En esta página', faqHeading: 'Preguntas frecuentes' },
+  fr: { tocHeading: 'Sur cette page', faqHeading: 'Questions fréquentes' },
+  it: { tocHeading: 'In questa pagina', faqHeading: 'Domande frequenti' },
+  de: { tocHeading: 'Auf dieser Seite', faqHeading: 'Häufig gestellte Fragen' },
+  pt: { tocHeading: 'Nesta página', faqHeading: 'Perguntas frequentes' },
+  pl: { tocHeading: 'Na tej stronie', faqHeading: 'Najczęściej zadawane pytania' },
+  tr: { tocHeading: 'Bu sayfada', faqHeading: 'Sık sorulan sorular' },
+  nl: { tocHeading: 'Op deze pagina', faqHeading: 'Veelgestelde vragen' },
 }
 
 export function getPageUi(lang: string): PageUi {

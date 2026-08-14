@@ -29,12 +29,15 @@ const FILES = [
   ["app/[lang]/_components/legal/cookie-banner.i18n.ts", "BannerStrings", 82],
   ["components/menu/footer/cookie-settings-button.i18n.ts", "CookieButtonUi", 82],
   ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
-  // Словарь ОДНОЙ страницы — идёт по включённому набору
-  // (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`), сегодня `en,ru`. Число здесь стоит
-  // намеренно маленькое: требовать 82 от страничного словаря значит объявлять
-  // долгом работу, которой никто не заказывал. Владелец включит третий язык —
-  // поднимет и это число.
-  ["app/[lang]/_data/home.i18n.ts", "HomeUi", 2],
+  // Словарь ОДНОЙ страницы — переведён на 10 языков через внешний обмен
+  // (2026-08-14), а СОБИРАЕТСЯ по включённому набору
+  // (`NEXT_PUBLIC_SUPPORTED_LANGUAGES`, сегодня `en,ru`). Это разные числа
+  // намеренно: перевод может быть готов раньше, чем владелец решит его включить
+  // в сборку. Здесь стоит число ГОТОВЫХ переводов, а не число включённых —
+  // требовать 82 от страничного словаря значит объявлять долгом работу, которой
+  // никто не заказывал; но и держать его на «2», когда переводов уже 10, значит
+  // проверке лгать. Добавили язык через `i18n:import` — поднять и это число.
+  ["app/[lang]/_data/home.i18n.ts", "HomeUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

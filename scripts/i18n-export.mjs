@@ -29,10 +29,12 @@ export const DICTS = {
   },
 };
 
-// Десять языков — тот же набор, с которого начинала панель управления. Больше
-// языков = больше собираемых страниц, поэтому список расширяется решением
-// владельца, а не сам собой.
-export const TARGET_LANGS = ["es", "fr", "it", "de", "pt", "pl", "tr", "nl"];
+// Целевой набор для СЛЕДУЮЩЕГО обмена. Первые десять (en, ru + эти восемь) уже
+// переведены — 2026-08-14, часть сделана внешней моделью, часть напрямую
+// агентом через `i18n-import.mjs`. Список здесь пуст осознанно: очередной язык
+// добавляется владельцем, когда он решил его добавить, а не потому что где-то
+// стоит цифра «десять».
+export const TARGET_LANGS = [];
 export const SOURCE_LANG = "en";
 
 const DO_NOT_TRANSLATE = [
@@ -48,6 +50,10 @@ function main() {
   }
   const langsArg = rest.includes("--langs") ? rest[rest.indexOf("--langs") + 1] : "";
   const targets = langsArg ? langsArg.split(",").map((s) => s.trim()).filter(Boolean) : TARGET_LANGS;
+  if (!targets.length) {
+    console.error("Нет целевых языков. Укажите их явно: node scripts/i18n-export.mjs " + name + " --langs uk,cs,sk");
+    process.exit(1);
+  }
 
   const all = JSON.parse(fs.readFileSync(dict.json, "utf8"));
   const source = all[SOURCE_LANG];

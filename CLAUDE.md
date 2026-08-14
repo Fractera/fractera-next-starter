@@ -334,6 +334,34 @@ Consent written in a language the visitor cannot read is not a missing translati
 that never happened, so this banner's dictionary is held to all 82 languages by `npm run check:i18n`.
 **Anything consent-shaped → load the `manage-cookie-banner` skill first.**
 
+### 🔒 Page dictionaries are translated OUTSIDE — you prepare and verify, you do not translate
+
+**Never spend a session translating a page dictionary.** Long interface prose in ten languages is paid
+for in context on every later iteration, and the owner has an external translation model for exactly
+this. Your job is the two ends of the exchange, not the middle.
+
+A dictionary that goes through the exchange keeps its **type in TypeScript** (a page without a key must
+still refuse to build) and its **words in a JSON file next to it** — `app/[lang]/_data/home.i18n.ts` +
+`home.i18n.json` is the reference pair. Same split as the control panel's `admin-translations.json`, for
+the same reason: a corpus that arrives as one file must not have to be typed into a source file.
+
+```
+npm run i18n:export home                    # → storage/i18n/home.request.json (English + rules + target languages)
+# hand that file to the external model, save its answer
+npm run i18n:import home <answer.json>      # verifies, then writes into home.i18n.json
+```
+
+**The import does not trust the answer, and that is its whole point.** Before writing anything it checks
+that every key is present and non-empty, that placeholders (`{roles}`) survived verbatim, and it warns
+when most strings came back identical to English — the quiet way a model returns "translations" it never
+made. A broken placeholder in a rarely-opened language is found by the customer, not by you.
+
+Adding a dictionary to the exchange = one entry in `DICTS` in `scripts/i18n-export.mjs`. Adding a
+language to the *site* is a separate act: the set is baked at build time and switched in the panel
+(`Languages`), so a translated dictionary shows up only after the owner enables that language.
+
+`npm run check:i18n` understands both shapes — words in the `.ts` file and words in the `.json` beside it.
+
 ### `APP-CONFIG` — the settings you cannot edit from here
 
 The app's name, description, address, logo and images, icons and PWA, author, social profiles, SEO,

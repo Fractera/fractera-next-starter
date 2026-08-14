@@ -24,7 +24,9 @@
     "seed:media": "node scripts/seed-media.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:links": "node scripts/check-links.mjs",
-    "prestart": "node scripts/seed-media-when-ready.mjs"
+    "prestart": "node scripts/seed-media-when-ready.mjs",
+    "i18n:export": "node scripts/i18n-export.mjs",
+    "i18n:import": "node scripts/i18n-import.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

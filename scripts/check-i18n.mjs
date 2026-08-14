@@ -60,6 +60,34 @@ for (const [file, type, want] of FILES) {
   const typeBlock = src.match(new RegExp(`export type ${type} = \\{([\\s\\S]*?)\\n\\}`))
   const keys = typeBlock ? [...typeBlock[1].matchAll(KEY_RE)].map(m => m[1]) : []
 
+  // 🔒 СЛОВАРЬ МОЖЕТ ЖИТЬ В JSON РЯДОМ (владелец 2026-08-14). Переводы делает
+  // внешняя модель и возвращает их файлом, поэтому слова уехали из кода в
+  // `<имя>.json`, а тип остался здесь и по-прежнему решает всё. Сторож обязан
+  // знать оба вида: иначе переезд словаря читается как «языков 0» — то есть
+  // проверка объявляет поломкой ровно то, ради чего её и держат.
+  const jsonPath = file.replace(/\.ts$/, ".json")
+  if (fs.existsSync(jsonPath)) {
+    const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"))
+    const langs = Object.keys(data)
+    const holes = []
+    for (const lang of langs) {
+      for (const k of keys) {
+        const v = data[lang]?.[k]
+        if (typeof v !== "string" || !v.trim()) holes.push(`${lang}.${k}`)
+      }
+    }
+    const ok = langs.length === want && keys.length > 0 && holes.length === 0
+    if (!ok) bad++
+    let line = `${ok ? "  OK   " : "  БЕДА "} ${file}\n         языков ${langs.length}/${want}, ключей ${keys.length} (слова в ${jsonPath.split("/").pop()})`
+    if (!keys.length) line += " — ТИП НЕ РАЗОБРАН"
+    if (holes.length) {
+      line += `\n         не хватает: ${holes.slice(0, 8).join(", ")}`
+      if (holes.length > 8) line += ` (+${holes.length - 8})`
+    }
+    console.log(line)
+    continue
+  }
+
   // Языковая запись читается СЧЁТОМ СКОБОК, а не строкой: словари бывают в двух
   // видах — однострочном (`  fr: { … },`) и многострочном, и проверка, знающая
   // только один из них, объявляет второй сломанным. Это уже случилось.

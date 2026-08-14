@@ -420,10 +420,38 @@ knew "no translation at all" and did not know "no cell for a language the owner 
 
 | Command | Rejects |
 |---|---|
+| `npm run check:blocks` | a block kind with no specimen, and a solid `bg-primary` fill carrying page-coloured text (§8a) |
 | `npm run check:aio` | a public page with no markdown twin (§4a) — the map would send an agent to a 404 |
 | `npm run check:seo` | a page with no `generateMetadata`, no `alternates`, or an `openGraph` without `url` — the post would declare itself a copy of another page, or hand social networks the wrong link |
 
 Run all three before calling a post done. They are cheap: they read files, they do not build.
+
+### 8a. 🔒 Every kind of section is rendered somewhere — the catalogue page
+
+Five of the sixteen kinds (`table`, `docref`, `callout`, `columns`, `group`) had never been used in any
+post, which means their code had never been drawn at all — not on a build, not in a browser, not once. One
+of them was carrying a defect the whole time: the `docref` button painted page-coloured text on a solid
+`primary` fill, dark on dark in the light theme. The identical bug in the neighbouring `cta` had been fixed
+a day earlier; the fix never reached `docref` because there was nowhere to look at it.
+
+**A kind that is drawn nowhere is not unused code — it is unverified code.** So the project ships a
+catalogue page that renders every kind with sample data:
+
+```
+app/[lang]/(protectedLayer)/(admin)/blocks/     ← role-gated, never indexed
+  _data/specimen.ts     one sample per kind + one line on when to use it
+  _components/index.tsx renders them through PostBody — the REAL renderer
+```
+
+It sits in the `admin` permission group on purpose: it is a tool for whoever builds the site, not content
+for a visitor, so it needs no markdown twin, no sitemap row and no translated samples. It draws the blocks
+through `PostBody` and nothing else — a showcase with its own markup would demonstrate itself instead of
+the product, and the class of defect above would stay just as invisible.
+
+`npm run check:blocks` holds two lines: **every kind in the catalogue has a specimen** (add a kind, add a
+sample — or the build stops), and **no solid `bg-primary` fill carries page-coloured text** (the fill and
+its text are a pair; `bg-primary` goes with `text-primary-foreground`, and a tinted `bg-primary/10`
+backdrop is not a fill and is left alone).
 
 ## 9. Scaling — and what it costs
 

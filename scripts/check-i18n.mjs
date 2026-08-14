@@ -45,6 +45,8 @@ const FILES = [
   ["app/[lang]/products/_data/ui.i18n.ts", "CatalogueUi", 10],
   ["lib/content/page-ui.ts", "PageUi", 10],
   ["lib/content/post-body-ui.ts", "PostBodyUi", 10],
+  // Каталог секций — страница архитектора, но слова у неё такие же страничные.
+  ["app/[lang]/(protectedLayer)/(admin)/blocks/_data/ui.i18n.ts", "BlocksCatalogueUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

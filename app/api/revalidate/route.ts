@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CATALOGUE_TAG } from "@/lib/catalogue";
 
 // On-demand revalidation of the PUBLIC surface after an App Settings change.
 // The App Settings MCP (:3218) and the Admin config panel write app-config.json in
@@ -27,5 +28,27 @@ export async function POST(req: NextRequest) {
   // robots, sitemap, llms.txt); "/[lang]" covers every localized content route.
   revalidatePath("/", "layout");
   revalidatePath("/[lang]", "layout");
-  return NextResponse.json({ ok: true, revalidated: ["/", "/[lang]"], ts: Date.now() });
+
+  // 🔒 СТРАНИЦУ МАЛО ПЕРЕСОБРАТЬ — НАДО ЕЩЁ СБРОСИТЬ ЕЁ ДАННЫЕ (владелец
+  // 2026-08-14: «в медиатеке картинки есть, а в товарах их нет»).
+  //
+  // Каталог читается через `unstable_cache` со СВОИМ сроком в час
+  // (`lib/catalogue.ts`). Это два независимых кэша: `revalidatePath` помечает
+  // устаревшим HTML, а строки товаров приходят из кэша данных и остаются
+  // прежними. Пересобранная страница честно рисует то же самое — и выглядит
+  // это как «сброс не работает».
+  //
+  // Живой случай: на свежем сервере сборка идёт ДО запуска слоя данных, поэтому
+  // посев картинок из `prebuild` ничего не находит и каталог собирается с
+  // прочерками. Позже `prestart` (`seed-media-when-ready.mjs`) дожидается слоя
+  // данных и связывает картинки в базе — но кэш каталога держит строки без
+  // них ЧАС. Владелец видит картинки в медиатеке и прочерки в товарах.
+  //
+  // Поэтому здесь сбрасываются ОБА кэша: разметка и данные, которыми она
+  // наполняется. `{ expire: 0 }` — истечь немедленно, а не «обновить в фоне»:
+  // второй вариант отдал бы ещё один старый ответ, ради которого этот вызов и
+  // делается.
+  revalidateTag(CATALOGUE_TAG, { expire: 0 });
+
+  return NextResponse.json({ ok: true, revalidated: ["/", "/[lang]"], tags: [CATALOGUE_TAG], ts: Date.now() });
 }

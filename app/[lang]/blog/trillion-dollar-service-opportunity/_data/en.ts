@@ -8,7 +8,7 @@ export const en: BlogBase = {
   subtitle:
     'Elon Musk talked about space, AI and cars. The line that stayed with me was simpler: most businesses on earth still have no API. Here is the niche I found because of it.',
   description:
-    'Why the biggest near-term money in AI is not a unicorn — it is the hair salon, the clinic, the dental office next door. The no-show problem, the businesses with no site and no CRM, and how Fractera lets almost anyone automate them in ten minutes.',
+    'Why the biggest near-term money in AI is not a unicorn — it is the hair salon, the clinic, the dental office next door. The no-show problem, the businesses with no site and no CRM, and how a self-hosted workspace lets almost anyone automate them without assembling a stack first.',
   excerpt:
     'Elon Musk said most businesses still have no API — they run on a phone, or without one. I spent dozens of meetings chasing that idea and found a niche hiding in plain sight: the salon, the clinic, the dental office next door.',
   blocks: [
@@ -26,7 +26,7 @@ export const en: BlogBase = {
     {
       kind: 'p',
       text:
-        'Read that again with a builder’s eye. That trillion does not live in another social network or another AI wrapper — it lives inside ordinary businesses that never went digital. And the barrier was never the idea; it was the build. Hiring a team, wiring up infrastructure, paying for a stack of cloud services month after month. That barrier is exactly what Fractera removes — which is why this quiet line, not the rockets, is the one I kept.',
+        'Read that again with a builder’s eye. That trillion does not live in another social network or another AI wrapper — it lives inside ordinary businesses that never went digital. And the barrier was never the idea; it was the build. Hiring a team, wiring up infrastructure, paying for a stack of cloud services month after month. That barrier is exactly what a self-hosted workspace removes — which is why this quiet line, not the rockets, is the one I kept.',
     },
 
     { kind: 'h2', text: 'Everyone learned to code. The street looks the same.' },
@@ -58,11 +58,11 @@ export const en: BlogBase = {
         'Of course there are plenty of ready-made solutions you can install. But there are even more clients who never got one — and many of them have no site, many of them have no CRM at all.',
     },
 
-    { kind: 'h2', text: 'This is exactly what Fractera is for.' },
+    { kind: 'h2', text: 'This is exactly what a workspace like this is for.' },
     {
       kind: 'p',
       text:
-        '[%SITE%](/en) — a self-hosted [Agentic Engineering Infrastructure](https://www.fractera.ai/en) — was built precisely for scenarios like this. With it you can create both a site and a CRM, listen to and transcribe calls, build tables and log planned visits, send reminders to your users — or even call them. Automate campaigns with reminders or coupons. A business owner can have as many ideas here as they like.',
+        '[%SITE%](/en) is a self-hosted agentic engineering workspace, built precisely for scenarios like this. It ships with the parts such a business would otherwise buy separately: a database and tables of its own, file storage, voice turned into text, a channel to reach a client in a messenger, authorization with roles, and a public site that a search engine can actually read. A business owner can have as many ideas here as they like — the parts are already on the shelf.',
     },
     {
       kind: 'p',
@@ -72,7 +72,7 @@ export const en: BlogBase = {
     {
       kind: 'p',
       text:
-        'Fractera also frees you from having to remember which services you are supposed to pay for. Most of the cloud services that turn into regular payments and make up the lion’s share of your costs — databases, a CRM subscription, and many others — are already included as ordinary features of your application. They require no separate payment and run in the background. You will not have to deal with the difficulty of connecting a server, an AI model and a domain — it all happens automatically; you only have to wait ten minutes and you can [deploy it on your own VPS](https://www.fractera.ai/en/deployments/vps).',
+        'It also frees you from having to remember which services you are supposed to pay for. Most of the cloud services that turn into regular payments and make up the lion’s share of your costs — a database, storage, a CRM subscription — are already ordinary features of your own application, running on your own server. And the day-to-day changes are not a deployment at all: the name, the texts, the pictures and the languages are edited in a control panel and apply without a rebuild, while the code lives in a repository that belongs to you.',
     },
 
     { kind: 'h2', text: 'One of many. You can find them every day.' },
@@ -93,12 +93,12 @@ export const en: BlogBase = {
       a: 'Local service businesses with appointments and repeat clients — salons, non-surgical cosmetology, clinics, dentistry, auto service — especially the ones with no site or CRM and a recurring no-show problem.',
     },
     {
-      q: 'Do I pay separately for a database, CRM, reminders?',
-      a: 'No. Those are ordinary built-in features of your own application on your own server — no extra cloud subscriptions, running in the background. Fractera frees you from the recurring bills that usually eat the lion’s share of costs.',
+      q: 'Do I pay separately for a database, storage, a CRM subscription?',
+      a: 'No. Those are ordinary built-in parts of your own application on your own server, not third-party subscriptions billed every month. What you pay for is the server itself.',
     },
     {
       q: 'Do I need to be a developer?',
-      a: 'No. You describe what you want and build it yourself, or with a little help from someone who already understands this. The server, the AI model and the domain connect automatically — about ten minutes.',
+      a: 'Not for the things a business changes most often: names, texts, prices, pictures and languages are edited in the control panel and apply with no rebuild. Building something new is a job for a coding agent working in your repository — either yours, or someone who already understands this a little. The server, the AI model and the domain are connected for you.',
     },
   ],
 }

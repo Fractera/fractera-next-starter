@@ -4,9 +4,11 @@ import { getBlogUi } from '../../_data'
 import { brand } from '@/lib/brand'
 import { data } from '../_data'
 
-// Entry for this blog post (format: 'blog'). Blog content is EN-only, so resolve
-// ignores lang; the URL still carries the lang segment for routing and the chrome
-// (breadcrumb/back/title/min-read) is localized via getBlogUi — no hardcoded text.
+// Entry for this blog post (format: 'blog'). The post is multilingual: `resolve`
+// merges the base `en` cell with the cell of the requested language per key
+// (lib/content/resolve.ts), so a language that translated only some fields still
+// gets those. The chrome (breadcrumb/back/title/min-read) comes from getBlogUi —
+// no hardcoded text anywhere in this file.
 
 const post = createContentPost({
   format: 'blog',

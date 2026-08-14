@@ -25,6 +25,45 @@ const PUBLIC = join(ROOT, "public")
 const problems = []
 const fail = (file, rule, detail) => problems.push({ file: relative(ROOT, file), rule, detail })
 
+// ── ПОКРЫТИЕ ЯЗЫКОВ — ПРЕДУПРЕЖДЕНИЕ ЗДЕСЬ И ОТКАЗ ПРИ `--strict` ───────────
+//
+// 🔒 ЗАЧЕМ ПРАВИЛО. На живом сайте включено десять языков, а ячеек у постов было
+// две: восемь адресов отдавали английский текст, объявляя себя переводом —
+// `hreflang` называл их переводами, карта сайта их перечисляла, а разметка
+// писала `inLanguage: es` над английской статьёй. Ни один гейт этого не видел:
+// правило знало «нет НИ ОДНОГО перевода» и не знало «нет ячейки для языка,
+// который владелец ВКЛЮЧИЛ».
+//
+// 🔒 ПОЧЕМУ НЕ РОНЯЕТ СБОРКУ. Остальные правила ловят структурные дефекты —
+// динамику, битую ссылку, некоммитнутую картинку; их чинит тот, кто их внёс, за
+// минуту. Отсутствующий перевод — это ненаписанная проза, и уронить ею сборку
+// значит погасить работающий сайт клиента в ту минуту, когда он в панели включил
+// новый язык. Поэтому в сборке это громкое предупреждение, а в ручном прогоне
+// (`npm run check:content`, флаг `--strict`) — отказ.
+const warnings = []
+const warn = (file, rule, detail) => warnings.push({ file: relative(ROOT, file), rule, detail })
+const STRICT = process.argv.includes("--strict")
+
+/**
+ * Языки, включённые в сборку проекта. Сначала окружение (на сервере значение
+ * приходит именно оттуда), затем `.env.local` — тот же порядок, в котором его
+ * читает сам Next.
+ */
+function enabledLanguages() {
+  const fromEnv = process.env.NEXT_PUBLIC_SUPPORTED_LANGUAGES?.trim()
+  if (fromEnv) return fromEnv.split(",").map(s => s.trim().toLowerCase()).filter(Boolean)
+  for (const name of [".env.local", ".env"]) {
+    try {
+      const line = readFileSync(join(ROOT, name), "utf8")
+        .split(/\r?\n/)
+        .find(l => l.trim().startsWith("NEXT_PUBLIC_SUPPORTED_LANGUAGES="))
+      if (!line) continue
+      return line.slice(line.indexOf("=") + 1).split(",").map(s => s.trim().toLowerCase()).filter(Boolean)
+    } catch { /* нет файла — идём дальше */ }
+  }
+  return []
+}
+
 // 🔒 ЗАЩИЩЁННЫЙ СЛОЙ СЮДА НЕ ВХОДИТ. Эти правила описывают ПУБЛИЧНЫЙ контент:
 // страницу, одинаковую для всех, предрендеренную и индексируемую. У страницы за
 // авторизацией законны и клиентский островок, и динамический сегмент — там иначе
@@ -90,7 +129,8 @@ function checkPost(dataDir) {
   // ПОСТА наличием `meta.ts`. Правила про переводы и ссылку на корень —
   // про пост: у раздела нет ни автора, ни тела статьи.
   const isPost = files.includes("meta.ts")
-  let rootLinks = 0
+  /** Ссылок на корень В КАЖДОМ файле по отдельности (см. правило 5 ниже). */
+  const rootLinksIn = new Map()
 
   for (const f of files) {
     const p = join(dataDir, f)
@@ -100,7 +140,7 @@ function checkPost(dataDir) {
       const label = m[1].trim()
       const href = m[2].trim()
       if (ROOT_LINK.test(href)) {
-        rootLinks++
+        rootLinksIn.set(f, (rootLinksIn.get(f) ?? 0) + 1)
         if (label !== "%SITE%") {
           fail(p, "root-link-label", `[${label}](${href}) — подпись внутренней ссылки на корень обязана быть %SITE%: она подставляется названием сайта из настроек`)
         }
@@ -112,8 +152,15 @@ function checkPost(dataDir) {
     }
     for (const m of text.matchAll(HREF_FIELD)) {
       const href = (m[1] ?? m[2]).trim()
+      // Корневая форма разрешена и в полях `href` — у блока-кнопки (`cta`) и у
+      // ссылки на иллюстрации (шаг 507. Прежде поле принимало ТОЛЬКО абсолютный
+      // адрес, поэтому единственной законной целью кнопки был чужой сайт: обе
+      // посланные со стартером статьи вели ею на домен платформы. Кнопка,
+      // которой некуда указать внутри собственного сайта, — это дефект правила,
+      // а не выбор автора.)
+      if (ROOT_LINK.test(href)) continue
       if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
-        fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка`)
+        fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка; внутри сайта разрешена одна форма: '/<язык>'`)
       }
     }
     for (const m of text.matchAll(LOCAL_ASSET)) {
@@ -138,13 +185,37 @@ function checkPost(dataDir) {
     fail(indexPath, "single-language", "нет ни одного перевода — пост будет английским на всех языках")
   }
 
+  // Ячейка на КАЖДЫЙ включённый язык — иначе адрес объявляет себя переводом,
+  // а отдаёт язык-основу (см. пояснение у `warn` в начале файла).
+  const cells = new Set(languageCells(files).map(f => f.replace(".ts", "")))
+  const missing = LANGS.filter(l => !cells.has(l))
+  if (missing.length > 0) {
+    const say = LANGS.length > 0 ? `включено ${LANGS.length}, нет ячеек: ${missing.join(", ")}` : ""
+    ;(STRICT ? fail : warn)(dataDir, "translation-coverage", `${say} — эти адреса отдадут язык-основу, объявляя себя переводом`)
+  }
+
   // ── RULE 5 — каждый пост тянет вес на главную ─────────────────────────────
   // Внешние ссылки отдают вес наружу. Если статья не ссылается на собственную
   // главную, сайт раздаёт и не получает. Одна ссылка на корень — минимум, и
   // она обязана быть в КАЖДОЙ языковой ячейке, иначе половина сайта немая.
-  if (isPost && rootLinks < files.filter(f => /^(en|[a-z]{2})\.ts$/.test(f) && f !== "index.ts" && f !== "meta.ts").length) {
-    fail(indexPath, "no-root-link", `внутренних ссылок на корень: ${rootLinks}; нужна одна в каждой языковой ячейке — [%SITE%](/<язык>)`)
+  //
+  // 🔒 СЧИТАЕМ ПОФАЙЛОВО, А НЕ СУММОЙ (шаг 507). Здесь стояло сравнение общего
+  // числа ссылок с числом ячеек: две ссылки в `en.ts` и НОЛЬ в `ru.ts` давали
+  // «2 ≥ 2» и проходили. Проверка на сумму отвечает на вопрос «сколько всего»,
+  // тогда как правило спрашивает «в каждой ли» — это разные вопросы, и второй
+  // как раз тот, ради которого правило написано.
+  if (isPost) {
+    for (const cell of languageCells(files)) {
+      if (!rootLinksIn.get(cell)) {
+        fail(join(dataDir, cell), "no-root-link", `нет внутренней ссылки на корень — нужна одна в этой языковой ячейке: [%SITE%](/${cell.replace(".ts", "")})`)
+      }
+    }
   }
+}
+
+/** Языковые ячейки папки данных: `en.ts`, `ru.ts`, … (не `meta.ts`, не `index.ts`). */
+function languageCells(files) {
+  return files.filter(f => /^[a-z]{2}\.ts$/.test(f))
 }
 
 // ── ВТОРОЙ ПРОХОД: АУДИТ АРХИТЕКТУРЫ ПОВЕРХНОСТИ ────────────────────────────
@@ -238,6 +309,7 @@ function auditSurface(tabDir) {
   }
 }
 
+const LANGS = enabledLanguages()
 const dirs = [...new Set(findDataDirs(APP))]
 for (const d of dirs) checkPost(d)
 
@@ -263,8 +335,12 @@ const surfaces = [...new Set(
 )]
 for (const s of surfaces) auditSurface(s)
 
+for (const w of warnings) {
+  console.log(`  предупреждение: ${w.rule} — ${w.file}\n    ${w.detail}`)
+}
+
 if (problems.length === 0) {
-  console.log(`===CONTENT_OK=== проверено папок данных: ${dirs.length}, нарушений нет`)
+  console.log(`===CONTENT_OK=== проверено папок данных: ${dirs.length}, нарушений нет, предупреждений: ${warnings.length}`)
   process.exit(0)
 }
 

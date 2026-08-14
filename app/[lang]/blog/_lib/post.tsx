@@ -8,6 +8,7 @@
 // embed in its own _components. No central registry; the index reads generated POSTS.
 
 import { resolveEntry } from '@/lib/content/resolve'
+import { author as projectAuthor } from '@/lib/author'
 import { VideoCover } from '@/components/media/video-cover.client'
 import { StaticImage } from '@/components/media/static-image.server'
 import { getBlogUi } from '../_data'
@@ -38,7 +39,9 @@ export function blogPost(data: BlogData, lang: string): ContentPost {
     tags: meta.tags,
     date: meta.date,
     readingMinutes: meta.readingMinutes,
-    authorName: meta.author.name,
+    // Подпись под заголовком: своя у материала, иначе автор проекта из настроек.
+    // Пусто — строки авторства не будет вовсе: чужое имя хуже отсутствующего.
+    authorName: meta.author?.name ?? projectAuthor().name,
     blocks: r.blocks,
     faq: r.faq,
     ogImage: meta.ogImage,

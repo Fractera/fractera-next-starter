@@ -8,7 +8,9 @@ export const meta: BlogMeta = {
   date: '2026-06-22',
   readingMinutes: 8,
   tags: ['Elon Musk', 'Local business', 'Automation', 'No-show problem', 'CRM', 'Agentic Engineering'],
-  author: { name: 'Roma Armstrong', role: 'Founder at Fractera.ai' },
+  // Автора здесь нет намеренно: подпись берётся из настроек проекта (шаг 507) —
+  // иначе личная заметка основателя платформы подписывала бы блог клиента.
+
   heroPoster: 'https://img.youtube.com/vi/BYXbuik3dgA/maxresdefault.jpg',
   ogImage: 'https://img.youtube.com/vi/BYXbuik3dgA/maxresdefault.jpg',
 }

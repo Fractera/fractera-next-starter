@@ -38,6 +38,13 @@ const FILES = [
   // никто не заказывал; но и держать его на «2», когда переводов уже 10, значит
   // проверке лгать. Добавили язык через `i18n:import` — поднять и это число.
   ["app/[lang]/_data/home.i18n.ts", "HomeUi", 10],
+  // Слова публичного каталога и подписи движка материалов — тот же страничный
+  // слой, тот же набор из десяти готовых переводов (шаг 507). До этого шага их
+  // не проверял никто: словарь каталога отсутствовал в списке, а два словаря
+  // движка были написаны в форме, которой сторож не понимает.
+  ["app/[lang]/products/_data/ui.i18n.ts", "CatalogueUi", 10],
+  ["lib/content/page-ui.ts", "PageUi", 10],
+  ["lib/content/post-body-ui.ts", "PostBodyUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

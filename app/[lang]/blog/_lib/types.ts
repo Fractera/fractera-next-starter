@@ -22,7 +22,17 @@ export type BlogMeta = {
   date: string
   readingMinutes: number
   tags: string[]
-  author: BlogAuthor
+  /**
+   * Автор ЭТОГО материала — только если он отличается от автора проекта.
+   *
+   * 🔒 ПО УМОЛЧАНИЮ ЕГО НЕТ, И ЭТО ВЕРНО (шаг 507). Оба посланных со стартером
+   * поста несли имя команды платформы и должность «Founder at Fractera.ai», то
+   * есть блог каждого клиента подписывался чужим именем — ровно то, что §6
+   * `CONTENT-ENGINE.md` запрещает. Имя приходит из настроек проекта
+   * (`lib/author.ts` → панель, App settings → Author), а поле остаётся для
+   * честного случая: гостевая статья, написанная не владельцем сайта.
+   */
+  author?: BlogAuthor
   /** Self-hosted video hero (optional — a post may override the hero with an embed). */
   heroVideo?: string
   heroPoster?: string

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { Block } from './types'
 import type { PostBodyUi } from '@/lib/content/post-body-ui'
 import { inline, headingId } from './inline'
+import { linkAttrs, resolveRootHref } from './links'
 import { author, authorSocialLinks } from '@/lib/author'
 import { StaticImage } from '@/components/media/static-image.server'
 import { StoredImage } from '@/components/media/stored-image.server'
@@ -127,7 +128,11 @@ export const BLOCK_RENDERERS: BlockRenderers = {
     <div key={k} className="my-4 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6">
       <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>
       <a
-        href={b.href}
+        // Кнопка подчиняется тому же закону ссылок, что и текст (`./links.ts`):
+        // внешняя открывается в новой вкладке и получает `rel`, внутренняя на
+        // корень — учитывает одноязычный режим, где языкового сегмента нет.
+        href={resolveRootHref(b.href)}
+        {...linkAttrs(b.href)}
         // 🔒 ТЕКСТ НА ЗАЛИВКЕ — `text-primary-foreground`, А НЕ `text-foreground`
         // (2026-08-12). Здесь стояло `text-foreground`: цвет обычного текста
         // СТРАНИЦЫ, то есть тёмный на светлой теме. На тёмной заливке кнопки он
@@ -274,7 +279,13 @@ export const BLOCK_RENDERERS: BlockRenderers = {
       <a
         href={b.href}
         download
-        className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-foreground hover:bg-primary"
+        // 🔒 ТА ЖЕ ПАРА, ЧТО У `cta` (шаг 507). Здесь оставалось `text-foreground`
+        // — цвет текста СТРАНИЦЫ на заливке `primary`: на светлой теме тёмный на
+        // тёмном. В соседней кнопке это вылечили 2026-08-12, а сюда правка не
+        // дошла, потому что блок `docref` не использован ни в одном материале и
+        // увидеть его было негде. Дефект в неиспользуемом коде ждёт первого, кто
+        // им воспользуется.
+        className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
         {b.label ?? ui.downloadMd}

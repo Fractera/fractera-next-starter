@@ -17,7 +17,7 @@ export const en: BlogBase = {
   subtitle:
     'Why the head of Claude Code at Anthropic just signaled the end of the “AI whisperer” era — and what comes next.',
   description:
-    'Boris Cherny, who leads Claude Code at Anthropic, says he no longer prompts Claude — he writes loops. Inside the death of prompt engineering and the rise of loop engineering: agentic AI workflows, autonomous self-correcting agents, why verification beats prompt-craft, and how Fractera runs the same loop in production with multi-agent orchestration (Hermes) and LightRAG graph memory.',
+    'Boris Cherny, who leads Claude Code at Anthropic, says he no longer prompts Claude — he writes loops. Inside the death of prompt engineering and the rise of loop engineering: agentic AI workflows, autonomous self-correcting agents, why the verifier matters more than the prompt, and how the same loop is wired into a workspace you own — machine-checkable gates in the repository, memory that outlives a session, and a control panel that builds and rolls back.',
   excerpt:
     'The engineer leading Claude Code at Anthropic just admitted he doesn’t prompt the model anymore — he writes loops that prompt it for him. Here’s why that ends the “AI whisperer” era, and how we turned it into production architecture.',
   heroCaption: 'The LinkedIn post that set this off — Boris Cherny on writing loops, not prompts.',
@@ -106,28 +106,31 @@ export const en: BlogBase = {
     },
     {
       kind: 'p',
-      text: 'Close a loop around a single model and you hit the real-world walls fast: context-window degradation, hallucinatory death spirals, and no memory across a project. At [%SITE%](/en), we spent the last year treating Cherny’s philosophy not as a prediction but as an **architectural blueprint** — and built the Fractera Development Loop to survive exactly those failure modes.',
+      text: 'Close a loop around a single model and you hit the real-world walls fast: context-window degradation, hallucinatory death spirals, and no memory across a project. At [%SITE%](/en), we spent the last year treating Cherny’s philosophy not as a prediction but as an **architectural blueprint** — and built the loop this workspace runs on.',
     },
     {
       kind: 'figure',
       media: 'image',
-      src: 'media:development-loop.jpg',
-      alt: 'Fractera Development Loop diagram — one request flows through Hermes orchestration, coding agents and LightRAG graph memory to tested, deployed code',
-      caption: 'The Fractera Development Loop — Cherny’s idea, wired into a workspace you actually own. [See the full anatomy](https://www.fractera.ai/ai-development-loop).',
-      href: 'https://www.fractera.ai/ai-development-loop',
+      src: 'media:development-loop-2026.jpg',
+      alt: 'The development loop: the owner sets a goal, the agent edits the repository, machine gates verify it, failures return to the agent as new instructions, and the control panel builds, journals and can roll back',
+      caption: 'The loop as it is actually wired: an agent in your repository, gates that refuse to lie, and a panel that closes the circuit.',
     },
     { kind: 'h3', text: 'The anatomy of a production-grade loop' },
     {
       kind: 'p',
-      text: 'To make loops viable for real software, you have to evolve past one AI talking to itself. You need orchestration, specialized agents, and a persistent memory spine:',
+      text: 'To make loops viable for real software, you have to stop admiring the model and start building the three unglamorous things around it — the judge, the memory, and the hand that ships:',
     },
     {
       kind: 'list',
       items: [
-        '**Multi-agent orchestration (Hermes).** Instead of looping a single model forever, our orchestrator breaks down the high-level command and dispatches the best agent for each micro-task — Claude Code for hard logic, Codex for refactoring, Gemini for fast exploration.',
-        '**A graph-memory spine (LightRAG).** The biggest risk in an autonomous loop is the amnesia effect: loop fifteen times on a stubborn bug and the agent loses sight of the global architecture. A Knowledge Graph RAG acts as a continuous, un-wipeable memory so every looping agent keeps cross-referencing your codebase’s real rules and style.',
-        '**An immutable verification loop.** The loop only terminates when the test-and-deploy suite returns zero errors. If a deployment fails, the logs are instantly contextualized by graph memory and thrown back into the agent ring for an automatic cure.',
+        '**A verifier that cannot be sweet-talked.** The judge is not a second model with an opinion; it is a set of scripts that fail the build. Do the language signals exist on every public page? Does every post have the markdown twin an AI reader needs? Is a picture referenced that nobody committed? Each check exists because that exact defect shipped once, and each one answers with an exit code rather than a paragraph.',
+        '**Memory that outlives the session.** The amnesia effect is real: loop fifteen times on a stubborn bug and the agent loses the architecture. Here the memory is not a service that can be offline — it is files beside the code that travel with the repository: the working instruction, the lessons appended the moment the owner corrects something, the list of anti-patterns, the confirmed user cases. A new session starts by reading them, so the fifteenth iteration knows what the first one learned.',
+        '**A closing act that does not belong to the agent.** The loop ends in the control panel: it builds the project, keeps a journal of deployments and can return to the last working build. Settings, texts and images change there with no rebuild at all — so the loop is never asked to solve what was never a code problem.',
       ],
+    },
+    {
+      kind: 'p',
+      text: 'Notice what is **not** in that list: a swarm of models supervising each other. That was our first architecture, and we removed it. Orchestration is the most exciting part of an agentic diagram and the least load-bearing part of a working one — a weak judge is not fixed by adding a second opinion, and a strong judge rarely needs one.',
     },
 
     { kind: 'h2', text: 'The software engineer’s new job description' },
@@ -141,9 +144,9 @@ export const en: BlogBase = {
     },
     {
       kind: 'cta',
-      text: 'Want to look under the hood — the orchestration, the graph memory, and the build-test-correct cycle, in rigorous engineering detail?',
-      href: 'https://www.fractera.ai/ai-development-loop',
-      label: 'Dive into the anatomy of autonomous AI loops',
+      text: 'This site is one of those loops: the pages you are reading are static files a gate refused to ship until they carried their language signals, their markdown twin and their place in the sitemap.',
+      href: '/en',
+      label: 'See the workspace it runs on',
     },
     {
       kind: 'p',
@@ -151,7 +154,7 @@ export const en: BlogBase = {
     },
     {
       kind: 'note',
-      text: "Source: a widely-shared LinkedIn post by Guillermo Flor surfacing Boris Cherny’s remarks. The quote is reproduced as it circulated; the architecture and the analysis are Fractera’s own.",
+      text: "Source: a widely-shared LinkedIn post by Guillermo Flor surfacing Boris Cherny’s remarks. The quote is reproduced as it circulated; the architecture and the analysis are our own.",
     },
   ] satisfies BlogBlock[],
   faq: [
@@ -160,12 +163,12 @@ export const en: BlogBase = {
       a: "Loop engineering means writing automated workflows that prompt the AI, run its output through a verifier (tests, CI, a compiler), feed failures back as new instructions, and repeat — until the result is correct. Boris Cherny, who leads Claude Code at Anthropic, said he no longer crafts prompts by hand: he writes the loops that do it for him. The key insight is that the bottleneck was never the prompt — it was the human in the feedback cycle.",
     },
     {
-      q: "How does Fractera implement the agentic development loop in production?",
-      a: "Fractera runs Hermes as the orchestrator: it reads project context from LightRAG graph memory, picks the right coding agent (Claude Code, Codex, Gemini, Qwen, or Kimi) for each task, hands it a grounded context set, and loops on the build result — feeding errors back as new tasks until the code is green and deployed. The outcome is recorded in LightRAG so every subsequent loop starts smarter.",
+      q: "How is the development loop wired here, in production?",
+      a: "A coding agent works inside your own repository, on your machine, with the project's working instruction beside the code. The verifier is a set of gates that run on every build and fail it: language signals on each public page, a markdown twin for every published page, no picture referenced that was never committed, no dictionary missing a key. A failure comes back to the agent as a new instruction, and the loop repeats. The control panel closes the circuit — it builds the project, journals every deployment and can roll back to the last working build.",
     },
     {
-      q: "Do I need to write code to run the autonomous development loop with Fractera?",
-      a: "No. You describe the goal in natural language — through the Hermes chat inside your workspace or from Telegram. Hermes turns that into a concrete coding task, picks the best agent, and runs the loop. You watch the project take shape in real time; no code is written by you.",
+      q: "Do I need to write code to run this loop?",
+      a: "Not for most of what a site actually changes. The name, the description, the images, the languages, the analytics and the texts of the settings live in the control panel and apply with no rebuild — that is data, not code. Code changes are what the agent does in your repository; you read and approve them, and the panel builds the result. The honest boundary is this: nobody promises you never look at a diff — you are promised that you never have to hand-run the build, and that a broken one can be rolled back in a click.",
     },
   ] satisfies FaqPair[],
 }

@@ -78,7 +78,7 @@ function enabledLanguages() {
 // обхода, не проверяется ничем. При белом списке всё, что не попало ни в одну
 // группу, — состояние «не классифицировано», и его видно.
 //
-// Граница описана в `CONTENT-ENGINE.md` §2.
+// Граница описана в `development-docs/CONTENT-ENGINE.md` §2.
 const PUBLIC_GROUP = "(publicLayer)"
 
 /** Каждая папка `_data` внутри публичного слоя, на любой глубине. */
@@ -269,7 +269,7 @@ function languageCells(files) {
 // Правила выше проверяют СОДЕРЖИМОЕ поста. Этот проход проверяет саму
 // поверхность: осталась ли она статической, тонкой и самодостаточной. Семь
 // требований, из которых пять проверяются здесь, а два — сборкой и живой
-// страницей (их команды названы в `CONTENT-ENGINE.md`, §10).
+// страницей (их команды названы в `development-docs/CONTENT-ENGINE.md`, §10).
 //
 // Зачем в коде, а не в чек-листе: чек-лист исполняется, пока о нём помнят.
 // Первая же правка «на минуту» вернёт `force-dynamic` в вкладку, и об этом
@@ -404,5 +404,5 @@ if (problems.length === 0) {
 
 console.error(`===CONTENT_FAILED=== нарушений: ${problems.length}\n`)
 for (const p of problems) console.error(`  ${p.rule.padEnd(18)} ${p.file}\n${" ".repeat(21)}${p.detail}`)
-console.error("\nПравила — CODING-STANDARDS.md, раздел о ко-локации и ссылках.")
+console.error("\nПравила — development-docs/CODING-STANDARDS.md, раздел о ко-локации и ссылках.")
 process.exit(1)

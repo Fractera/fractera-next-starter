@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, X, Github, Twitter, Linkedin, Facebook } from "lucide-react";
+import { Menu, X, Github, Linkedin, Facebook } from "lucide-react";
+import { BrandX } from "@/components/icons/brand-x";
 
 // Mobile-only social collapse (footer). On phones the row of social icons folds
 // into ONE hamburger button that opens a drawer UPWARD listing the available
@@ -12,7 +13,7 @@ import { Menu, X, Github, Twitter, Linkedin, Facebook } from "lucide-react";
 // Icons cross the server→client boundary as a STRING key (serializable), never as
 // a component reference. UI standard: lucide icons + theme tokens (light + dark).
 
-const SOCIAL_ICONS = { github: Github, twitter: Twitter, linkedin: Linkedin, facebook: Facebook } as const;
+const SOCIAL_ICONS = { github: Github, twitter: BrandX, linkedin: Linkedin, facebook: Facebook } as const;
 export type SocialKey = keyof typeof SOCIAL_ICONS;
 
 export function FooterSocialDropdown({

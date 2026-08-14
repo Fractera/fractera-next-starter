@@ -120,5 +120,5 @@ if (problems.length === 0) {
 
 console.error(`===SECTIONS_FAILED=== нарушений: ${problems.length}\n`)
 for (const p of problems) console.error(`  ${p.rule.padEnd(20)} ${p.detail}`)
-console.error("\nЗаконы слоя — SECTIONS.md")
+console.error("\nЗаконы слоя — development-docs/SECTIONS.md")
 process.exit(1)

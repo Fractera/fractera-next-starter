@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Github, Twitter, Linkedin, Facebook } from "lucide-react";
+import { Github, Linkedin, Facebook } from "lucide-react";
+import { BrandX } from "@/components/icons/brand-x";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups } from "@/lib/menu/group-menus";
 import { navGroupsFromConfig, defaultFooterGroups } from "@/lib/menu/nav-config";
@@ -34,11 +35,15 @@ import { cartUi } from "@/components/cart/cart.i18n";
 // FooterSocialDropdown client component — a function/component cannot cross the
 // server→client boundary as a prop).
 function socialLinks(social: { twitter?: string; github?: string; linkedin?: string; facebook?: string } | undefined) {
-  type SocialLink = { href: string; label: string; Icon: typeof Github; icon: SocialKey };
+  // Тип значка описан ПО ПОТРЕБЛЕНИЮ, а не «как у lucide»: рисуется он вызовом с
+  // одним `className`, и этого достаточно. Привязка к типу конкретной библиотеки
+  // требовала бы от собственного знака X её внутренних полей — то есть запрещала
+  // бы иметь свой значок там, где в библиотеке его нет.
+  type SocialLink = { href: string; label: string; Icon: (p: { className?: string }) => React.ReactNode; icon: SocialKey };
   if (!social) return [] as SocialLink[];
   const out: SocialLink[] = [];
   if (social.github) out.push({ href: social.github, label: "GitHub", Icon: Github, icon: "github" });
-  if (social.twitter) out.push({ href: social.twitter.startsWith("http") ? social.twitter : `https://twitter.com/${social.twitter.replace("@", "")}`, label: "X (Twitter)", Icon: Twitter, icon: "twitter" });
+  if (social.twitter) out.push({ href: social.twitter.startsWith("http") ? social.twitter : `https://twitter.com/${social.twitter.replace("@", "")}`, label: "X", Icon: BrandX, icon: "twitter" });
   if (social.linkedin) out.push({ href: social.linkedin.startsWith("http") ? social.linkedin : `https://linkedin.com/company/${social.linkedin}`, label: "LinkedIn", Icon: Linkedin, icon: "linkedin" });
   if (social.facebook) out.push({ href: social.facebook.startsWith("http") ? social.facebook : `https://facebook.com/${social.facebook}`, label: "Facebook", Icon: Facebook, icon: "facebook" });
   return out;

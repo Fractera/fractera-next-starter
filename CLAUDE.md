@@ -111,6 +111,32 @@ into cases. That conversation IS the first task, not a delay before the real one
 measured against. If a request serves no case, say so before writing code — either the request is wrong or
 the cases are out of date, and both are worth a sentence.
 
+### 🧱 The four roots of a product — where you may write, and where you may not
+
+A product is not a label. It owns four places, and they are **derived from its record**, never invented:
+
+| What | Where | Derived from |
+|---|---|---|
+| pages | `app/[lang]/<segment>/` — or `app/[lang]/(root)/` for the product holding `/` | its `route` |
+| logic | `lib/products/<product-id>/` | its `id` |
+| tables | `<product-id>_*` | its `id` |
+| use cases | `development-docs/USE-CASES/<product-id>/` | its `id` |
+
+**Working on a use case of a product, you write inside those four roots and nowhere else.** Not into another
+product's roots — not "just one import", not "it is almost the same component". Two products sharing a file is
+how one owner's change silently breaks the other's product, weeks later, with nothing in the history to explain it.
+
+**Shared code lives in a shared root** — `components/`, `lib/`, `_tools/`. Moving something there is a deliberate
+act, stated in the step: "extracted X from product p1 into components/, now used by p1 and p2". Reaching into a
+neighbour's folder for a component instead is the exact move this rule exists to stop.
+
+**Pages are the one root that follows the address, not the id** — in Next the folder name *is* the URL segment.
+So a product that moves to another address gets its pages folder renamed, while its logic, tables and use cases
+stay exactly where they were.
+
+**Say the product and its roots in your report** — one line, before the diff. That single line is what makes this
+rule checkable instead of merely stated: any change outside those roots is then visible to the owner at a glance.
+
 ### 📥 `development-docs/USE-CASES/<product-id>/RAW/` — the raw material, and you normally leave it closed
 
 Every question the Quiz asked and every answer the owner gave is written there, along with the seed. It
@@ -783,6 +809,11 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <action>create NEW-STEPS/{NN}-slug.md with the fractera:step block and importance
       (optional|mandatory|critical); exact format in development-steps.md. Describe inputs, planned result,
       intermediate results (decomposition), planned routing-tree changes.</action>
+    <action>NAME THE PRODUCT in the step: `product: &lt;product-id&gt;` in the fractera:step block, or
+      `product: platform` when the work belongs to no single product — the theme, the languages, the offline
+      cache, anything the whole server shares. Both values are real answers; a step that names neither cannot
+      be read back in a month, and "what changed in this product" stops being answerable at all. Never force a
+      product id onto platform-wide work: a field that lies is worse than a field that is absent.</action>
     <action>MATERIALIZE-FIRST (step 172, mandatory): write EVERY sub-step known now as its own
       NEW-STEPS/ file BEFORE executing any of them — each file = a real spec (inputs, planned result,
       what executes it), not a one-liner. The step chain on disk IS the plan history: a process death

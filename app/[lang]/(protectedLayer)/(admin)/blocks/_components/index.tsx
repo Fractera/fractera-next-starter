@@ -1,6 +1,7 @@
 import { PostBody } from '@/components/content-page/post-body'
 import { SPECIMEN } from '../_data/specimen'
 import { blocksCatalogueUi } from '../_data/ui.i18n'
+import { H1 } from '@/components/ui/typography'
 
 // Каталог секций — единственное место, где КАЖДЫЙ вид блока действительно
 // рисуется. Страница живёт в слое прав `admin`: она инструмент архитектора, а не
@@ -22,7 +23,7 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             {SPECIMEN.length} {ui.countLabel}
           </p>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{ui.title}</h1>
+          <H1>{ui.title}</H1>
           <p className="max-w-2xl text-base text-muted-foreground">{ui.subtitle}</p>
         </header>
 

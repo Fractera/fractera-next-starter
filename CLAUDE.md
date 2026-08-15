@@ -556,6 +556,31 @@ mounted `<Toaster/>` + `toast()` from `sonner`). This covers menus, drawers, mod
 control. Bring non-conforming code to this standard whenever you touch it. Full mapping + recipes →
 `ui-primitives.md`.
 
+**🔒 TEXT IS A PRIMITIVE TOO — `components/ui/typography.tsx`, never a hand-written heading.**
+`H1 H2 H3 H4` (each with a `content` / `ui` variant), `P`, `Lead`, `Small`, `Eyebrow`. A raw
+`<h1 className="…">` anywhere under `app/`, `components/` or `sections/` fails
+`npm run check:typography`, which runs in `prebuild`.
+
+This rule exists because the one above did not cover text, and the gap was expensive: by
+2026-08-15 the tree held **nine** different descriptions of `<h1>` — `text-xl` on the product
+panels against `text-4xl` in the blog, twice the size on neighbouring pages of one site — plus
+forty-five variants of a paragraph. Nothing caught it: types are fine (a className is a string),
+the build is green, and no guard looked at how a page *reads*. A human found it by opening the
+pages one after another.
+
+Two laws inside the primitive, both from real defects:
+
+- **A size never shrinks as the screen grows.** `text-4xl md:text-3xl` means bigger on a phone
+  than on a monitor. Eight such places existed, including the renderer of every `h2` on every
+  content page. The gate now rejects this mechanically. (The one sanctioned exception is
+  `input`/`textarea`: 16px on mobile stops Safari zooming the page on focus.)
+- **The font family is chosen by the primitive, not by the file.** `font-serif` lived in two
+  files out of ten, which is why pages read as if they came from different projects.
+
+Need a different size on one page? That is not a licence to write classes: either the page takes
+a different level, or the scale itself changes — and then it changes for everyone at once. That
+is the whole point of having one.
+
 > **Route skeleton.** A thin `page.tsx` (route-segment config + params, nothing else), the real entry in
 > `_components/index.tsx`, leaves suffixed `.client`/`.server`. Segment values (`revalidate`) are declared
 > IN `page.tsx` — Next parses them statically and refuses a re-export; functions (`generateMetadata`,

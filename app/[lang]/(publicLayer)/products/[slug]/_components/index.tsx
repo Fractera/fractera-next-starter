@@ -11,6 +11,7 @@ import { getAppConfig } from "@/config/app-config"
 import { productById, prerenderSlugs } from "@/lib/catalogue"
 import { localizeProduct } from "@/lib/products/localize"
 import { catalogueUi } from "../../_data"
+import { H1 } from '@/components/ui/typography'
 
 // ПУБЛИЧНАЯ СТРАНИЦА ТОВАРА — статика через ISR.
 //
@@ -114,7 +115,7 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
             </figure>
           )}
 
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-2xl">{p.localizedName}</h1>
+          <H1>{p.localizedName}</H1>
           <p className="mt-2 text-xl font-medium text-foreground">
             {/* Валюта показывается человеку тем же значением, что уезжает в разметку:
                 цифра без валюты не значит ничего ни для того, ни для другого. */}

@@ -10,6 +10,7 @@ import { localizeProduct } from "@/lib/products/localize"
 import type { Product } from "@/lib/products/types"
 import { catalogueUi } from "../_data"
 import { LoadMore } from "./load-more.client"
+import { H1 } from '@/components/ui/typography'
 
 // ПУБЛИЧНАЯ ВИТРИНА КАТАЛОГА — одна страница, без пагинации (владелец
 // 2026-08-11).
@@ -75,7 +76,7 @@ export default async function Catalogue({ lang }: { lang: string }) {
         <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
 
         <header className="mb-8 mt-4">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-xl">{t.title}</h1>
+          <H1>{t.title}</H1>
           <p className="mt-1 text-sm text-muted-foreground">{t.subtitle}</p>
         </header>
 

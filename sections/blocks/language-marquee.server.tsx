@@ -1,4 +1,5 @@
 import type { SectionRenderer } from '@/sections/contract'
+import { H2 } from '@/components/ui/typography'
 import { ALL_LANGUAGE_METADATA } from '@/config/translations/language-metadata'
 
 // Завершающая секция страницы (outro): лента языков, ползущая слева направо.
@@ -27,9 +28,9 @@ const LANGUAGES = Object.values(ALL_LANGUAGE_METADATA)
 export const languageMarquee: SectionRenderer<'languageMarquee'> = (b, { key: k }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="border-t border-border py-12">
     <div className="mb-8 px-6 text-center">
-      <h2 id={`${k}-t`} className="text-2xl font-bold tracking-tight text-foreground">
+      <H2 id={`${k}-t`}>
         {b.title}
-      </h2>
+      </H2>
       {b.note && <p className="mt-2 text-sm text-muted-foreground">{b.note}</p>}
     </div>
 

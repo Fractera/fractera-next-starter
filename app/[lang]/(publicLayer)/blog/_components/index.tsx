@@ -6,6 +6,7 @@ import { blogList } from '../_lib/post'
 import { getBlogUi } from '../_data'
 import { POSTS } from '../_list.generated'
 import { StaticImage } from '@/components/media/static-image.server'
+import { H1, H2, H3 } from '@/components/ui/typography'
 
 // Entry for the /blog router page. Standard router shape: page.tsx is thin and
 // re-exports this. The post list is auto-discovered: POSTS comes from
@@ -65,7 +66,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
             {/* Надзаголовок: раздел + название сайта из настроек. В данных раздела
                 имени сайта нет — иначе блог каждого клиента звался бы чужим именем. */}
             <p className="text-xs uppercase tracking-widest text-primary">{ui.eyebrow} · {metaForLang(lang).title}</p>
-            <h1 className="text-4xl font-bold tracking-tight md:text-3xl">{ui.indexTitle}</h1>
+            <H1>{ui.indexTitle}</H1>
             <p className="max-w-2xl text-base text-muted-foreground">{ui.indexIntro}</p>
           </header>
 
@@ -98,9 +99,9 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
                     </span>
                   ))}
                 </div>
-                <h2 className="text-2xl font-bold leading-tight tracking-tight text-foreground md:text-xl">
+                <H2>
                   {featured.title}
-                </h2>
+                </H2>
                 <p className="text-base leading-relaxed text-muted-foreground">{featured.excerpt}</p>
                 <div className="mt-auto flex items-center gap-3 pt-2 text-sm text-muted-foreground">
                   <time dateTime={featured.date}>{formatDate(featured.date, lang)}</time>
@@ -142,9 +143,9 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
                   {/* Content clamped so it always fits the fixed card height: title
                       max 1 line, excerpt max 2 lines, meta pinned to the bottom. */}
                   <div className="flex min-w-0 flex-col gap-1.5 py-3 pr-5 sm:gap-2 sm:py-4 sm:pr-6">
-                    <h3 className="line-clamp-1 text-base font-semibold leading-snug text-foreground sm:text-lg">
+                    <H3 variant="ui" className="line-clamp-1">
                       {post.title}
-                    </h3>
+                    </H3>
                     <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
                     <div className="mt-auto flex items-center gap-2 pt-1 text-xs text-muted-foreground">
                       <time dateTime={post.date}>{formatDate(post.date, lang)}</time>

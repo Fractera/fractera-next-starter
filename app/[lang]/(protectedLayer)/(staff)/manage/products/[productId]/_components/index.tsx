@@ -5,6 +5,7 @@ import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../../_data/ui.i18n"
 import { ProductCard } from "./product-card.client"
+import { H1 } from '@/components/ui/typography'
 
 // СТАТИЧЕСКИЙ КАРКАС карточки — серверный компонент.
 //
@@ -47,7 +48,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
           ]}
         />
 
-        <h1 className="mt-4 text-xl font-semibold text-foreground">{t.one}</h1>
+        <H1 variant="ui" className="mt-4">{t.one}</H1>
 
         <div className="mt-5">
           <ProductCard

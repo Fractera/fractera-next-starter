@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { H1 } from "@/components/ui/typography";
 
 // Error boundary for the public [lang] surface (step 149 — language-safety vaccine).
 // Next REQUIRES error.tsx to be a Client Component: this is the sanctioned exception to the
@@ -41,9 +42,9 @@ export default function LangError({
       <p className="font-mono text-sm font-bold uppercase tracking-widest text-black/50">
         Something went wrong
       </p>
-      <h1 className="max-w-2xl text-center text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+      <H1 className="max-w-2xl text-center">
         This page could not be displayed
-      </h1>
+      </H1>
       <p className="max-w-md text-center text-base leading-relaxed text-black/70">
         We hit an unexpected problem rendering this page. The rest of the site is unaffected.
       </p>

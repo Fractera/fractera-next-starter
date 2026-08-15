@@ -4,6 +4,7 @@ import { cartUi } from "@/components/cart/cart.i18n"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { shoppingProductsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
+import { H1 } from '@/components/ui/typography'
 
 // Вход страницы товаров ПОКУПАТЕЛЯ — серверный компонент, статический каркас.
 //
@@ -27,7 +28,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
         <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
 
         <header className="mb-8 mt-4">
-          <h1 className="text-xl font-semibold text-foreground">{t.title}</h1>
+          <H1 variant="ui">{t.title}</H1>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 

@@ -14,6 +14,7 @@
 import { Plus, X, Loader2, Eye, Search, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { H4 } from "@/components/ui/typography"
 
 export type ToolbarLabels = {
   tableTitle: string; reveal: string; loading: string
@@ -42,7 +43,7 @@ export function ProductsToolbar(
   return (
     <>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-foreground">{labels.tableTitle}</h2>
+        <H4 variant="ui">{labels.tableTitle}</H4>
         <div className="flex items-center gap-2">
           {!revealed ? (
             <Button size="sm" onClick={onReveal} disabled={loading}>

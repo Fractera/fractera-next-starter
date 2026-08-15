@@ -1,4 +1,5 @@
 import type { SectionRenderer } from '@/sections/contract'
+import { H2 } from '@/components/ui/typography'
 
 // Панель в рамке: заголовок и любое содержимое внутри.
 //
@@ -38,7 +39,7 @@ export const panel: SectionRenderer<'panel'> = (b, ctx) => {
         {b.eyebrow && (
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{b.eyebrow}</p>
         )}
-        <h2 className={`text-xl font-semibold tracking-tight ${b.eyebrow ? 'mt-2' : ''} sm:text-2xl`}>{b.title}</h2>
+        <H2 variant="ui" className={b.eyebrow ? 'mt-2' : undefined}>{b.title}</H2>
         <div className="mt-4 flex flex-col gap-4">
           {ctx.renderBlocks(b.children, ctx.lang, ctx.ui, ctx.key)}
         </div>

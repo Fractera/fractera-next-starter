@@ -33,6 +33,7 @@ import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { useProduct } from "@/app/[lang]/(protectedLayer)/_lib/use-product"
 import { EditableField } from "@/app/[lang]/(protectedLayer)/_components/products/editable-field.client"
+import { H2 } from "@/components/ui/typography";
 
 export type CardLabels = {
   name: string; price: string; colId: string
@@ -102,7 +103,7 @@ export function ProductCard(
 
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-xl">{p.localizedName}</h2>
+          <H2 variant="ui">{p.localizedName}</H2>
           <p className="mt-1 text-lg font-medium text-foreground">
             {new Intl.NumberFormat(lang, { style: "decimal", minimumFractionDigits: 2 }).format(p.price)}
           </p>

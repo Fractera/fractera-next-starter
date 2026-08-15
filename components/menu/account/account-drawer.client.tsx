@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
 import { PROTECTED_GROUP_ROLES, type ProtectedGroup } from "@/lib/roles";
+import { H3 } from "@/components/ui/typography";
 import { FLOW_COLOR } from "@/lib/flows";
 
 // Слой → ключ его заголовка в словаре. Отдельной таблицей, чтобы добавить пятый
@@ -108,10 +109,10 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
                     источник цвета на оба места (`lib/flows.ts`): человек,
                     увидевший зелёную ленту, обязан найти в ящике зелёную точку —
                     иначе оба знака перестают что-либо значить. */}
-                <h3 className="flex items-center gap-2 px-2 text-[15px] font-medium tracking-tight text-foreground">
+                <H3 variant="ui" className="flex items-center gap-2 px-2">
                   <span aria-hidden className={`size-2 shrink-0 rounded-full ${FLOW_COLOR[s.group].dot}`} />
                   {s.title}
-                </h3>
+                </H3>
 
                 {/* 🔒 РОЛИ СЛОЯ — ВСЕ ВОЗМОЖНЫЕ, А НЕ ТОЛЬКО СВОИ (владелец,
                     2026-08-15). Человек видит, из чего слой состоит: какие роли

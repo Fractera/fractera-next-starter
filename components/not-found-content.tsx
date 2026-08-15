@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ConfigImage } from "@/components/media/config-image.server";
+import { H1 } from '@/components/ui/typography'
 
 // Shared 404 body (step 131). After the static-rendering refactor the root layout is
 // bare (no <html>), so each zone owns its own not-found that renders inside its own
@@ -13,9 +14,9 @@ export function NotFoundContent() {
       {/* Left — white pane with the message */}
       <div className="flex w-full flex-col justify-center gap-6 bg-white px-8 py-16 text-black md:w-1/2 md:px-16">
         <p className="font-mono text-sm font-bold uppercase tracking-widest text-black/50">Error 404</p>
-        <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+        <H1>
           Oops — something went wrong
-        </h1>
+        </H1>
         <p className="max-w-md text-base leading-relaxed text-black/70">
           The page you are looking for does not exist, was moved, or never did. Let&apos;s get you
           back on track.

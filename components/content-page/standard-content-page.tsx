@@ -7,6 +7,7 @@ import { author as projectAuthor } from '@/lib/author'
 import { getPageUi } from '@/lib/content/page-ui'
 import { PostBody, headingId } from './post-body'
 import { StaticImage } from '@/components/media/static-image.server'
+import { H1, H2, Lead } from '@/components/ui/typography'
 
 // PORTED FROM THE PLATFORM'S MARKETING SITE (2026-08-11). Three couplings were
 // cut on the way in, and none of them is a loss for a starter: a sponsorship
@@ -210,7 +211,7 @@ export function StandardContentPage({
               влиял никак. `text-foreground` — та же переменная, что у остального
               текста страницы: она меняется вместе с темой сама.
               Обводка и свечение остаются: они фиолетовые и читаются на обоих фонах. */}
-          <h1
+          <H1
             // 🔒 ОБВОДКА И СВЕЧЕНИЕ — ИЗ ТОКЕНА ТЕМЫ, А НЕ ФИОЛЕТОВЫМ ЧИСЛОМ
             // (шаг 508). Здесь стояли `rgba(139,92,246,…)` прямо в `style`: цвет
             // платформы, одинаковый во всех темах и во всех проектах, — и
@@ -218,13 +219,15 @@ export function StandardContentPage({
             // вовсе. Заголовок клиента светился нашим фиолетовым, что бы он ни
             // выбрал в настройках. Класс `.h1-glow` (styles/globals.css) делает
             // то же самое цветом `--color-primary`.
-            className="h1-glow text-3xl font-bold font-serif leading-tight tracking-tight md:text-4xl lg:text-5xl text-foreground"
+            //
+            // Размер и шрифт — из примитива типографики: они обязаны совпадать с
+            // заголовком первого экрана и всех прочих страниц.
+            className="h1-glow"
           >
             {title}
-          </h1>
-          {subtitle && (
-            <p className="text-lg leading-relaxed text-muted-foreground md:text-base">{subtitle}</p>
-          )}
+          </H1>
+          {/* Подзаголовок шёл `text-lg … md:text-base` — убывал с экраном. */}
+          {subtitle && <Lead>{subtitle}</Lead>}
           {/* Byline — post byline (metaLine) overrides the default author line. */}
           {/* Автора может не быть вовсе — владелец не заполнил раздел в
               настройках. Тогда строки авторства нет: пустое «·» под заголовком
@@ -305,7 +308,7 @@ export function StandardContentPage({
             global footer) sit below it. */}
         {faq && faq.length > 0 && (
           <section aria-labelledby="faq-heading" className="mt-12 border-t border-border pt-10">
-            <h2 id="faq-heading" className="text-2xl font-bold tracking-tight">{ui.faqHeading}</h2>
+            <H2 id="faq-heading">{ui.faqHeading}</H2>
             <dl className="mt-6 flex flex-col gap-4">
               {faq.map((f, i) => (
                 <div key={i} className="rounded-2xl border border-border bg-muted/40 p-5">

@@ -3,6 +3,7 @@ import { getAppConfig } from "@/config/app-config"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { accountingProductsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
+import { H1 } from '@/components/ui/typography'
 
 // Вход страницы товаров бухгалтерии — СЕРВЕРНЫЙ компонент, и всё, что он рисует, статический
 // каркас: крошки, заголовок, объяснение. Ни одного запроса к базе, поэтому
@@ -25,7 +26,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
         <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
 
         <header className="mb-8 mt-4">
-          <h1 className="text-xl font-semibold text-foreground">{t.title}</h1>
+          <H1 variant="ui">{t.title}</H1>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 

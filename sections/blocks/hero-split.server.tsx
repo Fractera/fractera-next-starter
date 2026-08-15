@@ -4,6 +4,7 @@ import { StaticImage } from '@/components/media/static-image.server'
 import { getAppConfig } from '@/config/app-config'
 import { getLogoPath } from '@/config/app-config.defaults'
 import { inline } from '@/lib/content/blocks/inline'
+import { H1 } from '@/components/ui/typography'
 
 // Первый экран лендинга: знак и лейбл по центру, под ними слово слева и
 // иллюстрация справа.
@@ -84,9 +85,10 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
           <div className="flex flex-col gap-5">
             {/* Свечение и обводка — из токена темы (класс `.h1-glow`), а не
                 фиолетовым числом: цвет заголовка идёт за темой проекта. */}
-            <h1 className="h1-glow font-serif text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
-              {b.title}
-            </h1>
+            {/* Размер и шрифт — из примитива типографики: заголовок первого
+                экрана обязан совпадать с заголовком любой другой страницы.
+                Здесь остаётся только свечение. */}
+            <H1 className="h1-glow">{b.title}</H1>
             <p className="text-base leading-relaxed text-muted-foreground">
               {inline(b.description, `${k}-d`)}
             </p>

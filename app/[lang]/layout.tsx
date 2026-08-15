@@ -9,6 +9,7 @@ import { DrawerProvider } from "@/providers/drawer-provider.client";
 import { TopMenu } from "@/components/menu/top/top-menu.server";
 import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
 import { DrawerMenu } from "@/components/menu/drawer/drawer-menu.server";
+import { ViewportBadge } from "@/components/dev/viewport-badge.client";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
@@ -137,6 +138,9 @@ export default async function LangLayout({
                 until a group enables its side's slot. */}
             <DrawerMenu side="left" lang={lang} />
             <DrawerMenu side="right" lang={lang} />
+            {/* Индикатор ширины экрана — только в разработке; в боевой сборке
+                компонент вырезается целиком (см. его файл), а не прячется. */}
+            <ViewportBadge />
             {/* Cookie-consent banner (step 305) — on every public page via this layout. Strings are
                 server-provided per language (readBannerConfig, ISR) so anonymous visitors get a fully
                 localized banner without hitting the gated /api. */}

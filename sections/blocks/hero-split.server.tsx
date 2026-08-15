@@ -46,7 +46,11 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
 
   return (
     <section key={k} className="py-10">
-      <div className="mx-auto w-full max-w-4xl px-6">
+      {/* Предел — переменная `--hero-w` (styles/globals.css), не утилита:
+          размер обязан быть виден числом. Классом `max-w-4xl` здесь уже был
+          посажен дефект — 896px против 1024px у ленты, отчего первый экран
+          оказался уже содержимого под ним. */}
+      <div className="mx-auto w-full px-6" style={{ maxWidth: 'var(--hero-w)' }}>
         {/* Знак и лейбл — по центру ВСЕЙ секции, над обеими колонками. */}
         <div className="flex flex-col items-center gap-4 text-center">
           {(b.mark ?? true) && (

@@ -38,7 +38,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <Breadcrumbs
           lang={lang}
           trail={[

@@ -17,7 +17,7 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-14">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-14">
         <header className="flex flex-col gap-3 border-b border-border pb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             {SPECIMEN.length} {ui.countLabel}

@@ -71,7 +71,7 @@ export default async function Catalogue({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
 
         <header className="mb-8 mt-4">

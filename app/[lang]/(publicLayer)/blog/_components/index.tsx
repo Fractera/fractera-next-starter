@@ -60,7 +60,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <main className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-20 md:py-14">
+        <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 py-20 md:py-14">
           <header className="flex flex-col gap-3">
             {/* Надзаголовок: раздел + название сайта из настроек. В данных раздела
                 имени сайта нет — иначе блог каждого клиента звался бы чужим именем. */}

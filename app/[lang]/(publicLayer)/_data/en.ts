@@ -101,7 +101,7 @@ export const en: HomeCell = {
   {
     kind: 'languageMarquee',
     title: 'Eighty-two languages, ready before you need them',
-    note: 'Every one of them ships with the product — you enable the ones your market speaks.',
+    note: 'Every one of them ships with the product — you enable the ones your market speaks. Static generation, search and AI optimisation, data caching and readiness for heavy load hold efficiency at the top of the industry — and hold it equally whether you run one language, several, or all eighty-two.',
   },
 ],
 }

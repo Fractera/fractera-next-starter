@@ -4,38 +4,54 @@ import { useEffect, useState } from "react";
 import { UnfoldHorizontal, FoldHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Content-width toggle for the public showcase (footer), ported from the Projects zone
-// (:3003). Sets html[data-app-width="wide"]; the single CSS var --app-w (globals.css)
-// then widens every [data-app-column] container — the page content AND the footer — at
-// once. Normal = centered 64rem; wide = full screen width (32px bridge each side). The
-// choice is persisted (localStorage) and raised before paint (app-width-init.tsx).
-// Hidden on mobile (hidden md:inline-flex): there the layout is single-column full-width,
-// nothing to toggle. UI standard: shadcn Button + lucide.
+// Переключатель ширины СРЕДИННОЙ ЧАСТИ страницы (в подвале).
+//
+// 🔒 НАЖАТИЕ СУЖАЕТ, А НЕ РАСШИРЯЕТ (ТЗ владельца, уточнено 2026-08-15).
+// Раньше было наоборот: обычное состояние 1280px, нажатие растягивало ленту почти
+// на всю ширину экрана. По заданию лента живёт широкой (80rem = 1280px) и
+// СУЖАЕТСЯ до 64rem = 1024px, когда человек просит колонку поуже для чтения.
+// Полная ширина экрана из механизма убрана вовсе: строка в 2500 пикселей
+// нечитаема, и предлагать её кнопкой незачем.
+//
+// 🔒 ЧТО КНОПКА ДВИГАЕТ. Только контейнер с меткой `[data-app-column]` — это
+// `<article>` страницы. Шапка, первый экран, завершающая секция и подвал имеют
+// полную ширину всегда. Когда-то метку носил ТОЛЬКО подвал, и кнопка двигала
+// единственно его, из-за чего выглядела сломанной.
+//
+// 🔒 ЗНАЧОК НАЗЫВАЕТ ДЕЙСТВИЕ, А НЕ СОСТОЯНИЕ. Стрелки внутрь (`FoldHorizontal`)
+// — «сузить», наружу (`UnfoldHorizontal`) — «расширить». Показывается тот, что
+// произойдёт по нажатию: кнопка обещает результат, а не описывает текущее
+// положение дел, — иначе человек читает её ровно наоборот.
+//
+// Спрятан на телефоне (`hidden md:inline-flex`): там раскладка одноколоночная во
+// всю ширину, двигать нечего. Состояние помнится (localStorage) и поднимается до
+// первой отрисовки (`app-width-init.tsx`), поэтому лента не прыгает при загрузке.
 const STORAGE_KEY = "fractera-app-width";
 
 export function AppWidthToggle({ labels }: { labels: { wide: string; normal: string } }) {
-  const [wide, setWide] = useState(false);
+  const [narrow, setNarrow] = useState(false);
 
-  // Read the actual state the inline script set on <html> — one source of truth.
+  // Читаем состояние, которое поставил встроенный скрипт, — один источник истины.
   useEffect(() => {
-    setWide(document.documentElement.getAttribute("data-app-width") === "wide");
+    setNarrow(document.documentElement.getAttribute("data-app-width") === "narrow");
   }, []);
 
   function toggle() {
-    const next = !wide;
+    const next = !narrow;
     const el = document.documentElement;
-    if (next) el.setAttribute("data-app-width", "wide");
+    if (next) el.setAttribute("data-app-width", "narrow");
     else el.removeAttribute("data-app-width");
     try {
-      localStorage.setItem(STORAGE_KEY, next ? "wide" : "normal");
+      localStorage.setItem(STORAGE_KEY, next ? "narrow" : "normal");
     } catch {
-      /* private browsing — toggling still works, it just won't be remembered */
+      /* приватный просмотр — переключение работает, просто не запомнится */
     }
-    setWide(next);
+    setNarrow(next);
   }
 
-  const label = wide ? labels.normal : labels.wide;
-  const Icon = wide ? FoldHorizontal : UnfoldHorizontal;
+  // Подпись и значок описывают ДЕЙСТВИЕ: сужено — предложим расширить, и наоборот.
+  const label = narrow ? labels.wide : labels.normal;
+  const Icon = narrow ? UnfoldHorizontal : FoldHorizontal;
 
   return (
     <Button
@@ -45,7 +61,7 @@ export function AppWidthToggle({ labels }: { labels: { wide: string; normal: str
       onClick={toggle}
       aria-label={label}
       title={label}
-      aria-pressed={wide}
+      aria-pressed={narrow}
       className="hidden md:inline-flex"
     >
       <Icon />

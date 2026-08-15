@@ -103,3 +103,35 @@ _No tasks._
 <!-- fractera:pattern
 {"kind":"anti","category":"","number":4,"name":"Styling disappears when .git does","status":"draft","description":"Tailwind 4 finds classes on its own, but it uses the GIT REPOSITORY ROOT as the boundary of that search. Remove the .git folder — most easily by rebuilding the project into a sibling directory and dropping the repository on the way — and there is nowhere left to scan. The build does not fail: it succeeds and emits a valid stylesheet that is simply empty of utilities, roughly 9 KB where a working build produces about 120 KB. The site turns into a white page with unstyled black text while every guard stays green: types pass, dictionaries are full, the encoding scan is clean, the build exit code is 0. No step treats a valid-but-empty stylesheet as a failure, so the first thing that notices is a human looking at the page. Recognise it by size, not by an error — there is none: a main CSS chunk in the single-digit kilobytes means the source scan found nothing. Fix it by naming the source directories explicitly with @source in styles/globals.css, so styling never depends on git. If the slot lost its .git, restore it too: it is the user's project repository and the panel's Pull and Push buttons are bound to it.","code":"/* styles/globals.css — do not rely on automatic detection */\n@import \"tailwindcss\";\n\n@source \"../app\";\n@source \"../components\";\n@source \"../lib\";\n@source \"../config\";","tasks":[]}
 -->
+
+---
+
+# Deleting dependencies that nothing imports
+
+> Anti-pattern · stable
+
+After the chat-interface components were removed (`components/ai-elements/`, 19 files), thirteen packages
+were left with zero imports anywhere in the tree: `@xterm/xterm`, `@xterm/addon-fit`, `streamdown` and its
+four modules, `ai`, `react-markdown`, `use-stick-to-bottom`, `@xyflow/react`, `react-rnd`, `motion`.
+
+Every mechanical check agrees they are dead weight, and the conclusion is wrong. **They are kept on
+purpose** — the owner's decision of 2026-08-15: the starter's capability examples will be built on them.
+A terminal, a diagram canvas, streamed markdown, drag-and-resize, animation — these are the demonstrations
+the starter still owes, and re-adding a package later costs a lockfile churn plus a version that no longer
+matches what the example was written against.
+
+The trap is that the evidence looks conclusive. `grep` over the whole tree returns nothing, the build
+succeeds without them, and a task worded as "make the starter lighter" or "remove the junk" points
+straight at them. Intent is not recoverable from a repository: nothing in the code says "waiting for an
+example". So the rule cannot be derived — it has to be read.
+
+**Instead:** leave them. When the weight of the starter or `npm ci` time genuinely comes up, name these
+packages as a deliberate reserve, not as debt, and let the owner decide. This covers PACKAGES only —
+orphaned FILES are cleaned normally, as those 19 were.
+
+## Steps
+_No tasks._
+
+<!-- fractera:pattern
+{"kind":"anti","category":"","number":5,"name":"Deleting dependencies that nothing imports","status":"draft","description":"After the chat-interface components were removed (components/ai-elements/, 19 files), thirteen packages were left with zero imports anywhere in the tree: @xterm/xterm, @xterm/addon-fit, streamdown and its four modules, ai, react-markdown, use-stick-to-bottom, @xyflow/react, react-rnd, motion. Every mechanical check agrees they are dead weight, and the conclusion is wrong: they are kept on purpose by the owner's decision of 2026-08-15, because the starter's capability examples will be built on them. The trap is that the evidence looks conclusive - grep over the whole tree returns nothing, the build succeeds without them, and a task worded as 'make the starter lighter' points straight at them. Intent is not recoverable from a repository: nothing in the code says 'waiting for an example', so the rule cannot be derived, it has to be read. Instead: leave them; when the weight of the starter or npm ci time genuinely comes up, name these packages as a deliberate reserve rather than debt and let the owner decide. This covers PACKAGES only - orphaned FILES are cleaned normally, as those 19 were.","code":"","tasks":[]}
+-->

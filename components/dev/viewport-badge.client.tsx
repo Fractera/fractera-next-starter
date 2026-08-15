@@ -15,9 +15,12 @@ import { useEffect, useState } from "react";
 // такой значок классом было бы хуже вдвойне — он уехал бы к клиенту и однажды
 // проявился на живом сайте.
 //
-// 🔒 `pointer-events-none` ОБЯЗАТЕЛЕН. Значок висит поверх правого нижнего угла —
-// ровно там, где у сайтов живут кнопки чата и «наверх». Без этого он молча
-// перехватывал бы клики по ним, и искали бы причину в самих кнопках.
+// 🔒 `pointer-events-none` ОБЯЗАТЕЛЕН. Значок висит поверх угла страницы, где у
+// сайтов обычно живут плавающие кнопки. Без этого он молча перехватывал бы клики
+// по ним, и причину искали бы в самих кнопках.
+//
+// Угол ЛЕВЫЙ нижний (заказ владельца 2026-08-15): правый занят — там кнопки
+// чата и «наверх», и значок закрывал бы именно их.
 
 // 🔴 ВРЕМЕННО: ЗНАЧОК ПОКАЗЫВАЕТСЯ ВЕЗДЕ, ВКЛЮЧАЯ БОЕВУЮ СБОРКУ.
 //
@@ -64,7 +67,7 @@ export function ViewportBadge() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed bottom-4 right-4 z-50 flex size-20 select-none flex-col items-center justify-center rounded-full border border-white/30 bg-white/30 text-black shadow-lg backdrop-blur-sm"
+      className="pointer-events-none fixed bottom-4 left-4 z-50 flex size-20 select-none flex-col items-center justify-center rounded-full border border-white/30 bg-white/30 text-black shadow-lg backdrop-blur-sm"
     >
       <span className="font-mono text-sm font-bold leading-none tabular-nums">{width}</span>
       <span className="mt-1 font-mono text-[10px] uppercase leading-none tracking-widest opacity-70">

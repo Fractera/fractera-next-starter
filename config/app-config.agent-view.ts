@@ -40,7 +40,8 @@ export interface AgentConfigView {
 
 // Top-level branches that never help an agent understand the project:
 //   i18n  — translations of five fields; the whole point of this view is to leave them out.
-//   menus — documented in app-config.defaults.ts as a deprecated no-op kept for file back-compat.
+//   menus — a no-op field deleted from AppConfig on 2026-08-15; still skipped because an
+//           app-config.json saved by an older panel may carry it on disk.
 const SKIP_ROOT_KEYS = new Set(["i18n", "menus"]);
 
 // A value longer than this is a payload, not a fact. Nothing in this config legitimately needs

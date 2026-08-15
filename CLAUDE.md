@@ -391,8 +391,12 @@ is: that is a panel setting, change it there. Editing code for it is wrong twice
 the app reads, and it will be overwritten by the file that is. Only a **missing field** is a code matter,
 and that is a platform change, not a project one.
 
-(Its neighbour `PLATFORM-CONFIG/platform-config.json` follows the opposite rule — it IS tracked by git.
-Two adjacent settings files under two different rules; the owner has not yet decided which rule wins.)
+(Its neighbour `PLATFORM-CONFIG/platform-config.json` holds the nine feature switches — the top menu,
+the cookie banner, authorization. Same shape, same rule: the panel writes it on the server, it is **not in
+your clone**, and a missing file simply means the owner has not touched a switch yet. Read it through
+`featureOn()` / `featureDecided()` (`config/platform-config.ts`), never by opening the path. This used to
+say the file "IS tracked by git" — it is not, the directory does not exist in the repository at all, and
+looking for it there wasted a session.)
 
 ---
 

@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
 import { AppWidthInit } from "@/components/app-width-init";
+import { buildDesignCss } from "@/lib/design-css";
 import { DrawerProvider } from "@/providers/drawer-provider.client";
 import { TopMenu } from "@/components/menu/top/top-menu.server";
 import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
@@ -98,10 +99,29 @@ export default async function LangLayout({
 
   const gaId = cfg.analytics.enabled ? cfg.analytics.googleAnalyticsId : undefined;
 
+  // Оформление владельца: правила перекрытия и адреса внешних шрифтов.
+  const { css: designCss, fontLinks: designFontLinks } = buildDesignCss();
+
   return (
     <html lang={lang} suppressHydrationWarning className="scroll-smooth">
       <head>
         <meta name="generator" content="Fractera" />
+
+        {/* ОФОРМЛЕНИЕ ВЛАДЕЛЬЦА — перекрытие темы проекта (шаг «Дизайн», 2026-08-15).
+            Цвета, шрифты, шкала текста и формы приходят из
+            `DESIGN-CONFIG/design-config.json`, который пишет панель управления.
+            Ничего не настроено — здесь пусто, и действует тема проекта.
+
+            🔒 СТОИТ ПЕРВЫМ В ШАПКЕ И ДО ГЛОБАЛЬНЫХ СТИЛЕЙ НЕ ПОДНИМАЕТСЯ: правила
+            перекрывают тему по порядку следования, а не по важности, поэтому
+            блок обязан идти ПОСЛЕ файла темы (его подключает сборка) и внутри
+            `<head>` — иначе браузер применит его до того, как тема загружена,
+            и перекрытие пропадёт. */}
+        {designCss && <style dangerouslySetInnerHTML={{ __html: designCss }} />}
+        {designFontLinks.map(href => (
+          <link key={href} rel="stylesheet" href={href} />
+        ))}
+
         <ThemeInit />
         {/* Заставки iOS: без них Safari рисует при запуске установленного
             приложения белый экран — на тёмной теме это выглядит поломкой. */}

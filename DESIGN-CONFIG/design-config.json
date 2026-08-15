@@ -1,0 +1,9 @@
+{
+  "colors": {
+    "light": { "primary": "#7c3aed", "background": "#fdfdff" },
+    "dark":  { "primary": "#a78bfa" }
+  },
+  "fonts": { "heading": { "family": "Playfair Display", "import": "https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" } },
+  "type": { "scale": 1.1 },
+  "shape": { "radius": "1rem", "appWidth": "72rem" }
+}

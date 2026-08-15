@@ -154,7 +154,7 @@ export function StandardContentPage({
           пришлось бы держать в двух местах сразу. */}
       {heroBlock && <PostBody blocks={[heroBlock]} lang={lang} />}
 
-      <article data-app-column className="px-6 py-16 md:py-12">
+      <article data-app-column className="px-6 py-16">
 
         {/* 1. Breadcrumb — single row, never wraps, never overflows.
             The trail stays on one line (flex-nowrap) and the whole strip is

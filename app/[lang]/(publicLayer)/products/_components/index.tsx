@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { MediaImage } from "@/components/media/media-image.server"
 import Link from "next/link"
-import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { buildAlternates } from "@/lib/seo/alternates"
 import { constructMetadata } from "@/lib/construct-metadata"
 import { getAppConfig } from "@/config/app-config"

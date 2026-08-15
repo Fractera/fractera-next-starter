@@ -102,16 +102,47 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
               данных. Спрятанный пункт — вежливость, а не защита, и путать эти два
               не следует никогда. */}
           <div className="flex-1 overflow-y-auto px-4 py-4">
-            {sections.map((s) => (
+            {sections.map((s, i) => (
               <section key={s.group} className="mb-5 last:mb-0">
                 {/* Точка того же цвета, что и полоса потока на странице. Один
                     источник цвета на оба места (`lib/flows.ts`): человек,
                     увидевший зелёную ленту, обязан найти в ящике зелёную точку —
                     иначе оба знака перестают что-либо значить. */}
-                <h3 className="flex items-center gap-2 px-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                <h3 className="flex items-center gap-2 px-2 text-[15px] font-medium tracking-tight text-foreground">
                   <span aria-hidden className={`size-2 shrink-0 rounded-full ${FLOW_COLOR[s.group].dot}`} />
                   {s.title}
                 </h3>
+
+                {/* 🔒 РОЛИ СЛОЯ — ВСЕ ВОЗМОЖНЫЕ, А НЕ ТОЛЬКО СВОИ (владелец,
+                    2026-08-15). Человек видит, из чего слой состоит: какие роли
+                    здесь вообще бывают. Показывать только его собственные значило
+                    бы отвечать на вопрос «кто я», а вопрос у ящика другой — «как
+                    устроен доступ». Свои роли и так названы внизу, у почты.
+
+                    Источник — `PROTECTED_GROUP_ROLES` (`lib/roles.ts`), тот же,
+                    по которому слой открывается. Копии здесь быть не может: копия
+                    однажды начнёт обещать роль, которой дверь уже не знает.
+
+                    Список переносится на столько строк, сколько нужно (`flex-wrap`):
+                    у слоя аккаунта их семь, и обрезать их было бы враньём о правах. */}
+                <ul className="mt-2 flex flex-wrap gap-1 px-2">
+                  {PROTECTED_GROUP_ROLES[s.group].map((r) => (
+                    <li
+                      key={r}
+                      className={cn(
+                        "rounded-full border border-border px-2 py-0.5 text-[12px] leading-tight",
+                        // Своя роль выделена: человек находит себя в списке слоя,
+                        // не сверяя его глазами со строкой внизу.
+                        roleList.includes(r)
+                          ? "border-primary/40 bg-primary/10 text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {r}
+                    </li>
+                  ))}
+                </ul>
+
                 {s.links.length > 0 ? (
                   <nav className="mt-1.5 flex flex-col gap-0.5">
                     {s.links.map((l) => (
@@ -128,6 +159,12 @@ export function AccountDrawer({ lang, side, labels, email, roles, links }: {
                 ) : (
                   <p className="mt-1.5 px-2 text-xs text-muted-foreground">{labels.groupEmpty}</p>
                 )}
+
+                {/* Черта закрывает слой. Без неё роли следующего слоя читались
+                    как продолжение страниц предыдущего — списки шли встык, и
+                    граница между «моё» и «по долгу службы» пропадала. У последнего
+                    слоя её нет: снизу и так своя черта, над строкой выхода. */}
+                {i < sections.length - 1 && <Separator className="mt-4" />}
               </section>
             ))}
           </div>

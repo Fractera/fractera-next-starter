@@ -60,6 +60,10 @@ function lines(block: Block): string[] {
     // потерять его здесь значило бы отдать модели пустую главную.
     case 'heroSplit':
       return [`## ${block.title}`, '', block.description]
+    // Завершающая секция. Восемьдесят два названия языков машинному читателю не
+    // нужны — он их и так знает; смысл секции целиком в её заголовке.
+    case 'languageMarquee':
+      return [`## ${block.title}`, ...(block.note ? ['', block.note] : [])]
     case 'columns':
     case 'group':
       // Контейнер — раскладка, а не содержимое: разворачиваем детей.

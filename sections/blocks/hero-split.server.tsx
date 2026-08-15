@@ -1,5 +1,8 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { ConfigImage } from '@/components/media/config-image.server'
+import { StaticImage } from '@/components/media/static-image.server'
+import { getAppConfig } from '@/config/app-config'
+import { getLogoPath } from '@/config/app-config.defaults'
 import { inline } from '@/lib/content/blocks/inline'
 
 // Первый экран лендинга: слово слева, иллюстрация справа.
@@ -22,15 +25,41 @@ import { inline } from '@/lib/content/blocks/inline'
 // — слово, потом иллюстрация: на узком экране первым обязан идти текст, ради
 // которого человек пришёл, а не картинка высотой в пол-экрана, которую надо
 // пролистать.
-export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => (
+export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
+  // Знак берётся из настроек; не загрузили — стоит заглушка, та же, что на
+  // страницах ошибок. Она не выдаёт себя за бренд клиента, а показывает МЕСТО:
+  // «сюда встанет ваш знак». Пустота на этом месте вопроса не задаёт, и владелец
+  // так и не узнаёт, что знак вообще предусмотрен.
+  const logo = getLogoPath(getAppConfig())
+
+  return (
   <section
     key={k}
-    className="mt-6 grid items-center gap-8 border-b border-border pb-10 md:grid-cols-2 md:gap-12"
+    className="grid items-center gap-8 py-10 md:grid-cols-2 md:gap-12"
   >
     <div className="flex flex-col gap-5">
+      {/* Знак и лейбл — по центру колонки, знак над лейблом (заказ владельца
+          2026-08-15). Круг задаётся обрезкой, а не рисунком: исходный знак
+          квадратный, и подгонять под круг каждую загруженную картинку нельзя. */}
+      {(b.mark ?? true) && (
+        <span className="mx-auto block size-[120px] overflow-hidden rounded-full border border-border bg-background">
+          {logo ? (
+            <StaticImage src={logo} alt="" sizes="120px" priority className="size-full object-cover" />
+          ) : (
+            <>
+              <span className="contents dark:hidden">
+                <StaticImage src="/placeholders/logo-light.png" alt="" sizes="120px" priority className="size-full object-cover" />
+              </span>
+              <span aria-hidden className="hidden dark:contents">
+                <StaticImage src="/placeholders/logo-dark.png" alt="" sizes="120px" priority className="size-full object-cover" />
+              </span>
+            </>
+          )}
+        </span>
+      )}
       {b.pill && (
         /* Каёмка живёт в styles/globals.css (.pill-ai): один элемент, две темы. */
-        <span className="pill-ai inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-foreground">
+        <span className="pill-ai mx-auto inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-foreground">
           {b.pill}
         </span>
       )}
@@ -56,4 +85,5 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => (
       />
     </div>
   </section>
-)
+  )
+}

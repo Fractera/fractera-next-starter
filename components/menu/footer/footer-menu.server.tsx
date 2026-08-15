@@ -79,9 +79,13 @@ export function FooterMenu({ lang }: { lang: string }) {
 
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
-      {/* data-app-column: the footer content follows the same width as the page content;
-          the footer width toggle (below) widens BOTH at once via --app-w (globals.css). */}
-      <div data-app-column className="px-6 py-10 flex flex-col gap-6">
+      {/* 🔒 ПОДВАЛ ПЕРЕКЛЮЧАТЕЛЮ ШИРИНЫ НЕ ПОДЧИНЯЕТСЯ (2026-08-15).
+          Здесь стояло `data-app-column`, и получалось наоборот: подвал был
+          ЕДИНСТВЕННЫМ, чем кнопка управляла, — лента страницы сидела в жёстком
+          `max-w-5xl` и не двигалась вовсе. Человек нажимал «шире», видел, как
+          разъезжается один подвал, и справедливо считал кнопку сломанной.
+          Подвал — мебель сайта: он занимает всю ширину всегда, как и шапка. */}
+      <div className="px-6 py-10 flex flex-col gap-6">
         {/* Section 1 — footer-page navigation (groups that enabled the footer slot),
             under a "Footer pages" heading. */}
         {groups.length > 0 && (

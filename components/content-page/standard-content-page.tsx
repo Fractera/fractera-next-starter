@@ -121,9 +121,39 @@ export function StandardContentPage({
     .filter((b): b is { kind: 'h2'; text: string } => b.kind === 'h2')
     .map(b => ({ id: headingId(b.text), text: b.text.replace(/\*\*/g, '') }))
 
+  // ── ТРИ ЗОНЫ ШИРИНЫ, И ГРАНИЦА МЕЖДУ НИМИ — ЗАКОН СТРАНИЦЫ (2026-08-15) ────
+  //
+  // 🔒 ЧТО ЭТО ЛЕЧИТ. Переключатель ширины в подвале не управлял НИЧЕМ, кроме
+  // самого подвала: метку `data-app-column` носил только он, а лента страницы
+  // сидела в жёстком `max-w-5xl`. Человек нажимал «шире», видел, как разъезжается
+  // подвал, и делал единственно возможный вывод — кнопка сломана.
+  //
+  // Область действия теперь описана явно:
+  //   • шапка               — не подчиняется никогда (её ширина — дело шапки);
+  //   • лента страницы      — подчиняется: это и есть смысл переключателя;
+  //   • первый экран (hero) — НЕ подчиняется, всегда во всю ширину;
+  //   • завершающая (outro) — НЕ подчиняется, всегда во всю ширину;
+  //   • подвал              — не подчиняется, всегда во всю ширину.
+  //
+  // 🔒 ПОЧЕМУ HERO И OUTRO ВЫНЕСЕНЫ ИЗ `<article>`, А НЕ ПРОСТО РАСШИРЕНЫ.
+  // Ширину задаёт РОДИТЕЛЬ: пока секция лежит внутри колонки, она не может стать
+  // шире неё — можно лишь вытягивать её отрицательными отступами, и это ломается
+  // на каждой второй ширине экрана. Поэтому такие секции физически стоят снаружи
+  // колонки, а внутри неё остаётся текст.
+  const heroBlock = blocks.find(b => b.kind === 'heroSplit')
+  const outroBlock = blocks.find(b => b.kind === 'languageMarquee')
+  const bodyBlocks = blocks.filter(b => b !== heroBlock && b !== outroBlock)
+
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <article className="mx-auto w-full max-w-5xl px-6 py-16 md:py-12">
+      {/* Первый экран — во всю ширину, вне колонки и вне её отступов. */}
+      {heroBlock && (
+        <div className="w-full px-6">
+          <PostBody blocks={[heroBlock]} lang={lang} />
+        </div>
+      )}
+
+      <article data-app-column className="px-6 py-16 md:py-12">
 
         {/* 1. Breadcrumb — single row, never wraps, never overflows.
             The trail stays on one line (flex-nowrap) and the whole strip is
@@ -259,8 +289,10 @@ export function StandardContentPage({
           </nav>
         )}
 
-        {/* 4–7, 9. Body blocks (callout, H2/H3, quote, CTA, docref download, …) */}
-        <PostBody blocks={blocks} lang={lang} />
+        {/* 4–7, 9. Body blocks (callout, H2/H3, quote, CTA, docref download, …).
+            Без первого экрана и завершающей секции: они нарисованы снаружи этой
+            колонки, потому что подчиняются другой ширине. */}
+        <PostBody blocks={bodyBlocks} lang={lang} />
 
         {/* Open sections slot — page-specific sections injected by the route entry
             (e.g. the VPS deploy form / the MCP connector + the founder quote). The
@@ -300,6 +332,11 @@ export function StandardContentPage({
         )}
 
       </article>
+
+      {/* Завершающая секция (outro) — последнее, что стоит на странице перед
+          подвалом, и тоже во всю ширину. Лента, обрезанная колонкой, перестаёт
+          читаться как лента. */}
+      {outroBlock && <PostBody blocks={[outroBlock]} lang={lang} />}
     </main>
   )
 }

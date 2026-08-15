@@ -80,12 +80,38 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ─── БЕГУЩАЯ ЛЕНТА ЯЗЫКОВ (завершающая секция, 2026-08-15) ──────────────────
+   Дорожка выведена ДВАЖДЫ и сдвигается ровно на половину своей длины: в момент
+   возврата вторая копия стоит там же, где стояла первая, поэтому шва не видно.
+   Движение СЛЕВА НАПРАВО — значит идти надо от -50% к 0.
+
+   🔒 ОСТАНОВКА ПРИ `prefers-reduced-motion` — требование доступности, а не
+   вежливость: у части людей постоянное движение на экране вызывает тошноту и
+   мигрень. Содержимое при остановке никуда не девается — лента просто стоит.
+   С выключенным JavaScript она тоже стоит: анимация чисто декоративная. */
+@keyframes marquee-ltr {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+.marquee-track {
+  animation: marquee-ltr 90s linear infinite;
+  /* Пауза под курсором: человек, захотевший прочитать название, может это сделать. */
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; transform: none; }
+}
+
 /* ─── APP CONTENT WIDTH (public showcase :3000) ──────────────────────────────
-   ONE variable drives the max-width of the main content column AND the footer
-   content. The footer width toggle (app-width-toggle.client.tsx) sets
-   html[data-app-width="wide"]; every container marked [data-app-column] reads
-   var(--app-w), so the page cards AND the footer widen together. Ported from the
-   Projects zone (:3003) width toggle.
+   Одна переменная задаёт ширину ЛЕНТЫ СТРАНИЦЫ. Переключатель в подвале
+   (app-width-toggle.client.tsx) ставит html[data-app-width="wide"], и контейнер
+   с меткой [data-app-column] читает var(--app-w).
+
+   🔒 ЧТО ИМЕННО ОН ДВИГАЕТ, А ЧТО НЕТ (2026-08-15). Метку носит РОВНО ОДИН
+   контейнер — `<article>` в standard-content-page.tsx. Не подчиняются:
+   шапка, первый экран (hero), завершающая секция (outro) и подвал — они всегда
+   во всю ширину. До этой правки всё было наоборот: метку носил только подвал,
+   и кнопка двигала единственно его, из-за чего выглядела сломанной.
      • normal — centered 64rem (the max-w-5xl the showcase shipped with);
      • wide   — full screen width minus a 32px bridge each side; --app-sbw is the
                 JS-measured scrollbar width (app-width-init.tsx) so 100vw never

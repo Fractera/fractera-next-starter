@@ -97,5 +97,11 @@ export const en: HomeCell = {
       { kind: 'p', text: 'The skeleton is built for a project that will outgrow a million lines: every entity owns its folder, the shared layer does not grow with their number, and routes and permissions are declared where they are enforced. Stability here is not a promise but a consequence — a new page adds nothing to a central spine.' },
     ],
   },
+  // Завершающая секция (outro) — всегда последняя, всегда во всю ширину.
+  {
+    kind: 'languageMarquee',
+    title: 'Eighty-two languages, ready before you need them',
+    note: 'Every one of them ships with the product — you enable the ones your market speaks.',
+  },
 ],
 }

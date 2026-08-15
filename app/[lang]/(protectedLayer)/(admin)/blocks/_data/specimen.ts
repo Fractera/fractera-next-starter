@@ -244,6 +244,17 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'languageMarquee',
+    when: 'The OUTRO section: the last thing on a page, always full width, never governed by the width toggle. A marquee of all 82 languages — flag plus the name in that language — read straight from config/translations/language-metadata.ts, never from page data. Movement is pure CSS: it works with JavaScript off and stops for prefers-reduced-motion.',
+    blocks: [
+      {
+        kind: 'languageMarquee',
+        title: 'Eighty-two languages, ready before you need them',
+        note: 'Every one of them ships with the product.',
+      },
+    ],
+  },
+  {
     kind: 'badges',
     when: 'A row of capability labels. The tone is a MEANING group, not a colour.',
     blocks: [

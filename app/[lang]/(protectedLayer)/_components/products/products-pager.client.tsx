@@ -18,6 +18,7 @@ import {
   PaginationNext, PaginationPrevious, PaginationFirst, PaginationLast,
 } from "@/components/ui/pagination"
 import { PAGE_SIZES } from "@/app/[lang]/(protectedLayer)/_lib/use-product-list"
+import { Small } from "@/components/ui/typography"
 
 export type PagerLabels = {
   count: string; perPage: string; prev: string; next: string; pageOf: string
@@ -34,9 +35,9 @@ export function ProductsPager(
 ) {
   return (
     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-      <p className="text-[10px] text-muted-foreground">
+      <Small>
         {labels.count.replace("{count}", String(total))}
-      </p>
+      </Small>
 
       <div className="flex items-center gap-1.5 sm:gap-3">
         <div className="flex items-center gap-1">

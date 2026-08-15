@@ -16,6 +16,7 @@
 import Link from "next/link"
 import type { Product } from "@/lib/products/types"
 import { localizeProduct, type LocalizedProduct } from "@/lib/products/localize"
+import { EmptyState } from "@/components/ui/empty-state"
 
 // 🔒 ВОЗМОЖНОСТИ ПРИХОДЯТ СВЕРХУ, А НЕ ЗАШИТЫ В ТАБЛИЦУ. Одна и та же таблица
 // стоит в ЧЕТЫРЁХ слоях прав, и в каждом человек может разное: персонал
@@ -63,9 +64,7 @@ export function ProductTable({ products, lang, currency, labels, hrefFor, rowAct
   const money = new Intl.NumberFormat(lang, { style: "currency", currency })
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-24 text-center">
-        <p className="text-sm text-muted-foreground">{labels.empty}</p>
-      </div>
+      <EmptyState title={labels.empty} />
     )
   }
 

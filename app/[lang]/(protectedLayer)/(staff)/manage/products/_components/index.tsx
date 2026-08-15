@@ -6,6 +6,7 @@ import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 import { H1 } from '@/components/ui/typography'
 import { PageHeader } from "@/components/content-page/page-header.server"
+import { Small } from "@/components/ui/typography"
 
 // Route entry — SERVER component, and everything it renders is the STATIC SHELL:
 // heading, description, the note about where the data lives. None of it needs a
@@ -49,7 +50,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
           }}
         />
 
-        <p className="mt-6 text-center font-mono text-[10px] text-muted-foreground">{t.storageNote}</p>
+        <Small className="mt-6 text-center font-mono">{t.storageNote}</Small>
       </div>
     </main>
   )

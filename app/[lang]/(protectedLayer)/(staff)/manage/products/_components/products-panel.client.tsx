@@ -27,6 +27,8 @@ import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-
 import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Small } from "@/components/ui/typography"
 
 // Только ОТЛИЧИТЕЛЬНЫЕ слова этой страницы. Колонки, тулбар и пагинация уехали в
 // общий словарь защищённого слоя: они одинаковы у всех четырёх ролей, и четыре
@@ -146,12 +148,10 @@ export function ProductsPanel(
       {!list.revealed ? (
         <>
           <ProductTableSkeleton labels={common} />
-          <p className="mt-2 text-center text-[10px] text-muted-foreground">{common.revealHint}</p>
+          <Small className="mt-2 text-center">{common.revealHint}</Small>
         </>
       ) : list.products.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-xs text-muted-foreground">
-          {list.applied ? labels.nothingFound : common.empty}
-        </div>
+        <EmptyState title={list.applied ? labels.nothingFound : common.empty} />
       ) : (
         <>
           {/* Удаления здесь НЕТ и не будет: с 2026-08-11 это право слоя

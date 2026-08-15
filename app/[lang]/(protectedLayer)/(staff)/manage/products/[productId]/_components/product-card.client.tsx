@@ -34,6 +34,7 @@ import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { useProduct } from "@/app/[lang]/(protectedLayer)/_lib/use-product"
 import { EditableField } from "@/app/[lang]/(protectedLayer)/_components/products/editable-field.client"
 import { H2 } from "@/components/ui/typography";
+import { EmptyState } from "@/components/ui/empty-state"
 
 export type CardLabels = {
   name: string; price: string; colId: string
@@ -71,15 +72,15 @@ export function ProductCard(
   if (state.kind !== "found") {
     const failed = state.kind === "failed"
     return (
-      <div className="rounded-2xl border border-dashed border-border px-6 py-12 text-center">
-        <p className="text-base font-medium text-foreground">
-          {failed ? labels.failed : labels.notFoundTitle}
-        </p>
-        {!failed && <p className="mt-1.5 text-sm text-muted-foreground">{labels.notFoundBody}</p>}
-        <Link href={backHref} className="mt-6 inline-block text-xs text-muted-foreground underline hover:text-foreground">
-          ← {labels.back}
-        </Link>
-      </div>
+      <EmptyState
+        title={failed ? labels.failed : labels.notFoundTitle}
+        hint={!failed ? labels.notFoundBody : undefined}
+        action={
+          <Link href={backHref} className="text-sm text-muted-foreground underline hover:text-foreground">
+            ← {labels.back}
+          </Link>
+        }
+      />
     )
   }
 
@@ -95,7 +96,7 @@ export function ProductCard(
         <figure className="mb-6 overflow-hidden rounded-2xl border border-border bg-muted/30">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.media_url} alt={p.localizedName} className="mx-auto h-64 w-full object-contain p-6" />
-          <figcaption className="border-t border-border px-4 py-2 text-center text-[11px] text-muted-foreground">
+          <figcaption className="border-t border-border px-4 py-2 text-center text-sm text-muted-foreground">
             {p.localizedName}
           </figcaption>
         </figure>

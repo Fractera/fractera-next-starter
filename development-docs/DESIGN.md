@@ -58,6 +58,22 @@ its own limit `--hero-w`; the closing marquee has none by design.
 Left, always — except four cases that earn the centre by role: an image caption, the founder quote,
 the mark-and-label of the first screen, and the heading of a full-width closing section.
 
+## The page header, empty states, captions
+
+Three more things that are primitives, not decisions a page gets to make:
+
+- **`PageHeader`** — the whole top of a page, in a fixed order: breadcrumbs → eyebrow (or tags) → H1
+  → subtitle → meta line. Any part may be omitted; none may be reordered. Before it existed there
+  were five different assemblies across eight pages, the subtitle came in four sizes, and the
+  divider appeared on two pages out of five.
+- **`EmptyState`** — "there is nothing here yet". One box, one height, one radius. It was drawn in
+  five places with three heights (`py-8` / `py-12` / `py-24`), two radii and three text sizes.
+- **`Small`** — footnotes and captions under a block. One size, 14px.
+
+**Text inside a control is not a caption.** Pager digits, chips, badges and table cells are dense on
+purpose and stay as they are — forcing them to 14px would break the controls, not unify them. The
+line is: standalone prose under a block is `Small`; text inside a control belongs to that control.
+
 ## Components you insist on
 
 Interactive UI is shadcn/ui only, icons are `lucide-react` only, toasts are Sonner. Text is

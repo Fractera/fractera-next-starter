@@ -20,6 +20,7 @@ import { localizeProduct } from "@/lib/products/localize"
 import { ProductRow } from "./product-row.client"
 import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { AccountingProductsUi } from "../_data/ui.i18n"
+import { EmptyState } from "@/components/ui/empty-state"
 
 export function ProductsPanel(
   { lang, currency, labels, common }: { lang: string; currency: string; labels: AccountingProductsUi; common: ProductListUi },
@@ -77,9 +78,7 @@ export function ProductsPanel(
           </p>
 
           {rows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-24 text-center">
-              <p className="text-sm text-muted-foreground">{common.empty}</p>
-            </div>
+            <EmptyState title={common.empty} />
           ) : (
             <div className="overflow-hidden rounded-xl border border-border">
               <table className="w-full text-xs">

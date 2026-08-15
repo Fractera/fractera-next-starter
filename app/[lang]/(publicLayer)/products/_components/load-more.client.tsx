@@ -16,6 +16,7 @@ import Link from "next/link"
 import { Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MediaImage } from "@/components/media/media-image.server"
+import { Small } from "@/components/ui/typography"
 
 type Row = {
   id: string
@@ -97,9 +98,9 @@ export function LoadMore(
             {busy ? labels.loading : labels.more}
           </Button>
         )}
-        <p className="text-[10px] text-muted-foreground">
+        <Small>
           {labels.shown.replace("{shown}", String(shown)).replace("{total}", String(total))}
-        </p>
+        </Small>
         {failed && <p className="text-[10px] text-destructive">{labels.failed}</p>}
       </div>
     </>

@@ -56,8 +56,15 @@ export type DesignConfig = {
   /** Шкала текста: множитель на весь набор и межстрочный интервал. */
   type: { scale?: number; leading?: number }
 
-  /** Формы и отступы: скругление, толщина рамки, ширина ленты и первого экрана. */
-  shape: { radius?: string; borderWidth?: string; appWidth?: string; heroWidth?: string }
+  /** Формы и отступы: скругление, рамка, плотность, ширина ленты и первого экрана. */
+  shape: {
+    radius?: string
+    borderWidth?: string
+    /** Множитель воздуха страниц. 1 — плотность проекта. */
+    spaceScale?: number
+    appWidth?: string
+    heroWidth?: string
+  }
 }
 
 export const DEFAULT_DESIGN_CONFIG: DesignConfig = {

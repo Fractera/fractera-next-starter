@@ -106,6 +106,13 @@ export function buildDesignCss(cfg: DesignConfig = getDesignConfig()): {
     root.push(`  --type-leading: ${cfg.type.leading};`)
   }
 
+  // Плотность — тот же приём, что у шкалы текста: одно число двигает воздух на
+  // всех страницах, сохраняя разницу между контентными и рабочими экранами.
+  // Границы те же по смыслу: ниже 0.5 страница слипается, выше 2 — рассыпается.
+  if (typeof cfg.shape?.spaceScale === "number" && cfg.shape.spaceScale >= 0.5 && cfg.shape.spaceScale <= 2) {
+    root.push(`  --space-scale: ${cfg.shape.spaceScale};`)
+  }
+
   if (safe(cfg.shape?.radius)) root.push(`  --radius: ${cfg.shape.radius};`)
   if (safe(cfg.shape?.borderWidth)) root.push(`  --border-width: ${cfg.shape.borderWidth};`)
   if (safe(cfg.shape?.appWidth)) root.push(`  --app-w: ${cfg.shape.appWidth};`)

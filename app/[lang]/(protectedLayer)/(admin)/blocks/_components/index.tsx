@@ -19,7 +19,7 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-[var(--page-py-content)]">
         <PageHeader lang={lang} eyebrow={`${SPECIMEN.length} ${ui.countLabel}`} title={ui.title} subtitle={ui.subtitle} />
 
         {SPECIMEN.map(section => (

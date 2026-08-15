@@ -155,7 +155,7 @@ export function StandardContentPage({
           пришлось бы держать в двух местах сразу. */}
       {heroBlock && <PostBody blocks={[heroBlock]} lang={lang} />}
 
-      <article data-app-column className="px-6 py-16">
+      <article data-app-column className="px-6 py-[var(--page-py-content)]">
 
         {/* 1–2. Шапка страницы — ОДИН примитив на весь сайт.
             Порядок и отступы задаёт `PageHeader`; здесь остаётся только решение

@@ -19,7 +19,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-[var(--page-py-work)]">
         <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
         <ProductsPanel lang={lang} currency={currency} labels={t} common={common} />

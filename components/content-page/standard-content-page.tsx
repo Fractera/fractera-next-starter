@@ -146,12 +146,12 @@ export function StandardContentPage({
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* Первый экран — во всю ширину, вне колонки и вне её отступов. */}
-      {heroBlock && (
-        <div className="w-full px-6">
-          <PostBody blocks={[heroBlock]} lang={lang} />
-        </div>
-      )}
+      {/* Первый экран — вне колонки страницы. Своими отступами и своим пределом
+          ширины он распоряжается сам: у секции лендинга он есть (56rem — иначе
+          на мониторе в 2500 пикселей содержимое разъезжается по краям), у ленты
+          языков его нет вовсе. Шаблон в это не вмешивается — иначе закон ширины
+          пришлось бы держать в двух местах сразу. */}
+      {heroBlock && <PostBody blocks={[heroBlock]} lang={lang} />}
 
       <article data-app-column className="px-6 py-16 md:py-12">
 

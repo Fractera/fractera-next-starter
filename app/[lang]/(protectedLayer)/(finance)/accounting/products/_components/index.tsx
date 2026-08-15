@@ -26,7 +26,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
         <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
 
         <header className="mb-8 mt-4">
-          <H1 variant="ui">{t.title}</H1>
+          <H1>{t.title}</H1>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </header>
 

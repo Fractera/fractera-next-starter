@@ -48,7 +48,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
           ]}
         />
 
-        <H1 variant="ui" className="mt-4">{t.one}</H1>
+        <H1 className="mt-4">{t.one}</H1>
 
         <div className="mt-5">
           <ProductCard

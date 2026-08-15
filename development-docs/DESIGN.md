@@ -5,18 +5,70 @@
 Describe the look once and every page inherits it. Without this file the agent invents an appearance
 per page, and you review visual decisions after they are built instead of before.
 
-## What to write here
+> **This file was empty until 2026-08-15, and the prediction above came true.** With nothing to obey,
+> the agent invented a second heading style for "work screens": `/ru/blocks` and `/ru/manage/products`
+> — both private, both work pages — ended up twice apart in size and set in different families. The
+> rules below are the correction, written down so the invention cannot repeat.
 
-- **Tone** — what this product should feel like in three or four words, and what it must never feel like.
-- **Colour and type** — the accent, the surfaces, the font pairing. Name them; "modern and clean"
-  cannot be implemented.
-- **Spacing and density** — airy or compact, and where the exceptions live.
-- **Components you insist on** — the shape of buttons, cards, tables, forms; what a page header carries.
-- **References** — a link or a screenshot of something you like, with one sentence on WHAT you like in
-  it. The sentence matters more than the link.
+---
+
+## The one law
+
+**Nothing about a page's LOOK depends on who may open it.** Public or private, indexed or gated,
+storefront or admin table — the heading, the scale, the spacing and the colours are the same. Access
+decides what a person may see, never how it is set.
+
+There is exactly one visual exception, named below, and it is about position on the site, not about
+permissions.
+
+## Type
+
+The whole scale lives in `components/ui/typography.tsx` and nowhere else. A hand-written heading fails
+`npm run check:typography`.
+
+| | Size | Family |
+|---|---|---|
+| `H1` — page heading, one for the whole site | 30 → 36 → 48 px | serif |
+| `H1 scale="hero"` — **the only exception**: the home page's first screen, +30% | 39 → 47 → 62 px | serif |
+| `H2` | 24 → 30 px (`ui`: 18 → 20) | serif (`ui`: sans) |
+| `H3` / `H4` | 18 → 20 / 16 → 18 px | sans |
+| `P` | 16 → 17 px | sans |
+| `Lead` · `Small` · `Eyebrow` | 18 → 20 / 14 / 12 px | sans |
+
+**A size never shrinks as the screen grows.** On a monitor there is more room, not less. The same law
+applies to padding.
+
+**Glow (`.h1-glow`) belongs to the home page's first screen only.** It is a mark of the front door; on
+a document page it competes with the text.
+
+## Spacing and density
+
+Airy on content, compact on work screens — and this is the ONLY place where the two differ.
+
+| | Page padding |
+|---|---|
+| Content pages (home, posts, footer pages, block gallery) | `py-16` |
+| Work screens (product panels, catalogue tables) | `py-10` |
+
+Width: one measure for the whole site — `max-w-7xl` (1280px), held by `--app-w`. The first screen has
+its own limit `--hero-w`; the closing marquee has none by design.
+
+## Alignment
+
+Left, always — except four cases that earn the centre by role: an image caption, the founder quote,
+the mark-and-label of the first screen, and the heading of a full-width closing section.
+
+## Components you insist on
+
+Interactive UI is shadcn/ui only, icons are `lucide-react` only, toasts are Sonner. Text is
+`components/ui/typography.tsx`. A hand-rolled button, dropdown or heading is a defect, not a variation.
 
 ## For the agent
 
 Read this before building any user-facing surface. If the request contradicts this file, say so in one
 sentence before writing code: either the request is an exception worth recording here, or the document
 is out of date. Do not silently pick one.
+
+**And never derive a visual rule from a folder name.** `(protectedLayer)` says who may enter. It has
+never said anything about how the page looks, and reading that into it is exactly the mistake this
+file now exists to prevent.

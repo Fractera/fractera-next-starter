@@ -88,7 +88,7 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
             {/* Размер и шрифт — из примитива типографики: заголовок первого
                 экрана обязан совпадать с заголовком любой другой страницы.
                 Здесь остаётся только свечение. */}
-            <H1 className="h1-glow">{b.title}</H1>
+            <H1 scale="hero" className="h1-glow">{b.title}</H1>
             <p className="text-base leading-relaxed text-muted-foreground">
               {inline(b.description, `${k}-d`)}
             </p>

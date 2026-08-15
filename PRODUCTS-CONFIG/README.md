@@ -26,7 +26,7 @@ from `draft` to `live` publishes it; nothing is rebuilt and nothing is deployed.
 
 ```json
 {
-  "id": "store-1",
+  "id": "p1",
   "title": "Мой магазин",
   "type": "store",
   "surface": "public",
@@ -38,7 +38,7 @@ from `draft` to `live` publishes it; nothing is rebuilt and nothing is deployed.
 
 | Field | Meaning |
 |---|---|
-| `id` | machine identifier, **never changes**, never derived from the title |
+| `id` | machine identifier `p1`, `p2`, … — **never changes**, and means nothing on purpose |
 | `title` | human name, proposed by the model, freely renamed by the owner |
 | `type` | one of the twelve project structures the panel offers |
 | `surface` | `public` (own address) · `private` (a tab in the cabinet) · `headless` (channels and schedule only) |
@@ -47,17 +47,25 @@ from `draft` to `live` publishes it; nothing is rebuilt and nothing is deployed.
 
 ## The two rules that make a product a boundary
 
-**1. The title is alive, the id is forever.** Renaming "Lawyers" to "Legal services" must never
-move a single file. That is why paths are derived from `id` and never from `title`.
+**1. The title is alive, the id is forever — and the id means nothing.** It is `p1`, not
+`store-1`. A readable id was tried and failed the same day: the owner changes the structure
+(that is what the second screen is for), and a product that became a company brain would have
+carried the identifier `store-1`, plus `lib/products/store-1/` and tables `store_1_*`, forever.
+An identifier has to survive every other field changing, so it carries no meaning at all.
+Readability comes from `title`; the address comes from `route`.
 
-**2. Paths are derived, not configured.** For a product with id `store-1`:
+**2. Paths are derived, not configured.** For a product with id `p1` sitting on `/shop`:
 
 | What | Where |
 |---|---|
-| pages | `app/[lang]/store-1/` — or `app/[lang]/(root)/` for the product holding `/` |
-| logic | `lib/products/store-1/` |
-| tables | `store_1_*` |
-| use cases | `development-docs/USE-CASES/store-1/{CASES,RAW}/` |
+| pages | `app/[lang]/shop/` — or `app/[lang]/(root)/` for the product holding `/` |
+| logic | `lib/products/p1/` |
+| tables | `p1_*` |
+| use cases | `development-docs/USE-CASES/p1/{CASES,RAW}/` |
+
+Pages are the one exception: in Next the folder name **is** the address segment, so a product on
+`/shop` must live in `app/[lang]/shop/`. The price is stated plainly — moving a product to another
+address renames its pages folder. Everything else hangs off the immortal `id` and never moves.
 
 A configurable path is one more field that will one day disagree with reality, and the agent
 would write code where nobody reads it. A derived path cannot disagree.

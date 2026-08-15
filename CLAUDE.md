@@ -80,8 +80,23 @@ working here. Details: `development-docs/SINGLE-AGENT.md`.
 
 ### 🛑 `development-docs/USE-CASES/` — no confirmed user cases, no development
 
-**If `development-docs/USE-CASES/CASES/` holds no CONFIRMED case, you do not start building. This is a stop, not a
-preference.**
+**Use cases live per PRODUCT: `development-docs/USE-CASES/<product-id>/CASES/`.** One server carries many
+products — a landing page, a store, a company brain — and each has its own cases, its own pages and its own
+data. The register of products is `PRODUCTS-CONFIG/products-config.json`; read it first, it is small.
+
+**Which product am I working on?**
+
+1. **One product in the register** — that one. Do not ask.
+2. **Several** — work it out from the request: a named address, a folder, the product's title. State which
+   one you picked and why, in one line, before you write anything.
+3. **Cannot work it out** — **ask, and write no code until answered.** Not a preference: a change made in the
+   wrong product is invisible until someone else's product breaks.
+
+**Name the product in every report and in the step file.** A step that does not say which product it served
+cannot be read back a month later.
+
+**If `development-docs/USE-CASES/<product-id>/CASES/` holds no CONFIRMED case, you do not start building. This is a
+stop, not a preference.**
 
 Each file there is one scenario in the owner's words: who uses the product, what brought them, what must
 be true when they are done. A case carries a status. **A case the owner has not confirmed is a guess the
@@ -92,11 +107,11 @@ is confirmed.
 section of the control panel: it runs a Quiz — seven opening questions, then a conversation that turns
 into cases. That conversation IS the first task, not a delay before the real one.
 
-**Once they exist, read `development-docs/USE-CASES/CASES/` at session start** and treat it as the target every change is
+**Once they exist, read `development-docs/USE-CASES/<product-id>/CASES/` at session start** and treat it as the target every change is
 measured against. If a request serves no case, say so before writing code — either the request is wrong or
 the cases are out of date, and both are worth a sentence.
 
-### 📥 `development-docs/USE-CASES/RAW/` — the raw material, and you normally leave it closed
+### 📥 `development-docs/USE-CASES/<product-id>/RAW/` — the raw material, and you normally leave it closed
 
 Every question the Quiz asked and every answer the owner gave is written there, along with the seed. It
 grows to hundreds of exchanges.
@@ -673,10 +688,15 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       never reported as missing. When development-docs/CONTEXT-STATE.md is listed as on, read it before any other document:
       it carries what the previous window was in the middle of, and it is a HINT, never proof — verify
       against `git log --oneline -10` and the recorded git_head, then clear it once adopted.</action>
-    <action>Read USE-CASES/CASES/ — what this product is for, one file per scenario. NO CONFIRMED CASE =
-      STOP: do not start building; say which cases are missing or unconfirmed and point at the Use cases
-      section of the control panel, whose Quiz creates them (section 1). USE-CASES/RAW/ is NOT read in
-      ordinary work — only when a lost intention has to be recovered.</action>
+    <action>Read PRODUCTS-CONFIG/products-config.json FIRST — which products this server carries. One product:
+      that is the one. Several: work out which the request means and say so in one line. Cannot work it out:
+      ASK and write nothing until answered — a change made in the wrong product stays invisible until
+      someone else's product breaks.</action>
+    <action>Read USE-CASES/&lt;product-id&gt;/CASES/ — what THAT product is for, one file per scenario. NO CONFIRMED
+      CASE = STOP: do not start building; say which cases are missing or unconfirmed and point at the Use cases
+      section of the control panel, whose Quiz creates them (section 1). USE-CASES/&lt;product-id&gt;/RAW/ is NOT read in
+      ordinary work — only when a lost intention has to be recovered. Cases of OTHER products are not your
+      target: reading them is how a request quietly grows into someone else's product.</action>
     <action>Read development-docs/PLATFORM-TOOLS.md — what the platform already gives you (stores, vector search, knowledge
       graph, map, channels) AND which micro-tools are installed in tools/, each with its full contract:
       import line, props, what it returns, a working example, and its limits. You have no external tools;

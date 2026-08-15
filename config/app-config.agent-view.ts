@@ -157,8 +157,9 @@ export function renderAgentConfigView(view: AgentConfigView): string {
   out.push(
     view.source === "live-file"
       ? `source: ${view.configPath} (the owner's saved settings)`
-      : `source: NO config file at ${view.configPath} — the app runs on the committed defaults shown below. ` +
-          "This is normal on a fresh server; the owner's first save in Admin → App Settings replaces them.",
+      : `source: NOTHING SAVED YET at ${view.configPath} — the file is absent or still empty, so the app ` +
+          "runs on the committed defaults shown below. This is normal on a fresh server; the owner's " +
+          "first save in Admin → App Settings replaces them.",
   );
   out.push(
     `languages: ${view.languages.codes.join(", ")} (${view.languages.codes.length}) · ` +
@@ -222,9 +223,29 @@ function readLanguages(): AgentConfigView["languages"] {
  * Read the live config (or the committed defaults when there is none) and return the agent view.
  * Entry point for both the CLI script and any server code that wants the same slice.
  */
+/**
+ * Есть ли в файле хоть одна сохранённая настройка.
+ *
+ * 🔒 СУЩЕСТВУЮЩИЙ ПУСТОЙ ФАЙЛ — ЭТО «НЕ НАСТРАИВАЛИ», А НЕ «НАСТРОЙКИ ВЛАДЕЛЬЦА»
+ * (2026-08-15). Файл `{}` лежит в шаблоне с первого дня, и по одному лишь факту
+ * его наличия вывод говорил агенту «сохранённые настройки владельца», показывая
+ * при этом умолчания кода. Разница не косметическая: агент, поверивший, что имя
+ * и адрес заданы человеком, не станет спрашивать о них и построит сайт пекарни
+ * под именем шаблона.
+ */
+function hasSavedSettings(path: string): boolean {
+  try {
+    const raw = JSON.parse(readFileSync(path, "utf8")) as unknown;
+    return typeof raw === "object" && raw !== null && Object.keys(raw).length > 0;
+  } catch {
+    // Нечитаемый файл — тот же ответ, что и отсутствующий: применяются умолчания.
+    return false;
+  }
+}
+
 export function getAgentConfigView(): AgentConfigView {
   const configPath = getConfigPath();
-  const present = existsSync(configPath);
+  const present = existsSync(configPath) && hasSavedSettings(configPath);
   // Deliberately NOT calling getAppConfig() when the file is absent: it seeds the file from the
   // defaults on first read, and an agent merely LOOKING at the config in a local clone must not
   // create server state — nor then report that state back as if the owner had saved it.

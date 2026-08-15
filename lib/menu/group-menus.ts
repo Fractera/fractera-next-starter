@@ -77,13 +77,56 @@ function groupChildren(groupDir: string, lang: string): MenuChild[] {
   return out;
 }
 
+// 🔒 ГРУППЫ МАРШРУТОВ `(…)` ПРОЗРАЧНЫ ДЛЯ ЭТОГО ОБХОДА — И ЭТО НЕ УДОБСТВО, А
+// ИСПРАВЛЕНИЕ ФАТАЛЬНОГО ДЕФЕКТА (2026-08-15).
+//
+// ЧТО СЛОМАЛОСЬ. Шаг 507 переложил разделы в явные слои: `blog` и `products`
+// уехали из `app/[lang]/` в `app/[lang]/(publicLayer)/`. Обход же смотрел РОВНО
+// на первый уровень, и манифестов там больше не было — ни одного. Сканер стал
+// возвращать пустой список, и верхнее меню опустело у ВСЕХ и НАВСЕГДА: ссылки
+// на блог и каталог исчезли из шапки, хотя обе страницы на месте и открываются
+// по прямому адресу.
+//
+// ПОЧЕМУ ЭТО ИСКАЛИ ТРИЖДЫ И НЕ НАШЛИ. Симптом выглядел как проблема прав:
+// «меню пропало после выхода из аккаунта». Роли действительно фильтруют пункты
+// (`use-visible-groups.client.ts`), поэтому чинили их — а фильтровать было
+// нечего, список приходил пустым ещё с сервера. Ни одна проверка не падала:
+// пустое меню — законное состояние свежего проекта, и отличить «групп нет» от
+// «групп не нашли» по результату нельзя.
+//
+// ПОЧЕМУ ИМЕННО ПРОЗРАЧНОСТЬ, А НЕ ЖЁСТКИЙ ПУТЬ К `(publicLayer)`. Скобочная
+// группа в Next — приём организации файлов, на адрес страницы она не влияет:
+// `(publicLayer)/blog` открывается как `/blog`. Значит и меню обязано её не
+// замечать. Впиши мы сюда имя слоя — следующий слой (или переименование этого)
+// сломал бы меню ровно так же и так же тихо.
+function findGroupDirs(dir: string, depth = 0): string[] {
+  // Ограничение глубины — защита от неожиданной вложенности, а не от рекурсии:
+  // двух уровней скобок хватает с запасом, а бесконечный обход дерева страниц
+  // на сборке стоил бы секунд на пустом месте.
+  if (depth > 3) return [];
+  const out: string[] = [];
+  let entries: string[] = [];
+  try { entries = readdirSync(dir); } catch { return out; }
+  for (const name of entries) {
+    if (name.startsWith("_") || name.startsWith("[") || name.startsWith(".")) continue;
+    const child = join(dir, name);
+    if (!isDir(child)) continue;
+    // Скобочная группа — не раздел сайта: заглядываем внутрь и идём дальше.
+    if (name.startsWith("(") && name.endsWith(")")) {
+      out.push(...findGroupDirs(child, depth + 1));
+      continue;
+    }
+    if (existsSync(join(child, "_data", "group.ts"))) out.push(child);
+  }
+  return out;
+}
+
 // All composed groups whose manifest enables `slot`, sorted by order then slug.
 export function getMenuGroups(slot: MenuSlot, lang: string): MenuGroup[] {
   if (!isDir(LANG_ROOT)) return [];
   const groups: MenuGroup[] = [];
-  for (const name of readdirSync(LANG_ROOT)) {
-    if (name.startsWith("_") || name.startsWith("[") || name.startsWith(".")) continue;
-    const groupDir = join(LANG_ROOT, name);
+  for (const groupDir of findGroupDirs(LANG_ROOT)) {
+    const name = groupDir.split(/[\\/]/).pop() ?? "";
     const gPath = join(groupDir, "_data", "group.ts");
     if (!existsSync(gPath)) continue;
     const m = parseManifest(read(gPath));

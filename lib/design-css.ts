@@ -68,11 +68,28 @@ export function buildDesignCss(cfg: DesignConfig = getDesignConfig()): {
   // ── Шрифты, шкала, формы — всё это от темы не зависит и живёт в светлом блоке
   const root: string[] = [...light]
 
+  // 🔒 ИМЕНА ПЕРЕМЕННЫХ ЗАДАНЫ ТАБЛИЦЕЙ, А НЕ СКЛЕЙКОЙ ИЗ РОЛИ. Шаблон
+  // `--font-${role}` давал для моноширинного `--font-mono` — а это имя УЖЕ
+  // занято темой Tailwind, и выбор владельца столкнулся бы с ней. Столкновение
+  // такого рода не падает и не видно в коде: побеждает то правило, что окажется
+  // ниже, а какое окажется — зависит от порядка сборки.
+  const FONT_VAR: Record<string, string> = {
+    heading: "--font-heading",
+    body: "--font-body",
+    mono: "--font-mono-user",
+  }
+
   for (const [role, font] of Object.entries(cfg.fonts ?? {})) {
-    if (!font || !safe(font.family)) continue
-    // Имя семейства в кавычках: без них «Playfair Display» распадается на два
-    // слова, и браузер ищет шрифт «Playfair».
-    root.push(`  --font-${role}: "${font.family}";`)
+    const varName = FONT_VAR[role]
+    if (!varName || !font || !safe(font.family)) continue
+    // 🔒 КАВЫЧКИ СТАВЯТСЯ ОДНОМУ ИМЕНИ, НО НЕ НАБОРУ. «Playfair Display» без
+    // кавычек распадается на два слова, и браузер ищет шрифт «Playfair». А
+    // системный вариант — это СПИСОК через запятую (`system-ui, -apple-system,
+    // 'Segoe UI', …`), и кавычки вокруг него превращают весь список в одно
+    // несуществующее имя: страница молча откатывается на шрифт по умолчанию
+    // браузера, то есть выглядит сломанной ровно там, где выбран «системный».
+    const value = font.family.includes(",") ? font.family : `"${font.family}"`
+    root.push(`  ${varName}: ${value};`)
     if (typeof font.import === "string" && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(font.import)) {
       fontLinks.push(font.import)
     }

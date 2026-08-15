@@ -28,6 +28,18 @@ import { cn } from "@/lib/utils"
 //      подпись к таблице, а не обложка; он компактный и без засечек, иначе
 //      рабочий экран превращается в афишу.
 // Семейство задаётся ОДНОЙ строкой ниже — сменить решение можно в одном месте.
+//
+// 🔒 РАЗМЕРЫ — ПЕРЕМЕННЫЕ, А НЕ ЧИСЛА (слой «Дизайн», 2026-08-15). Шкала живёт в
+// `styles/globals.css` (`--fs-*`), и каждая ступень посчитана от множителя
+// `--type-scale`. Владелец меняет одно число в панели — набор целиком становится
+// крупнее или мельче, сохраняя пропорции. Девять отдельных полей вместо
+// множителя дали бы девять способов развалить шкалу: подзаголовок крупнее
+// заголовка, основной текст мельче подписи — ровно тот разнобой, что мы отсюда
+// и убирали.
+//
+// Семейства тоже читают выбор владельца: `font-serif` и `font-sans` в теме
+// объявлены через `var(--font-heading, …)` и `var(--font-body, …)`. До этой
+// правки панель писала переменные, которых никто не читал.
 
 const CONTENT_FAMILY = "font-serif"
 const UI_FAMILY = "font-sans"
@@ -48,7 +60,7 @@ type Variant = "content" | "ui"
 // содержимого, а заголовок — это опознавательный знак сайта, и он обязан быть
 // один. Проверяется это глазами человека, открывшего две страницы подряд, а не
 // рассуждением о плотности.
-const H1_STYLE = `${CONTENT_FAMILY} text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl`
+const H1_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-h1)] font-bold leading-tight tracking-tight md:text-[length:var(--fs-h1-md)] lg:text-[length:var(--fs-h1-lg)]`
 
 // Заголовок ПЕРВОГО ЭКРАНА главной — те же 30/36/48, увеличенные на 30%
 // (заказ владельца 2026-08-15): 39 / 47 / 62 пикселя.
@@ -58,21 +70,21 @@ const H1_STYLE = `${CONTENT_FAMILY} text-3xl font-bold leading-tight tracking-ti
 // такое исключение записывается классами на месте, рядом появляется второе, и
 // шкала перестаёт существовать. Стоит оно у шкалы, посчитано от неё, и видно
 // всякому, кто сюда заглянет.
-const H1_HERO_STYLE = `${CONTENT_FAMILY} text-[39px] font-bold leading-tight tracking-tight md:text-[47px] lg:text-[62px]`
+const H1_HERO_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-hero)] font-bold leading-tight tracking-tight md:text-[length:var(--fs-hero-md)] lg:text-[length:var(--fs-hero-lg)]`
 
 const H2_STYLES: Record<Variant, string> = {
-  content: `${CONTENT_FAMILY} text-2xl font-bold leading-snug tracking-tight md:text-3xl`,
-  ui: `${UI_FAMILY} text-lg font-semibold tracking-tight md:text-xl`,
+  content: `${CONTENT_FAMILY} text-[length:var(--fs-h2)] font-bold leading-snug tracking-tight md:text-[length:var(--fs-h2-md)]`,
+  ui: `${UI_FAMILY} text-[length:var(--fs-h3)] font-semibold tracking-tight md:text-[length:var(--fs-h3-md)]`,
 }
 
 const H3_STYLES: Record<Variant, string> = {
-  content: `${UI_FAMILY} text-lg font-semibold leading-snug md:text-xl`,
-  ui: `${UI_FAMILY} text-base font-semibold md:text-lg`,
+  content: `${UI_FAMILY} text-[length:var(--fs-h3)] font-semibold leading-snug md:text-[length:var(--fs-h3-md)]`,
+  ui: `${UI_FAMILY} text-[length:var(--fs-body)] font-semibold md:text-[length:var(--fs-h3)]`,
 }
 
 const H4_STYLES: Record<Variant, string> = {
-  content: `${UI_FAMILY} text-base font-semibold md:text-lg`,
-  ui: `${UI_FAMILY} text-sm font-semibold`,
+  content: `${UI_FAMILY} text-[length:var(--fs-body)] font-semibold md:text-[length:var(--fs-h3)]`,
+  ui: `${UI_FAMILY} text-[length:var(--fs-small)] font-semibold`,
 }
 
 type HeadingProps = ComponentProps<"h1"> & { variant?: Variant }
@@ -101,17 +113,17 @@ export function H4({ variant = "content", className, ...props }: HeadingProps) {
 
 /** Обычный текст страницы. */
 export function P({ className, ...props }: ComponentProps<"p">) {
-  return <p className={cn("text-base leading-relaxed text-muted-foreground md:text-[17px]", className)} {...props} />
+  return <p className={cn("text-[length:var(--fs-body)] leading-[var(--type-leading)] text-muted-foreground md:text-[length:var(--fs-body-md)]", className)} {...props} />
 }
 
 /** Вводный абзац под заголовком — крупнее обычного, но не заголовок. */
 export function Lead({ className, ...props }: ComponentProps<"p">) {
-  return <p className={cn("text-lg leading-relaxed text-muted-foreground md:text-xl", className)} {...props} />
+  return <p className={cn("text-[length:var(--fs-lead)] leading-[var(--type-leading)] text-muted-foreground md:text-[length:var(--fs-lead-md)]", className)} {...props} />
 }
 
 /** Подпись, сноска, вспомогательная строка. */
 export function Small({ className, ...props }: ComponentProps<"p">) {
-  return <p className={cn("text-sm leading-normal text-muted-foreground", className)} {...props} />
+  return <p className={cn("text-[length:var(--fs-small)] leading-normal text-muted-foreground", className)} {...props} />
 }
 
 /**
@@ -124,7 +136,7 @@ export function Small({ className, ...props }: ComponentProps<"p">) {
 export function Eyebrow({ className, ...props }: ComponentProps<"p">) {
   return (
     <p
-      className={cn("text-xs font-semibold uppercase tracking-widest text-primary", className)}
+      className={cn("text-[length:var(--fs-eyebrow)] font-semibold uppercase tracking-widest text-primary", className)}
       {...props}
     />
   )

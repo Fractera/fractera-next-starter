@@ -62,8 +62,28 @@ for (const d of SCAN) walk(path.join(ROOT, d))
 const findings = []
 const fail = (kind, rel, line, text) => findings.push({ kind, rel, line, text })
 
-// Ранг шкалы Tailwind — нужен, чтобы отличить рост от убывания механически.
-const RANK = { xs: 1, sm: 2, base: 3, lg: 4, xl: 5, "2xl": 6, "3xl": 7, "4xl": 8, "5xl": 9, "6xl": 10, "7xl": 11 }
+// Размеры шкалы Tailwind В ПИКСЕЛЯХ — сравнивать надо с произвольными значениями.
+//
+// 🔒 ЗДЕСЬ БЫЛ ПОРЯДКОВЫЙ РАНГ, И ОН ДЕЛАЛ СТОРОЖА СЛЕПЫМ (найдено при аудите
+// секций 2026-08-15). Ранг знал только имена (`sm`, `base`, `lg`), поэтому
+// запись `text-[17px] … md:text-base` для него не существовала вовсе — а это
+// ровно тот же дефект: 17px на телефоне против 16px на мониторе. Так молча
+// проходили ЧЕТЫРЕ убывающих размера, включая `p.server.tsx` — то есть каждый
+// абзац каждой контентной страницы.
+//
+// Пиксели сравнимы с чем угодно; имена переводятся в них один раз.
+const PX = {
+  xs: 12, sm: 14, base: 16, lg: 18, xl: 20,
+  "2xl": 24, "3xl": 30, "4xl": 36, "5xl": 48, "6xl": 60, "7xl": 72,
+}
+
+/** Размер шрифта в пикселях: `lg` → 18, `[17px]` → 17. `null` — не размер. */
+function sizePx(token) {
+  const named = PX[token]
+  if (named) return named
+  const custom = token.match(/^\[(\d+(?:\.\d+)?)px\]$/)
+  return custom ? Number(custom[1]) : null
+}
 
 for (const file of files) {
   const rel = path.relative(ROOT, file)
@@ -84,13 +104,13 @@ for (const file of files) {
     // ── 2. Размер УБЫВАЕТ с ростом экрана ────────────────────────────────────
     // `text-4xl md:text-3xl` — на телефоне крупнее, чем на мониторе. Восемь
     // таких мест жили в проекте, включая рендерер всех H2 контентных страниц.
-    const base = line.match(/(?:^|["\s])text-(xs|sm|base|lg|[0-9]?xl)(?=["\s])/)
-    const bigger = line.match(/(?:md|lg|xl):text-(xs|sm|base|lg|[0-9]?xl)(?=["\s])/)
+    const base = line.match(/(?:^|["\s])text-(xs|sm|base|lg|[0-9]?xl|\[\d+(?:\.\d+)?px\])(?=["\s])/)
+    const bigger = line.match(/(?:md|lg|xl):text-(xs|sm|base|lg|[0-9]?xl|\[\d+(?:\.\d+)?px\])(?=["\s])/)
     if (base && bigger && !ALLOWED_SHRINKING.has(rel)) {
-      const from = RANK[base[1]]
-      const to = RANK[bigger[1]]
-      if (from && to && to < from) {
-        fail("shrinking-text", rel, n, `text-${base[1]} → ${bigger[0].trim()}`)
+      const from = sizePx(base[1])
+      const to = sizePx(bigger[1])
+      if (from !== null && to !== null && to < from) {
+        fail("shrinking-text", rel, n, `text-${base[1]} (${from}px) → md:text-${bigger[1]} (${to}px)`)
       }
     }
 

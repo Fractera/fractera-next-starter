@@ -9,7 +9,7 @@ export const docref: SectionRenderer<'docref'> = (b, { key: k, ui }) => (
         {b.kicker ?? ui.fullDocumentation}
       </p>
       <p className="text-base font-semibold text-foreground">{b.title}</p>
-      <p className="text-sm leading-relaxed text-muted-foreground">{inline(b.summary, k)}</p>
+      <p className="text-sm leading-normal text-muted-foreground">{inline(b.summary, k)}</p>
     </div>
     <a
       href={b.href}

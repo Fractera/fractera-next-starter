@@ -20,7 +20,7 @@ export const founder: SectionRenderer<'founder'> = (b, { key: k }) => (
       <path d="M9.5 5C6.5 6.8 4.8 9.8 4.8 13.4c0 3.2 1.9 5.6 4.6 5.6 2.3 0 4-1.7 4-3.9 0-2.1-1.5-3.7-3.5-3.7-.4 0-.9.1-1 .2.3-1.7 2-3.7 3.7-4.7L9.5 5Zm9.6 0c-3 1.8-4.7 4.8-4.7 8.4 0 3.2 1.9 5.6 4.6 5.6 2.3 0 4-1.7 4-3.9 0-2.1-1.5-3.7-3.5-3.7-.4 0-.9.1-1 .2.3-1.7 2-3.7 3.7-4.7L19.1 5Z" />
     </svg>
     <blockquote className="max-w-[640px] text-center">
-      <p className="bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-clip-text text-center text-[22px] font-medium leading-snug tracking-tight text-transparent md:text-xl">
+      <p className="bg-gradient-to-r from-primary/40 via-primary to-primary/40 bg-clip-text text-center text-lg font-medium leading-snug tracking-tight text-transparent md:text-xl">
         {inline(b.text, k)}
       </p>
     </blockquote>
@@ -35,7 +35,7 @@ export const founder: SectionRenderer<'founder'> = (b, { key: k }) => (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={author().photo!} alt={`${author().name} photo`} width={32} height={32} className="mr-2.5 rounded-full" />
           )}
-          <span className="text-base font-light tracking-tight text-foreground">
+          <span className="text-base font-medium tracking-tight text-foreground">
             <a href={author().url} rel="author me" className="hover:text-primary">{author().name}</a>
             {author().role && (
               <cite className="ml-1.5 not-italic text-muted-foreground before:mr-1.5 before:inline-flex before:h-px before:w-4 before:bg-muted-foreground before:align-middle">

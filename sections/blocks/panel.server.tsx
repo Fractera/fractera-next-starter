@@ -37,7 +37,7 @@ export const panel: SectionRenderer<'panel'> = (b, ctx) => {
       )}
       <div className="relative">
         {b.eyebrow && (
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{b.eyebrow}</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-primary">{b.eyebrow}</p>
         )}
         <H2 variant="ui" className={b.eyebrow ? 'mt-2' : undefined}>{b.title}</H2>
         <div className="mt-4 flex flex-col gap-4">

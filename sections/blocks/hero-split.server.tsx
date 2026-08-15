@@ -75,7 +75,7 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
           )}
           {b.pill && (
             /* Каёмка живёт в styles/globals.css (.pill-ai): один элемент, две темы. */
-            <span className="pill-ai inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-foreground">
+            <span className="pill-ai inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-foreground">
               {b.pill}
             </span>
           )}

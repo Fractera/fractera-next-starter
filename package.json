@@ -19,6 +19,7 @@
     "check:aio": "node scripts/check-aio.mjs",
     "check:pwa": "node scripts/check-pwa.mjs",
     "icons:default": "node scripts/generate-default-icons.mjs",
+    "images:placeholders": "node scripts/generate-placeholder-images.mjs",
     "check:types": "node scripts/check-types.mjs",
     "read:menu": "node scripts/read-menu.mjs",
     "check:menu": "node scripts/check-menu.mjs",

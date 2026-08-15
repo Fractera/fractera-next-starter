@@ -64,6 +64,16 @@ export type ContentPageConfig<C extends ContentPageContent> = {
   /** Structured-data type for the primary entity. Defaults to 'Article'. */
   jsonLdType?: 'Article' | 'NewsArticle'
   /**
+   * Заголовок печатает материал страницы, а не её шапка (лендинг).
+   *
+   * Нужен ровно тем страницам, чей первый экран — сетка: секция `heroSplit`
+   * ставит H1 в левую колонку рядом с описанием, и шапка обязана свой заголовок
+   * не печатать, иначе H1 на странице два. Метаданные, `og:title` и разметка
+   * строятся здесь и от этого признака не зависят — фабрика по-прежнему получает
+   * `title` из материала.
+   */
+  titleInBody?: boolean
+  /**
    * Optional sections injected into the block, directly ABOVE the FAQ (architect
    * discretion — e.g. the sponsorship section). The factory bakes in nothing
    * here; the route entry decides what to pass. May render one section, several,
@@ -83,7 +93,7 @@ function abs(path: string): string {
 }
 
 export function createContentPage<C extends ContentPageContent>(config: ContentPageConfig<C>) {
-  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero } = config
+  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero, titleInBody = false } = config
 
   async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
     const { lang } = await params
@@ -186,6 +196,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
           tags={meta.tags ? [...meta.tags] : undefined}
           title={c.title}
           subtitle={c.subtitle}
+          titleInBody={titleInBody}
           heroImage={meta.heroImage}
           heroAlt={c.title}
           hero={hero?.(lang)}

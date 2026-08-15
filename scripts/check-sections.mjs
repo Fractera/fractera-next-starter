@@ -69,8 +69,17 @@ function stripComments(text) {
 }
 
 // ── 1. Каждый вид каталога имеет образец ────────────────────────────────────
-const kinds = [...new Set([...read(TYPES).matchAll(/kind:\s*'([a-z0-9]+)'/g)].map(m => m[1]))]
-const inSpecimen = new Set([...read(SPECIMEN).matchAll(/kind:\s*'([a-z0-9]+)'/g)].map(m => m[1]))
+//
+// 🔒 ИМЯ ВИДА ЧИТАЕТСЯ ЦЕЛИКОМ, ВКЛЮЧАЯ ЗАГЛАВНЫЕ (починено 2026-08-15).
+// Здесь стояло `[a-z0-9]+`, и первый же вид с заглавной буквой — `heroSplit` —
+// оказался проверке НЕВИДИМ: сторож не считал его видом, значит и требования
+// «у вида есть образец» к нему не предъявлял. Дыра тихая ровно того сорта,
+// который этот файл ловит у других: проверка зелёная, а покрытия нет. Заметить
+// удалось только по расхождению в собственном же итоге — «видов: 19,
+// рендереров: 20».
+const KIND_NAME = /kind:\s*'([A-Za-z0-9-]+)'/g
+const kinds = [...new Set([...read(TYPES).matchAll(KIND_NAME)].map(m => m[1]))]
+const inSpecimen = new Set([...read(SPECIMEN).matchAll(KIND_NAME)].map(m => m[1]))
 for (const kind of kinds) {
   if (!inSpecimen.has(kind)) {
     fail("kind-not-rendered", `'${kind}' объявлен в каталоге, но образца нет — вид не рисуется нигде, значит не проверен ничем`)

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ConfigImage } from "@/components/media/config-image.server";
 
 // Shared 404 body (step 131). After the static-rendering refactor the root layout is
 // bare (no <html>), so each zone owns its own not-found that renders inside its own
@@ -28,23 +29,23 @@ export function NotFoundContent() {
         </Link>
       </div>
 
-      {/* Right — black pane with the F8 logo (hidden below md). */}
+      {/* Right — pane with the project's 404 illustration (hidden below md).
+          🔒 КАРТИНКА ИЗ НАСТРОЕК, А НЕ ИЗ КОДА (2026-08-15). Здесь стоял путь
+          `/404-logo.png`, вписанный прямо в компонент, — при том что в панели
+          управления слот «404» существовал с самого начала. Владелец мог
+          загрузить свою картинку, панель отвечала «сохранено», и на сайте не
+          менялось ничего: страница показывала не тот файл, который он выбрал.
+          Теперь слот читается по-настоящему, а знак Fractera остался умолчанием
+          шаблона — то есть свежий проект выглядит так же, как выглядел.
+          🔒 `priority` НЕ СТАВИТЬ. Экран «страница не найдена» входит в дерево
+          КАЖДОЙ страницы как запасной вид, поэтому его картинка предзагружалась
+          бы всюду — браузер писал в консоль «загружено и не использовано» на
+          всех страницах сайта разом (отчёт проверки 2026-08-13). */}
       <div className="hidden items-center justify-center bg-background p-12 md:flex md:w-1/2">
-        {/* 🔒 `loading="lazy"` ЗДЕСЬ НЕ ПРО СКОРОСТЬ ЭТОЙ СТРАНИЦЫ (найдено в
-            отчёте проверки 2026-08-13). Экран «страница не найдена» входит в
-            дерево КАЖДОЙ страницы как запасной вид, поэтому его картинка
-            предзагружалась всюду — браузер писал в консоль «загружено и не
-            использовано» на всех страницах сайта разом. Отложенная загрузка
-            снимает предзагрузку; на самой 404 картинка приходит тут же, потому
-            что она в поле зрения. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/404-logo.png"
+        <ConfigImage
+          slot="notFound"
           alt="404 — page not found"
-          width={512}
-          height={512}
-          loading="lazy"
-          decoding="async"
+          sizes="(max-width: 768px) 0px, 24rem"
           className="w-auto max-w-[60%] object-contain"
         />
       </div>

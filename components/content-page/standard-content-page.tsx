@@ -51,6 +51,22 @@ export type StandardContentPageProps = {
   /** H1 — rendered at the homepage hero's maximum size. */
   title: string
   subtitle?: string
+  /**
+   * Заголовок печатает МАТЕРИАЛ, а не шапка страницы (шаг 508, лендинг).
+   *
+   * 🔒 ЗАЧЕМ ЭТО СУЩЕСТВУЕТ. У лендинга первый экран — две колонки: слово слева,
+   * иллюстрация справа. H1 обязан стоять ВНУТРИ левой колонки; снаружи сетки он
+   * туда не попадает. Поэтому секция `heroSplit` берёт заголовок на себя, а этот
+   * признак выключает шапку здесь — иначе на странице оказалось бы два H1, и в
+   * выдаче они спорят: поисковик не знает, который из них ваш.
+   *
+   * 🔒 ЭТО НЕ ВТОРОЙ ШАБЛОН СТРАНИЦЫ. Умолчание — `false`, и тогда всё ниже
+   * работает ровно как работало: шесть остальных страниц об этом признаке не
+   * знают. Меняется только КТО печатает заголовок, а не из чего состоит страница.
+   * Заголовок при этом никуда не девается из метаданных и разметки — их строит
+   * фабрика, и `title` она получает по-прежнему.
+   */
+  titleInBody?: boolean
   /** Роль необязательна: в `APP-CONFIG` её нет, и выдумывать её нельзя. */
   author?: { name: string; role?: string; url?: string }
   /**
@@ -85,6 +101,7 @@ export function StandardContentPage({
   tags,
   title,
   subtitle,
+  titleInBody = false,
   author = { name: projectAuthor().name, role: projectAuthor().role, url: projectAuthor().url },
   metaLine,
   heroImage,
@@ -140,7 +157,12 @@ export function StandardContentPage({
         </nav>
         )}
 
-        {/* 2. Header — tags + max-size H1 (homepage hero style) + subtitle + author */}
+        {/* 2. Header — tags + max-size H1 (homepage hero style) + subtitle + author.
+            Шапки нет вовсе, когда заголовок печатает материал (лендинг): её
+            содержимое — заголовок, описание и подпись — переезжает в секцию
+            первого экрана целиком, и пустая рамка с одной строкой автора над ней
+            читалась бы как поломка. */}
+        {!titleInBody && (
         <header className="mt-6 flex flex-col gap-5 border-b border-border pb-8">
           {tags && tags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
@@ -193,6 +215,7 @@ export function StandardContentPage({
             </div>
           ) : null)}
         </header>
+        )}
 
         {/* Hero — custom node (post video / responsive picture) overrides the
             default image hero. */}

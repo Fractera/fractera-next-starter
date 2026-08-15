@@ -30,6 +30,24 @@ export default function GlobalError({
           textAlign: "center",
         }}
       >
+        {/* 🔒 ОДИН ТОН И СТАТИЧЕСКИЙ АДРЕС. Этот экран ЗАМЕНЯЕТ корневой макет,
+            поэтому глобальный CSS здесь не гарантирован — ни классов, ни `dark:`,
+            всё рисуется инлайн-стилями по белому фону. Значит и картинка нужна
+            ровно одна, светлая. Адрес ведёт на серверную дверь: файл настроек
+            читать отсюда нельзя (компонент клиентский по требованию Next), а
+            дверь разрешает слот на сервере при каждом запросе. Если настройки
+            вовсе нечитаемы, дверь отдаёт умолчание шаблона — экран ошибки не
+            имеет права сам приехать со сломанной картинкой. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/api/config-image/error500-light"
+          alt=""
+          aria-hidden
+          width={128}
+          height={128}
+          decoding="async"
+          style={{ width: "8rem", height: "8rem", objectFit: "contain" }}
+        />
         <p style={{ fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(0,0,0,0.5)", margin: 0 }}>
           Something went wrong
         </p>

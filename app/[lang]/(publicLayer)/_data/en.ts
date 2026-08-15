@@ -4,10 +4,21 @@ import type { HomeCell } from './index'
 // `home.i18n.json` (шаг 508) — заново не переводились.
 export const en: HomeCell = {
   title: 'This is your application',
-  description: 'It runs on your own server and answers to nobody else. Give it a name in the control panel — this line will disappear.',
+  // Описание для ПОИСКА — коротко и по делу. Длинный текст первого экрана живёт
+  // в секции `heroSplit` ниже: сниппет обрезается примерно на 160 знаках, и
+  // сильный абзац, попав сюда целиком, превратился бы в оборванную фразу.
+  description: 'Your own server, your own code: authorization, database, storage and vector search already wired together. Build a landing page or a SaaS in 82 languages.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Agentic engineering infrastructure' },
+  {
+    kind: 'heroSplit',
+    pill: 'Agentic engineering infrastructure',
+    title: 'This is your application',
+    description:
+      'Everything is already installed and wired together — authorization, your own database, file storage, vector search and a hundred tools more, organised so a coding agent finds them without being told twice. Build a landing page, a SaaS, or automation that never sleeps, in any of 82 languages, on a skeleton cut for a project that will pass a million lines. Roughly **nine times faster** than assembling the same stack yourself — and nothing here calls home: no vendor, no subscription, nobody to ask for permission. The server is yours, the code is yours, **one hundred percent**.',
+    image: 'homePage',
+    imageAlt: 'SaaS starter template',
+  },
   {
     kind: 'badges',
     items: [

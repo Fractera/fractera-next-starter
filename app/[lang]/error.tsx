@@ -20,6 +20,24 @@ export default function LangError({
 }) {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-white px-8 py-16 text-black">
+      {/* 🔒 КАРТИНКА ЧЕРЕЗ ДВЕРЬ `/api/config-image/*`, А НЕ ИЗ НАСТРОЕК НАПРЯМУЮ.
+          Этот файл обязан быть клиентским — так требует Next от границы ошибки, —
+          а настройки лежат файлом на диске сервера, и `fs` в браузере нет.
+          Пропсами их сюда тоже не передать: компонент рендерит сам Next, набор
+          свойств фиксирован (`error`, `reset`), серверного родителя у него нет.
+          Поэтому адрес статический, а какой файл за ним стоит — решает сервер при
+          каждом запросе. Обычная картинка: работает и с выключенным JavaScript.
+          Тон светлый: страница нарисована по белому фону явно. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/api/config-image/error500-light"
+        alt=""
+        aria-hidden
+        width={128}
+        height={128}
+        decoding="async"
+        className="h-32 w-32 object-contain"
+      />
       <p className="font-mono text-sm font-bold uppercase tracking-widest text-black/50">
         Something went wrong
       </p>

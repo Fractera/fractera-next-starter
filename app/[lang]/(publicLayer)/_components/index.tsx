@@ -22,6 +22,12 @@ import { meta } from '../_data/meta'
 const page = createContentPage({
   resolve: homePage,
   meta,
+  // Первый экран главной — сетка (секция `heroSplit`): слово слева, иллюстрация
+  // справа. Заголовок обязан стоять ВНУТРИ левой колонки, поэтому его печатает
+  // секция, а шапка страницы своего H1 не рисует — иначе их окажется два, и в
+  // выдаче они спорят между собой. Метаданные и разметку по-прежнему строит
+  // фабрика из того же `title`.
+  titleInBody: true,
 })
 
 export const generateMetadata = page.generateMetadata

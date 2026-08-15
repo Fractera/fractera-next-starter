@@ -229,6 +229,21 @@ export const SPECIMEN: SpecimenSection[] = [
     blocks: [{ kind: 'hero', pill: 'Eyebrow above the title' }],
   },
   {
+    kind: 'heroSplit',
+    when: 'A landing page\'s first screen: the words on the left, the illustration on the right. The ONLY section that carries the H1 itself — the page using it declares `titleInBody`, so the factory does not print a second one. The picture names a SETTINGS SLOT, not a file: every project has its own and it changes in the panel without a rebuild.',
+    blocks: [
+      {
+        kind: 'heroSplit',
+        pill: 'Eyebrow above the title',
+        title: 'The headline of a landing page',
+        description:
+          'The paragraph that earns the visit — long enough to say what the product is and **why it matters**, short enough to read before scrolling.',
+        image: 'homePage',
+        imageAlt: 'Illustration of the product',
+      },
+    ],
+  },
+  {
     kind: 'badges',
     when: 'A row of capability labels. The tone is a MEANING group, not a colour.',
     blocks: [

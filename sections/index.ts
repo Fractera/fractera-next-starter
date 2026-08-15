@@ -16,6 +16,7 @@ import { founder } from './blocks/founder.server'
 import { columns } from './blocks/columns.server'
 import { group } from './blocks/group.server'
 import { hero } from './blocks/hero.server'
+import { heroSplit } from './blocks/hero-split.server'
 import { badges } from './blocks/badges.server'
 import { panel } from './blocks/panel.server'
 
@@ -34,5 +35,5 @@ import { panel } from './blocks/panel.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, badges, panel,
+  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel,
 }

@@ -176,16 +176,30 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   mailSupport: "admin@fractera.ai",
   lang: "en",
 
+  // 🔒 СТРАНИЦЫ-ЗАГЛУШКИ ИМЕЮТ КАРТИНКУ СРАЗУ (заказ владельца 2026-08-15).
+  //
+  // Раньше здесь стояли одни `null`, и это было половиной механизма: панель
+  // предлагала загрузить восемь картинок, а приложение не читало ни одной.
+  // Единственная живая картинка — знак на странице 404 — была вписана прямо в
+  // компонент путём `/404-logo.png`, то есть мимо настроек: владелец мог
+  // загрузить свой знак и не увидеть его нигде.
+  //
+  // Файлы рождает `npm run images:placeholders` (знак в двух тонах) и лежит в git
+  // (иллюстрация главной). Загрузил владелец своё — панель пишет сюда URL из
+  // хранилища, и он перекрывает эти пути БЕЗ пересборки.
+  //
+  // `ogImage` намеренно остаётся пустым: это картинка для чужой ленты, и знак
+  // Fractera в анонсе ЧУЖОГО сайта — не заглушка, а подпись не того автора.
   images: {
     ogImage: null,
-    "loading-dark": null,
-    "loading-light": null,
-    "notFound-dark": null,
-    "notFound-light": null,
-    "error500-dark": null,
-    "error500-light": null,
-    "homePage-dark": null,
-    "homePage-light": null,
+    "loading-dark": "/placeholders/logo-dark.png",
+    "loading-light": "/placeholders/logo-light.png",
+    "notFound-dark": "/placeholders/logo-dark.png",
+    "notFound-light": "/placeholders/logo-light.png",
+    "error500-dark": "/placeholders/logo-dark.png",
+    "error500-light": "/placeholders/logo-light.png",
+    "homePage-dark": "/placeholders/home.jpg",
+    "homePage-light": "/placeholders/home.jpg",
   },
   logo: null,
 

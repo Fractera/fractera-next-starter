@@ -93,9 +93,27 @@ export function homePage(lang: string): HomeCell {
   // Подменяются ПОЛЯ СТРАНИЦЫ, а не блок: заголовок рисует фабрика, одна на
   // посты, правовые страницы и главную.
   const named = Boolean(cfg.name) && cfg.name !== DEFAULT_APP_CONFIG.name
-  const blocks = fillBlocks(body.blocks, admin, lang)
+  const filled = fillBlocks(body.blocks, admin, lang)
 
-  return named
-    ? { ...fields, title: cfg.name, description: cfg.description ?? fields.description, blocks }
-    : { ...fields, blocks }
+  const title = named ? cfg.name : fields.title
+  const description = named ? (cfg.description ?? fields.description) : fields.description
+
+  // 🔒 ИМЯ ПРОЕКТА ДОЕЗЖАЕТ И ДО ПЕРВОГО ЭКРАНА, А НЕ ТОЛЬКО ДО ШАПКИ.
+  //
+  // Пока заголовок печатала шапка страницы, подмены полей выше хватало. С
+  // переходом первого экрана на секцию `heroSplit` заголовок переехал ВНУТРЬ
+  // материала — и подмена перестала его доставать: владелец называл проект в
+  // панели, а H1 на главной оставался «Это ваше приложение». Дефект тихий:
+  // мета-теги и вкладка браузера показывали бы новое имя, а страница — старое.
+  //
+  // 🔒 А ВОТ ТЕКСТ ПЕРВОГО ЭКРАНА ОСТАЁТСЯ ЗА МАТЕРИАЛОМ, И ЭТО РАЗНЫЕ ВЕЩИ.
+  // `description` в настройках — описание для ПОИСКА: оно уезжает в сниппет и в
+  // соцсети, где длина ограничена примерно 160 знаками. Абзац первого экрана
+  // живёт по другим законам — он объясняет продукт человеку и занимает столько
+  // места, сколько нужно. Подставь сюда настройку — и одно поле стало бы
+  // отвечать за два несовместимых требования: либо сниппет обрывается на
+  // полуслове, либо на первом экране остаётся одна строка.
+  const blocks = filled.map(b => (b.kind === 'heroSplit' ? { ...b, title } : b))
+
+  return { ...fields, title, description, blocks }
 }

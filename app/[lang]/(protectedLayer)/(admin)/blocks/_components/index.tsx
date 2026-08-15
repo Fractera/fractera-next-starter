@@ -2,6 +2,7 @@ import { PostBody } from '@/components/content-page/post-body'
 import { SPECIMEN } from '../_data/specimen'
 import { blocksCatalogueUi } from '../_data/ui.i18n'
 import { H1 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Каталог секций — единственное место, где КАЖДЫЙ вид блока действительно
 // рисуется. Страница живёт в слое прав `admin`: она инструмент архитектора, а не
@@ -19,13 +20,7 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-16">
-        <header className="flex flex-col gap-3 border-b border-border pb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            {SPECIMEN.length} {ui.countLabel}
-          </p>
-          <H1>{ui.title}</H1>
-          <p className="max-w-2xl text-base text-muted-foreground">{ui.subtitle}</p>
-        </header>
+        <PageHeader lang={lang} eyebrow={`${SPECIMEN.length} ${ui.countLabel}`} title={ui.title} subtitle={ui.subtitle} />
 
         {SPECIMEN.map(section => (
           <section key={section.kind} className="flex flex-col gap-4">

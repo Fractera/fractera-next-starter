@@ -7,6 +7,7 @@ import { getBlogUi } from '../_data'
 import { POSTS } from '../_list.generated'
 import { StaticImage } from '@/components/media/static-image.server'
 import { H1, H2, H3 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Entry for the /blog router page. Standard router shape: page.tsx is thin and
 // re-exports this. The post list is auto-discovered: POSTS comes from
@@ -62,13 +63,12 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <main className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 py-16">
-          <header className="flex flex-col gap-3">
-            {/* Надзаголовок: раздел + название сайта из настроек. В данных раздела
-                имени сайта нет — иначе блог каждого клиента звался бы чужим именем. */}
-            <p className="text-xs uppercase tracking-widest text-primary">{ui.eyebrow} · {metaForLang(lang).title}</p>
-            <H1>{ui.indexTitle}</H1>
-            <p className="max-w-2xl text-base text-muted-foreground">{ui.indexIntro}</p>
-          </header>
+          <PageHeader
+            lang={lang}
+            eyebrow={`${ui.eyebrow} · ${metaForLang(lang).title}`}
+            title={ui.indexTitle}
+            subtitle={ui.indexIntro}
+          />
 
           {featured && (
             <a

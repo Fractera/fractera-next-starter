@@ -7,7 +7,8 @@ import { author as projectAuthor } from '@/lib/author'
 import { getPageUi } from '@/lib/content/page-ui'
 import { PostBody, headingId } from './post-body'
 import { StaticImage } from '@/components/media/static-image.server'
-import { H1, H2, Lead } from '@/components/ui/typography'
+import { H2 } from '@/components/ui/typography'
+import { PageHeader } from './page-header.server'
 
 // PORTED FROM THE PLATFORM'S MARKETING SITE (2026-08-11). Three couplings were
 // cut on the way in, and none of them is a loss for a starter: a sponsorship
@@ -156,91 +157,38 @@ export function StandardContentPage({
 
       <article data-app-column className="px-6 py-16">
 
-        {/* 1. Breadcrumb — single row, never wraps, never overflows.
-            The trail stays on one line (flex-nowrap) and the whole strip is
-            clipped (overflow-hidden) so a long page title can NEVER widen the
-            page on a phone (no horizontal scroll/swipe). The parent crumbs keep
-            their full width (shrink-0 + whitespace-nowrap); only the LAST crumb
-            — the page title, the long one — is allowed to shrink (min-w-0) and
-            truncates with an ellipsis. truncate needs min-w-0 on every flex
-            ancestor, otherwise the item refuses to shrink below its content and
-            pushes the row past the viewport. */}
-        {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-          <ol className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-hidden">
-            {breadcrumbs.map((c, i) => {
-              const isLast = i === breadcrumbs.length - 1
-              return (
-                <li
-                  key={i}
-                  className={`flex items-center gap-1.5 ${isLast ? 'min-w-0' : 'shrink-0'}`}
-                >
-                  {c.href && !isLast ? (
-                    <a href={c.href} className="whitespace-nowrap hover:text-foreground">{c.label}</a>
-                  ) : (
-                    <span aria-current="page" className="block min-w-0 truncate text-muted-foreground">{c.label}</span>
-                  )}
-                  {!isLast && <span aria-hidden className="shrink-0 text-muted-foreground">/</span>}
-                </li>
-              )
-            })}
-          </ol>
-        </nav>
-        )}
+        {/* 1–2. Шапка страницы — ОДИН примитив на весь сайт.
+            Порядок и отступы задаёт `PageHeader`; здесь остаётся только решение
+            «рисовать её или нет». До 2026-08-15 шаблон собирал шапку сам и нёс
+            СВОЮ копию разметки крошек — вторую на проект, со своим размером
+            текста и без разметки для поисковика.
 
-        {/* 2. Header — tags + max-size H1 (homepage hero style) + subtitle + author.
             Шапки нет вовсе, когда заголовок печатает материал (лендинг): её
-            содержимое — заголовок, описание и подпись — переезжает в секцию
-            первого экрана целиком, и пустая рамка с одной строкой автора над ней
-            читалась бы как поломка. */}
+            содержимое переезжает в секцию первого экрана целиком, и пустая рамка
+            со строкой автора над ней читалась бы как поломка. */}
         {!titleInBody && (
-        <header className="mt-6 flex flex-col gap-5 border-b border-border pb-8">
-          {tags && tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {tags.map(t => (
-                <span key={t} className="rounded-full border border-primary/30 bg-primary/[0.06] px-3 py-1 text-xs font-medium text-primary">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
-          {/* 🔒 ЦВЕТ ЗАГОЛОВКА БЕРЁТСЯ ИЗ ТЕМЫ, А НЕ ЗАДАЁТСЯ БЕЛЫМ (2026-08-12).
-              Здесь стояло `color: 'white'` инлайном — то есть заголовок оставался
-              белым и на светлой теме, где фон тоже белый: текст исчезал. Инлайн-
-              стиль сильнее любого класса, поэтому переключатель темы на него не
-              влиял никак. `text-foreground` — та же переменная, что у остального
-              текста страницы: она меняется вместе с темой сама.
-              Обводка и свечение остаются: они фиолетовые и читаются на обоих фонах. */}
-          {/* 🔒 СВЕЧЕНИЯ ЗДЕСЬ НЕТ (владелец, 2026-08-15) — оно принадлежит ТОЛЬКО
-              первому экрану главной. Класс `.h1-glow` стоял на этом шаблоне, из-за
-              чего светились пять страниц из семи, а список блога и каталог — нет:
-              при совпадающем размере это и читалось как «заголовки разные». На
-              странице-документе свечение вдобавок спорит с текстом.
-              Размер и шрифт приходят из примитива и совпадают со всеми
-              остальными страницами сайта, включая приватные. */}
-          <H1>{title}</H1>
-          {/* Подзаголовок шёл `text-lg … md:text-base` — убывал с экраном. */}
-          {subtitle && <Lead>{subtitle}</Lead>}
-          {/* Byline — post byline (metaLine) overrides the default author line. */}
-          {/* Автора может не быть вовсе — владелец не заполнил раздел в
-              настройках. Тогда строки авторства нет: пустое «·» под заголовком
-              выглядит поломкой, а чужое имя было бы враньём. */}
-          {metaLine ?? (author.name ? (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-              {author.url ? (
-                <a href={author.url} rel="author" className="hover:text-foreground">{author.name}</a>
-              ) : (
-                <span>{author.name}</span>
-              )}
-              {author.role && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>{author.role}</span>
-                </>
-              )}
-            </div>
-          ) : null)}
-        </header>
+          <PageHeader
+            lang={lang}
+            breadcrumbs={breadcrumbs}
+            tags={tags}
+            title={title}
+            subtitle={subtitle}
+            meta={metaLine ?? (author.name ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                {author.url ? (
+                  <a href={author.url} rel="author" className="hover:text-foreground">{author.name}</a>
+                ) : (
+                  <span>{author.name}</span>
+                )}
+                {author.role && (
+                  <>
+                    <span aria-hidden>·</span>
+                    <span>{author.role}</span>
+                  </>
+                )}
+              </div>
+            ) : null)}
+          />
         )}
 
         {/* Hero — custom node (post video / responsive picture) overrides the

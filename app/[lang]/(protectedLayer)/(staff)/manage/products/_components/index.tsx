@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
 import { getAppConfig } from "@/config/app-config"
@@ -6,6 +5,7 @@ import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n
 import { productsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 import { H1 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Route entry — SERVER component, and everything it renders is the STATIC SHELL:
 // heading, description, the note about where the data lives. None of it needs a
@@ -32,12 +32,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
-
-        <header className="mb-8 mt-4">
-          <H1>{t.title}</H1>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
-        </header>
+        <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
         <ProductsPanel
           lang={lang}

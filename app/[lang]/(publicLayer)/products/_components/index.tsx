@@ -11,6 +11,7 @@ import type { Product } from "@/lib/products/types"
 import { catalogueUi } from "../_data"
 import { LoadMore } from "./load-more.client"
 import { H1 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // ПУБЛИЧНАЯ ВИТРИНА КАТАЛОГА — одна страница, без пагинации (владелец
 // 2026-08-11).
@@ -73,12 +74,7 @@ export default async function Catalogue({ lang }: { lang: string }) {
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
-
-        <header className="mb-8 mt-4">
-          <H1>{t.title}</H1>
-          <p className="mt-1 text-sm text-muted-foreground">{t.subtitle}</p>
-        </header>
+        <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
         {products.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">

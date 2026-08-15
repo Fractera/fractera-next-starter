@@ -1,4 +1,3 @@
-import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { prerenderSlugs } from "@/lib/catalogue"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
@@ -6,6 +5,7 @@ import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n
 import { productsUi } from "../../_data/ui.i18n"
 import { ProductCard } from "./product-card.client"
 import { H1 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // СТАТИЧЕСКИЙ КАРКАС карточки — серверный компонент.
 //
@@ -40,15 +40,14 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <Breadcrumbs
+        <PageHeader
           lang={lang}
-          trail={[
+          breadcrumbs={[
             { label: t.title, href: `/${lang}/manage/products` },
             { label: productId.slice(0, 8) },
           ]}
+          title={t.one}
         />
-
-        <H1 className="mt-4">{t.one}</H1>
 
         <div className="mt-5">
           <ProductCard

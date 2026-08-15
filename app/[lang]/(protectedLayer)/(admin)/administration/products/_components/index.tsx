@@ -1,9 +1,9 @@
-import { Breadcrumbs } from "@/components/nav/breadcrumbs.server"
 import { getAppConfig } from "@/config/app-config"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { administrationProductsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
 import { H1 } from '@/components/ui/typography'
+import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Вход страницы товаров АДМИНИСТРИРОВАНИЯ — серверный компонент, статический
 // каркас: крошки, заголовок, объяснение единственного права. Ни одного запроса к
@@ -20,12 +20,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <Breadcrumbs lang={lang} trail={[{ label: t.title }]} />
-
-        <header className="mb-8 mt-4">
-          <H1>{t.title}</H1>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.subtitle}</p>
-        </header>
+        <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
         <ProductsPanel lang={lang} currency={currency} labels={t} common={common} />
       </div>

@@ -2,7 +2,7 @@ import type { HomeCell } from './index'
 
 // Языковая ячейка главной. Перевод перенесён из прежнего словаря без изменений.
 export const it: Partial<HomeCell> = {
-  title: 'Questa è la tua applicazione',
+  title: 'Questo è lo starter della tua applicazione',
   description: 'Funziona sul tuo server e non risponde a nessun altro. Dalle un nome nel pannello di controllo — questa riga scomparirà.',
   keywords: '',
   blocks: [

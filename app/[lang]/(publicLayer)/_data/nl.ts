@@ -2,7 +2,7 @@ import type { HomeCell } from './index'
 
 // Языковая ячейка главной. Перевод перенесён из прежнего словаря без изменений.
 export const nl: Partial<HomeCell> = {
-  title: 'Dit is uw toepassing',
+  title: 'Dit is de starter van uw toepassing',
   description: 'Ze draait op uw eigen server en legt aan niemand anders verantwoording af. Geef haar een naam in het configuratiescherm — deze regel verdwijnt dan.',
   keywords: '',
   blocks: [

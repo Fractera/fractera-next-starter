@@ -3,7 +3,7 @@ import type { HomeCell } from './index'
 // Английская основа главной. Слова перенесены из прежнего словаря
 // `home.i18n.json` (шаг 508) — заново не переводились.
 export const en: HomeCell = {
-  title: 'This is your application',
+  title: 'This is your application starter',
   // Описание для ПОИСКА — коротко и по делу. Длинный текст первого экрана живёт
   // в секции `heroSplit` ниже: сниппет обрезается примерно на 160 знаках, и
   // сильный абзац, попав сюда целиком, превратился бы в оборванную фразу.
@@ -13,7 +13,7 @@ export const en: HomeCell = {
   {
     kind: 'heroSplit',
     pill: 'Agentic engineering infrastructure',
-    title: 'This is your application',
+    title: 'This is your application starter',
     description:
       'Everything is already installed and wired together — authorization, your own database, file storage, vector search and a hundred tools more, organised so a coding agent finds them without being told twice. Build a landing page, a SaaS, or automation that never sleeps, in any of 82 languages, on a skeleton cut for a project that will pass a million lines. Roughly **nine times faster** than assembling the same stack yourself — and nothing here calls home: no vendor, no subscription, nobody to ask for permission. The server is yours, the code is yours, **one hundred percent**.',
     image: 'homePage',

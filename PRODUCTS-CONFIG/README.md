@@ -74,6 +74,23 @@ would write code where nobody reads it. A derived path cannot disagree.
 inside those four roots and into shared components — never inside another product's roots.
 Two products sharing files is how two sets of use cases quietly overwrite each other.
 
+## 🔒 This file is English. All of it. Always.
+
+Every value here — titles included — is written in **English**, whatever language the owner speaks.
+This is a hard rule of the project, not a style preference, and it covers every JSON in the project:
+this config, its neighbours, ids, slugs and file names.
+
+**Why.** The coding agent loads this layer at the start of every session. A second language in it is
+paid for in tokens on every single run, forever, and buys nothing: the owner never reads this file —
+they read the control panel, which speaks all 82 languages on its own.
+
+**Where the owner's language does live:** inside a use case (`development-docs/USE-CASES/<id>/CASES/*.md`)
+— the title and the scenario there are written in their language, because that is the one thing a human
+reads and confirms. The file **name** stays English kebab-case (`01-buy-coffee-pack.md`).
+
+**If translations are ever needed**, they go in a separate translation file — never as a second field
+next to a machine value. A config that grows a `title_ru` next to `title` has stopped being a config.
+
 ## What is NOT here
 
 Use cases themselves. They are files under `development-docs/USE-CASES/<id>/`, they travel with

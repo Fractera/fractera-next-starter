@@ -8,6 +8,14 @@ export const fr: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infrastructure d\'ingénierie agentique' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'moins cher à développer' },
+      { value: '×9', label: 'plus rapide à lancer' },
+      { value: '×100', label: 'plus fiable en production' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 langues', tone: 'reach' },
@@ -21,6 +29,16 @@ export const fr: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Architecture Fractera', tone: 'code' },
       { label: '100+ de plus', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Comment ça marche',
+    note: 'D\'un serveur vide à votre propre code en production. Tout ce qui suit tourne sur du matériel qui vous appartient.',
+    steps: [
+      { title: 'Mettez le serveur en route', text: 'Déployez-le avec le robot installateur Fractera. Vous obtenez un système d\'exploitation, un modèle de départ, le panneau de contrôle, les stockages et l\'autorisation — installés et reliés entre eux.' },
+      { title: 'Développez là où vous travaillez déjà', text: 'Synchronisez avec GitHub, puis clonez sur votre propre machine et lancez Claude Code ou Codex. Les données continuent de venir de votre serveur ; le code s\'exécute dans votre propre IDE.' },
+      { title: 'Poussez, et le déploiement se fait seul', text: 'Terminez sur la machine locale et envoyez le projet sur GitHub. Cela déclenche immédiatement un nouveau déploiement sur votre propre serveur — et le visiteur voit le nouveau projet.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const fr: Partial<HomeCell> = {
       { kind: 'p', text: 'Le code ne s\'écrit pas ici. Un développeur clone le dépôt sur sa propre machine et travaille avec Claude Code, qui lit les instructions et compétences vivant dans le projet : elles fixent les règles, et des vérifications automatiques empêchent qu\'on les enfreigne. Le serveur ne fait que recevoir le résultat et se reconstruire.' },
       { kind: 'p', text: 'Le squelette est conçu pour un projet qui dépassera le million de lignes : chaque entité a son propre dossier, la couche partagée ne grossit pas avec leur nombre, et les routes et permissions sont déclarées là où elles s\'appliquent. La stabilité ici n\'est pas une promesse mais une conséquence — une nouvelle page n\'ajoute rien à un tronc central.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'vous ne payez pas' },
+      { vendor: 'Neon', text: 'vous ne payez pas' },
+      { vendor: 'Clerk', text: 'vous ne payez pas' },
+    ],
+    title: 'Vous ne payez personne',
+    text: 'Vous ne dépendez de personne. Le projet est entièrement le vôtre.',
   },
 ],
 }

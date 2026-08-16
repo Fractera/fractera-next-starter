@@ -8,6 +8,14 @@ export const nl: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infrastructuur voor agentische engineering' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'goedkoper te bouwen' },
+      { value: '×9', label: 'sneller te lanceren' },
+      { value: '×100', label: 'betrouwbaarder in productie' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 talen', tone: 'reach' },
@@ -21,6 +29,16 @@ export const nl: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Fractera-architectuur', tone: 'code' },
       { label: '100+ meer', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Hoe het werkt',
+    note: 'Van een lege server naar je eigen code in productie. Alles hieronder draait op hardware die van jou is.',
+    steps: [
+      { title: 'Zet de server neer', text: 'Rol hem uit met de installatierobot van Fractera. Je krijgt een besturingssysteem, een startsjabloon, het bedieningspaneel, de opslag en de autorisatie — geïnstalleerd en met elkaar verbonden.' },
+      { title: 'Ontwikkel waar je al werkt', text: 'Synchroniseer met GitHub, kloon daarna naar je eigen machine en start Claude Code of Codex. De data blijft van je server komen; de code draait in je eigen IDE.' },
+      { title: 'Push, en het rolt zichzelf uit', text: 'Rond af op de lokale machine en stuur het project naar GitHub. Dat start meteen een nieuwe uitrol op je eigen server — en de bezoeker ziet het nieuwe project.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const nl: Partial<HomeCell> = {
       { kind: 'p', text: 'Code wordt hier niet geschreven. Een ontwikkelaar kloont de repository naar zijn eigen machine en werkt met Claude Code, dat de instructies en vaardigheden leest die in het project zelf leven: die leggen de regels vast, en automatische controles laten niet toe dat ze worden overtreden. De server ontvangt alleen het resultaat en bouwt zichzelf opnieuw op.' },
       { kind: 'p', text: 'Het skelet is gebouwd voor een project dat de miljoen regels zal overstijgen: elke entiteit heeft haar eigen map, de gedeelde laag groeit niet mee met hun aantal, en routes en rechten worden gedeclareerd waar ze worden afgedwongen. Stabiliteit is hier geen belofte maar een gevolg — een nieuwe pagina voegt niets toe aan een centrale kern.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'je betaalt niet aan' },
+      { vendor: 'Neon', text: 'je betaalt niet aan' },
+      { vendor: 'Clerk', text: 'je betaalt niet aan' },
+    ],
+    title: 'Je betaalt niemand',
+    text: 'Je bent van niemand afhankelijk. Het project is volledig van jou.',
   },
 ],
 }

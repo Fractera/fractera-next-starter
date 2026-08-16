@@ -271,6 +271,52 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'metrics',
+    when: 'One row of measures: a number and the thing it measures. Semantically a description list, NOT a table — three independent value/label pairs carry no row-to-column relationship, and markup that promises one lies to whoever cannot see the page. `value` is machine-side and never translated; the label beside it is an ordinary page string.',
+    blocks: [
+      {
+        kind: 'metrics',
+        items: [
+          { value: '×4', label: 'cheaper to build' },
+          { value: '×9', label: 'faster to launch' },
+          { value: '×100', label: 'more reliable in production' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'flow',
+    when: 'How something works, as steps that light up in turn with a spark running along the link between them. Order is the CONTENT here, not decoration — that is what separates it from an olist in a box. Movement is pure CSS (styles/globals.css): it works with JavaScript off and stands still for prefers-reduced-motion. The wording never dims — only the frame, the glow and the numbered node do, because text faded with opacity drops below the contrast threshold.',
+    blocks: [
+      {
+        kind: 'flow',
+        title: 'How it works',
+        note: 'Three steps, and the third feeds the first: the loop is the product.',
+        steps: [
+          { title: 'Stand the server up', text: 'An installer robot leaves you an operating system, a starter template, a control panel, storage and authorization — already wired together.' },
+          { title: 'Work where you work', text: 'Sync with GitHub, clone onto your own machine, open your usual editor. The data keeps coming from your server; only the code runs locally.' },
+          { title: 'Push, and it is live', text: 'A push starts a deployment on your own server, and the visitor sees the new version.' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'noBill',
+    when: 'The bills that will not arrive: a vendor name struck through, the phrase beside it, and the conclusion underneath. The vendor is a SEPARATE field because it is the one word never translated — merge it into the sentence and the renderer no longer knows what to strike. The conclusion sits AFTER the list on purpose: three struck names are the evidence, the sentence is what follows from them.',
+    blocks: [
+      {
+        kind: 'noBill',
+        items: [
+          { vendor: 'Vercel', text: 'you do not pay' },
+          { vendor: 'Neon', text: 'you do not pay' },
+          { vendor: 'Clerk', text: 'you do not pay' },
+        ],
+        title: 'You pay nobody',
+        text: 'You depend on nobody. The project is yours, end to end.',
+      },
+    ],
+  },
+  {
     kind: 'panel',
     when: 'A bordered section holding any blocks. Three tones: plain, warn, accent.',
     blocks: [

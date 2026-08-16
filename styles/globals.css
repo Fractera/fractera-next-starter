@@ -322,3 +322,140 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
     0 0 18px color-mix(in oklch, var(--color-primary) 55%, transparent),
     0 0 36px color-mix(in oklch, var(--color-primary) 28%, transparent);
 }
+
+/* ─── СЕКЦИЯ «КАК ЭТО РАБОТАЕТ» (вид `flow`) ─────────────────────────────────
+   Шаги зажигаются по очереди, между ними по связи бежит свет.
+
+   🔒 ГАСНЕТ ОПРАВА, А НЕ СЛОВО. Текст стоит в полную силу всегда: погашенный
+   прозрачностью, он проваливается ниже порога контраста (`check:contrast`), а
+   человек, пришедший прочитать третий шаг, вынужден ждать своей очереди у
+   карусели. Двигаются рамка, свечение и кружок с номером — то есть указатель,
+   а не содержание.
+
+   🔒 ЦВЕТ — ТОЛЬКО ТОКЕН ПРОЕКТА. `color-mix` разводит акцент прозрачностью,
+   поэтому свечение остаётся ЕГО цветом в обеих темах. Абсолютный цвет здесь
+   светил бы нашим фиолетовым поверх любой палитры клиента — ровно тот дефект,
+   что лечили у заголовка выше.
+
+   🔒 ДОЛЯ «ЗАЖЖЁН» СЧИТАЕТСЯ ОТ ЧИСЛА ШАГОВ, И ЭТО ЕДИНСТВЕННОЕ МЕСТО, ГДЕ
+   ЧИСЛО ТРИ ЗАШИТО. Проценты в `@keyframes` вычислить из переменной нельзя —
+   такова спецификация. Поэтому такт (`--flow-beat`) и очередь (`--flow-i`)
+   переменные и работают при любом числе шагов, а окно «зажжён» (0–33 %)
+   рассчитано на ТРИ. Появится четвёртый — здесь меняются два числа: 33 → 25 и
+   30 → 22. Написано прямо, чтобы следующая сессия не искала причину, почему
+   два шага светятся разом. */
+.flow {
+  /* Такт = сколько держится один шаг. Цикл = такт × число шагов. */
+  --flow-beat: 3s;
+  --flow-cycle: calc(var(--flow-n, 3) * var(--flow-beat));
+}
+
+/* Связь между шагом и следующим за ним. Её нет у последнего (соединять не с
+   чем) и нет на телефоне: там шаги стоят столбиком, и горизонтальная черта
+   уехала бы в пустоту. Ширина — расстояние между центрами соседних кружков:
+   колонка плюс промежуток сетки (1.5rem) минус два радиуса с отступом. */
+.flow-step::before {
+  content: "";
+  position: absolute;
+  top: 1.75rem;
+  left: calc(50% + 2.25rem);
+  width: calc(100% - 3rem);
+  height: 2px;
+  display: none;
+  background-color: var(--color-border);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--color-primary) 90%, transparent) 50%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 45% 100%;
+  background-position: -60% 0;
+  animation: flow-spark var(--flow-cycle) linear infinite;
+  animation-delay: calc(var(--flow-i, 0) * var(--flow-beat));
+}
+@media (min-width: 768px) {
+  .flow-step:not(:last-child)::before { display: block; }
+}
+
+/* Карточка шага: приподнимается и обводится акцентом в свой такт. */
+.flow-card {
+  border-color: var(--color-border);
+  animation: flow-wake var(--flow-cycle) ease-in-out infinite;
+  animation-delay: calc(var(--flow-i, 0) * var(--flow-beat));
+}
+
+/* Кружок с номером. В покое — приглушённая заливка, в свой такт заливается
+   акцентом ВМЕСТЕ с парным цветом текста: `primary` без `primary-foreground`
+   читается только в одной теме из двух. */
+.flow-node {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+  animation: flow-node-wake var(--flow-cycle) ease-in-out infinite;
+  animation-delay: calc(var(--flow-i, 0) * var(--flow-beat));
+}
+
+@keyframes flow-wake {
+  0%, 100% {
+    border-color: var(--color-border);
+    box-shadow: none;
+    transform: translateY(0);
+  }
+  4%, 30% {
+    border-color: color-mix(in oklch, var(--color-primary) 60%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--color-primary) 22%, transparent),
+      0 12px 32px color-mix(in oklch, var(--color-primary) 16%, transparent);
+    transform: translateY(-4px);
+  }
+  33% {
+    border-color: var(--color-border);
+    box-shadow: none;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flow-node-wake {
+  0%, 100% {
+    background-color: var(--color-muted);
+    color: var(--color-foreground);
+    border-color: var(--color-border);
+    box-shadow: none;
+  }
+  4%, 30% {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--color-primary) 14%, transparent);
+  }
+  33% {
+    background-color: var(--color-muted);
+    color: var(--color-foreground);
+    border-color: var(--color-border);
+    box-shadow: none;
+  }
+}
+
+/* Свет уходит к следующему шагу ПОСЛЕ того, как этот зажёгся, — иначе связь
+   объясняла бы порядок задом наперёд. Остаток цикла он стоит за краем. */
+@keyframes flow-spark {
+  0%, 18% { background-position: -60% 0; }
+  40%, 100% { background-position: 160% 0; }
+}
+
+/* 🔒 ОСТАНОВКА — ТРЕБОВАНИЕ ДОСТУПНОСТИ, А НЕ ВЕЖЛИВОСТЬ. У части людей
+   постоянное движение вызывает тошноту и мигрень. Остановленная секция обязана
+   выглядеть ЗАКОНЧЕННОЙ, а не «застрявшей на первом шаге»: поэтому шаги
+   остаются в покойном виде, а связь между ними — ровной линией акцента. Ровно
+   то же увидит человек, чей браузер анимаций не умеет вовсе. */
+@media (prefers-reduced-motion: reduce) {
+  .flow-card,
+  .flow-node,
+  .flow-step::before { animation: none; }
+  .flow-step::before {
+    background-image: none;
+    background-color: color-mix(in oklch, var(--color-primary) 45%, transparent);
+  }
+}

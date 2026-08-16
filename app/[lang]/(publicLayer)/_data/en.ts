@@ -20,6 +20,14 @@ export const en: HomeCell = {
     imageAlt: 'SaaS starter template',
   },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'cheaper to build' },
+      { value: '×9', label: 'faster to launch' },
+      { value: '×100', label: 'more reliable in production' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 languages', tone: 'reach' },
@@ -33,6 +41,16 @@ export const en: HomeCell = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Fractera architecture', tone: 'code' },
       { label: '100+ more', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'How it works',
+    note: 'From a bare server to your own code in production. Everything below runs on hardware that is yours.',
+    steps: [
+      { title: 'Stand up the server', text: 'Deploy it with the Fractera installer robot. You get an operating system, a starter template, the control panel, storage and authorization — installed and wired together.' },
+      { title: 'Develop where you already work', text: 'Sync with GitHub, then clone onto your own machine and run Claude Code or Codex. The data keeps coming from your server; the code runs in your own IDE.' },
+      { title: 'Push, and it deploys itself', text: 'Finish on the local machine and push the project to GitHub. That immediately starts a new deployment on your own server — and the visitor sees the new project.' },
     ],
   },
   {
@@ -98,6 +116,16 @@ export const en: HomeCell = {
     ],
   },
   // Завершающая секция (outro) — всегда последняя, всегда во всю ширину.
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'you do not pay' },
+      { vendor: 'Neon', text: 'you do not pay' },
+      { vendor: 'Clerk', text: 'you do not pay' },
+    ],
+    title: 'You pay nobody',
+    text: 'You depend on nobody. The project is yours, end to end.',
+  },
   {
     kind: 'languageMarquee',
     title: 'Eighty-two languages, ready before you need them',

@@ -8,6 +8,14 @@ export const pl: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infrastruktura inżynierii agentowej' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'tańsza budowa' },
+      { value: '×9', label: 'szybszy start' },
+      { value: '×100', label: 'bardziej niezawodne na produkcji' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 języki', tone: 'reach' },
@@ -21,6 +29,16 @@ export const pl: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Architektura Fractera', tone: 'code' },
       { label: '100+ więcej', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Jak to działa',
+    note: 'Od pustego serwera do twojego kodu na produkcji. Wszystko poniżej działa na sprzęcie, który należy do ciebie.',
+    steps: [
+      { title: 'Postaw serwer', text: 'Wdróż go robotem instalacyjnym Fractera. Dostajesz system operacyjny, szablon startowy, panel sterowania, magazyny i autoryzację — zainstalowane i połączone ze sobą.' },
+      { title: 'Pracuj tam, gdzie zwykle', text: 'Zsynchronizuj z GitHubem, potem sklonuj na własną maszynę i uruchom Claude Code albo Codex. Dane nadal płyną z twojego serwera; kod działa w twoim IDE.' },
+      { title: 'Wyślij — wdroży się samo', text: 'Skończ pracę na lokalnej maszynie i wyślij projekt na GitHub. To natychmiast uruchamia nowe wdrożenie na twoim własnym serwerze — a odwiedzający widzi nowy projekt.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const pl: Partial<HomeCell> = {
       { kind: 'p', text: 'Kod nie jest pisany tutaj. Programista klonuje repozytorium na własną maszynę i pracuje z Claude Code, który czyta instrukcje i umiejętności żyjące wewnątrz projektu: ustalają one zasady, a automatyczne kontrole nie pozwalają ich złamać. Serwer tylko odbiera wynik i się przebudowuje.' },
       { kind: 'p', text: 'Szkielet jest zbudowany pod projekt, który przekroczy milion linii: każda encja ma własny folder, wspólna warstwa nie rośnie wraz z ich liczbą, a trasy i uprawnienia są deklarowane tam, gdzie są egzekwowane. Stabilność nie jest tu obietnicą, lecz konsekwencją — nowa strona niczego nie dodaje do centralnego rdzenia.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'nie płacisz' },
+      { vendor: 'Neon', text: 'nie płacisz' },
+      { vendor: 'Clerk', text: 'nie płacisz' },
+    ],
+    title: 'Nie płacisz nikomu',
+    text: 'Od nikogo nie zależysz. Projekt jest w całości twój.',
   },
 ],
 }

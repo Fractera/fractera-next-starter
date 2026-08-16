@@ -8,6 +8,14 @@ export const it: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infrastruttura di ingegneria agentica' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'più economico da sviluppare' },
+      { value: '×9', label: 'più veloce da lanciare' },
+      { value: '×100', label: 'più affidabile in produzione' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 lingue', tone: 'reach' },
@@ -21,6 +29,16 @@ export const it: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Architettura Fractera', tone: 'code' },
       { label: '100+ altro', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Come funziona',
+    note: 'Da un server vuoto al tuo codice in produzione. Tutto quanto segue gira su hardware che è tuo.',
+    steps: [
+      { title: 'Metti in piedi il server', text: 'Distribuiscilo con il robot installatore di Fractera. Ottieni un sistema operativo, un modello di partenza, il pannello di controllo, gli archivi e l\'autorizzazione — installati e collegati tra loro.' },
+      { title: 'Sviluppa dove già lavori', text: 'Sincronizza con GitHub, poi clona sulla tua macchina e avvia Claude Code o Codex. I dati continuano ad arrivare dal tuo server; il codice gira nel tuo IDE.' },
+      { title: 'Fai push e si distribuisce da solo', text: 'Finisci sulla macchina locale e invia il progetto su GitHub. Questo avvia subito un nuovo rilascio sul tuo server — e il visitatore vede il nuovo progetto.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const it: Partial<HomeCell> = {
       { kind: 'p', text: 'Il codice non si scrive qui. Uno sviluppatore clona il repository sulla propria macchina e lavora con Claude Code, che legge le istruzioni e le competenze che vivono dentro il progetto: fissano le regole, e i controlli automatici non permettono che vengano infrante. Il server riceve solo il risultato e si ricostruisce.' },
       { kind: 'p', text: 'Lo scheletro è costruito per un progetto che supererà il milione di righe: ogni entità ha la propria cartella, il livello condiviso non cresce con il loro numero, e rotte e permessi sono dichiarati dove vengono applicati. La stabilità qui non è una promessa ma una conseguenza — una nuova pagina non aggiunge nulla a un nucleo centrale.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'non paghi' },
+      { vendor: 'Neon', text: 'non paghi' },
+      { vendor: 'Clerk', text: 'non paghi' },
+    ],
+    title: 'Non paghi nessuno',
+    text: 'Non dipendi da nessuno. Il progetto è interamente tuo.',
   },
 ],
 }

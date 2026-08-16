@@ -8,6 +8,14 @@ export const tr: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Etmen mühendisliği altyapısı' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'geliştirmesi daha ucuz' },
+      { value: '×9', label: 'başlatması daha hızlı' },
+      { value: '×100', label: 'üretimde daha güvenilir' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 dil', tone: 'reach' },
@@ -21,6 +29,16 @@ export const tr: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Fractera mimarisi', tone: 'code' },
       { label: '100+ daha fazla', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Nasıl çalışır',
+    note: 'Boş bir sunucudan kendi kodunuzun yayına çıkmasına kadar. Aşağıdakilerin tamamı size ait donanımda çalışır.',
+    steps: [
+      { title: 'Sunucuyu ayağa kaldırın', text: 'Fractera kurulum robotuyla dağıtın. Bir işletim sistemi, başlangıç şablonu, kontrol paneli, depolar ve yetkilendirme — kurulu ve birbirine bağlı olarak elinize geçer.' },
+      { title: 'Zaten çalıştığınız yerde geliştirin', text: 'GitHub ile eşitleyin, sonra kendi makinenize klonlayın ve Claude Code ya da Codex çalıştırın. Veriler sunucunuzdan gelmeye devam eder; kod kendi IDE\'nizde çalışır.' },
+      { title: 'Gönderin, kendi kendine yayınlansın', text: 'Yerel makinede işi bitirin ve projeyi GitHub\'a gönderin. Bu, kendi sunucunuzda hemen yeni bir dağıtım başlatır — ve ziyaretçi yeni projeyi görür.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const tr: Partial<HomeCell> = {
       { kind: 'p', text: 'Kod burada yazılmaz. Bir geliştirici depoyu kendi makinesine klonlar ve projenin içinde yaşayan talimatları ve becerileri okuyan Claude Code ile çalışır: bunlar kuralları belirler ve otomatik denetimler ihlal edilmelerine izin vermez. Sunucu yalnızca sonucu alır ve yeniden inşa eder.' },
       { kind: 'p', text: 'İskelet, bir milyon satırı aşacak bir proje için inşa edilmiştir: her varlığın kendi klasörü vardır, paylaşılan katman sayılarıyla büyümez, rotalar ve izinler uygulandıkları yerde tanımlanır. Buradaki kararlılık bir vaat değil, bir sonuçtur — yeni bir sayfa merkezi bir çekirdeğe hiçbir şey eklemez.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'ödeme yapmıyorsunuz' },
+      { vendor: 'Neon', text: 'ödeme yapmıyorsunuz' },
+      { vendor: 'Clerk', text: 'ödeme yapmıyorsunuz' },
+    ],
+    title: 'Kimseye ödeme yapmıyorsunuz',
+    text: 'Kimseye bağımlı değilsiniz. Proje tamamen sizin.',
   },
 ],
 }

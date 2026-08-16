@@ -8,6 +8,14 @@ export const de: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infrastruktur für agentisches Engineering' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'günstiger in der Entwicklung' },
+      { value: '×9', label: 'schneller startklar' },
+      { value: '×100', label: 'zuverlässiger im Produktivbetrieb' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 Sprachen', tone: 'reach' },
@@ -21,6 +29,16 @@ export const de: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Fractera-Architektur', tone: 'code' },
       { label: '100+ weitere', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'So funktioniert es',
+    note: 'Von einem leeren Server bis zu Ihrem eigenen Code im Betrieb. Alles Folgende läuft auf Hardware, die Ihnen gehört.',
+    steps: [
+      { title: 'Den Server aufsetzen', text: 'Rollen Sie ihn mit dem Installations-Roboter von Fractera aus. Sie erhalten ein Betriebssystem, eine Startvorlage, das Bedienfeld, die Speicher und die Autorisierung — installiert und miteinander verbunden.' },
+      { title: 'Dort entwickeln, wo Sie ohnehin arbeiten', text: 'Synchronisieren Sie mit GitHub, klonen Sie dann auf Ihren eigenen Rechner und starten Sie Claude Code oder Codex. Die Daten kommen weiterhin von Ihrem Server; der Code läuft in Ihrer eigenen IDE.' },
+      { title: 'Pushen — und es rollt sich selbst aus', text: 'Beenden Sie die Arbeit auf dem lokalen Rechner und schicken Sie das Projekt zu GitHub. Das startet sofort eine neue Auslieferung auf Ihrem eigenen Server — und der Besucher sieht das neue Projekt.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const de: Partial<HomeCell> = {
       { kind: 'p', text: 'Code wird hier nicht geschrieben. Ein Entwickler klont das Repository auf die eigene Maschine und arbeitet mit Claude Code, das die Anweisungen und Skills liest, die im Projekt selbst leben: Sie legen die Regeln fest, und automatische Prüfungen lassen ihren Bruch nicht zu. Der Server empfängt nur das Ergebnis und baut sich neu auf.' },
       { kind: 'p', text: 'Das Skelett ist für ein Projekt gebaut, das die Millionen-Zeilen-Grenze überschreiten wird: Jede Entität hat ihren eigenen Ordner, die gemeinsame Schicht wächst nicht mit ihrer Anzahl, und Routen und Berechtigungen werden dort deklariert, wo sie durchgesetzt werden. Stabilität ist hier kein Versprechen, sondern eine Folge — eine neue Seite fügt einem zentralen Kern nichts hinzu.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'Sie zahlen nicht an' },
+      { vendor: 'Neon', text: 'Sie zahlen nicht an' },
+      { vendor: 'Clerk', text: 'Sie zahlen nicht an' },
+    ],
+    title: 'Sie zahlen an niemanden',
+    text: 'Sie hängen von niemandem ab. Das Projekt gehört ganz Ihnen.',
   },
 ],
 }

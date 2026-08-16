@@ -8,6 +8,14 @@ export const es: Partial<HomeCell> = {
   blocks: [
   { kind: 'hero', pill: 'Infraestructura de ingeniería agéntica' },
   {
+    kind: 'metrics',
+    items: [
+      { value: '×4', label: 'más barato de construir' },
+      { value: '×9', label: 'más rápido de lanzar' },
+      { value: '×100', label: 'más fiable en producción' },
+    ],
+  },
+  {
     kind: 'badges',
     items: [
       { label: '82 idiomas', tone: 'reach' },
@@ -21,6 +29,16 @@ export const es: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Arquitectura Fractera', tone: 'code' },
       { label: '100+ más', tone: 'muted' },
+    ],
+  },
+  {
+    kind: 'flow',
+    title: 'Cómo funciona',
+    note: 'De un servidor vacío a tu propio código en producción. Todo lo de abajo corre sobre hardware que es tuyo.',
+    steps: [
+      { title: 'Levanta el servidor', text: 'Despliégalo con el robot instalador de Fractera. Obtienes un sistema operativo, una plantilla de inicio, el panel de control, los almacenamientos y la autorización — instalados y conectados entre sí.' },
+      { title: 'Desarrolla donde ya trabajas', text: 'Sincroniza con GitHub, luego clona en tu propia máquina y ejecuta Claude Code o Codex. Los datos siguen llegando de tu servidor; el código se ejecuta en tu propio IDE.' },
+      { title: 'Haz push y se despliega solo', text: 'Termina en la máquina local y envía el proyecto a GitHub. Eso lanza de inmediato un nuevo despliegue en tu propio servidor — y el visitante ve el nuevo proyecto.' },
     ],
   },
   {
@@ -84,6 +102,16 @@ export const es: Partial<HomeCell> = {
       { kind: 'p', text: 'El código no se escribe aquí. Un desarrollador clona el repositorio en su propia máquina y trabaja con Claude Code, que lee las instrucciones y habilidades que viven dentro del proyecto: ellas fijan las reglas, y las comprobaciones automáticas no dejan que se rompan. El servidor solo recibe el resultado y se reconstruye.' },
       { kind: 'p', text: 'El esqueleto está pensado para un proyecto que superará el millón de líneas: cada entidad tiene su propia carpeta, la capa compartida no crece con su número, y las rutas y permisos se declaran donde se aplican. La estabilidad aquí no es una promesa sino una consecuencia — una página nueva no añade nada a un núcleo central.' },
     ],
+  },
+  {
+    kind: 'noBill',
+    items: [
+      { vendor: 'Vercel', text: 'no pagas a' },
+      { vendor: 'Neon', text: 'no pagas a' },
+      { vendor: 'Clerk', text: 'no pagas a' },
+    ],
+    title: 'No pagas a nadie',
+    text: 'No dependes de nadie. El proyecto es tuyo por completo.',
   },
 ],
 }

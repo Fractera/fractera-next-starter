@@ -96,7 +96,7 @@ export const pl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'I to nie jest rada, lecz reguła produktu: dopóki choć jeden przypadek jest niezatwierdzony, panel utrzymuje włączony alarm, a agent programujący odmawia budowy. Budowanie na nieprzeczytanym domyśle kosztuje więcej niż niebudowanie wcale.' },
-  { kind: 'cta', text: 'Quiz — siedem pytań zamiast pustej strony', href: '{admin}/{lang}/doc-use-cases', label: 'Otwórz Quiz' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Otwórz Quiz' },
   {
     kind: 'cards',
     badge: 'Architektura',

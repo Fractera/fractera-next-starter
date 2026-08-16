@@ -35,7 +35,11 @@ export type LeafBlock =
   | { kind: 'olist'; items: string[] }
   | { kind: 'figure'; media: 'image' | 'video'; src: string; alt: string; caption?: string; href?: string }
   | { kind: 'code'; text: string }
-  | { kind: 'cta'; text: string; href: string; label: string }
+  // Призыв к действию. `text` НЕОБЯЗАТЕЛЕН: когда кнопка стоит внутри раздела,
+  // чей заголовок уже сказал то же самое, подпись над ней — дословный повтор.
+  // Так и вышло, когда Quiz вынули из рамки: «Quiz — семь вопросов вместо
+  // чистого листа» оказалось на странице дважды подряд, заголовком и абзацем.
+  | { kind: 'cta'; text?: string; href: string; label: string }
   | { kind: 'note'; text: string }
   // Founder pull-quote in the homepage testimonial design (gradient-violet text +
   // author photo/name/role + social links). Author defaults to the site founder.

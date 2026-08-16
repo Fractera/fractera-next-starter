@@ -96,7 +96,7 @@ export const tr: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Ve bu bir öneri değil, bir ürün kuralıdır: tek bir vaka bile onaylanmamışken panel alarmını yanık tutar ve kodlama ajanı inşa etmeyi reddeder. Okunmamış bir tahmin üzerine inşa etmek, hiç inşa etmemekten daha pahalıya mal olur.' },
-  { kind: 'cta', text: 'Quiz — boş bir sayfa yerine yedi soru', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz\'i aç' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz\'i aç' },
   {
     kind: 'cards',
     badge: 'Mimari',

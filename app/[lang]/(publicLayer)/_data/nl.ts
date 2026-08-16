@@ -96,7 +96,7 @@ export const nl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'En dit is geen advies maar een productregel: zolang er één case onbevestigd blijft, houdt het paneel het alarm aan en weigert de codeeragent te bouwen. Bouwen op een ongelezen gok kost meer dan helemaal niet bouwen.' },
-  { kind: 'cta', text: 'Quiz — zeven vragen in plaats van een leeg blad', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz openen' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz openen' },
   {
     kind: 'cards',
     badge: 'Architectuur',

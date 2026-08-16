@@ -106,7 +106,7 @@ export const ru: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'И это не совет, а правило продукта: пока хоть один кейс не подтверждён, панель держит тревогу, а агент-программист отказывается строить. Строить по непрочитанной догадке дороже, чем не строить вовсе.' },
-  { kind: 'cta', text: 'Quiz — семь вопросов вместо чистого листа', href: '{admin}/{lang}/doc-use-cases', label: 'Открыть Quiz' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Открыть Quiz' },
   {
     kind: 'cards',
     badge: 'Архитектура',

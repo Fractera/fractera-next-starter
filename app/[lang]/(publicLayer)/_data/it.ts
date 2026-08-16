@@ -96,7 +96,7 @@ export const it: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'E questa non è una raccomandazione ma una regola del prodotto: finché resta un solo caso non confermato, il pannello tiene accesa l\'allerta e l\'agente programmatore rifiuta di costruire. Costruire su un\'ipotesi non letta costa più che non costruire affatto.' },
-  { kind: 'cta', text: 'Quiz — sette domande invece di una pagina bianca', href: '{admin}/{lang}/doc-use-cases', label: 'Apri Quiz' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Apri Quiz' },
   {
     kind: 'cards',
     badge: 'Architettura',

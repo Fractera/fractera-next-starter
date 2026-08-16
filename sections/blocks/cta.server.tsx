@@ -3,9 +3,15 @@ import { inline } from '@/lib/content/blocks/inline'
 import { linkAttrs, resolveRootHref } from '@/lib/content/blocks/links'
 
 // Призыв к действию.
+//
+// 🔒 ПОДПИСЬ НАД КНОПКОЙ НЕОБЯЗАТЕЛЬНА (2026-08-16, замечено владельцем). Когда
+// кнопка стоит внутри раздела, чей заголовок уже сказал то же самое, подпись —
+// дословный повтор через полэкрана. Так и вышло, когда Quiz вынули из рамки:
+// одна и та же фраза оказалась заголовком раздела и абзацем над кнопкой.
+// Кнопка без подписи — по-прежнему кнопка; абзац без содержания — просто шум.
 export const cta: SectionRenderer<'cta'> = (b, { key: k }) => (
   <div key={k} className="my-4 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6">
-    <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>
+    {b.text && <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>}
     <a
       // Кнопка подчиняется тому же закону ссылок, что и текст (`./links.ts`):
       // внешняя открывается в новой вкладке и получает `rel`, внутренняя на

@@ -63,16 +63,23 @@ function fill(text: string, admin: string, lang: string): string {
 }
 
 function fillBlocks(blocks: Block[], admin: string, lang: string): Block[] {
-  return blocks.map(b => {
-    if ('children' in b) return { ...b, children: fillBlocks(b.children, admin, lang) }
-    if (b.kind === 'olist' || b.kind === 'list') return { ...b, items: b.items.map(i => fill(i, admin, lang)) }
+  // 🔒 `flatMap`, А НЕ `map`: блок может ИСЧЕЗНУТЬ. Кнопка без адреса панели
+  // раньше всегда превращалась в абзац со своей подписью — но подпись стала
+  // необязательной (её убрали там, где заголовок раздела говорит то же самое),
+  // и на сервере без сохранённых настроек получался бы абзац с пустым текстом.
+  // Пустой абзац — не «мелочь вёрстки»: он занимает место и выглядит как
+  // пропавший текст.
+  return blocks.flatMap<Block>(b => {
+    if ('children' in b) return [{ ...b, children: fillBlocks(b.children, admin, lang) }]
+    if (b.kind === 'olist' || b.kind === 'list') return [{ ...b, items: b.items.map(i => fill(i, admin, lang)) }]
     if (b.kind === 'cta') {
-      const href = fill(b.href, admin, lang)
-      // Кнопка без адреса — не кнопка: превращаем в обычный абзац.
-      return admin ? { ...b, href } : { kind: 'p' as const, text: b.text }
+      if (admin) return [{ ...b, href: fill(b.href, admin, lang) }]
+      // Кнопка без адреса — не кнопка. Есть подпись — остаётся абзацем, нет —
+      // исчезает целиком: вести некуда и сказать нечего.
+      return b.text ? [{ kind: 'p' as const, text: b.text }] : []
     }
-    if ('text' in b) return { ...b, text: fill(b.text, admin, lang) }
-    return b
+    if ('text' in b && typeof b.text === 'string') return [{ ...b, text: fill(b.text, admin, lang) }]
+    return [b]
   })
 }
 

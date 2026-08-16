@@ -108,7 +108,7 @@ export const en: HomeCell = {
     ],
   },
   { kind: 'statement', text: 'And this is a product rule, not advice: while a single case is unconfirmed the panel keeps its alarm lit and the coding agent refuses to build. Building on an unread guess costs more than not building at all.' },
-  { kind: 'cta', text: 'Quiz — seven questions instead of a blank page', href: '{admin}/{lang}/doc-use-cases', label: 'Open Quiz' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Open Quiz' },
   {
     kind: 'cards',
     badge: 'Architecture',

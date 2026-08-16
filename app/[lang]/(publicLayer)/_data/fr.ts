@@ -96,7 +96,7 @@ export const fr: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Et ceci n\'est pas un conseil mais une règle du produit : tant qu\'un seul cas reste non confirmé, le panneau garde son alarme allumée et l\'agent codeur refuse de construire. Construire sur une supposition non lue coûte plus cher que ne rien construire du tout.' },
-  { kind: 'cta', text: 'Quiz — sept questions au lieu d\'une page blanche', href: '{admin}/{lang}/doc-use-cases', label: 'Ouvrir Quiz' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Ouvrir Quiz' },
   {
     kind: 'cards',
     badge: 'Architecture',

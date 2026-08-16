@@ -38,8 +38,10 @@ function lines(block: Block): string[] {
       return block.items.map((i, n) => `${n + 1}. ${i}`)
     case 'code':
       return ['```', block.text, '```']
+    // Подпись у кнопки необязательна: там, где заголовок раздела уже сказал то
+    // же самое, её убрали. Без подписи остаётся сама ссылка.
     case 'cta':
-      return [`${block.text} — [${block.label}](${block.href})`]
+      return [block.text ? `${block.text} — [${block.label}](${block.href})` : `[${block.label}](${block.href})`]
     case 'callout':
       return [`**${block.title}** ${block.text}`]
     case 'docref':

@@ -96,7 +96,7 @@ export const de: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Und das ist kein Rat, sondern eine Produktregel: Solange auch nur ein Fall unbestätigt ist, hält das Panel den Alarm aufrecht und der Coding-Agent weigert sich zu bauen. Auf einer ungelesenen Vermutung zu bauen kostet mehr, als gar nicht zu bauen.' },
-  { kind: 'cta', text: 'Quiz — sieben Fragen statt einer leeren Seite', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz öffnen' },
+  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz öffnen' },
   {
     kind: 'cards',
     badge: 'Architektur',

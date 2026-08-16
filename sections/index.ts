@@ -24,6 +24,8 @@ import { metrics } from './blocks/metrics.server'
 import { flow } from './blocks/flow.server'
 import { noBill } from './blocks/no-bill.server'
 import { cards } from './blocks/cards.server'
+import { card } from './blocks/card.server'
+import { statement } from './blocks/statement.server'
 
 // НАБОР СЕКЦИЙ ПРОЕКТА — единственный, и это осознанное решение (2026-08-14).
 //
@@ -40,5 +42,5 @@ import { cards } from './blocks/cards.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, cards, noBill, languageMarquee,
+  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, cards, card, statement, noBill, languageMarquee,
 }

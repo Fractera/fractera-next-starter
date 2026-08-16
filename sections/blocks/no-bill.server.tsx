@@ -1,7 +1,8 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
-import { H2, H3, Lead, Metric, Small } from '@/components/ui/typography'
+import { H3, Lead, Metric, Small } from '@/components/ui/typography'
 import { badgeClass } from '@/sections/tone'
+import { SectionHead } from '@/sections/section-head.server'
 
 // Счета, которых не будет: чужое имя, перечёркнутое, и то, что вы перестали за
 // него покупать.
@@ -38,13 +39,14 @@ import { badgeClass } from '@/sections/tone'
 // возможностей вверху.
 export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="my-10">
-    {/* Шапка раздела — та же форма, что у `flow` и `cards`: заголовок по центру
-        и подзаголовок под ним в тех же границах. Три раздела страницы, одна
-        анатомия; своя у каждого читалась бы как три разных сайта. */}
-    <div className="text-center">
-      <H2 id={`${k}-t`}>{b.heading}</H2>
-      {b.note && <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.note, `${k}-n`)}</Lead>}
-    </div>
+    {/* Шапка раздела — ОБЩИЙ примитив, а не своя разметка: одна анатомия у всех
+        разделов страницы держится импортом, а не тем, что я о ней помню. */}
+    <SectionHead
+      id={`${k}-t`}
+      badge={b.badge}
+      title={b.heading}
+      note={b.note ? inline(b.note, `${k}-n`) : undefined}
+    />
 
     <div className="mt-8 overflow-hidden rounded-2xl border border-border">
       <ul className="grid list-none divide-y divide-border p-0 sm:grid-cols-3 sm:divide-x sm:divide-y-0">

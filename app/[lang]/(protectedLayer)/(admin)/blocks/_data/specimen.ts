@@ -302,17 +302,57 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'cards',
-    when: 'A section of equal cards with NO order between them — the same strip as `flow`, minus the numbers, the link and the animation. The difference is meaning, not decoration: lighting cards up in turn would show a sequence that does not exist, and an untruth told by a good animation is the more convincing kind. Hence `<ul>`, not `<ol>`. Equal height comes from the grid, never from measuring.',
+    when: 'A section of equal cards with NO order between them — the same strip as `flow`, minus the numbers, the link and the animation. The difference is meaning, not decoration: lighting cards up in turn would show a sequence that does not exist, and an untruth told by a good animation is the more convincing kind. Hence `<ul>`, not `<ol>`. The header (badge, heading, lead) is the SHARED `SectionHead`, identical to `flow` and `noBill`. Equal height comes from the grid, never from measuring.',
     blocks: [
       {
         kind: 'cards',
+        badge: 'Section label',
         title: 'Three things worth knowing',
-        note: 'A lead paragraph under the heading — it says what the three cards have in common.',
-        items: [
-          'A card holds one self-contained statement. Read in any order, they still make sense — that is the test for using this kind instead of `flow`.',
-          'The cards are the same height because the grid row is as tall as its tallest item and each card fills it. No script measures anything.',
-          'Inline markup works here too: **bold** and [links](https://example.com).',
+        note: 'A lead paragraph under the heading — it says what the cards have in common. The badge above carries the RUBRIC, and its colour is decided by the section, not by the content: a rubric has no semantic group to take a colour from.',
+        children: [
+          { kind: 'card', children: [{ kind: 'p', text: 'A card holds one self-contained statement. Read in any order they still make sense — that is the test for using this kind instead of `flow`.' }] },
+          { kind: 'card', children: [{ kind: 'p', text: 'The cards are the same height because the grid row is as tall as its tallest item and each card fills it. No script measures anything.' }] },
+          { kind: 'card', children: [{ kind: 'p', text: 'A card is a CONTAINER: it holds any blocks — a heading, a list, a paragraph — so one kind serves both three short statements and two long side-by-side panels.' }] },
         ],
+      },
+    ],
+  },
+  {
+    kind: 'card',
+    when: 'One cell of a `cards` section. A container: it holds any blocks. `tone` gives it a light gradient wash in the colour of its MEANING group — `data` for what you do, `access` for what is worth doing first — never "make it green". A cell with no tone is a plain border: a wash has to mean something, and a wash on every cell stops singling out anything.',
+    blocks: [
+      {
+        kind: 'cards',
+        cols: 2,
+        title: 'Two cells, two meanings',
+        children: [
+          {
+            kind: 'card',
+            tone: 'data',
+            children: [
+              { kind: 'h3', text: 'What you do' },
+              { kind: 'olist', items: ['Order matters inside a cell.', 'The cell holds any blocks.'] },
+            ],
+          },
+          {
+            kind: 'card',
+            tone: 'access',
+            children: [
+              { kind: 'h3', text: 'What is worth doing first' },
+              { kind: 'list', items: ['The same tone the panel warns with.', 'Nothing is blocked by it.'] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'statement',
+    when: 'A large spaced-out claim — the thing a section exists to say. The SAME drawing as the owner\'s pull-quote, minus the byline, and that difference is substantive: `founder` is signed with a name and a photo from the settings, so it marks what a PERSON said. A product rule was said by nobody; signing it would attribute to the owner a sentence he never uttered. The drawing is shared (`sections/pull-quote.server.tsx`) so the two cannot drift apart.',
+    blocks: [
+      {
+        kind: 'statement',
+        text: 'And this is a product rule, not advice: while a single case is unconfirmed the panel keeps its alarm lit and the coding agent refuses to build.',
       },
     ],
   },

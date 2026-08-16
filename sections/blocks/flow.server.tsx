@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
-import { H2, H3, Lead, P } from '@/components/ui/typography'
+import { H3, P } from '@/components/ui/typography'
+import { SectionHead } from '@/sections/section-head.server'
 
 // «Как это работает»: шаги, которые зажигаются по очереди, и свет, бегущий по
 // связи между ними.
@@ -47,12 +48,12 @@ import { H2, H3, Lead, P } from '@/components/ui/typography'
 // (`--flow-n`), и добавленный шаг встаёт в очередь сам.
 export const flow: SectionRenderer<'flow'> = (b, { key: k }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="my-10">
-    <div className="text-center">
-      <H2 id={`${k}-t`}>{b.title}</H2>
-      {b.note && (
-        <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.note, `${k}-n`)}</Lead>
-      )}
-    </div>
+    <SectionHead
+      id={`${k}-t`}
+      badge={b.badge}
+      title={b.title}
+      note={b.note ? inline(b.note, `${k}-n`) : undefined}
+    />
 
     {/* Порядок шагов — содержание, а не оформление: список нумерованный, и
         читалка с экрана произносит «1 из 3» без нашей помощи. Цифра в кружке —

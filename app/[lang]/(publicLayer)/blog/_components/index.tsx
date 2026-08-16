@@ -62,7 +62,7 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <main className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 py-[var(--page-py-content)]">
+        <div data-app-column className="flex flex-col gap-12 px-6 py-[var(--page-py-content)]">
           <PageHeader
             lang={lang}
             eyebrow={`${ui.eyebrow} · ${metaForLang(lang).title}`}

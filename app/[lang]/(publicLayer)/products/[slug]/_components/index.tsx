@@ -102,7 +102,7 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mx-auto max-w-7xl px-6 py-[var(--page-py-work)]">
+      <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <Breadcrumbs
           lang={lang}
           trail={[{ label: t.title, href: `/${lang}/products` }, { label: p.localizedName }]}

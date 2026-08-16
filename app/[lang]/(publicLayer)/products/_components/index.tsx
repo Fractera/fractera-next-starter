@@ -73,7 +73,7 @@ export default async function Catalogue({ lang }: { lang: string }) {
   return (
     <main className="min-h-screen bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
-      <div className="mx-auto max-w-7xl px-6 py-[var(--page-py-work)]">
+      <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
         {products.length === 0 ? (

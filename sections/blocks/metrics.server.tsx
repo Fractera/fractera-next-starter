@@ -1,5 +1,6 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
+import { Metric, Small } from '@/components/ui/typography'
 
 // Ряд мер: одна строка, ячейка на меру, в каждой число и слово при нём.
 //
@@ -9,6 +10,13 @@ import { inline } from '@/lib/content/blocks/inline'
 // независимые пары «число → что оно значит», и это ровно определение списка
 // определений (`<dl>`). Разметка, обещающая связь, которой нет, врёт не глазу, а
 // тому, кто страницу не видит.
+//
+// 🔒 РАЗМЕРЫ — ИЗ ПРИМИТИВА, И ЭТО ИСПРАВЛЕННАЯ ОШИБКА (2026-08-16, замечено
+// владельцем). Здесь стояло `text-4xl md:text-5xl` — размер из лестницы
+// Tailwind, то есть ВНЕ шкалы проекта: владелец двигает `--type-scale` в панели,
+// весь набор меняется, а число остаётся прежним. Гейт этого не видел, потому что
+// смотрит на убывание размера и на сырые заголовки, а не на «взято ли из шкалы».
+// Ступень живёт в `typography.tsx` (`Metric`), как и положено исключению.
 //
 // 🔒 ЧИСЛО НАД СЛОВОМ, А НЕ РЯДОМ. Взгляд по странице идёт сверху вниз: три
 // крупных числа в ряд читаются за один такт, и только потом глаз спускается за
@@ -26,11 +34,11 @@ export const metrics: SectionRenderer<'metrics'> = (b, { key: k }) => (
       <div key={`${k}-${i}`} className="flex flex-col items-center gap-2 px-5 py-7 text-center">
         {/* Число — самое крупное на секции и цветом акцента: это и есть
             утверждение, слово под ним лишь объясняет, к чему оно относится. */}
-        <dt className="text-4xl font-semibold leading-none tracking-tight text-primary md:text-5xl">
-          {item.value}
+        <dt>
+          <Metric className="text-primary">{item.value}</Metric>
         </dt>
-        <dd className="text-sm leading-relaxed text-muted-foreground">
-          {inline(item.label, `${k}-${i}-l`)}
+        <dd>
+          <Small>{inline(item.label, `${k}-${i}-l`)}</Small>
         </dd>
       </div>
     ))}

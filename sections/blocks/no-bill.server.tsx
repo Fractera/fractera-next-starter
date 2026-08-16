@@ -1,6 +1,6 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
-import { H2 } from '@/components/ui/typography'
+import { H2, Lead, Metric, Small } from '@/components/ui/typography'
 
 // Счета, которых не будет: чужое имя, перечёркнутое, и фраза при нём.
 //
@@ -17,6 +17,15 @@ import { H2 } from '@/components/ui/typography'
 // 🔒 ИМЯ ПОСТАВЩИКА НЕ ПЕРЕВОДИТСЯ НИКОГДА. Оно приходит отдельным полем
 // (`vendor`) именно затем: переводчику видно, что трогать здесь нечего, а
 // рендереру видно, какое слово зачёркивать.
+//
+// 🔒 ЗАГОЛОВОК И РАЗМЕРЫ — ИЗ ПРИМИТИВА (исправлено 2026-08-16). Здесь стояли
+// `variant="ui"` у заголовка и `text-2xl md:text-3xl` у имени поставщика.
+// Первое — вариант рабочих экранов на странице-витрине; второе — размер вне
+// шкалы `--type-scale`. Разбор обоих — в `flow.server.tsx` и в `typography.tsx`.
+//
+// Имя поставщика намеренно того же размера, что число в ряду мер: обе полосы —
+// «одна строка, три ячейки», и стоят они на противоположных концах страницы.
+// Одинаковый знак связывает их в пару, а не делает похожими случайно.
 export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
   <section
     key={k}
@@ -26,21 +35,17 @@ export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
     <ul className="grid list-none divide-y divide-border p-0 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
       {b.items.map((item, i) => (
         <li key={`${k}-${i}`} className="flex flex-col items-center gap-1.5 px-5 py-7 text-center">
-          <span className="text-sm leading-snug text-muted-foreground">{item.text}</span>
+          <Small>{item.text}</Small>
           {/* Толщина черты задана явно: тонкая линия по крупному слову на
               телефоне пропадает вовсе, и знак отмены перестаёт читаться. */}
-          <span className="text-2xl font-semibold leading-none tracking-tight text-muted-foreground line-through decoration-2 md:text-3xl">
-            {item.vendor}
-          </span>
+          <Metric className="text-muted-foreground line-through decoration-2">{item.vendor}</Metric>
         </li>
       ))}
     </ul>
 
     <div className="border-t border-border bg-muted/40 px-6 py-8 text-center">
-      <H2 id={`${k}-t`} variant="ui">{b.title}</H2>
-      <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        {inline(b.text, `${k}-b`)}
-      </p>
+      <H2 id={`${k}-t`}>{b.title}</H2>
+      <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.text, `${k}-b`)}</Lead>
     </div>
   </section>
 )

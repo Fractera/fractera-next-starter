@@ -72,6 +72,20 @@ const H1_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-h1)] font-bold leading
 // всякому, кто сюда заглянет.
 const H1_HERO_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-hero)] font-bold leading-tight tracking-tight md:text-[length:var(--fs-hero-md)] lg:text-[length:var(--fs-hero-lg)]`
 
+// ЧИСЛО-УТВЕРЖДЕНИЕ: множитель в ряду мер, зачёркнутое имя в ряду «счетов, которых
+// нет». Не заголовок — оно ничего не озаглавливает, — но и не текст: это крупный
+// знак, который читают до чтения.
+//
+// 🔒 ОНО СТОИТ ЗДЕСЬ РОВНО ПО ТОЙ ЖЕ ПРИЧИНЕ, ЧТО И `H1_HERO_STYLE` ВЫШЕ, и
+// причина уже оплачена дважды. В секции это было написано как `text-4xl
+// md:text-5xl` — размеры из лестницы Tailwind, то есть ВНЕ шкалы: владелец
+// двигает `--type-scale` в панели, весь набор становится крупнее, а число стоит
+// на месте. Шкала, которой подчиняется не всё, — не шкала.
+//
+// Ступень взята существующая (`--fs-h1`), новой не заведено: каждая новая
+// ступень — ещё один способ развалить пропорции.
+const METRIC_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-h1)] font-bold leading-none tracking-tight md:text-[length:var(--fs-h1-md)]`
+
 const H2_STYLES: Record<Variant, string> = {
   content: `${CONTENT_FAMILY} text-[length:var(--fs-h2)] font-bold leading-snug tracking-tight md:text-[length:var(--fs-h2-md)]`,
   ui: `${UI_FAMILY} text-[length:var(--fs-h3)] font-semibold tracking-tight md:text-[length:var(--fs-h3-md)]`,
@@ -109,6 +123,17 @@ export function H3({ variant = "content", className, ...props }: HeadingProps) {
 
 export function H4({ variant = "content", className, ...props }: HeadingProps) {
   return <h4 className={cn(H4_STYLES[variant], "text-foreground", className)} {...props} />
+}
+
+/**
+ * Число-утверждение — множитель, счёт, крупный знак в ряду мер.
+ *
+ * Это `<span>`, а не абзац: оно живёт внутри `<dt>` списка определений или в
+ * ячейке ряда, где абзац стоять не может. Цвет не задан намеренно — у меры он
+ * акцентный, у отменённого счёта приглушённый, и это решает секция.
+ */
+export function Metric({ className, ...props }: ComponentProps<"span">) {
+  return <span className={cn(METRIC_STYLE, className)} {...props} />
 }
 
 /** Обычный текст страницы. */

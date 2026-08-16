@@ -390,6 +390,9 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
    акцентом ВМЕСТЕ с парным цветом текста: `primary` без `primary-foreground`
    читается только в одной теме из двух. */
 .flow-node {
+  /* Размер цифры — ступень ШКАЛЫ, а не `text-lg` из лестницы Tailwind: иначе
+     кружок не двинется, когда владелец меняет `--type-scale` в панели. */
+  font-size: var(--fs-h3);
   background-color: var(--color-muted);
   color: var(--color-foreground);
   border-color: var(--color-border);

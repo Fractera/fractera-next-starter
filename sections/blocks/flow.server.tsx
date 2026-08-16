@@ -1,10 +1,30 @@
 import type { CSSProperties } from 'react'
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
-import { H2, H3 } from '@/components/ui/typography'
+import { H2, H3, Lead, P } from '@/components/ui/typography'
 
 // «Как это работает»: шаги, которые зажигаются по очереди, и свет, бегущий по
 // связи между ними.
+//
+// 🔒 ЗАГОЛОВОК — ВАРИАНТ `content`, И ЭТО ИСПРАВЛЕННАЯ ОШИБКА (2026-08-16,
+// замечено владельцем с первого взгляда на страницу). Здесь стояло
+// `variant="ui"`. Примитив типографики делит варианты по СМЫСЛУ поверхности:
+// `content` — витрина (главная, посты, правовые страницы, каталог), `ui` —
+// рабочие экраны (панели товаров, служебные разделы). Главная — витрина, значит
+// вариант ровно один, и спорить тут не о чем.
+//
+// Цена ошибки была видна глазом: на одной странице оказалось два стоящих подряд
+// самостоятельных раздела с РАЗНЫМИ заголовками — «Как это работает» без засечек
+// в 18px и лента языков с засечками в 24px. Ровно тот разнобой, ради устранения
+// которого примитив и заведён. Соседи по слою: `h2.server.tsx` (заголовок любой
+// контентной страницы) и `language-marquee.server.tsx` — оба берут `content`;
+// `ui` во всём слое остаётся только у `panel`, и там это подпись к рамке, а не
+// раздел страницы.
+//
+// 🔒 РАЗМЕР ТЕКСТА НЕ ПИШЕТСЯ КЛАССОМ. Подзаголовок раздела — это `Lead`
+// («вводный абзац под заголовком»), текст шага — `P`. Написанный руками
+// `text-sm` не подчиняется `--type-scale`, то есть выпадает из шкалы, которой
+// владелец управляет из панели.
 //
 // 🔒 ДВИЖЕНИЕ — ЧИСТЫЙ CSS, НИ ОДНОЙ СТРОКИ СКРИПТА. Тот же закон, что у ленты
 // языков: страница обязана работать с выключенным JavaScript — и здесь она
@@ -21,10 +41,6 @@ import { H2, H3 } from '@/components/ui/typography'
 // обязан ждать своей очереди у карусели. Поэтому гаснет и разгорается ОПРАВА —
 // рамка, свечение, кружок с номером, — а слова стоят в полную силу всегда.
 //
-// 🔒 ОСТАНОВКА ПРИ `prefers-reduced-motion` — требование доступности: у части
-// людей постоянное движение вызывает тошноту и мигрень. Правило живёт рядом с
-// самой анимацией, в `styles/globals.css`.
-//
 // 🔒 ОЧЕРЕДЬ ЗАДАНА ОДНИМ ЧИСЛОМ `--flow-i`, а не тремя классами задержки.
 // Шагов может стать четыре — при классах пришлось бы дописывать четвёртый и
 // вспоминать, где он объявлен; здесь длина цикла считается из числа шагов
@@ -32,11 +48,9 @@ import { H2, H3 } from '@/components/ui/typography'
 export const flow: SectionRenderer<'flow'> = (b, { key: k }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="my-10">
     <div className="text-center">
-      <H2 id={`${k}-t`} variant="ui">{b.title}</H2>
+      <H2 id={`${k}-t`}>{b.title}</H2>
       {b.note && (
-        <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          {inline(b.note, `${k}-n`)}
-        </p>
+        <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.note, `${k}-n`)}</Lead>
       )}
     </div>
 
@@ -53,14 +67,12 @@ export const flow: SectionRenderer<'flow'> = (b, { key: k }) => (
           className="flow-step relative flex flex-col items-center gap-4 text-center"
           style={{ '--flow-i': i } as CSSProperties}
         >
-          <span aria-hidden className="flow-node relative z-10 flex size-14 items-center justify-center rounded-full border text-lg font-semibold">
+          <span aria-hidden className="flow-node relative z-10 flex size-14 items-center justify-center rounded-full border font-semibold">
             {i + 1}
           </span>
           <div className="flow-card w-full rounded-2xl border p-5">
-            <H3 variant="ui">{s.title}</H3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {inline(s.text, `${k}-${i}-b`)}
-            </p>
+            <H3>{s.title}</H3>
+            <P className="mt-2">{inline(s.text, `${k}-${i}-b`)}</P>
           </div>
         </li>
       ))}

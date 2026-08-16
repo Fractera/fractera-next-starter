@@ -107,6 +107,7 @@ export const tr: Partial<HomeCell> = {
   {
     kind: 'noBill',
     heading: 'Tümüyle bağımsız bir alan',
+    note: 'Sıradan bir projede bunlar üç dış hizmettir: kendi fiyatları, kendi koşulları ve projenizin çalışmaya devam etmesi için kendi izinleri. Burada üçü de kendi sunucunuzda yaşıyor.',
     items: [
       { vendor: 'Vercel', text: 'ödeme yapmıyorsunuz', badge: { label: 'barındırma', tone: 'reach' } },
       { vendor: 'Neon', text: 'ödeme yapmıyorsunuz', badge: { label: 'veritabanı', tone: 'data' } },

@@ -93,6 +93,7 @@ function lines(block: Block): string[] {
     case 'noBill':
       return [
         `## ${block.heading}`,
+        ...(block.note ? ['', block.note] : []),
         '',
         ...block.items.map(i => `- ${i.text} ${i.vendor} (${i.badge.label})`),
         '',

@@ -107,6 +107,7 @@ export const pt: Partial<HomeCell> = {
   {
     kind: 'noBill',
     heading: 'Um espaço totalmente independente',
+    note: 'Num projeto comum são três serviços alheios: os seus preços, as suas condições e a sua permissão para que o seu projeto continue a funcionar. Aqui os três vivem no seu próprio servidor.',
     items: [
       { vendor: 'Vercel', text: 'não paga a', badge: { label: 'alojamento', tone: 'reach' } },
       { vendor: 'Neon', text: 'não paga a', badge: { label: 'base de dados', tone: 'data' } },

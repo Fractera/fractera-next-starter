@@ -38,8 +38,12 @@ import { badgeClass } from '@/sections/tone'
 // возможностей вверху.
 export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="my-10">
+    {/* Шапка раздела — та же форма, что у `flow` и `cards`: заголовок по центру
+        и подзаголовок под ним в тех же границах. Три раздела страницы, одна
+        анатомия; своя у каждого читалась бы как три разных сайта. */}
     <div className="text-center">
       <H2 id={`${k}-t`}>{b.heading}</H2>
+      {b.note && <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.note, `${k}-n`)}</Lead>}
     </div>
 
     <div className="mt-8 overflow-hidden rounded-2xl border border-border">

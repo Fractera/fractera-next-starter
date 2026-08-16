@@ -120,6 +120,7 @@ export const en: HomeCell = {
   {
     kind: 'noBill',
     heading: 'A fully independent space',
+    note: 'On a typical project these are three outside services — their pricing, their terms, and their permission for your project to keep running. Here all three live on your own server.',
     items: [
       { vendor: 'Vercel', text: 'you do not pay', badge: { label: 'hosting', tone: 'reach' } },
       { vendor: 'Neon', text: 'you do not pay', badge: { label: 'database', tone: 'data' } },

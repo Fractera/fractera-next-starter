@@ -169,6 +169,8 @@ export type LeafBlock =
   | {
       kind: 'noBill'
       heading: string
+      /** Подзаголовок раздела — как у `flow` и `cards`: одна форма на все три. */
+      note?: string
       items: { vendor: string; text: string; badge: BadgeItem }[]
       title: string
       text: string

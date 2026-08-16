@@ -107,6 +107,7 @@ export const nl: Partial<HomeCell> = {
   {
     kind: 'noBill',
     heading: 'Een volledig onafhankelijke ruimte',
+    note: 'In een gewoon project zijn dit drie externe diensten: hun prijzen, hun voorwaarden en hun toestemming om je project te laten draaien. Hier draaien ze alle drie op je eigen server.',
     items: [
       { vendor: 'Vercel', text: 'je betaalt niet aan', badge: { label: 'hosting', tone: 'reach' } },
       { vendor: 'Neon', text: 'je betaalt niet aan', badge: { label: 'database', tone: 'data' } },

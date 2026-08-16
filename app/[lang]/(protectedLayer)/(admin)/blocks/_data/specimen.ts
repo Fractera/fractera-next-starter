@@ -323,6 +323,7 @@ export const SPECIMEN: SpecimenSection[] = [
       {
         kind: 'noBill',
         heading: 'A fully independent space',
+        note: 'The section header takes the same shape as `flow` and `cards` — heading centred, lead paragraph beneath it, same width. Three sections of one page, one anatomy.',
         items: [
           { vendor: 'Vercel', text: 'you do not pay', badge: { label: 'hosting', tone: 'reach' } },
           { vendor: 'Neon', text: 'you do not pay', badge: { label: 'database', tone: 'data' } },

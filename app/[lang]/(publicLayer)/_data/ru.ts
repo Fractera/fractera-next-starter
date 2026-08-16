@@ -118,6 +118,7 @@ export const ru: Partial<HomeCell> = {
   {
     kind: 'noBill',
     heading: 'Полностью независимое пространство',
+    note: 'На обычном проекте это три чужие службы: их тарифы, их правила и их согласие на то, чтобы ваш проект работал. Здесь все три живут на вашем сервере.',
     items: [
       { vendor: 'Vercel', text: 'вы не платите', badge: { label: 'хостинг', tone: 'reach' } },
       { vendor: 'Neon', text: 'вы не платите', badge: { label: 'база данных', tone: 'data' } },

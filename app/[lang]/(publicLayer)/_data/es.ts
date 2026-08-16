@@ -107,6 +107,7 @@ export const es: Partial<HomeCell> = {
   {
     kind: 'noBill',
     heading: 'Un espacio totalmente independiente',
+    note: 'En un proyecto habitual son tres servicios ajenos: sus precios, sus condiciones y su permiso para que tu proyecto siga funcionando. Aquí los tres viven en tu propio servidor.',
     items: [
       { vendor: 'Vercel', text: 'no pagas a', badge: { label: 'alojamiento', tone: 'reach' } },
       { vendor: 'Neon', text: 'no pagas a', badge: { label: 'base de datos', tone: 'data' } },

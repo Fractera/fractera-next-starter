@@ -4,6 +4,22 @@
 > agent in this project reads them the same way (e.g. aws -> ai-workspace).
 > Edited via the Admin /service/glossary page (:3002); this file is the source of truth.
 
+## Product — the unit of work inside one server
+
+One server carries many products: a landing page today, a store tomorrow, a company brain next month.
+Each is a record in `PRODUCTS-CONFIG/products-config.json`.
+
+| Term | What it means |
+|---|---|
+| **product** | one of the things this server carries. Has an `id` that never changes and means nothing (`p1`, `p2`), a title the owner may rename freely, a structure, a surface and an address |
+| **structure** | one of the twelve directions the owner picks first (`store`, `landing`, `company-brain`, …). Decides the seven opening questions and the default surface. Not a file type, not an architecture |
+| **surface** | where the product lives: `public` — its own address · `private` — a tab in the control panel · `headless` — channels and schedule only, no screen at all |
+| **the four roots** | pages · logic · tables · use cases. Derived from the record, never invented — **and they are your boundary**: working on a use case of a product you write inside them and nowhere else |
+| **pages plan** (`PAGES.md`) | what the product SHOULD have, proposed from its use cases. Not an inventory: what exists is counted from the folders and never stored |
+
+**Layer terms below are about ONE product's inside; product terms above are about which product you are in.
+Both questions have to be answered before code — the second one first.**
+
 ## Layers of the application — the terms every document reuses
 
 These four definitions are the vocabulary of the architecture. When any document or page comment says

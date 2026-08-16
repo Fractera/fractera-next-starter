@@ -95,20 +95,22 @@ export const tr: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Bu proje teknik olarak nedir',
-    children: [
-      { kind: 'p', text: 'Bu bitmiş bir site değil, Fractera mimarisidir: aynı iskelet hem bir açılış sayfasını hem büyük bir SaaS\'ı hem de çok katmanlı otomasyonu taşır. Büyümek yeniden yazmayı gerektirmez — veri, yetkilendirme ve panel katmanları zaten ayrılmıştır ve her biri henüz sahip olmadığınız bir yük için tasarlanmıştır.' },
-      { kind: 'p', text: 'Kod burada yazılmaz. Bir geliştirici depoyu kendi makinesine klonlar ve projenin içinde yaşayan talimatları ve becerileri okuyan Claude Code ile çalışır: bunlar kuralları belirler ve otomatik denetimler ihlal edilmelerine izin vermez. Sunucu yalnızca sonucu alır ve yeniden inşa eder.' },
-      { kind: 'p', text: 'İskelet, bir milyon satırı aşacak bir proje için inşa edilmiştir: her varlığın kendi klasörü vardır, paylaşılan katman sayılarıyla büyümez, rotalar ve izinler uygulandıkları yerde tanımlanır. Buradaki kararlılık bir vaat değil, bir sonuçtur — yeni bir sayfa merkezi bir çekirdeğe hiçbir şey eklemez.' },
+    note: 'İnşaya başlamadan önce bilinmeye değer üç şey: bu iskelet nedir, kod gerçekte nerede yazılır ve proje ilk yüz sayfasını aştığında ne olur.',
+    items: [
+      'Bu bitmiş bir site değil, Fractera mimarisidir: aynı iskelet hem bir açılış sayfasını hem büyük bir SaaS\'ı hem de çok katmanlı otomasyonu taşır. Büyümek yeniden yazmayı gerektirmez — veri, yetkilendirme ve panel katmanları zaten ayrılmıştır ve her biri henüz sahip olmadığınız bir yük için tasarlanmıştır.',
+      'Kod burada yazılmaz. Bir geliştirici depoyu kendi makinesine klonlar ve projenin içinde yaşayan talimatları ve becerileri okuyan Claude Code ile çalışır: bunlar kuralları belirler ve otomatik denetimler ihlal edilmelerine izin vermez. Sunucu yalnızca sonucu alır ve yeniden inşa eder.',
+      'İskelet, bir milyon satırı aşacak bir proje için inşa edilmiştir: her varlığın kendi klasörü vardır, paylaşılan katman sayılarıyla büyümez, rotalar ve izinler uygulandıkları yerde tanımlanır. Buradaki kararlılık bir vaat değil, bir sonuçtur — yeni bir sayfa merkezi bir çekirdeğe hiçbir şey eklemez.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Tümüyle bağımsız bir alan',
     items: [
-      { vendor: 'Vercel', text: 'ödeme yapmıyorsunuz' },
-      { vendor: 'Neon', text: 'ödeme yapmıyorsunuz' },
-      { vendor: 'Clerk', text: 'ödeme yapmıyorsunuz' },
+      { vendor: 'Vercel', text: 'ödeme yapmıyorsunuz', badge: { label: 'barındırma', tone: 'reach' } },
+      { vendor: 'Neon', text: 'ödeme yapmıyorsunuz', badge: { label: 'veritabanı', tone: 'data' } },
+      { vendor: 'Clerk', text: 'ödeme yapmıyorsunuz', badge: { label: 'yetkilendirme', tone: 'access' } },
     ],
     title: 'Kimseye ödeme yapmıyorsunuz',
     text: 'Kimseye bağımlı değilsiniz. Proje tamamen sizin.',

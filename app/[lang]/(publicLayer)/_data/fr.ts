@@ -95,20 +95,22 @@ export const fr: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Ce qu\'est ce projet, techniquement',
-    children: [
-      { kind: 'p', text: 'Ce n\'est pas un site fini mais l\'architecture Fractera : un même squelette porte aussi bien une landing page qu\'un gros SaaS ou une automatisation multi-niveaux. Grandir ne demande pas de réécriture — les couches données, autorisation et panneau sont déjà séparées, et chacune est conçue pour une charge que vous n\'avez pas encore.' },
-      { kind: 'p', text: 'Le code ne s\'écrit pas ici. Un développeur clone le dépôt sur sa propre machine et travaille avec Claude Code, qui lit les instructions et compétences vivant dans le projet : elles fixent les règles, et des vérifications automatiques empêchent qu\'on les enfreigne. Le serveur ne fait que recevoir le résultat et se reconstruire.' },
-      { kind: 'p', text: 'Le squelette est conçu pour un projet qui dépassera le million de lignes : chaque entité a son propre dossier, la couche partagée ne grossit pas avec leur nombre, et les routes et permissions sont déclarées là où elles s\'appliquent. La stabilité ici n\'est pas une promesse mais une conséquence — une nouvelle page n\'ajoute rien à un tronc central.' },
+    note: 'Trois choses à savoir avant de construire : ce qu\'est ce squelette, où le code s\'écrit réellement, et ce qui se passe quand le projet dépasse ses cent premières pages.',
+    items: [
+      'Ce n\'est pas un site fini mais l\'architecture Fractera : un même squelette porte aussi bien une landing page qu\'un gros SaaS ou une automatisation multi-niveaux. Grandir ne demande pas de réécriture — les couches données, autorisation et panneau sont déjà séparées, et chacune est conçue pour une charge que vous n\'avez pas encore.',
+      'Le code ne s\'écrit pas ici. Un développeur clone le dépôt sur sa propre machine et travaille avec Claude Code, qui lit les instructions et compétences vivant dans le projet : elles fixent les règles, et des vérifications automatiques empêchent qu\'on les enfreigne. Le serveur ne fait que recevoir le résultat et se reconstruire.',
+      'Le squelette est conçu pour un projet qui dépassera le million de lignes : chaque entité a son propre dossier, la couche partagée ne grossit pas avec leur nombre, et les routes et permissions sont déclarées là où elles s\'appliquent. La stabilité ici n\'est pas une promesse mais une conséquence — une nouvelle page n\'ajoute rien à un tronc central.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Un espace entièrement indépendant',
     items: [
-      { vendor: 'Vercel', text: 'vous ne payez pas' },
-      { vendor: 'Neon', text: 'vous ne payez pas' },
-      { vendor: 'Clerk', text: 'vous ne payez pas' },
+      { vendor: 'Vercel', text: 'vous ne payez pas', badge: { label: 'hébergement', tone: 'reach' } },
+      { vendor: 'Neon', text: 'vous ne payez pas', badge: { label: 'base de données', tone: 'data' } },
+      { vendor: 'Clerk', text: 'vous ne payez pas', badge: { label: 'autorisation', tone: 'access' } },
     ],
     title: 'Vous ne payez personne',
     text: 'Vous ne dépendez de personne. Le projet est entièrement le vôtre.',

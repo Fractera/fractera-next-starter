@@ -95,20 +95,22 @@ export const it: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Cos\'è questo progetto, tecnicamente',
-    children: [
-      { kind: 'p', text: 'Questo non è un sito finito ma l\'architettura Fractera: uno stesso scheletro regge sia una landing page sia un grande SaaS sia un\'automazione multilivello. Crescere non richiede riscrittura — i livelli di dati, autorizzazione e pannello sono già separati, e ciascuno è costruito per un carico che ancora non hai.' },
-      { kind: 'p', text: 'Il codice non si scrive qui. Uno sviluppatore clona il repository sulla propria macchina e lavora con Claude Code, che legge le istruzioni e le competenze che vivono dentro il progetto: fissano le regole, e i controlli automatici non permettono che vengano infrante. Il server riceve solo il risultato e si ricostruisce.' },
-      { kind: 'p', text: 'Lo scheletro è costruito per un progetto che supererà il milione di righe: ogni entità ha la propria cartella, il livello condiviso non cresce con il loro numero, e rotte e permessi sono dichiarati dove vengono applicati. La stabilità qui non è una promessa ma una conseguenza — una nuova pagina non aggiunge nulla a un nucleo centrale.' },
+    note: 'Tre cose da sapere prima di costruire: che cos\'è questo scheletro, dove viene scritto davvero il codice e cosa succede quando il progetto supera le prime cento pagine.',
+    items: [
+      'Questo non è un sito finito ma l\'architettura Fractera: uno stesso scheletro regge sia una landing page sia un grande SaaS sia un\'automazione multilivello. Crescere non richiede riscrittura — i livelli di dati, autorizzazione e pannello sono già separati, e ciascuno è costruito per un carico che ancora non hai.',
+      'Il codice non si scrive qui. Uno sviluppatore clona il repository sulla propria macchina e lavora con Claude Code, che legge le istruzioni e le competenze che vivono dentro il progetto: fissano le regole, e i controlli automatici non permettono che vengano infrante. Il server riceve solo il risultato e si ricostruisce.',
+      'Lo scheletro è costruito per un progetto che supererà il milione di righe: ogni entità ha la propria cartella, il livello condiviso non cresce con il loro numero, e rotte e permessi sono dichiarati dove vengono applicati. La stabilità qui non è una promessa ma una conseguenza — una nuova pagina non aggiunge nulla a un nucleo centrale.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Uno spazio del tutto indipendente',
     items: [
-      { vendor: 'Vercel', text: 'non paghi' },
-      { vendor: 'Neon', text: 'non paghi' },
-      { vendor: 'Clerk', text: 'non paghi' },
+      { vendor: 'Vercel', text: 'non paghi', badge: { label: 'hosting', tone: 'reach' } },
+      { vendor: 'Neon', text: 'non paghi', badge: { label: 'database', tone: 'data' } },
+      { vendor: 'Clerk', text: 'non paghi', badge: { label: 'autorizzazione', tone: 'access' } },
     ],
     title: 'Non paghi nessuno',
     text: 'Non dipendi da nessuno. Il progetto è interamente tuo.',

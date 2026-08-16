@@ -95,20 +95,22 @@ export const de: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Was dieses Projekt technisch ist',
-    children: [
-      { kind: 'p', text: 'Dies ist keine fertige Website, sondern die Fractera-Architektur: ein Skelett trägt sowohl eine Landingpage als auch ein großes SaaS oder mehrstufige Automatisierung. Wachstum erfordert kein Neuschreiben — die Schichten für Daten, Autorisierung und Panel sind bereits getrennt, jede für eine Last ausgelegt, die Sie noch nicht haben.' },
-      { kind: 'p', text: 'Code wird hier nicht geschrieben. Ein Entwickler klont das Repository auf die eigene Maschine und arbeitet mit Claude Code, das die Anweisungen und Skills liest, die im Projekt selbst leben: Sie legen die Regeln fest, und automatische Prüfungen lassen ihren Bruch nicht zu. Der Server empfängt nur das Ergebnis und baut sich neu auf.' },
-      { kind: 'p', text: 'Das Skelett ist für ein Projekt gebaut, das die Millionen-Zeilen-Grenze überschreiten wird: Jede Entität hat ihren eigenen Ordner, die gemeinsame Schicht wächst nicht mit ihrer Anzahl, und Routen und Berechtigungen werden dort deklariert, wo sie durchgesetzt werden. Stabilität ist hier kein Versprechen, sondern eine Folge — eine neue Seite fügt einem zentralen Kern nichts hinzu.' },
+    note: 'Drei Dinge, die man vor dem Bauen wissen sollte: was dieses Skelett ist, wo der Code tatsächlich geschrieben wird und was passiert, wenn das Projekt seine ersten hundert Seiten überschreitet.',
+    items: [
+      'Dies ist keine fertige Website, sondern die Fractera-Architektur: ein Skelett trägt sowohl eine Landingpage als auch ein großes SaaS oder mehrstufige Automatisierung. Wachstum erfordert kein Neuschreiben — die Schichten für Daten, Autorisierung und Panel sind bereits getrennt, jede für eine Last ausgelegt, die Sie noch nicht haben.',
+      'Code wird hier nicht geschrieben. Ein Entwickler klont das Repository auf die eigene Maschine und arbeitet mit Claude Code, das die Anweisungen und Skills liest, die im Projekt selbst leben: Sie legen die Regeln fest, und automatische Prüfungen lassen ihren Bruch nicht zu. Der Server empfängt nur das Ergebnis und baut sich neu auf.',
+      'Das Skelett ist für ein Projekt gebaut, das die Millionen-Zeilen-Grenze überschreiten wird: Jede Entität hat ihren eigenen Ordner, die gemeinsame Schicht wächst nicht mit ihrer Anzahl, und Routen und Berechtigungen werden dort deklariert, wo sie durchgesetzt werden. Stabilität ist hier kein Versprechen, sondern eine Folge — eine neue Seite fügt einem zentralen Kern nichts hinzu.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Ein vollständig unabhängiger Raum',
     items: [
-      { vendor: 'Vercel', text: 'Sie zahlen nicht an' },
-      { vendor: 'Neon', text: 'Sie zahlen nicht an' },
-      { vendor: 'Clerk', text: 'Sie zahlen nicht an' },
+      { vendor: 'Vercel', text: 'Sie zahlen nicht an', badge: { label: 'Hosting', tone: 'reach' } },
+      { vendor: 'Neon', text: 'Sie zahlen nicht an', badge: { label: 'Datenbank', tone: 'data' } },
+      { vendor: 'Clerk', text: 'Sie zahlen nicht an', badge: { label: 'Autorisierung', tone: 'access' } },
     ],
     title: 'Sie zahlen an niemanden',
     text: 'Sie hängen von niemandem ab. Das Projekt gehört ganz Ihnen.',

@@ -1,31 +1,21 @@
 import type { SectionRenderer } from '@/sections/contract'
+import { badgeClass } from '@/sections/tone'
 
 // Ряд ярлыков возможностей.
 //
 // 🔒 ЦВЕТ ЗДЕСЬ РАБОТАЕТ, А НЕ УКРАШАЕТ: одиннадцать слов делятся на четыре
 // группы, которые глаз читает без чтения — данные, охват, доступ, код.
 //
-// 🔒 ТОНА — ТОКЕНЫ ТЕМЫ, А НЕ ЦВЕТА ПАЛИТРЫ TAILWIND (шаг 508). Раньше здесь
-// стояли `bg-emerald-500/15`, `bg-sky-500/15` и подобные: одинаковые в обеих
-// темах по определению, то есть подобранные под одну и сломанные в другой.
-// Токен `--tone-*` объявлен в теме проекта дважды — для светлой и тёмной, —
-// поэтому смысл группы сохраняется, а читаемость перестаёт зависеть от того,
-// какую тему выбрал посетитель.
-const TONE: Record<string, string> = {
-  data: 'bg-tone-data/15 text-tone-data',
-  reach: 'bg-tone-reach/15 text-tone-reach',
-  access: 'bg-tone-access/15 text-tone-access',
-  code: 'bg-tone-code/15 text-tone-code',
-  muted: 'bg-muted text-muted-foreground',
-}
-
+// 🔒 КАРТА ЦВЕТОВ ПЕРЕЕХАЛА В `sections/tone.ts` (2026-08-16). Она стояла здесь,
+// а второй вид (`noBill`) начал показывать ярлыки под зачёркнутыми именами —
+// значит копия карты разошлась бы с оригиналом на первой же правке, и «данные»
+// на одной полосе стали бы другого цвета, чем «данные» на соседней. Размер
+// ярлыка там же и взят из шкалы (`--fs-eyebrow`), а не из лестницы Tailwind:
+// иначе он не двинется, когда владелец меняет `--type-scale` в панели.
 export const badges: SectionRenderer<'badges'> = (b, { key: k }) => (
   <div key={k} className="mt-8 flex flex-wrap justify-center gap-2">
     {b.items.map((item, i) => (
-      <span
-        key={`${k}-${i}`}
-        className={`rounded-full px-3 py-1 text-xs font-medium ${TONE[item.tone] ?? TONE.muted}`}
-      >
+      <span key={`${k}-${i}`} className={badgeClass(item.tone)}>
         {item.label}
       </span>
     ))}

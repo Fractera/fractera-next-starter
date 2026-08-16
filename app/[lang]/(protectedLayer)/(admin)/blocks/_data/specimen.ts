@@ -301,15 +301,32 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'cards',
+    when: 'A section of equal cards with NO order between them — the same strip as `flow`, minus the numbers, the link and the animation. The difference is meaning, not decoration: lighting cards up in turn would show a sequence that does not exist, and an untruth told by a good animation is the more convincing kind. Hence `<ul>`, not `<ol>`. Equal height comes from the grid, never from measuring.',
+    blocks: [
+      {
+        kind: 'cards',
+        title: 'Three things worth knowing',
+        note: 'A lead paragraph under the heading — it says what the three cards have in common.',
+        items: [
+          'A card holds one self-contained statement. Read in any order, they still make sense — that is the test for using this kind instead of `flow`.',
+          'The cards are the same height because the grid row is as tall as its tallest item and each card fills it. No script measures anything.',
+          'Inline markup works here too: **bold** and [links](https://example.com).',
+        ],
+      },
+    ],
+  },
+  {
     kind: 'noBill',
-    when: 'The bills that will not arrive: a vendor name struck through, the phrase beside it, and the conclusion underneath. The vendor is a SEPARATE field because it is the one word never translated — merge it into the sentence and the renderer no longer knows what to strike. The conclusion sits AFTER the list on purpose: three struck names are the evidence, the sentence is what follows from them.',
+    when: 'The bills that will not arrive: the section is NAMED by an H2 on top, then a struck-through vendor with a badge saying what you stopped buying, then the conclusion as an H3. The vendor is a SEPARATE field because it is the one word never translated — merge it into the sentence and the renderer no longer knows what to strike; the badge beside it IS translated, because "a database" is what a person understands without knowing the name "Neon". The conclusion sits AFTER the list on purpose: the struck names are the evidence, the sentence is what follows from them. The strike runs 2px past each word through padding, never through blank characters typed into the data.',
     blocks: [
       {
         kind: 'noBill',
+        heading: 'A fully independent space',
         items: [
-          { vendor: 'Vercel', text: 'you do not pay' },
-          { vendor: 'Neon', text: 'you do not pay' },
-          { vendor: 'Clerk', text: 'you do not pay' },
+          { vendor: 'Vercel', text: 'you do not pay', badge: { label: 'hosting', tone: 'reach' } },
+          { vendor: 'Neon', text: 'you do not pay', badge: { label: 'database', tone: 'data' } },
+          { vendor: 'Clerk', text: 'you do not pay', badge: { label: 'authorization', tone: 'access' } },
         ],
         title: 'You pay nobody',
         text: 'You depend on nobody. The project is yours, end to end.',

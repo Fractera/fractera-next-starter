@@ -107,21 +107,23 @@ export const en: HomeCell = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'What this project is, technically',
-    children: [
-      { kind: 'p', text: 'This is not a finished site but the Fractera architecture: one skeleton carries a landing page, a large SaaS and multi-level automation alike. Growth needs no rewrite — the data, authorization and panel layers are already separate, and each is built for load you do not have yet.' },
-      { kind: 'p', text: 'Code is not written here. A developer clones the repository to their own machine and works with Claude Code, which reads the instructions and skills that live inside the project: they state the rules, and machine checks refuse to let them be broken. The server only receives the result and rebuilds.' },
-      { kind: 'p', text: 'The skeleton is built for a project that will outgrow a million lines: every entity owns its folder, the shared layer does not grow with their number, and routes and permissions are declared where they are enforced. Stability here is not a promise but a consequence — a new page adds nothing to a central spine.' },
+    note: 'Three things worth knowing before you build on it: what the skeleton is, where the code is actually written, and what happens when the project outgrows its first hundred pages.',
+    items: [
+      'This is not a finished site but the Fractera architecture: one skeleton carries a landing page, a large SaaS and multi-level automation alike. Growth needs no rewrite — the data, authorization and panel layers are already separate, and each is built for load you do not have yet.',
+      'Code is not written here. A developer clones the repository to their own machine and works with Claude Code, which reads the instructions and skills that live inside the project: they state the rules, and machine checks refuse to let them be broken. The server only receives the result and rebuilds.',
+      'The skeleton is built for a project that will outgrow a million lines: every entity owns its folder, the shared layer does not grow with their number, and routes and permissions are declared where they are enforced. Stability here is not a promise but a consequence — a new page adds nothing to a central spine.',
     ],
   },
   // Завершающая секция (outro) — всегда последняя, всегда во всю ширину.
   {
     kind: 'noBill',
+    heading: 'A fully independent space',
     items: [
-      { vendor: 'Vercel', text: 'you do not pay' },
-      { vendor: 'Neon', text: 'you do not pay' },
-      { vendor: 'Clerk', text: 'you do not pay' },
+      { vendor: 'Vercel', text: 'you do not pay', badge: { label: 'hosting', tone: 'reach' } },
+      { vendor: 'Neon', text: 'you do not pay', badge: { label: 'database', tone: 'data' } },
+      { vendor: 'Clerk', text: 'you do not pay', badge: { label: 'authorization', tone: 'access' } },
     ],
     title: 'You pay nobody',
     text: 'You depend on nobody. The project is yours, end to end.',

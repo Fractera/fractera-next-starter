@@ -95,20 +95,22 @@ export const nl: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Wat dit project technisch is',
-    children: [
-      { kind: 'p', text: 'Dit is geen afgewerkte site maar de Fractera-architectuur: hetzelfde skelet draagt zowel een landingspagina als een grote SaaS als meerlagige automatisering. Groeien vereist geen herschrijven — de lagen voor data, autorisatie en paneel zijn al gescheiden, elk gebouwd voor een belasting die u nog niet heeft.' },
-      { kind: 'p', text: 'Code wordt hier niet geschreven. Een ontwikkelaar kloont de repository naar zijn eigen machine en werkt met Claude Code, dat de instructies en vaardigheden leest die in het project zelf leven: die leggen de regels vast, en automatische controles laten niet toe dat ze worden overtreden. De server ontvangt alleen het resultaat en bouwt zichzelf opnieuw op.' },
-      { kind: 'p', text: 'Het skelet is gebouwd voor een project dat de miljoen regels zal overstijgen: elke entiteit heeft haar eigen map, de gedeelde laag groeit niet mee met hun aantal, en routes en rechten worden gedeclareerd waar ze worden afgedwongen. Stabiliteit is hier geen belofte maar een gevolg — een nieuwe pagina voegt niets toe aan een centrale kern.' },
+    note: 'Drie dingen die het waard zijn om te weten voordat je bouwt: wat dit skelet is, waar de code werkelijk wordt geschreven en wat er gebeurt als het project zijn eerste honderd pagina\'s ontgroeit.',
+    items: [
+      'Dit is geen afgewerkte site maar de Fractera-architectuur: hetzelfde skelet draagt zowel een landingspagina als een grote SaaS als meerlagige automatisering. Groeien vereist geen herschrijven — de lagen voor data, autorisatie en paneel zijn al gescheiden, elk gebouwd voor een belasting die u nog niet heeft.',
+      'Code wordt hier niet geschreven. Een ontwikkelaar kloont de repository naar zijn eigen machine en werkt met Claude Code, dat de instructies en vaardigheden leest die in het project zelf leven: die leggen de regels vast, en automatische controles laten niet toe dat ze worden overtreden. De server ontvangt alleen het resultaat en bouwt zichzelf opnieuw op.',
+      'Het skelet is gebouwd voor een project dat de miljoen regels zal overstijgen: elke entiteit heeft haar eigen map, de gedeelde laag groeit niet mee met hun aantal, en routes en rechten worden gedeclareerd waar ze worden afgedwongen. Stabiliteit is hier geen belofte maar een gevolg — een nieuwe pagina voegt niets toe aan een centrale kern.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Een volledig onafhankelijke ruimte',
     items: [
-      { vendor: 'Vercel', text: 'je betaalt niet aan' },
-      { vendor: 'Neon', text: 'je betaalt niet aan' },
-      { vendor: 'Clerk', text: 'je betaalt niet aan' },
+      { vendor: 'Vercel', text: 'je betaalt niet aan', badge: { label: 'hosting', tone: 'reach' } },
+      { vendor: 'Neon', text: 'je betaalt niet aan', badge: { label: 'database', tone: 'data' } },
+      { vendor: 'Clerk', text: 'je betaalt niet aan', badge: { label: 'autorisatie', tone: 'access' } },
     ],
     title: 'Je betaalt niemand',
     text: 'Je bent van niemand afhankelijk. Het project is volledig van jou.',

@@ -95,20 +95,22 @@ export const pt: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'O que é este projeto, tecnicamente',
-    children: [
-      { kind: 'p', text: 'Isto não é um site acabado mas a arquitetura Fractera: o mesmo esqueleto sustenta tanto uma landing page como um grande SaaS ou uma automação multinível. Crescer não exige reescrever — as camadas de dados, autorização e painel já estão separadas, e cada uma está preparada para uma carga que ainda não tem.' },
-      { kind: 'p', text: 'O código não é escrito aqui. Um programador clona o repositório para a sua própria máquina e trabalha com o Claude Code, que lê as instruções e competências que vivem dentro do projeto: elas fixam as regras, e verificações automáticas não permitem que sejam quebradas. O servidor só recebe o resultado e reconstrói-se.' },
-      { kind: 'p', text: 'O esqueleto é construído para um projeto que ultrapassará o milhão de linhas: cada entidade tem a sua própria pasta, a camada partilhada não cresce com o seu número, e rotas e permissões são declaradas onde são aplicadas. A estabilidade aqui não é uma promessa mas uma consequência — uma nova página não acrescenta nada a um núcleo central.' },
+    note: 'Três coisas que vale a pena saber antes de construir: o que é este esqueleto, onde o código é realmente escrito e o que acontece quando o projeto ultrapassa as suas primeiras cem páginas.',
+    items: [
+      'Isto não é um site acabado mas a arquitetura Fractera: o mesmo esqueleto sustenta tanto uma landing page como um grande SaaS ou uma automação multinível. Crescer não exige reescrever — as camadas de dados, autorização e painel já estão separadas, e cada uma está preparada para uma carga que ainda não tem.',
+      'O código não é escrito aqui. Um programador clona o repositório para a sua própria máquina e trabalha com o Claude Code, que lê as instruções e competências que vivem dentro do projeto: elas fixam as regras, e verificações automáticas não permitem que sejam quebradas. O servidor só recebe o resultado e reconstrói-se.',
+      'O esqueleto é construído para um projeto que ultrapassará o milhão de linhas: cada entidade tem a sua própria pasta, a camada partilhada não cresce com o seu número, e rotas e permissões são declaradas onde são aplicadas. A estabilidade aqui não é uma promessa mas uma consequência — uma nova página não acrescenta nada a um núcleo central.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'Um espaço totalmente independente',
     items: [
-      { vendor: 'Vercel', text: 'não paga a' },
-      { vendor: 'Neon', text: 'não paga a' },
-      { vendor: 'Clerk', text: 'não paga a' },
+      { vendor: 'Vercel', text: 'não paga a', badge: { label: 'alojamento', tone: 'reach' } },
+      { vendor: 'Neon', text: 'não paga a', badge: { label: 'base de dados', tone: 'data' } },
+      { vendor: 'Clerk', text: 'não paga a', badge: { label: 'autorização', tone: 'access' } },
     ],
     title: 'Não paga a ninguém',
     text: 'Não depende de ninguém. O projeto é inteiramente seu.',

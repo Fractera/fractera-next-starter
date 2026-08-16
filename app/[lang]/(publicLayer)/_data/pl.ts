@@ -95,20 +95,22 @@ export const pl: Partial<HomeCell> = {
     ],
   },
   {
-    kind: 'panel',
+    kind: 'cards',
     title: 'Czym jest ten projekt technicznie',
-    children: [
-      { kind: 'p', text: 'To nie jest gotowa strona, lecz architektura Fractera: ten sam szkielet dźwiga zarówno landing page, jak i duże SaaS czy wielopoziomową automatyzację. Rozwój nie wymaga przepisywania — warstwy danych, autoryzacji i panelu są już rozdzielone, a każda zaprojektowana pod obciążenie, którego jeszcze nie masz.' },
-      { kind: 'p', text: 'Kod nie jest pisany tutaj. Programista klonuje repozytorium na własną maszynę i pracuje z Claude Code, który czyta instrukcje i umiejętności żyjące wewnątrz projektu: ustalają one zasady, a automatyczne kontrole nie pozwalają ich złamać. Serwer tylko odbiera wynik i się przebudowuje.' },
-      { kind: 'p', text: 'Szkielet jest zbudowany pod projekt, który przekroczy milion linii: każda encja ma własny folder, wspólna warstwa nie rośnie wraz z ich liczbą, a trasy i uprawnienia są deklarowane tam, gdzie są egzekwowane. Stabilność nie jest tu obietnicą, lecz konsekwencją — nowa strona niczego nie dodaje do centralnego rdzenia.' },
+    note: 'Trzy rzeczy, które warto wiedzieć przed budowaniem: czym jest ten szkielet, gdzie naprawdę pisze się kod i co się stanie, gdy projekt przekroczy pierwsze sto stron.',
+    items: [
+      'To nie jest gotowa strona, lecz architektura Fractera: ten sam szkielet dźwiga zarówno landing page, jak i duże SaaS czy wielopoziomową automatyzację. Rozwój nie wymaga przepisywania — warstwy danych, autoryzacji i panelu są już rozdzielone, a każda zaprojektowana pod obciążenie, którego jeszcze nie masz.',
+      'Kod nie jest pisany tutaj. Programista klonuje repozytorium na własną maszynę i pracuje z Claude Code, który czyta instrukcje i umiejętności żyjące wewnątrz projektu: ustalają one zasady, a automatyczne kontrole nie pozwalają ich złamać. Serwer tylko odbiera wynik i się przebudowuje.',
+      'Szkielet jest zbudowany pod projekt, który przekroczy milion linii: każda encja ma własny folder, wspólna warstwa nie rośnie wraz z ich liczbą, a trasy i uprawnienia są deklarowane tam, gdzie są egzekwowane. Stabilność nie jest tu obietnicą, lecz konsekwencją — nowa strona niczego nie dodaje do centralnego rdzenia.',
     ],
   },
   {
     kind: 'noBill',
+    heading: 'W pełni niezależna przestrzeń',
     items: [
-      { vendor: 'Vercel', text: 'nie płacisz' },
-      { vendor: 'Neon', text: 'nie płacisz' },
-      { vendor: 'Clerk', text: 'nie płacisz' },
+      { vendor: 'Vercel', text: 'nie płacisz', badge: { label: 'hosting', tone: 'reach' } },
+      { vendor: 'Neon', text: 'nie płacisz', badge: { label: 'baza danych', tone: 'data' } },
+      { vendor: 'Clerk', text: 'nie płacisz', badge: { label: 'autoryzacja', tone: 'access' } },
     ],
     title: 'Nie płacisz nikomu',
     text: 'Od nikogo nie zależysz. Projekt jest w całości twój.',

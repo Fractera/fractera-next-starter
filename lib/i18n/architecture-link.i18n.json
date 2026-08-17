@@ -2,5 +2,41 @@
   "en": {
     "footer": "Architecture",
     "homeCta": "The architecture in detail"
+  },
+  "ru": {
+    "footer": "Архитектура",
+    "homeCta": "Подробнее об архитектуре"
+  },
+  "es": {
+    "footer": "Arquitectura",
+    "homeCta": "La arquitectura en detalle"
+  },
+  "fr": {
+    "footer": "Architecture",
+    "homeCta": "L'architecture en détail"
+  },
+  "de": {
+    "footer": "Architektur",
+    "homeCta": "Die Architektur im Detail"
+  },
+  "it": {
+    "footer": "Architettura",
+    "homeCta": "L'architettura nel dettaglio"
+  },
+  "pt": {
+    "footer": "Arquitetura",
+    "homeCta": "A arquitetura em detalhe"
+  },
+  "pl": {
+    "footer": "Architektura",
+    "homeCta": "Architektura w szczegółach"
+  },
+  "tr": {
+    "footer": "Mimari",
+    "homeCta": "Mimarinin ayrıntıları"
+  },
+  "nl": {
+    "footer": "Architectuur",
+    "homeCta": "De architectuur in detail"
   }
 }

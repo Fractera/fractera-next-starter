@@ -216,5 +216,87 @@ export const en: FooterPageCell = {
       kind: 'note',
       text: 'User cases are moving from files to a service. The conversation that produces them already lives in the control panel; next they move behind a tool interface backed by a database, so the agent asks for the cases it needs instead of reading a folder. The rule does not change with the storage — no confirmed case, no building. What changes is that the cases stop being a document the agent must remember to open.',
     },
+
+    { kind: 'h2', text: 'Many products on one server' },
+    {
+      kind: 'p',
+      text: 'A case has to belong to something. In this product it belongs to a **product** — and one server carries several of them: a landing page today, a scheduled watcher next week, the company brain after that.',
+    },
+    {
+      kind: 'p',
+      text: 'The objection is fair and worth stating before the answer: **a website is normally one product.** If you are building a professional production system for a company, that is right, and nothing here argues with it — put one product on one server and the rest of this section costs you nothing.',
+    },
+    {
+      kind: 'p',
+      text: 'But that is no longer the only thing people build. More and more of what a person needs is a small service for their own effectiveness: something that runs on a schedule and reports what changed, something that searches by judgement rather than by keyword, something that handles one recurring task in sales, marketing or operations. Each of those is too small to deserve its own server, its own domain and its own bill — and together they are a system.',
+    },
+    {
+      kind: 'p',
+      text: 'So the unit of work is the product, not the site. Grouping one product onto its own page or handful of pages is what lets a coding agent know, without asking, which of them it is changing.',
+    },
+
+    { kind: 'h3', text: 'Why not simply call it a project' },
+    {
+      kind: 'p',
+      text: 'Because a project is not a place. It has no address, no folder and no tables, so a case attached to it cannot be executed — the agent still has to guess where the work goes. A product has all three, and that is the whole difference: a case attached to a product is a buildable instruction.',
+    },
+    {
+      kind: 'p',
+      text: 'A product owns four roots, and none of them is configured by hand — all four are **derived** from its record:',
+    },
+    {
+      kind: 'table',
+      headers: ['Root', 'Derived from'],
+      rows: [
+        ['Its pages', 'Its address — in this framework a folder name IS the URL segment'],
+        ['Its logic', 'Its permanent id'],
+        ['Its tables', 'Its permanent id, as a name prefix'],
+        ['Its cases', 'Its permanent id'],
+      ],
+    },
+    {
+      kind: 'p',
+      text: 'Working on a case, the agent writes inside those four roots and nowhere else. Shared code lives in a shared root, and moving something there is a deliberate act stated in the step — reaching into a neighbouring product for a component is the exact move this rule exists to stop, because that is how one owner’s change silently breaks another product weeks later.',
+    },
+    {
+      kind: 'p',
+      text: 'The id is deliberately meaningless — p1, p2 — and never changes. It cannot be derived from the title or the structure, because you will change both, and the paths hang off the id. That was proved the same day the rule was written: a product whose id said «store» turned out to be a company brain.',
+    },
+
+    { kind: 'h3', text: 'Not every product has a page' },
+    {
+      kind: 'p',
+      text: 'A product declares one of three surfaces, and the default always leans towards closed:',
+    },
+    {
+      kind: 'list',
+      items: [
+        '**Public** — it has an address and visitors reach it.',
+        '**Private** — it lives as a tab in your control panel, and the outside world has no way in.',
+        '**Headless** — it has no screen at all: it works through channels and on a schedule, and you meet it in Telegram or in its report.',
+      ],
+    },
+    {
+      kind: 'p',
+      text: 'A product also carries a status — being described, being built, live. Moving it to live publishes it, and that is a setting: nothing is rebuilt and nothing is deployed.',
+    },
+
+    { kind: 'h3', text: 'What this looks like in practice' },
+    {
+      kind: 'p',
+      text: 'Take a consultant with one server. Her first product is a landing page: public, at the root, a single goal — get an enquiry. Its cases say who arrives and what must be true when they leave.',
+    },
+    {
+      kind: 'p',
+      text: 'Her second product shares nothing with the first except the server. Every morning it reads the pages, job ads and prices of four competitors, stores what it found, and sends her one message: what changed, when, by how much. It is headless — no address, no page, no screen. Its cases are about her mornings, not about visitors.',
+    },
+    {
+      kind: 'p',
+      text: 'Both live on one server, and neither can quietly damage the other: separate pages, separate logic, separate tables, separate cases. When she asks the agent to change the wording of the enquiry form, nothing about the watcher is in scope — not because the agent was careful, but because the boundary was decided before either of them was built.',
+    },
+    {
+      kind: 'note',
+      text: 'The plan and the fact are kept apart on purpose. The pages a product SHOULD have are written down; the pages it actually has are counted by walking the folders, never stored. A hand-written list of what exists diverges from reality in the first week — the agent builds a page and forgets the list. The gap between the two is the answer to "what is still missing", and it is only trustworthy because one half of it cannot be faked.',
+    },
   ],
 }

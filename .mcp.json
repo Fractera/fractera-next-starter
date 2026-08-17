@@ -1,8 +1,10 @@
 {
   "mcpServers": {
-    "development-steps": {
+    "fractera-project": {
       "command": "node",
-      "args": ["scripts/mcp/development-steps.mjs"],
+      "args": [
+        "scripts/mcp/fractera-project.mjs"
+      ],
       "env": {}
     }
   }

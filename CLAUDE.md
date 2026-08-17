@@ -137,11 +137,11 @@ stay exactly where they were.
 **Say the product and its roots in your report** — one line, before the diff. That single line is what makes this
 rule checkable instead of merely stated: any change outside those roots is then visible to the owner at a glance.
 
-### 🗄 Development steps live in the DATABASE — `steps_*` through the `development-steps` MCP
+### 🗄 Development steps live in the DATABASE — `steps_*` through the `fractera-project` MCP
 
 **There is no `DEVELOPMENT-STEPS/` folder any more, and you never recreate one.** A step is a row in the
 table `development_steps`, reached through five tools the MCP server in this repository exposes
-(`scripts/mcp/development-steps.mjs`, registered in `.mcp.json` — your client starts it for you):
+(`scripts/mcp/fractera-project.mjs`, registered in `.mcp.json` — your client starts it for you):
 
 | Tool | What it answers |
 |---|---|

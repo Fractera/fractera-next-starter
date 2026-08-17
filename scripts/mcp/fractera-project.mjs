@@ -1,10 +1,31 @@
 #!/usr/bin/env node
-// MCP-сервер шагов разработки — дверь агента к таблице `development_steps`.
+// MCP-сервер проекта — одна дверь к ДВУМ сущностям: пользовательским кейсам и
+// шагам разработки.
+//
+// 🔒 ПОЧЕМУ ОНИ В ОДНОМ СЕРВЕРЕ. Между ними не связь, а ПЕРЕХОД: подтверждённый
+// кейс превращается в очередь шагов, и каждый шаг обязан назвать кейсы, ради
+// которых существует. Разведи их по двум серверам — и переход окажется ничьим,
+// а «шаг без кейса» станет невозможно даже заметить. Раньше файл назывался
+// `development-steps.mjs`; имя сменилось вместе с зоной ответственности.
+//
+// 🔒 ХРАНЯТСЯ ОНИ ПО-РАЗНОМУ, И ЭТО НЕ НЕПОСЛЕДОВАТЕЛЬНОСТЬ. Кейс — содержание,
+// которое человек читает и подтверждает: он лежит ФАЙЛОМ в репозитории, едет
+// через git и виден владельцу в редакторе. Шаг — состояние очереди, к которому
+// ходят с вопросом «что открыто у этого продукта»: он лежит СТРОКОЙ в таблице.
+// Кейс, спрятанный в базу, исчезает из поля зрения владельца; шаг, разложенный
+// по файлам, требует прочитать все, чтобы ответить на один вопрос.
+// **Этот сервер объединяет ДОСТУП, а не хранение.**
 //
 // 🔒 ЗАЧЕМ ОН СУЩЕСТВУЕТ. Шаги переехали из папок в базу (владелец 2026-08-17), а
 // база живёт в слое данных на сервере. Агент работает в ЛОКАЛЬНОМ клоне владельца
 // и панель управления физически не видит: она лежит вне репозитория пользователя.
 // Без этой двери «шаги в базе» означало бы «шаги, до которых агент не дотянется».
+//
+// 🔒 ПОДТВЕРЖДАЕТ КЕЙС ТОЛЬКО ВЛАДЕЛЕЦ, И ЭТОГО ИНСТРУМЕНТА ЗДЕСЬ НЕТ ВОВСЕ
+// (решение владельца 2026-08-17). Агент вправе добавить кейс, переписать его и
+// снять подтверждение. Вернуть зелёный — нет: гейт кейсов существует ровно
+// потому, что неподтверждённый кейс есть догадка модели, и модель, подтверждающая
+// собственную догадку, обращает гейт в украшение.
 //
 // 🔒 БЕЗ ЕДИНОЙ ЗАВИСИМОСТИ И БЕЗ ЗАПУЩЕННОГО ПРИЛОЖЕНИЯ. MCP поверх stdio — это
 // JSON-RPC 2.0 построчно; SDK ради этого тянуть в стартер незачем, а требовать
@@ -100,6 +121,76 @@ const SCHEMA = `
 const STATUSES = ["new", "in-progress", "blocked", "done", "cancelled"]
 const IMPORTANCE = ["optional", "mandatory", "critical"]
 
+// ── Пользовательские кейсы: файлы продукта ───────────────────────────────────
+//
+// 🔒 ФОРМАТ ПОВТОРЁН ПОБАЙТНО ИЗ ПАНЕЛИ (`bridges/app/lib/use-cases-store.ts`,
+// `renderCase`/`parseCase`). Это единственное место проекта, где один формат
+// пишут ДВА независимых кода: панель на сервере и этот сервер в клоне владельца.
+// Разъедутся они молча — панель просто перестанет видеть статус кейса, который
+// написал агент, и наоборот. Меняя одну сторону, меняй обе в том же шаге.
+
+const CASE_MARKER = "fractera:use-case v1"
+const casesDir = (pid) => path.join(ROOT, "development-docs", "USE-CASES", pid, "CASES")
+
+function parseCase(id, text) {
+  const title = (/^#\s+(.+)$/m.exec(text)?.[1] ?? id).trim()
+  const status = /\*\*status:\*\*\s*confirmed/i.test(text) ? "confirmed" : "draft"
+  const confirmedAt = /\*\*confirmed:\*\*\s*(\S+)/i.exec(text)?.[1] ?? null
+  const summary = text.split(/\n\s*\n/).slice(1).filter(p => !p.includes("**status:**")).join("\n\n").trim()
+  return { id, title, summary, status, confirmedAt: confirmedAt === "—" ? null : confirmedAt }
+}
+
+function renderCase(c) {
+  return `# ${c.title}\n\n<!-- ${CASE_MARKER} -->\n**status:** ${c.status}\n**confirmed:** ${c.confirmedAt ?? "—"}\n\n${String(c.summary ?? "").trim()}\n`
+}
+
+/**
+ * 🔒 ИМЯ ФАЙЛА КЕЙСА — ТОЛЬКО ЛАТИНИЦА. Всё, что лежит в машинном слое, агент
+ * грузит на старте каждой сессии, и второй язык здесь оплачивается токенами
+ * вечно. Слова владельца живут ВНУТРИ файла — заголовок и сценарий он читает и
+ * подтверждает сам; имя файла ему читать незачем.
+ */
+function slugify(slug) {
+  return String(slug ?? "").toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim().replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+    .slice(0, 48) || "case"
+}
+
+function listCaseFiles(pid) {
+  try {
+    return fs.readdirSync(casesDir(pid)).filter(f => f.endsWith(".md")).sort()
+  } catch {
+    return []
+  }
+}
+
+function readCases(pid) {
+  return listCaseFiles(pid).map(f =>
+    parseCase(f.replace(/\.md$/, ""), fs.readFileSync(path.join(casesDir(pid), f), "utf-8")))
+}
+
+/**
+ * Какой продукт имеется в виду.
+ *
+ * 🔒 ОДИН ПРОДУКТ — НЕ СПРАШИВАЕМ, НЕСКОЛЬКО — ТРЕБУЕМ НАЗВАТЬ. Умолчание «первый
+ * в реестре» работает ровно до второго продукта, после чего молча правит чужие
+ * кейсы, и заметит это владелец не сегодня, а когда сломается соседний продукт.
+ */
+function resolveProduct(requested) {
+  let products = []
+  try {
+    products = JSON.parse(fs.readFileSync(PRODUCTS_FILE, "utf-8")).products ?? []
+  } catch { /* реестра нет — отвечаем об этом честно ниже */ }
+  if (!products.length) return { error: "no_products", note: "PRODUCTS-CONFIG holds no product yet" }
+  if (requested) {
+    const found = products.find(p => p.id === requested)
+    return found ? { product: found } : { error: "unknown_product", known: products.map(p => p.id) }
+  }
+  if (products.length === 1) return { product: products[0] }
+  return { error: "product_required", known: products.map(p => p.id) }
+}
+
 // ── Оглавление продукта: номера шагов в PRODUCTS-CONFIG ──────────────────────
 //
 // 🔒 ОГЛАВЛЕНИЕ ОБНОВЛЯЕТСЯ ТЕМ ЖЕ ДЕЙСТВИЕМ, ЧТО И ТАБЛИЦА. Список, который
@@ -123,6 +214,75 @@ function indexStep(productId, number) {
 // ── Инструменты ──────────────────────────────────────────────────────────────
 
 const TOOLS = [
+  // ── Пользовательские кейсы ─────────────────────────────────────────────────
+  {
+    name: "cases_list",
+    description:
+      "List the product's use cases with their status (draft | confirmed). Read this BEFORE writing any "
+      + "code: a case the owner has not confirmed is a guess the model wrote, and building on it builds on "
+      + "a guess.",
+    inputSchema: { type: "object", properties: { product_id: { type: "string" } } },
+  },
+  {
+    name: "cases_get",
+    description: "Read ONE use case in full — its title and the scenario in the owner's own words.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" }, product_id: { type: "string" } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "cases_gate",
+    description:
+      "May development start? Returns how many cases exist, how many are confirmed, and the verdict. "
+      + "No confirmed case means STOP — say what is missing instead of building.",
+    inputSchema: { type: "object", properties: { product_id: { type: "string" } } },
+  },
+  {
+    name: "cases_create",
+    description:
+      "Add a use case. It is ALWAYS created as a draft — confirmation belongs to the owner alone. The "
+      + "slug is the machine file name and must be English; title and scenario are in the owner's language.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "short case title, the owner's language" },
+        summary: { type: "string", description: "who does what, what they came for, the expected result, the edge case" },
+        slug: { type: "string", description: "english-kebab-case, 2-4 words, names the actor's action" },
+        product_id: { type: "string" },
+      },
+      required: ["title", "summary"],
+    },
+  },
+  {
+    name: "cases_update",
+    description:
+      "Rewrite a use case. ANY edit drops it back to draft — otherwise a green status would mean 'the "
+      + "owner once approved some earlier text'. Pass only the fields you change.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        summary: { type: "string" },
+        product_id: { type: "string" },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "cases_unconfirm",
+    description:
+      "Withdraw confirmation from a case — use when you found that it contradicts reality or another case. "
+      + "There is deliberately NO tool to confirm: only the owner does that, in the control panel.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" }, product_id: { type: "string" } },
+      required: ["id"],
+    },
+  },
+  // ── Шаги разработки ────────────────────────────────────────────────────────
   {
     name: "steps_list",
     description:
@@ -196,6 +356,91 @@ const row = r => ({
 })
 
 async function callTool(name, args = {}) {
+  // ── Кейсы: файлы, базы не касаются вовсе ───────────────────────────────────
+  if (name.startsWith("cases_")) {
+    const resolved = resolveProduct(args.product_id)
+    if (resolved.error) return resolved
+    const pid = resolved.product.id
+
+    if (name === "cases_list") {
+      const cases = readCases(pid)
+      return {
+        product_id: pid,
+        dir: `development-docs/USE-CASES/${pid}/CASES/`,
+        cases: cases.map(({ summary, ...rest }) => rest),
+        note: "summaries omitted — read one with cases_get",
+      }
+    }
+
+    if (name === "cases_get") {
+      const found = readCases(pid).find(c => c.id === args.id)
+      return found ?? { error: "not_found", id: args.id, known: listCaseFiles(pid).map(f => f.replace(/\.md$/, "")) }
+    }
+
+    if (name === "cases_gate") {
+      const cases = readCases(pid)
+      const confirmed = cases.filter(c => c.status === "confirmed").length
+      // 🔒 ВЕРДИКТ ВОЗВРАЩАЕТСЯ СЛОВОМ, А НЕ ВЫВОДИТСЯ ВЫЗЫВАЮЩИМ. Два числа
+      // допускают два прочтения: «8 из 8» и «0 из 0» оба выглядят как «всё
+      // подтверждено», а второе означает, что кейсов нет вовсе.
+      const verdict = cases.length === 0 ? "no-cases"
+        : confirmed === 0 ? "nothing-confirmed"
+        : confirmed < cases.length ? "partially-confirmed"
+        : "ready"
+      return {
+        product_id: pid, total: cases.length, confirmed, verdict,
+        mayBuild: verdict === "ready",
+        unconfirmed: cases.filter(c => c.status !== "confirmed").map(c => c.id),
+      }
+    }
+
+    if (name === "cases_create") {
+      const title = String(args.title ?? "").trim()
+      const summary = String(args.summary ?? "").trim()
+      if (!title) return { error: "title_required" }
+      if (!summary) return { error: "summary_required" }
+      fs.mkdirSync(casesDir(pid), { recursive: true })
+      // Нумерация продолжает существующую: кейсы нумеруются, как шаги, и номер
+      // читается из первых двух знаков имени файла.
+      const nums = readCases(pid).map(c => Number(c.id.slice(0, 2))).filter(Number.isFinite)
+      const n = (nums.length ? Math.max(...nums) : 0) + 1
+      const id = `${String(n).padStart(2, "0")}-${slugify(args.slug)}`
+      fs.writeFileSync(
+        path.join(casesDir(pid), `${id}.md`),
+        renderCase({ title, summary, status: "draft", confirmedAt: null }),
+        "utf-8",
+      )
+      return { ok: true, id, product_id: pid, status: "draft", note: "only the owner can confirm it" }
+    }
+
+    if (name === "cases_update" || name === "cases_unconfirm") {
+      const file = path.join(casesDir(pid), `${args.id}.md`)
+      let current
+      try {
+        current = parseCase(String(args.id), fs.readFileSync(file, "utf-8"))
+      } catch {
+        return { error: "not_found", id: args.id }
+      }
+      const next = {
+        title: name === "cases_update" && args.title !== undefined ? String(args.title).trim() : current.title,
+        summary: name === "cases_update" && args.summary !== undefined ? String(args.summary).trim() : current.summary,
+        // 🔒 И ПРАВКА, И СНЯТИЕ ВОЗВРАЩАЮТ ЧЕРНОВИК. Тот же закон стоит в панели
+        // (`writeCase`): зелёный статус обязан означать «владелец подтвердил ЭТОТ
+        // текст», а не «когда-то подтвердил какой-то».
+        status: "draft",
+        confirmedAt: null,
+      }
+      if (!next.title) return { error: "title_required" }
+      fs.writeFileSync(file, renderCase(next), "utf-8")
+      return {
+        ok: true, id: args.id, product_id: pid, status: "draft",
+        wasConfirmed: current.status === "confirmed",
+      }
+    }
+
+    return { error: "unknown_tool", name }
+  }
+
   await sql(SCHEMA)
 
   if (name === "steps_list") {

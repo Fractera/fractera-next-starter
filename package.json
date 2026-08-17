@@ -34,7 +34,7 @@
     "check:layout": "node scripts/check-layout.mjs",
     "check:dialogs": "node scripts/check-dialogs.mjs",
     "check:project-types": "node scripts/check-project-types.mjs",
-    "mcp:steps": "node scripts/mcp/development-steps.mjs"
+    "mcp:project": "node scripts/mcp/fractera-project.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

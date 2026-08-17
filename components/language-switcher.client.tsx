@@ -35,6 +35,35 @@ function LanguageSwitcherInner() {
   const [filter, setFilter] = useState("");
   const ref = useRef<HTMLDivElement>(null);
 
+  // 🔒 НА ТЕЛЕФОНЕ ПОЛЯ ПОИСКА НЕТ ВОВСЕ (владелец, 2026-08-17). Оно открывалось
+  // с `autoFocus`, и экранная клавиатура выезжала сама, ещё до того как человек
+  // решил что-то искать: список ужимался до пары строк, а страница под ним
+  // разъезжалась. Спрятать поле классом `hidden` мало — скрытый `input` всё
+  // равно остаётся в разметке, и любая правка вёрстки вернёт клавиатуру.
+  // Поэтому на касании поле НЕ РЕНДЕРИТСЯ, а языки выбирают из списка.
+  //
+  // 🔒 ПРИЗНАК — `pointer: coarse`, А НЕ ШИРИНА ЭКРАНА. Клавиатура выезжает у
+  // касания, а не у узкого окна: на ноутбуке с узким окном есть настоящая
+  // клавиатура, и поиск по 82 языкам там как раз полезен. Ширина добавлена
+  // вторым условием ради эмуляции телефона в браузере разработчика.
+  //
+  // Проверка делается в эффекте, а не при отрисовке: на сервере `matchMedia` не
+  // существует. Расхождения гидратации это не создаёт — выпадающий список
+  // появляется только после нажатия, то есть заведомо позже.
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse), (max-width: 640px)");
+    const apply = () => {
+      setTouch(mq.matches);
+      // Поле исчезло — исчезает и то, что в нём набрали. Иначе список остался бы
+      // отфильтрованным без единого способа снять фильтр.
+      if (mq.matches) setFilter("");
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   const allLanguages = useMemo(() => getAvailableLanguages(), []);
 
   const currentLang = useMemo(() => {
@@ -108,30 +137,34 @@ function LanguageSwitcherInner() {
 
       {open && (
         <div className="absolute bottom-full mb-2 right-0 w-64 rounded-xl border border-border bg-popover shadow-2xl z-50 overflow-hidden ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-1 duration-150">
-          {/* Search */}
-          <div className="relative p-2 border-b border-border">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              autoFocus
-              type="text"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              placeholder="Search language…"
-              className="w-full bg-muted text-foreground text-sm rounded-md pl-8 pr-7 py-1.5 outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
-            />
-            {filter && (
-              <button
-                type="button"
-                onClick={() => setFilter("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X size={12} />
-              </button>
-            )}
-          </div>
+          {/* Search — только там, где есть настоящая клавиатура. */}
+          {!touch && (
+            <div className="relative p-2 border-b border-border">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                autoFocus
+                type="text"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Search language…"
+                className="w-full bg-muted text-foreground text-sm rounded-md pl-8 pr-7 py-1.5 outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-primary"
+              />
+              {filter && (
+                <button
+                  type="button"
+                  onClick={() => setFilter("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          )}
 
-          {/* List */}
-          <div className="max-h-60 overflow-y-auto py-1">
+          {/* List. Без поля поиска список — единственный способ выбрать язык,
+              поэтому на касании ему отдаётся больше высоты: те же строки, что
+              занимало поле, плюс запас под палец. */}
+          <div className={`${touch ? "max-h-[70vh]" : "max-h-60"} overflow-y-auto py-1`}>
             {filter ? (
               filtered.length === 0 ? (
                 <p className="px-4 py-6 text-center text-sm text-muted-foreground">

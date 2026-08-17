@@ -27,7 +27,13 @@ import { ProjectTypeMarquee } from '@/components/project-types/project-type-marq
 // живёт в `components/`.
 
 export const projectTypeMarquee: SectionRenderer<'projectTypeMarquee'> = (b, { key: k, lang }) => (
-  <section key={k} aria-labelledby={b.title ? `${k}-t` : undefined} className="py-6">
+  // 🔒 СВЕРХУ ОТСТУПА НЕТ ВОВСЕ, И ЭТО СЧИТАНО, А НЕ НА ГЛАЗ. Между первым
+  // экраном и лентой складывались ТРИ величины: нижний отступ героя (40px),
+  // верхний отступ колонки страницы (64px) и собственный отступ этой секции
+  // (24px) — 128 пикселей пустоты, из которых видно было только последние 24.
+  // Колонка урезана до 40px там, где шапки страницы нет (`standard-content-page`),
+  // здесь снят весь верхний отступ: итого 80px вместо 128.
+  <section key={k} aria-labelledby={b.title ? `${k}-t` : undefined} className="pt-0 pb-6">
     {b.title && (
       <div className="mb-6 px-6 text-center">
         <H2 id={`${k}-t`}>{b.title}</H2>

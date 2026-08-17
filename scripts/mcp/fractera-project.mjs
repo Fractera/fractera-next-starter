@@ -627,6 +627,101 @@ const row = r => ({
 
 const stamp = () => new Date().toISOString().replace(/\.\d+Z$/, "Z")
 
+// ── Зеркало шагов файлами (решение владельца 2026-08-17, вечер) ───────────────
+//
+// 🔒 БАЗА — ИСТОЧНИК, ФАЙЛЫ — ЗЕРКАЛО. Владелец смотрит работу ГЛАЗАМИ, в своём
+// клоне (правило «локальный репозиторий — единственный орган зрения»), а шаг,
+// живущий только строкой в базе, для него не существует: открыв проект в
+// редакторе, он не найдёт ни одного.
+//
+// 🔒 ПОЧЕМУ ЭТО НЕ ВОЗВРАТ СНЕСЁННОГО КОНВЕЙЕРА. У прежнего было три беды, и
+// зеркало не имеет ни одной:
+//   • «покажи открытые шаги продукта» читало КАЖДЫЙ файл — теперь это запрос к
+//     базе, а файлы никто не обходит;
+//   • статус жил в двух местах (имя папки и текст внутри) — теперь он один, в
+//     базе, а папка ВЫВОДИТСЯ из него;
+//   • закрытие было переносом файла, то есть второй операцией, которая могла не
+//     случиться, — теперь перенос делает генератор в тот же миг.
+//
+// Отсюда главное правило этих файлов: **правка руками не доедет никуда**. Об
+// этом сказано в шапке каждого — иначе человек однажды напишет в файл и будет
+// ждать, что это увидит агент.
+const STEPS_DIR = path.join(ROOT, "development-docs", "DEVELOPMENT-STEPS")
+const NEW_DIR = path.join(STEPS_DIR, "NEW-STEPS")
+const DONE_DIR = path.join(STEPS_DIR, "COMPLETED-STEPS")
+
+/** Имя файла шага: номер + слаг заголовка. Латиница — это машинный слой. */
+function stepFileName(step) {
+  const slug = String(step.title ?? "")
+    .toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim()
+    .replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 60) || "step"
+  return `${String(step.number).padStart(2, "0")}-${slug}.md`
+}
+
+function renderStepFile(step) {
+  const cases = Array.isArray(step.cases) ? step.cases : []
+  return `# ${step.number}. ${step.title}
+
+<!-- fractera:step v1 — ЗЕРКАЛО. Источник истины — таблица development_steps.
+     Правка этого файла руками НИКУДА не доедет: он переписывается целиком при
+     каждом изменении шага, и папка выбирается по его состоянию. Меняйте шаг
+     через MCP fractera-project (steps_update / steps_close). -->
+
+**product:** ${step.product_id}
+**status:** ${step.status}
+**importance:** ${step.importance}
+**kind:** ${step.kind ?? "work"}
+**cases:** ${cases.length ? cases.join(", ") : "—"}
+**updated:** ${step.updated_at ?? "—"}
+
+## Задание
+
+${String(step.plan ?? "").trim() || "_задание не написано_"}
+
+## Результат
+
+${String(step.result ?? "").trim() || "_шаг ещё не закрыт_"}
+`
+}
+
+/**
+ * Разложить ВСЕ шаги по двум папкам: открытые в `NEW-STEPS`, закрытые в
+ * `COMPLETED-STEPS`.
+ *
+ * Полная пересборка, а не точечная правка: она дешёвая (десятки файлов) и не
+ * оставляет следов от прошлых состояний — шаг, сменивший имя или папку, не
+ * задваивается. Точечная правка ровно здесь и накопила бы расхождение.
+ *
+ * «Лучшее усилие»: отказ файловой системы не имеет права отменить уже сделанную
+ * запись в базе. Молчать нельзя — возвращаем, что вышло, вызывающий доложит.
+ */
+async function syncStepFiles() {
+  try {
+    const { rows } = await sql("SELECT * FROM development_steps ORDER BY number")
+    fs.mkdirSync(NEW_DIR, { recursive: true })
+    fs.mkdirSync(DONE_DIR, { recursive: true })
+
+    const wanted = new Map()
+    for (const raw of rows) {
+      const step = row(raw)
+      const dir = ["done", "cancelled"].includes(step.status) ? DONE_DIR : NEW_DIR
+      wanted.set(path.join(dir, stepFileName(step)), renderStepFile(step))
+    }
+    // Чужого не трогаем: убираем только то, что похоже на наш файл шага.
+    for (const dir of [NEW_DIR, DONE_DIR]) {
+      for (const name of fs.readdirSync(dir)) {
+        const full = path.join(dir, name)
+        if (!/^\d+-.*\.md$/.test(name)) continue
+        if (!wanted.has(full)) fs.unlinkSync(full)
+      }
+    }
+    for (const [file, body] of wanted) fs.writeFileSync(file, body, "utf-8")
+    return { ok: true, files: wanted.size }
+  } catch (e) {
+    return { ok: false, error: String(e?.message ?? e) }
+  }
+}
+
 /**
  * Вставка шага с выдачей номера. Вынесена, потому что вставляют трое:
  * `steps_create`, шаг декомпозиции и — в будущем — панель.
@@ -655,7 +750,13 @@ async function insertStep({ productId, title, status, importance, cases, plan, r
          JSON.stringify(cases ?? []), plan ?? "", result ?? ""],
       )
       indexStep(productId, number)
-      return { ok: true, number, product_id: productId, title, status, importance, kind: kind || "work" }
+      // Зеркало обновляется тем же действием, что создаёт шаг: файл, появляющийся
+      // отдельным ходом, однажды не появится.
+      const mirror = await syncStepFiles()
+      return {
+        ok: true, number, product_id: productId, title, status, importance, kind: kind || "work",
+        ...(mirror.ok ? {} : { mirrorError: mirror.error }),
+      }
     } catch (e) {
       // Чужой отказ не глотаем: повторяем ТОЛЬКО столкновение по ключу.
       if (!/unique|constraint/i.test(String(e?.message ?? e))) throw e
@@ -1013,6 +1114,7 @@ async function callTool(name, args = {}) {
     // шаг сам по себе о стадии ничего не говорит, а угадывать её по числу
     // закрытых значило бы откатывать приёмку при каждой мелкой правке.
     if (args.stage) await advanceDevStatus(String(rows[0].product_id), String(args.stage), { step: number, note: String(args.result ?? "").slice(0, 120) })
+    await syncStepFiles()
     return callTool("steps_get", { number })
   }
 
@@ -1046,6 +1148,7 @@ async function callTool(name, args = {}) {
       `UPDATE development_steps SET ${sets.join(", ")} WHERE number = ?`, params,
     )
     if (!changes) return { error: "not_found", number }
+    await syncStepFiles()
     return callTool("steps_get", { number })
   }
 

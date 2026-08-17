@@ -40,7 +40,8 @@ function finish(payload, exit = 0) {
   out({ ok: true, ...payload }); process.exit(exit)
 }
 
-// TS object-literal serializer (codebase style) — same contract as manage-content-collections.
+// TS object-literal serializer (codebase style) — the same shape the content
+// engine writes by hand, so a translated cell is byte-comparable with a authored one.
 function tsLit(v, ind = 0) {
   const pad = "  ".repeat(ind), pad1 = "  ".repeat(ind + 1)
   if (typeof v === "string") return `'${v.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n")}'`
@@ -148,8 +149,8 @@ async function opWrite(outRoot, L, a) {
   const body = `import type { ${typeName} } from '../../_lib/types'\n\n// Translated to '${L}'. Strings only — the block structure stays frozen (set by the fan-out).\nexport const ${L}: ${typeName} = ${tsLit(obj)}\n`
   await writeOut(outRoot, rel, body)
 
-  // Best-effort: tick this page off in the open translation step.
-  await tickStep(outRoot, L, `/${L}/${tab}/${slug}`).catch(() => {})
+  // Сколько страниц ещё ждёт перевода — это и есть отметка о прогрессе, и её
+  // читает агент. Отдельной галочки в файле шага больше нет (см. надгробие ниже).
   const remaining = (await pendingPages(outRoot, L)).length
   return finish({
     mode: "write", lang: L, tab, slug, written: rel, remaining,
@@ -158,16 +159,16 @@ async function opWrite(outRoot, L, a) {
   })
 }
 
-async function tickStep(outRoot, L, href) {
-  const dir = join(outRoot, "DEVELOPMENT-STEPS", "NEW-STEPS")
-  if (!(await isDir(dir))) return
-  for (const f of await readdir(dir)) {
-    if (!new RegExp(`-translate-${L}\\.md$`).test(f)) continue
-    const p = join(dir, f); const s = await readFile(p, "utf8")
-    const n = s.replace(new RegExp(`- \\[ \\] ${href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), `- [x] ${href}`)
-    if (n !== s) await writeFile(p, n, "utf8")
-  }
-}
+// 🪦 ЗДЕСЬ СТОЯЛ `tickStep()` — он вычёркивал переведённую страницу галочкой в
+// файле шага `DEVELOPMENT-STEPS/NEW-STEPS/*-translate-<L>.md`. Файлового
+// конвейера больше нет (2026-08-17), шаг живёт строкой в таблице.
+//
+// Отметку о прогрессе теперь ставит АГЕНТ: `remaining` в ответе этого скрипта
+// говорит, сколько страниц осталось, и он же обновляет шаг через `steps_update`
+// или закрывает его `steps_close`, когда `remaining` дошёл до нуля.
+//
+// Второй код, правящий чужую запись вслепую регулярным выражением, был бы хуже
+// отсутствия отметки: он молча не срабатывал при любой правке формулировки.
 
 async function main() {
   const a = parseArgs(process.argv.slice(2))

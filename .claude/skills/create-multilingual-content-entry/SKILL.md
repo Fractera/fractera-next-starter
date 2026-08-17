@@ -68,7 +68,7 @@ a second post**. Therefore:
 - **Never slugify a translated title** (a Spanish title must NOT become a second `hemos-…` post).
 - **Never create a post once per language** — one create yields all language cells at once.
 - Creation is always keyed by the **English identifier**; translating is a SEPARATE path (the
-  `expand-site-language` / `owner_content_translate_pending` runner) that writes INTO the cell, it
+  `expand-site-language` and its translation runner) that writes INTO the cell, it
   does not create a post.
 
 ## The five rules (do not skip)

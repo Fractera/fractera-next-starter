@@ -29,7 +29,7 @@ instruction-set block below. Kept in one place on purpose — two copies of a la
 It is the authority on WHICH of this project's documents exist for you at all. A document listed as
 switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `MCP development-steps → development_steps`
+**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `MCP fractera-project → development_steps`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `development-docs/DYNAMIC-WORKFLOWS.md`, `development-docs/CONTEXT-STATE.md`
 
@@ -731,7 +731,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     delegated steps of the same task type, the orchestrator's handed-over instructions are SYSTEMATICALLY
     incomplete about something AND one of YOUR OWN skills covers exactly that gap, you MAY materialize ONE
     service feedback step addressed to the orchestrator:
-    one step through `steps_create` (MCP development-steps) titled "agent-feedback: &lt;topic&gt;", with
+    one step through `steps_create` (MCP fractera-project) titled "agent-feedback: &lt;topic&gt;", with
     product `platform` and a plan that carries { "kind": "agent-feedback", "from": "&lt;your-agent&gt;", "to":
     "orchestrator", "taskType": "&lt;X&gt;", "skill": "&lt;skill-name&gt;" }. Body skeleton (keep this intent
     verbatim): "Service message from coding agent &lt;you&gt; to the orchestrator: while working on tasks of
@@ -779,12 +779,6 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       on the server, outside git. Use the command, never the raw file: with up to 82 languages enabled the
       file is mostly the `i18n` branch — the same five fields translated over and over — and it would eat the
       context window; the command prints the English slice with translations dropped.</action>
-    <action>PROJECT sub-step (Projects layer): when the step you open is a project node or a coder-handoff
-      (materialized by orchestrate-project-by-steps), read that project's ROOT README FIRST — the
-      decomposition-born overview at the PROJECTS service dir (step 197): /opt/fractera/projects-app/app/(projects)/projects/&lt;cat&gt;/&lt;slug&gt;/README.md (why / how it
-      works / efficiency / reuse / result + the fractera:project graph) — ALONGSIDE the completed/current
-      sub-steps, on EVERY step. It is the single source of truth for what the project is and how its nodes
-      fit together; every spec/handoff step file points to it. Never build a project node without it.</action>
     <action>Check memory: GET /api/rag/status; offline -> work from files on disk.</action>
     <action>Read the LANGUAGE SET before authoring ANY content (step 150): the languages in
       NEXT_PUBLIC_SUPPORTED_LANGUAGES (the slot's .env.local — a plain file read, NO API). It is the ONE
@@ -797,19 +791,19 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       (/en/&lt;slug&gt; and /es/&lt;slug&gt; = same slug, only the prefix differs). A translation is a
       &lt;lang&gt;.ts cell in the SAME folder — NEVER a second post. Never slugify a translated title; never
       create/add a post once per language (one create yields all language cells at once); translating is the
-      separate owner_content_translate_pending path that writes INTO the cell, it does not create a post.</action>
+      separate translation runner (expand-site-language) that writes INTO the cell, it does not create a post.</action>
     <action>Adding a language to an EXISTING site (many pages/sections) is a DEDICATED capability — the
-      expand-site-language skill / owner_content_add_site_language: it fans the language across every group
+      expand-site-language skill (its own `fan-out-site-language.mjs`): it fans the language across every group
       and post (seeded with the default language so the site is valid instantly, noindex until translated —
       Doorway guard), updates the 4 menus, and opens one translation step per language; real translation is
-      the separate, non-blocking owner_content_translate_pending runner (no deploy). NEVER add a language by
-      hand-editing, by re-composing, or via manage-content-collections / owner_template_update_group — they
-      cannot add a per-page locale and will break the site.</action>
+      the separate, non-blocking translation runner in that same skill (no deploy). NEVER add a language by
+      hand-editing, by re-composing, or by adding it to the menu manifest alone — none of those create the
+      per-page locale files, and the site breaks with the language visible in the switcher.</action>
     <action>ENCODING INTEGRITY (any language). A lossy step — voice dictation, copy-paste, a bad transform —
       can leave a broken/replacement character (a control byte like 0x13, U+FFFD, or mojibake) where an
       accented letter belonged; the file still parses so it ships SILENTLY and the live page shows a BOX
       instead of the letter (the real "Documentación" becomes "Documentaci□n"). Tool: `npm run
-      check:encoding` (script `scripts/scan-broken-characters.mjs`) or MCP owner_content_scan_broken_characters
+      check:encoding` (script `scripts/scan-broken-characters.mjs`), or the audit-broken-characters skill
       — scans EVERY language/file and reports file:line:codepoint:lang. Run it when authoring multilingual
       content and before closing a content step. Fix each finding BY HAND with the correct letter for its
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
@@ -820,7 +814,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
 
   <stage id="6.1" name="Triage">
     <triage>
-      <trigger n="1" type="next-step" source="steps_next (MCP development-steps)" goto="6.3"/>
+      <trigger n="1" type="next-step" source="steps_next (MCP fractera-project)" goto="6.3"/>
       <trigger n="2" type="direct-task" goto="6.3"/>
     </triage>
     <brainstorm ref="section-2" mode="adaptive">survey until "go/proceed"; next-step -> minimal,
@@ -846,7 +840,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   </stage>
 
   <stage id="6.3" name="Open a step">
-    <action>create the step with `steps_create` (MCP development-steps): title, product_id, the case
+    <action>create the step with `steps_create` (MCP fractera-project): title, product_id, the case
       slugs it serves, importance (optional|mandatory|critical), and a plan describing inputs, planned result,
       intermediate results (decomposition), planned routing-tree changes.</action>
     <action>NAME THE PRODUCT in the step: `product_id` is the product's id, or
@@ -859,9 +853,9 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       what executes it), not a one-liner. The queue in the table IS the plan history: a process death
       loses nothing, and a cold session resumes with `steps_next`. Executing work whose future steps
       exist only in your context/memory is a defect (growing MORE steps in later cycles is normal;
-      starting with an unmaterialized queue is not). The frozen pipeline (owner_content_orchestrate)
-      does this mechanically — persists the whole approved queue, marks the live step in-progress,
-      resumes with the same plan + approve token.</action>
+      starting with an unmaterialized queue is not). `steps_create` does this mechanically — the queue
+      persists in the table, `steps_next` resumes it in a cold session, and no plan lives only in a
+      context window that is about to end.</action>
     <action>declare a page/endpoint before building it: a README.md in its folder (the living to-do of
       that route). The `/architecture` cockpit, its `_meta.ts` passports and
       /api/project/default/architecture/tasks were removed — do not look for them, do not recreate
@@ -928,13 +922,14 @@ done; echo $S
 
   <stage id="6.8" name="Deploy result">
     <branch on="FAILED|HEALTH_FAILED">
-      <action>record a Deployments row (status=error, commit); study log[]; add an anti-pattern to
-        development-docs/ANTI-PATTERNS.md; fix; retry</action>
+      <action>move the step to `blocked` with `steps_update` and put the failure in its result; study
+        log[]; add an anti-pattern to development-docs/ANTI-PATTERNS.md; fix; retry</action>
     </branch>
     <branch on="COMPLETED">
-      <action>record a Deployments row yourself: owner_product_loop_record_deployment (Deployments MCP
-        :3215) — platform={you}, model={your-model-id}, tokens (honest; none -> 0), commit_hash, step,
-        page_url, status=ready; result=3 default (the user sets the stars)</action>
+      <action>write the outcome into the STEP itself — the commit, the model, the page url — with
+        `steps_update`, and close it at 6.9 with `steps_close`. (The Deployments journal and its MCP on
+        :3215 were removed in step 500: do not look for them, do not recreate them. The step row is the
+        record now.)</action>
       <constraint>mark "in production" ONLY after a recheck: the live URL returns HTTP 200 (fifth proof)</constraint>
     </branch>
     <gate>terminal status handled per the branch taken</gate>
@@ -955,9 +950,10 @@ done; echo $S
   </stage>
 
   <stage id="6.11" name="Report to the architect">
-    <action>report completion; strongly recommend: (1) rate the result in Deployments — set stars (1-3);
-      (2) reset the context before the next step</action>
-    <gate>architect informed; stars + context-reset recommended</gate>
+    <action>report completion, naming the step number and the product; recommend resetting the context
+      before the next step. (The star rating lived in the Deployments journal, removed in step 500 —
+      do not ask for it.)</action>
+    <gate>architect informed with the step number; context-reset recommended</gate>
   </stage>
 
   <done name="Process validation">

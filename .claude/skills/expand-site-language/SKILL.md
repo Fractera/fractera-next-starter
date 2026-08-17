@@ -5,12 +5,12 @@ description: >
   without blocking. Use when the owner says "add Armenian / Spanish / French to the whole site",
   "make the site multilingual", "translate the whole site into X", "scale this to more languages",
   "add a new language to all pages/sections", or "add a locale". This is the ONLY correct way to
-  add a language to existing content. Do NOT use compose-frozen-template, manage-content-collections,
-  or owner_template_update_group for this — they cannot add a per-page locale to existing pages and
-  will refuse or break the site. Two tools: owner_content_add_site_language (fan the language out,
+  add a language to existing content. Do NOT improvise it by hand and do NOT re-compose a group —
+  neither adds a per-page locale to existing pages, and re-composing overwrites what is there. Two
+  scripts in this skill's own folder do the work: fan-out-site-language.mjs (fans the language out,
   seeded with the default language so the site is valid instantly, no translation API) and
-  owner_content_translate_pending (the non-blocking runner — you translate the strings later). Self-
-  sufficient: no external service, no other agent.
+  translate-content-page.mjs (the non-blocking runner — you translate the strings later). Self-
+  sufficient: plain Node, no external service, no other agent.
 version: 1.0.0
 metadata:
 ---
@@ -26,12 +26,11 @@ API** (you are the translator — subscription rule). Self-sufficient: any singl
 Adding a language to an **existing** site means creating a `_data/<lang>.ts` for **every** group and
 **every** post, patching each `index.ts` + `group.ts`, and protecting SEO. **No other tool does this:**
 
-- `owner_content_manage_collection` — `create page` refuses an existing page; `edit page` edits only
-  metadata and refuses a body/new locale. It **cannot** add a language to existing pages.
-- `owner_template_update_group` — changes only the menu manifest's `languages`; it does **not** create
-  the per-page locale files → the language shows in the menu but the pages are broken.
-- `compose-frozen-template` — re-composing a group **overwrites** existing content. Never use it to add
-  a language.
+- **Creating a page by hand** — a new page is a new page; it does nothing for the dozens that already
+  exist, and each of them needs its own `_data/<lang>.ts`.
+- **Adding the language to the menu manifest only** — the language then shows in the switcher while the
+  pages behind it do not exist. A visible broken language is worse than an absent one.
+- **Re-composing a group** — it **overwrites** existing content. Never use it to add a language.
 
 If you are tempted to reach for one of those to add a language: **stop and use this skill instead.**
 
@@ -48,18 +47,20 @@ If you are tempted to reach for one of those to add a language: **stop and use t
   marked `needsTranslation` and the engine serves it as **`robots: noindex`** — Google never indexes a
   cross-language duplicate. `canonical` + `hreflang` stay correct automatically (derived from the
   language set). When a page is translated, the marker clears and it becomes indexable on the next Deploy.
-- **Non-blocking.** The fan-out opens **one dev-step per language** (`DEVELOPMENT-STEPS/NEW-STEPS/
-  NN-translate-<lang>.md`) listing the pages to translate. Translation happens later, in its own step,
-  possibly with a different model — the main work is never blocked by translation limits.
+- **Non-blocking.** The fan-out returns the pages that need translating in `pagesNeedingTranslation`;
+  **you then open one step per language with `steps_create`** (MCP `fractera-project`), listing those
+  pages in its plan. Translation happens later, in that step, possibly with a different model — the main
+  work is never blocked by translation limits. The scripts write no steps themselves: steps are rows in
+  the database, and one code writes them, not three.
 
 ## Flow
 
 1. **Ensure the language is in the set.** Not there yet → add it with **manage-app-settings**
    (the panel's Languages page, or `POST /api/config/languages`) and rebuild. The fan-out refuses a language not in the set.
-2. **Fan it out.** `owner_content_add_site_language { lang }` — `dry_run: true` first (restate +
-   confirm, §8.2), then for real. **REBUILD** (`owner_deploy_rebuild_slot`) to publish the new routes
+2. **Fan it out.** `node fan-out-site-language.mjs --out <slot-root> --lang <L>` — `--dry-run` first (restate +
+   confirm, §8.2), then for real. **REBUILD** (Deploy in the panel's footer) to publish the new routes
    (seeded, noindex). The menus (header / footer / left / right) update automatically.
-3. **Translate later (non-blocking), when you choose.** `owner_content_translate_pending { lang }` in a
+3. **Translate later (non-blocking), when you choose.** `node translate-content-page.mjs --out <slot-root> --lang <L> --op next` in a
    loop: it returns the next pending page → you translate the **strings only** (keep the block kinds and
    order, keep the root anchor and `/<lang>/` links) → call again with `{ op:"write", tab, slug,
    translations }`. Repeat until `remaining: 0`. Honor any owner notes on the dev-step (e.g. "focus on
@@ -72,27 +73,28 @@ If you are tempted to reach for one of those to add a language: **stop and use t
 > If I understood correctly: **add language «<lang>»** across <N> groups / <M> pages, seeded with the
 > default language «<def>» (noindex until translated), and open one translation step. Shall I proceed?
 
-`dry_run: true` → preview → owner yes → real call.
+`--dry-run` → preview → owner yes → the real run.
 
 ## If the tool errors (not a refusal)
 
-A **refusal** (language not in the set, structure-parity violation) → fix and retry. An **error**
-(`MODULE_NOT_FOUND`, 500, timeout) means the tool is **broken** — stop, report the exact error, wait.
-Never hand-author the locale files as a workaround; a broken tool is repaired, never bypassed.
+A **refusal** (`ok:false, refused:true` — language not in the set, structure-parity violation) → fix
+and retry. A crash (`MODULE_NOT_FOUND`, an exception) means the script is **broken** — stop, report the
+exact error, wait. Never hand-author the locale files as a workaround; a broken script is repaired,
+never bypassed.
 
 ## How to call
 
-- **From the control panel:**
-  - `owner_content_add_site_language { lang, dry_run? }`
-  - `owner_content_translate_pending { lang }` → then `{ lang, op:"write", tab, slug, translations:{ fields, blocks, faq } }`
+- **The two commands:**
+  - `node fan-out-site-language.mjs --out <slot-root> --lang <L> [--dry-run]`
+  - `node translate-content-page.mjs --out <slot-root> --lang <L> --op next` → then `--op write --tab <tab> --slug <slug>` with the translated strings
 - **Standalone (no panel at hand)** — plain file edits:
   ```bash
   # 1) fan out (default-language seed + noindex + per-language step)
-  node .agents/skills/expand-site-language/fan-out-site-language.mjs --out . --lang hy --dry-run
-  node .agents/skills/expand-site-language/fan-out-site-language.mjs --out . --lang hy
+  node .claude/skills/expand-site-language/fan-out-site-language.mjs --out . --lang hy --dry-run
+  node .claude/skills/expand-site-language/fan-out-site-language.mjs --out . --lang hy
   # 2) translate, page by page (you supply the translated strings)
-  node .agents/skills/expand-site-language/translate-content-page.mjs --out . --lang hy --op next
-  node .agents/skills/expand-site-language/translate-content-page.mjs --out . --lang hy --op write \
+  node .claude/skills/expand-site-language/translate-content-page.mjs --out . --lang hy --op next
+  node .claude/skills/expand-site-language/translate-content-page.mjs --out . --lang hy --op write \
     --tab news --slug sample-1 --data translations.json
   npx tsc --noEmit   # then REBUILD (Deploy) to publish
   ```

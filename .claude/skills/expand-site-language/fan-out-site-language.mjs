@@ -14,8 +14,8 @@
 //   4. patch each `_data/index.ts` (post overrides + group UI map) and `group.ts` (languages)
 //      idempotently, and retrofit old groups' `_lib/post.ts` mapper with the needsTranslation
 //      passthrough,
-//   5. write ONE open dev-step `DEVELOPMENT-STEPS/NEW-STEPS/<NN>-translate-<L>.md` listing every
-//      page to translate (the translation runner fills the strings later, in its own step).
+//   5. return the pages that need translating in `pagesNeedingTranslation` — the AGENT then opens
+//      one step with `steps_create` (MCP fractera-project). The script writes no step itself.
 //
 // PRECONDITION: <L> must already be in the slot's NEXT_PUBLIC_SUPPORTED_LANGUAGES (App Settings →
 // rebuild) — otherwise the build bakes without it (steps 138/143). Refused here if not.
@@ -227,42 +227,15 @@ async function patchPostMapper(outRoot, tab, plan) {
   await writeOut(outRoot, rel, src, plan)
 }
 
-// ── dev-step (Part B): one open translation step per language ──────────────────
-async function writeTranslationStep(outRoot, L, pages, plan) {
-  // DEVELOPMENT-STEPS lives at the SLOT ROOT (sibling of app/), not under app/.
-  const dir = join("DEVELOPMENT-STEPS", "NEW-STEPS")
-  const absDir = join(outRoot, dir)
-  await mkdir(absDir, { recursive: true }).catch(() => {})
-  // next free 2-digit-ish number
-  let max = 0
-  try { for (const f of await readdir(absDir)) { const m = f.match(/^(\d+)-/); if (m) max = Math.max(max, +m[1]) } } catch { /* none */ }
-  const nn = String(max + 1).padStart(2, "0")
-  const rel = join(dir, `${nn}-translate-${L}.md`)
-  const list = pages.map(p => `- [ ] ${p}`).join("\n")
-  const body = `---
-fractera:step:
-  slug: translate-${L}
-  importance: optional
-  status: open
-  kind: translation
-  language: ${L}
----
-
-# Translate all pages to '${L}'
-
-This language was seeded with the default language's text and is currently \`noindex\` (Doorway guard).
-Run the translation: the agent translates the STRINGS only, the block structure stays frozen; on write the
-page clears \`needsTranslation\` and becomes indexable after the next manual Deploy.
-
-Use the **translate-pending-pages** skill — do NOT hand-edit.
-Optional: add notes below to focus the model (e.g. regional law, real legal links) — they are honored on run.
-
-## Pages to translate
-${list}
-`
-  await writeOut(outRoot, rel, body, plan)
-  return rel
-}
+// 🪦 ЗДЕСЬ СКРИПТ САМ ПИСАЛ ФАЙЛ ШАГА в `DEVELOPMENT-STEPS/NEW-STEPS/` — папку,
+// снесённую 2026-08-17 вместе с файловым конвейером. Он стал бы ТРЕТЬИМ кодом,
+// пишущим шаги, после MCP и панели, и воскрешал бы папку при каждом запуске:
+// `mkdir recursive` создаёт её молча, поэтому дефект был бы не отказом, а тихо
+// возрождённой параллельной историей проекта.
+//
+// Шаг теперь заводит АГЕНТ вызовом `steps_create`: скрипт возвращает список
+// страниц в `pagesNeedingTranslation`, и этого достаточно — писать шаги умеет
+// один код, а не три.
 
 // ── main ────────────────────────────────────────────────────────────────────
 async function main() {
@@ -296,17 +269,14 @@ async function main() {
     }
   }
 
-  // Write the open translation step only when something was actually seeded this run
-  // (an idempotent rerun that seeds nothing must not spawn a duplicate empty step).
-  const stepFile = (plan || seededPages.length > 0) ? await writeTranslationStep(outRoot, L, seededPages, plan) : null
   const brokenSources = [...new Set(brokenWarnings)]
   done(plan, {
     lang: L, default: def, groups: groupsTouched, pages: seededPages.length,
-    pagesNeedingTranslation: seededPages, translationStep: stepFile,
+    pagesNeedingTranslation: seededPages,
     ...(brokenSources.length ? { brokenSourceWarnings: brokenSources,
       brokenSourceNote: `These default-language source files contain a broken/replacement character (U+FFFD or mojibake) that was COPIED into the seed — fix them in the default language, then re-translate: ${brokenSources.join(", ")}` } : {}),
     note: plan ? "dry-run — nothing written" :
-      `Seeded '${L}' with '${def}' content (noindex until translated). REBUILD (Deploy) to publish the new routes; then run translate-pending-pages. Record a Deployments row.${brokenSources.length ? " ⚠️ Some source files have broken characters — see brokenSourceWarnings." : ""}`,
+      `Seeded '${L}' with '${def}' content (noindex until translated). REBUILD (Deploy) to publish the new routes; then translate the pending pages with this same skill (--op next).${brokenSources.length ? " ⚠️ Some source files have broken characters — see brokenSourceWarnings." : ""}`,
   })
 }
 

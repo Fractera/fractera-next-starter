@@ -19,7 +19,7 @@ char), or **mojibake** in its place. The file still parses, so it ships **silent
 shows a **box instead of the letter** (the real "Documentación" became "Documentaci□n").
 
 Unlike a silently dropped letter, these ARE detectable. This capability is **two-sided**:
-- **Prevention (already wired):** the content emitters — `manage-content-collections`, `compose-frozen-template`,
+- **Prevention (already wired):** the content emitters — `create-multilingual-content-entry` and
   `expand-site-language`'s fan-out + translate runner — **refuse** a broken char on write, in any language.
 - **Detection (this skill):** the project-root scanner sweeps the **whole corpus** (every language, every
   content/UI/data file) and reports what already sits in the tree.

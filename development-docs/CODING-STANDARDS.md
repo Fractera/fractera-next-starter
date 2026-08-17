@@ -55,5 +55,29 @@ does read will overwrite it.
 
 ---
 
+## 5. Every API route carries a NAME of 6–12 words
+
+First line of every `app/api/**/route.ts`:
+
+```ts
+// @api record every mood button press with its amount and second
+```
+
+English, verb first, 6–12 words. `npm run check:api` runs in `prebuild` and **fails the build** on a
+route without a name or with a name outside those bounds.
+
+**Why the name is not the URL.** The address is a public contract: it travels into browsers, logs,
+bookmarks and other people's integrations, and renaming it breaks all of them silently — the 404 reaches
+someone who did not do the renaming. A name in the header changes freely and costs nothing.
+
+**Why a name at all.** A route called `tap`, `me` or `catalogue` is findable while there are fifteen of
+them. At a hundred, the question is never "what is this folder called" but "which one writes the presses"
+— and only the name answers it. Until 2026-08-17 this document said nothing about API names at all.
+
+`npm run build:api-map` collects them into `development-docs/API-MAP.md` — one read instead of walking
+twenty folders. That file is **generated**: anything typed into it by hand disappears on the next build.
+
+---
+
 *This list grows. When a limit is agreed with the owner, it belongs here — one section, with the reason,
 so a later session can judge whether it still holds.*

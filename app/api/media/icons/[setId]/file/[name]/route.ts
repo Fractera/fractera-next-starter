@@ -1,3 +1,4 @@
+// @api stream one generated application icon from its set
 import { NextRequest, NextResponse } from "next/server"
 
 // Serve one file from a generated PWA/favicon icon set (favicon.ico, icon-192.png, ...).

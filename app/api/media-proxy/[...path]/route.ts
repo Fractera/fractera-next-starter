@@ -1,3 +1,4 @@
+// @api proxy media files the browser cannot reach directly
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/get-session";
 

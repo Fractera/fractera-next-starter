@@ -1,3 +1,4 @@
+// @api describe one project direction for the home page window
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
 import { PROJECT_TYPES, isProjectTypeId } from "@/config/project-types"
 import { projectType } from "@/lib/i18n/project-types.i18n"

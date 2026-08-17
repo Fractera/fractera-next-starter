@@ -1,3 +1,4 @@
+// @api list the live model names this key can actually use
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { getSession } from "@/lib/auth/get-session";

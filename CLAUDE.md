@@ -571,6 +571,13 @@ Format: `[domain]-[entity]-[detail]-[role].suffix`
 - `header-action-bar.client.tsx` ✅
 - `breadcrumb-nav.tsx` ❌ (no domain, no role suffix)
 
+**API naming (mandatory, enforced).** Every `app/api/**/route.ts` opens with `// @api <6–12 words>` —
+English, verb first, saying what the route DOES. `npm run check:api` (in `prebuild`) fails the build
+without it. The name is not the URL: an address is a public contract that travels into browsers, logs and
+other people's integrations, so it stays short and stable while the name carries the meaning. The registry
+`development-docs/API-MAP.md` is built by `npm run build:api-map` — read it instead of walking `app/api/`,
+and never edit it by hand. Reason and examples: `development-docs/CODING-STANDARDS.md` §5.
+
 **Size limit.** Max 200 lines of code in one component (excluding imports/exports). Does not apply to data
 and CSS — there size is not line-limited.
 

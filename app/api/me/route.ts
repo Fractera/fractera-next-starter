@@ -1,3 +1,4 @@
+// @api tell the browser who is signed in and with which roles
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/auth/get-session"
 

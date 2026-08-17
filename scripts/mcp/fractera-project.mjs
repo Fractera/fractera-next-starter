@@ -77,7 +77,56 @@ const DATA_API_KEY = process.env.DATA_SECRET || process.env.DATA_API_KEY
 // машине, где нативный модуль не собрался.
 let localDb = null
 
+/**
+ * 🔒 НЕ ВЫДУМЫВАТЬ БАЗУ ТАМ, ГДЕ ЕЁ НЕТ (владелец 2026-08-17, по разбору прогона).
+ *
+ * ЧТО БЫЛО НЕ ТАК. Ветка локального SQLite делала `mkdirSync` + `new Database()`,
+ * то есть СОЗДАВАЛА пустой файл на пустом месте. Человек, склонировавший
+ * репозиторий и забывший положить `.env.local`, получал не отказ, а честное
+ * «открытых шагов нет» — над только что рождённой пустышкой. Агент докладывал
+ * владельцу, что работы не запланировано, и оба верили.
+ *
+ * Отрицательный контроль снят до правки: `steps_next` в чистой папке возвращал
+ * `{"done":true,"note":"no open steps"}` и оставлял после себя `data/app.db`.
+ *
+ * Пустой ответ неотличим от правды — именно поэтому он опаснее ошибки. Дверь к
+ * данным не имеет права создавать данные: файл базы заводит ПРИЛОЖЕНИЕ при
+ * сборке, а этот сервер только читает и пишет в уже существующее.
+ */
+class NoDataAccess extends Error {
+  constructor(code, note) {
+    super(code)
+    this.code = code
+    this.note = note
+  }
+}
+
+function dataAccessProblem() {
+  if (REMOTE_DATA_URL && !DATA_API_KEY) {
+    return new NoDataAccess(
+      "data_key_missing",
+      "REMOTE_DATA_URL is set but the data-layer key is not. Download .env.local in the control panel "
+      + "(Env Variables) and put it in the project root — it carries DATA_SECRET.",
+    )
+  }
+  if (!REMOTE_DATA_URL && !DATA_API_KEY) {
+    const dbPath = process.env.APP_DB_PATH ?? path.join(ROOT, "data", "app.db")
+    if (!fs.existsSync(dbPath)) {
+      return new NoDataAccess(
+        "no_data_access",
+        "No connection to the project's data: neither REMOTE_DATA_URL + key, nor a local database file. "
+        + "Download .env.local in the control panel (Env Variables) and put it in the project root. "
+        + "An empty answer here would look exactly like 'no work planned', which is why this refuses instead.",
+      )
+    }
+  }
+  return null
+}
+
 async function sql(query, params = []) {
+  const problem = dataAccessProblem()
+  if (problem) throw problem
+
   if (REMOTE_DATA_URL && DATA_API_KEY) {
     const res = await fetch(`${REMOTE_DATA_URL}/db/migrate`, {
       method: "POST",
@@ -91,9 +140,25 @@ async function sql(query, params = []) {
   if (!localDb) {
     const { default: Database } = await import("better-sqlite3")
     const dbPath = process.env.APP_DB_PATH ?? path.join(ROOT, "data", "app.db")
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true })
-    localDb = new Database(dbPath)
+    // 🔒 `fileMustExist` И НИКАКОГО `mkdirSync`: файл базы заводит приложение при
+    // сборке, дверь к данным — только открывает существующий. Ровно здесь и
+    // рождалась пустышка, которую агент читал как «работы не запланировано».
+    localDb = new Database(dbPath, { fileMustExist: true })
   }
+  // 🔒 СХЕМА ИЗ НЕСКОЛЬКИХ ОПЕРАТОРОВ ИДЁТ ЧЕРЕЗ `exec`, А НЕ `prepare`
+  // (поймано проверкой конвейером 2026-08-17).
+  //
+  // `prepare()` принимает РОВНО ОДИН оператор и отвечает «contains more than one
+  // statement». `LOG_SCHEMA` — таблица плюс индекс, то есть два; в удалённом
+  // режиме слой данных пропускает DDL через `exec` и всё работало, а локально
+  // журнал не создавался вовсе.
+  //
+  // Хуже отказа было то, что вызывающий глотал его: запись перехода — «лучшее
+  // усилие», и молчание выглядело как «журнал пуст, продукт не двигался».
+  // Ровно тот вид пустоты, против которого написан этот шаг.
+  const multi = !/^\s*select/i.test(query) && /;\s*\S/.test(query.trim().replace(/;\s*$/, ""))
+  if (multi) { localDb.exec(query); return { rows: [], changes: 0 } }
+
   const stmt = localDb.prepare(query)
   if (/^\s*select/i.test(query)) return { rows: stmt.all(...params), changes: 0 }
   const info = stmt.run(...params)
@@ -103,6 +168,36 @@ async function sql(query, params = []) {
 // 🔒 Таблица создаётся и здесь тоже. Приложение объявляет её в `SCHEMA`, но агент
 // приходит в клон, где `next build` мог не запускаться ни разу, — а «таблицы нет»
 // он прочитает как «шагов нет», что неправда другого рода.
+// 🔒 ЖУРНАЛ ЖИЗНЕННОГО ЦИКЛА ПРОДУКТА (владелец 2026-08-17).
+//
+// ЗАЧЕМ. `devStatus` в реестре — это СНИМОК: он отвечает «где мы сейчас» и не
+// отвечает «как мы сюда пришли». Одноцикловую задачу можно провести и так, но
+// настоящая разработка идёт десятками циклов и по нескольким продуктам сразу, и
+// тогда снимок бесполезен: он не помнит, сколько раз возвращались на доработку,
+// кто двинул этап и каким шагом.
+//
+// Проверено на себе в тот же день: я показывал владельцу снимки, а восстановить
+// историю переходов оказалось нечем — журнала не было, коммитов не было.
+//
+// 🔒 В БАЗЕ, А НЕ ПОЛЕМ В КОНФИГЕ. `PRODUCTS-CONFIG` читается приложением на
+// КАЖДЫЙ запрос; растущая история разбиралась бы целиком всю жизнь проекта.
+const LOG_SCHEMA = `
+  CREATE TABLE IF NOT EXISTS product_status_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id  TEXT NOT NULL,
+    from_status TEXT,
+    to_status   TEXT NOT NULL,
+    -- Шаг-причина. Пусто законно: подтверждение кейса шагом не является.
+    step_number INTEGER,
+    -- panel | agent | owner — кто двинул. Без этого «этап сменился» не отвечает
+    -- на вопрос, сам он сменился или его сменили.
+    actor       TEXT NOT NULL DEFAULT 'agent',
+    note        TEXT,
+    created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS product_status_log_product ON product_status_log (product_id, id);
+`
+
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS development_steps (
     number      INTEGER PRIMARY KEY,
@@ -226,6 +321,8 @@ function readCases(pid) {
  * в реестре» работает ровно до второго продукта, после чего молча правит чужие
  * кейсы, и заметит это владелец не сегодня, а когда сломается соседний продукт.
  */
+const brief = (p) => ({ id: p.id, title: p.title, route: p.route })
+
 function resolveProduct(requested) {
   let products = []
   try {
@@ -234,10 +331,13 @@ function resolveProduct(requested) {
   if (!products.length) return { error: "no_products", note: "PRODUCTS-CONFIG holds no product yet" }
   if (requested) {
     const found = products.find(p => p.id === requested)
-    return found ? { product: found } : { error: "unknown_product", known: products.map(p => p.id) }
+    // 🔒 ОТКАЗ НАЗЫВАЕТ ПРОДУКТЫ ИМЕНАМИ, А НЕ КОДАМИ. Владелец говорит «магазин»,
+    // а инструменты принимают `p2`; голый список кодов не даёт сопоставить одно с
+    // другим, и агент застревает на ровном месте, имея всё нужное под рукой.
+    return found ? { product: found } : { error: "unknown_product", known: products.map(brief) }
   }
   if (products.length === 1) return { product: products[0] }
-  return { error: "product_required", known: products.map(p => p.id) }
+  return { error: "product_required", known: products.map(brief) }
 }
 
 // ── Оглавление продукта: номера шагов в PRODUCTS-CONFIG ──────────────────────
@@ -283,18 +383,70 @@ const DEV_STATUSES = [
  * пересчитывал состояние «по фактам», приёмка откатывалась бы в «выполнение
  * шагов» при первой же правке. Назад двигает владелец в панели — осознанно.
  */
-function advanceDevStatus(productId, target) {
+/**
+ * Двинуть этап вперёд И записать переход в журнал.
+ *
+ * 🔒 ЗАПИСЬ ИДЁТ ТЕМ ЖЕ ДЕЙСТВИЕМ, ЧТО И СМЕНА. Разведи их — и журнал станет
+ * тем же, чем вчера было оглавление шагов: производным, которое обновляет один
+ * из двух писателей, то есть уверенным враньём. Разбор:
+ * `reports/errors/index-filled-by-one-of-two-writers.md`.
+ *
+ * Возвращает `true`, если переход состоялся: вызывающий должен знать, было ли
+ * движение, а не догадываться по молчанию.
+ */
+async function advanceDevStatus(productId, target, { actor = "agent", step = null, note = "" } = {}) {
   const wanted = DEV_STATUSES.indexOf(target)
-  if (wanted < 0) return
+  if (wanted < 0) return false
+
+  let from = null
+  let moved = false
   patchProduct(productId, (p) => {
-    const now = DEV_STATUSES.indexOf(p.devStatus ?? "not-started")
-    return wanted > now ? { devStatus: target } : {}
+    const current = p.devStatus ?? "not-started"
+    const now = DEV_STATUSES.indexOf(current)
+    if (wanted <= now) return {}
+    from = current
+    moved = true
+    return { devStatus: target }
   })
+  if (!moved) return false
+
+  // Журнал — лучшее усилие: отказ базы не имеет права отменить уже сделанный
+  // переход. Молчание здесь честнее исключения: этап сменён, и это правда.
+  try {
+    await sql(LOG_SCHEMA)
+    await sql(
+      `INSERT INTO product_status_log (product_id, from_status, to_status, step_number, actor, note)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [productId, from, target, step, actor, note],
+    )
+  } catch { /* журнал не записался — этап всё равно сменён */ }
+  return true
 }
 
 // ── Инструменты ──────────────────────────────────────────────────────────────
 
 const TOOLS = [
+  // ── Продукты сервера ───────────────────────────────────────────────────────
+  {
+    name: "products_list",
+    description:
+      "The products this server carries: id, title, address, development stage, how many steps are open "
+      + "and which one is next. Call this FIRST when the owner names a product in words (\"start work on "
+      + "the shop\") — it is how you turn a name into an id. Also the honest answer to \"where are we\": "
+      + "several products may each have an unfinished queue.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "product_history",
+    description:
+      "How this product's development actually went: every stage transition with who moved it, when, and "
+      + "which step caused it. The register holds only the CURRENT stage — this is the record of the road, "
+      + "and real development takes many cycles, not one.",
+    inputSchema: {
+      type: "object",
+      properties: { product_id: { type: "string" }, limit: { type: "integer" } },
+    },
+  },
   // ── Пользовательские кейсы ─────────────────────────────────────────────────
   {
     name: "cases_list",
@@ -428,15 +580,23 @@ const TOOLS = [
     description:
       "Close a step in one call: status 'done' plus the report, and the product's development stage moves "
       + "forward if this step earned it. The report is required — a closed step with no report cannot be "
-      + "read back a month later.",
+      + "read back a month later. You must also say whether you updated PASSPORT.md.",
     inputSchema: {
       type: "object",
       properties: {
         number: { type: "integer" },
         result: { type: "string" },
         stage: { type: "string", enum: DEV_STATUSES, description: "optional: the stage this step completes" },
+        passport_updated: {
+          type: "boolean",
+          description:
+            "REQUIRED. Did you update development-docs/PASSPORT.md — one line per entity: what it does, "
+            + "which cases it serves, what state it is in? Answer false honestly if you did not; the "
+            + "answer is recorded either way. PASSPORT.md is the only document that carries PROGRESS: "
+            + "the cases do not know what is built, and the architecture does not know what is finished.",
+        },
       },
-      required: ["number", "result"],
+      required: ["number", "result", "passport_updated"],
     },
   },
   {
@@ -504,7 +664,72 @@ async function insertStep({ productId, title, status, importance, cases, plan, r
   return { error: "number_collision", note: "five attempts lost the race for a free number" }
 }
 
+/** Все продукты реестра — без разрешения одного. Пустой список законен. */
+function allProducts() {
+  try {
+    return JSON.parse(fs.readFileSync(PRODUCTS_FILE, "utf-8")).products ?? []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Сколько шагов открыто у каждого продукта, и какой следующий.
+ *
+ * Одним запросом, а не по продукту: список читают на входе в сессию, и N
+ * запросов к слою данных ради N строк — это N задержек сети на пустом месте.
+ */
+async function openStepsByProduct() {
+  const { rows } = await sql(
+    `SELECT product_id, COUNT(*) AS open, MIN(number) AS next
+       FROM development_steps WHERE status NOT IN ('done','cancelled')
+      GROUP BY product_id`,
+  )
+  const map = new Map()
+  for (const r of rows) map.set(String(r.product_id), { open: Number(r.open), next: Number(r.next) })
+  return map
+}
+
 async function callTool(name, args = {}) {
+  // ── Продукты: реестр плюс счётчик открытых шагов ───────────────────────────
+  if (name === "products_list") {
+    const products = allProducts()
+    if (!products.length) return { products: [], note: "PRODUCTS-CONFIG holds no product yet" }
+    const open = await openStepsByProduct()
+    return {
+      products: products.map((p) => ({
+        id: p.id,
+        title: p.title,
+        route: p.route,
+        devStatus: p.devStatus ?? "not-started",
+        openSteps: open.get(p.id)?.open ?? 0,
+        nextStep: open.get(p.id)?.next ?? null,
+      })),
+      note: "Match the owner's words against `title`; every tool takes `id`.",
+    }
+  }
+
+  if (name === "product_history") {
+    const resolved = resolveProduct(args.product_id)
+    if (resolved.error) return resolved
+    await sql(LOG_SCHEMA)
+    const limit = Math.min(Math.max(Number(args.limit) || 50, 1), 200)
+    const { rows } = await sql(
+      `SELECT from_status, to_status, step_number, actor, note, created_at
+         FROM product_status_log WHERE product_id = ? ORDER BY id DESC LIMIT ?`,
+      [resolved.product.id, limit],
+    )
+    // Пусто — это ответ, а не отказ: продукт мог ни разу не двинуться с места.
+    // Но сказать об этом надо словом, иначе пустой список читается как поломка.
+    return {
+      product_id: resolved.product.id,
+      title: resolved.product.title,
+      currentStage: resolved.product.devStatus ?? "not-started",
+      transitions: rows,
+      ...(rows.length ? {} : { note: "no transitions recorded yet — the product has not moved" }),
+    }
+  }
+
   // ── Кейсы: файлы, базы не касаются вовсе ───────────────────────────────────
   if (name.startsWith("cases_")) {
     const resolved = resolveProduct(args.product_id)
@@ -623,7 +848,34 @@ async function callTool(name, args = {}) {
     // Пусто — это ответ, а не отказ: очередь пройдена. Молчание клиент прочитал
     // бы как поломку и пошёл бы искать её там, где всё в порядке.
     if (!rows.length) return { done: true, note: "no open steps" }
-    return row(rows[0])
+
+    const step = row(rows[0])
+
+    // 🔒 ЧУЖАЯ ОЧЕРЕДЬ НАЗЫВАЕТСЯ ВСЛУХ (владелец 2026-08-17).
+    //
+    // Без `product_id` берётся шаг с НАИМЕНЬШИМ номером среди всех открытых —
+    // то есть самый старый. Сценарий владельца дословно: открыты шаги 5–7 по
+    // магазину, заведён 12-й по CRM, человек говорит «начинай» и получает
+    // пятый. Оба уверены, что делают новое.
+    //
+    // Не отказ, а предупреждение: один продукт — частый случай, и превращать
+    // его в вопрос значит наказывать всех ради редкого. Но промолчать нельзя:
+    // здесь пути расходятся молча, и разойдутся они не в коде, а в работе.
+    if (!args.product_id) {
+      const open = await openStepsByProduct()
+      const others = allProducts()
+        .filter((p) => p.id !== step.product_id && (open.get(p.id)?.open ?? 0) > 0)
+        .map((p) => ({ id: p.id, title: p.title, open: open.get(p.id).open, next: open.get(p.id).next }))
+      if (others.length) {
+        return {
+          ...step,
+          otherProductsWithOpenSteps: others,
+          note: "This step belongs to " + step.product_id + ". Other products have open steps too — "
+            + "say so before you start, and ask which product the owner means.",
+        }
+      }
+    }
+    return step
   }
 
   if (name === "steps_create") {
@@ -699,7 +951,7 @@ async function callTool(name, args = {}) {
       [pid],
     )
     if (rows.length) {
-      advanceDevStatus(pid, "decomposition")
+      await advanceDevStatus(pid, "decomposition", { step: rows[0].number, note: "decomposition step already existed" })
       return { ok: true, existed: true, ...row(rows[0]) }
     }
 
@@ -721,7 +973,7 @@ async function callTool(name, args = {}) {
         + "written, close this step with steps_close.",
       result: "",
     })
-    if (created.ok) advanceDevStatus(pid, "decomposition")
+    if (created.ok) await advanceDevStatus(pid, "decomposition", { step: created.number, note: "confirmed cases put into development" })
     return created
   }
 
@@ -729,17 +981,38 @@ async function callTool(name, args = {}) {
     const number = Number(args.number)
     const result = String(args.result ?? "").trim()
     if (!result) return { error: "result_required" }
+    // 🔒 ПРО ПАСПОРТ СПРАШИВАЮТ, А НЕ НАПОМИНАЮТ (владелец 2026-08-17).
+    //
+    // `PASSPORT.md` объявлен единственным документом, несущим ПРОГРЕСС, — и за
+    // весь сквозной прогон агент не притронулся к нему ни разу. Не потому, что
+    // не хотел: ничто его не спросило. Просьба в тексте инструкции — это то, что
+    // читают на нулевой минуте и не вспоминают на сороковой.
+    //
+    // Обязательное поле — вопрос, мимо которого нельзя пройти. `false`
+    // принимается: врать агента не заставляют, но ответ попадает в отчёт шага и
+    // виден владельцу.
+    if (typeof args.passport_updated !== "boolean") {
+      return {
+        error: "passport_answer_required",
+        note: "Say whether you updated development-docs/PASSPORT.md: pass passport_updated true or false. "
+          + "It is the only document that carries progress — the cases do not know what is built.",
+      }
+    }
+
     const { rows } = await sql("SELECT * FROM development_steps WHERE number = ?", [number])
     if (!rows.length) return { error: "not_found", number }
 
+    const passportNote = args.passport_updated
+      ? ""
+      : "\n\n⚠ PASSPORT.md НЕ обновлён при закрытии этого шага."
     await sql(
       "UPDATE development_steps SET status = 'done', result = ?, updated_at = ? WHERE number = ?",
-      [result, stamp(), number],
+      [result + passportNote, stamp(), number],
     )
     // Этап продукта двигается ТОЛЬКО вперёд и только когда его назвали: закрытый
     // шаг сам по себе о стадии ничего не говорит, а угадывать её по числу
     // закрытых значило бы откатывать приёмку при каждой мелкой правке.
-    if (args.stage) advanceDevStatus(String(rows[0].product_id), String(args.stage))
+    if (args.stage) await advanceDevStatus(String(rows[0].product_id), String(args.stage), { step: number, note: String(args.result ?? "").slice(0, 120) })
     return callTool("steps_get", { number })
   }
 
@@ -821,10 +1094,16 @@ async function handle(rpc) {
       // Отказ базы возвращается ТЕКСТОМ инструмента, а не ошибкой протокола:
       // «слой данных не отвечает» — это то, что агент должен прочитать и
       // сказать владельцу, а не обрыв соединения, который он истолкует сам.
+      // Отказ доступа к данным несёт СВОЙ код и указание, что сделать человеку:
+      // строка `Error: ...` заставила бы агента пересказывать её своими словами,
+      // а пересказ теряет ровно то место, где сказано «скачайте .env.local».
+      const body = e instanceof NoDataAccess
+        ? { error: e.code, note: e.note }
+        : { error: String(e?.message ?? e) }
       return send({
         jsonrpc: "2.0", id,
         result: {
-          content: [{ type: "text", text: JSON.stringify({ error: String(e?.message ?? e) }, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(body, null, 2) }],
           isError: true,
         },
       })

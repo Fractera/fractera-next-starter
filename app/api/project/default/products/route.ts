@@ -1,3 +1,4 @@
+// @api list and create catalogue products behind a role check
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { revalidateTag } from "next/cache"

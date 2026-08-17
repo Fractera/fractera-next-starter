@@ -1,3 +1,4 @@
+// @api turn a recorded voice fragment into written text
 import { NextRequest, NextResponse } from "next/server"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"

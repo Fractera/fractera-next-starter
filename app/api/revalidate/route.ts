@@ -1,3 +1,4 @@
+// @api rebuild public pages after the owner changes app settings
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CATALOGUE_TAG } from "@/lib/catalogue";

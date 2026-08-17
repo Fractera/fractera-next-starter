@@ -1,3 +1,4 @@
+// @api translate one record's fields without exposing the model key
 import { NextRequest, NextResponse } from "next/server"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"

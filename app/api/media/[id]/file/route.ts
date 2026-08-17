@@ -1,3 +1,4 @@
+// @api stream one stored media file to the visitor
 import { NextRequest, NextResponse } from "next/server"
 
 const DATA_URL    = process.env.REMOTE_DATA_URL ?? "http://localhost:3300"

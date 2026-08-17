@@ -24,9 +24,18 @@ more, and you never create one.
 ## 1. Where you are — always ask this first
 
 ```
+products_list         → which products exist, which have open steps
 cases_gate            → may development start at all?
 steps_next            → what is the next open step?
 ```
+
+**`products_list` comes first when the owner names a product in words** — "start work on the shop". It is
+how you turn a name into an `id`; every other tool takes the `id`, never the title.
+
+🔒 **`steps_next` without a product takes the lowest OPEN number across ALL products** — that is, the
+oldest. Shop has steps 5–7 open, CRM just got 12, the owner says "begin" — you would start the fifth and
+both of you would think it was the new work. The tool now returns `otherProductsWithOpenSteps` when that
+is the case: **say it out loud and ask which product they mean, before writing anything.**
 
 `cases_gate` answers with a verdict, not two numbers:
 
@@ -110,6 +119,15 @@ accepts.
 
 **Closing without a report is refused.** A closed step with no result cannot be read back a month
 later, and by then there is nobody left who remembers.
+
+**Closing also asks about the passport, and the question cannot be skipped.** `steps_close` requires
+`passport_updated: true | false`. Before closing, update `development-docs/PASSPORT.md`: one line per
+entity — what it does, which cases it serves, what state it is in. It is the only document that carries
+**progress**: the cases do not know what is built, and the architecture does not know what is finished.
+
+Answer `false` honestly if you did not update it — the answer is recorded in the step's report either
+way, and a false claim costs the owner more than an admitted gap. (This field exists because during the
+first end-to-end run the passport was never touched at all: nothing asked, so nothing happened.)
 
 `steps_close` takes an optional `stage`, which moves the product forward:
 `not-started → decomposition → skeleton → revision → building → acceptance → extra-tasks → done`.

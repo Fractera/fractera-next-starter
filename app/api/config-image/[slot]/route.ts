@@ -1,3 +1,4 @@
+// @api serve a settings image slot at one stable address
 import { NextResponse } from "next/server";
 import { configImagePair, defaultSlotImage, type ImageSlot } from "@/lib/config-images";
 

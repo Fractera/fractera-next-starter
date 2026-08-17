@@ -24,19 +24,48 @@ export const en: FooterPageCell = {
       text: 'This page describes the skeleton the application stands on. It is written for two readers at once — a person deciding whether the product fits, and a coding agent that will change it. Both need the same thing: to know which layer owns what, before touching anything. Back to [%SITE%](/en).',
     },
 
-    { kind: 'h2', text: 'Four layers, and each one survives the others' },
+    { kind: 'h2', text: 'How it is wired' },
     {
       kind: 'p',
-      text: 'The product is not one program. It is four, running side by side on your own server, and the boundary between them is a port rather than a folder — which means a failure in one does not take the others with it.',
+      text: 'Several processes run side by side on your server. Four of them answer outward, and each has exactly one job. The boundary between them is a port rather than a folder — which is why a failure in one does not take the others with it.',
     },
     {
       kind: 'table',
-      headers: ['Layer', 'What it owns', 'What happens if it stops'],
+      headers: ['Port', 'Process', 'What it is for'],
       rows: [
-        ['Application', 'Pages, content, the storefront — everything a visitor sees', 'The site is down; the panel, the data and the accounts are untouched'],
-        ['Control panel', 'Settings, deployment, the owner’s cockpit', 'The site keeps serving; only changes have to wait'],
-        ['Data layer', 'Rows, uploaded files, vector search — and the single door to the rest', 'Pages that were generated ahead of time still open'],
-        ['Authorization', 'Accounts, sessions, roles', 'Public pages are unaffected; only what is behind a login closes'],
+        ['3000', 'Your application', 'The pages visitors see. This is the one you work with every day.'],
+        ['3001', 'Authorization', 'Accounts, sessions, roles. Configured from the control panel, not edited by you.'],
+        ['3002', 'Control panel', 'The same: configured, not edited.'],
+        ['3300', 'Data layer', 'Rows, uploaded files, vectors — and the single door to everything else. Your application talks to it.'],
+      ],
+    },
+    { kind: 'p', text: 'Three more services run alongside, and none of them is a door of its own:' },
+    {
+      kind: 'list',
+      items: [
+        'the map — routes, distance matrices and address lookup, port 3400;',
+        'channels — Telegram and whatever follows it, port 3500;',
+        'the knowledge graph — the agentic RAG store, port 9621.',
+      ],
+    },
+    {
+      kind: 'note',
+      text: 'None of these ports is reachable from the internet: the firewall admits the web ports only, and everything public arrives through them. Your application reaches the three services through the data layer — /service/geo, /service/channels, /service/rag — with the same key that opens the data layer itself.',
+    },
+
+    { kind: 'h2', text: 'Each layer survives the others' },
+    {
+      kind: 'p',
+      text: 'Separate processes are not a diagram — they are what happens on a bad day. Any one of the four can stop without the rest going down with it.',
+    },
+    {
+      kind: 'table',
+      headers: ['If this stops', 'What still works'],
+      rows: [
+        ['Your application', 'The panel, the data and the accounts are untouched; only the site is down'],
+        ['Control panel', 'The site keeps serving visitors; only changes have to wait'],
+        ['Data layer', 'Pages generated ahead of time still open — that is what static generation is for'],
+        ['Authorization', 'Public pages are unaffected; only what sits behind a login closes'],
       ],
     },
     {

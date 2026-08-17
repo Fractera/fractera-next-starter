@@ -32,6 +32,7 @@ export const en: HomeCell = {
     items: [
       { label: '82 languages', tone: 'reach' },
       { label: 'SEO built in', tone: 'reach' },
+      { label: 'AIO agentic browsing', tone: 'reach' },
       { label: 'Own database', tone: 'data' },
       { label: 'Vector search', tone: 'data' },
       { label: 'Knowledge graph', tone: 'data' },
@@ -39,6 +40,7 @@ export const en: HomeCell = {
       { label: 'Authorization', tone: 'access' },
       { label: '{roles} roles', tone: 'access' },
       { label: 'GitHub', tone: 'code' },
+      { label: 'Telegram', tone: 'code' },
       { label: 'Fractera architecture', tone: 'code' },
       { label: '100+ more', tone: 'muted' },
     ],

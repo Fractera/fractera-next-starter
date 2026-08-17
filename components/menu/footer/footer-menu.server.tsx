@@ -19,6 +19,7 @@ import { appShellAuthSide } from "@/components/menu/account/account-config";
 import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { accountLinks } from "@/lib/menu/account-links";
 import { cartUi } from "@/components/cart/cart.i18n";
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
 // (re-programmed, not copied). Three sections:
@@ -123,6 +124,7 @@ export function FooterMenu({ lang }: { lang: string }) {
                 labels={accountLabels(lang)}
                 links={accountLinks(lang)}
                 cart={cartUi(lang)}
+                dialogUi={appDialogUi(lang)}
                 currency={cfg.commerce.currency}
               />
             )}

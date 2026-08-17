@@ -6,7 +6,7 @@
 // возможность зарегистрированного покупателя; гостю она обещала бы действие,
 // которого у него нет.
 //
-// 🔒 ОКНО ВЫСОТОЙ НЕ БОЛЬШЕ 80% ЭКРАНА. Список заказа растёт, а окно во весь
+// 🔒 ОКНО ВЫСОТОЙ НЕ БОЛЬШЕ 85% ЭКРАНА (предел задаёт общее окно AppDialog). Список заказа растёт, а окно во весь
 // экран перестаёт быть окном: пропадает ощущение, что за ним осталась страница,
 // и некуда нажать, чтобы выйти. Прокручивается ВНУТРИ окна только список — итог
 // и кнопки остаются на виду, иначе за длинным заказом теряется главное число.
@@ -16,13 +16,23 @@ import { useRouter } from "next/navigation"
 import { ShoppingCart, Plus, Minus, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { Separator } from "@/components/ui/separator"
 import { adminBase } from "@/lib/runtime-urls"
 import { getCart, setQty, clearCart, cartTotal, cartCount, subscribeCart, type CartLine } from "./cart-store"
 import type { CartUi } from "./cart.i18n"
 
-export function CartButton({ lang, currency, labels }: { lang: string; currency: string; labels: CartUi }) {
+export function CartButton(
+  { lang, currency, labels, dialogUi }:
+  {
+    lang: string
+    currency: string
+    labels: CartUi
+    /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+    dialogUi: AppDialogUi
+  },
+) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [lines, setLines] = useState<CartLine[]>([])
@@ -86,74 +96,75 @@ export function CartButton({ lang, currency, labels }: { lang: string; currency:
         <span className="hidden sm:inline">{labels.open}</span>
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="flex max-h-[80vh] flex-col gap-0 p-0 sm:max-w-lg">
-          <DialogHeader className="border-b border-border px-5 py-4">
-            <DialogTitle className="text-base">{labels.title}</DialogTitle>
-            {lines.length === 0 && <DialogDescription className="text-xs">{labels.empty}</DialogDescription>}
-          </DialogHeader>
+      <AppDialog
+        open={open}
+        onOpenChange={setOpen}
+        ui={dialogUi}
+        title={labels.title}
+        description={lines.length === 0 ? labels.empty : undefined}
+        bodyClassName="p-0"
+        footerClassName="block p-0"
+        footer={lines.length > 0 ? (
+          /* Итог и действия — ВНЕ прокрутки: за длинным заказом теряется главное
+             число, а оно и есть причина открыть корзину. Подвал здесь не ряд
+             кнопок, а блок, поэтому его раскладка переопределена пропсом. */
+          <div className="px-5 py-4">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">{labels.total}</span>
+              <span className="text-lg font-semibold tabular-nums text-foreground">
+                {money.format(cartTotal(lines))}
+              </span>
+            </div>
 
-          {lines.length > 0 && (
-            <>
-              {/* Прокручивается только список. */}
-              <ul className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
-                {lines.map(l => (
-                  <li key={l.id} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
-                    <div className="min-w-0 flex-1">
-                      <button
-                        type="button"
-                        onClick={() => openProduct(l.id)}
-                        className="block truncate text-left text-sm font-medium text-foreground hover:underline"
-                      >
-                        {l.name}
-                      </button>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {money.format(l.price)} × {l.qty} = {money.format(l.price * l.qty)}
-                      </p>
-                    </div>
+            <Button className="mt-3 w-full" onClick={checkout}>{labels.checkout}</Button>
 
-                    <div className="flex shrink-0 items-center gap-1">
-                      <Button variant="ghost" size="sm" aria-label={labels.decrease} onClick={() => setQty(l.id, l.qty - 1)}>
-                        <Minus />
-                      </Button>
-                      <span className="w-6 text-center text-sm tabular-nums text-foreground">{l.qty}</span>
-                      <Button variant="ghost" size="sm" aria-label={labels.increase} onClick={() => setQty(l.id, l.qty + 1)}>
-                        <Plus />
-                      </Button>
-                      <Button variant="ghost" size="sm" aria-label={labels.remove} onClick={() => setQty(l.id, 0)}>
-                        <X />
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            <Separator className="my-3" />
 
-              {/* Итог и действия — вне прокрутки: за длинным заказом теряется
-                  главное число, а оно и есть причина открыть корзину. */}
-              <div className="border-t border-border px-5 py-4">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs uppercase tracking-wide text-muted-foreground">{labels.total}</span>
-                  <span className="text-lg font-semibold tabular-nums text-foreground">
-                    {money.format(cartTotal(lines))}
-                  </span>
+            <button
+              type="button"
+              onClick={() => { if (confirm(labels.resetConfirm)) clearCart() }}
+              className="w-full text-center text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              {labels.reset}
+            </button>
+          </div>
+        ) : undefined}
+      >
+        {lines.length > 0 && (
+          /* Прокручивается только список — прокрутку даёт тело окна. */
+          <ul className="px-5 py-3">
+            {lines.map(l => (
+              <li key={l.id} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => openProduct(l.id)}
+                    className="block truncate text-left text-sm font-medium text-foreground hover:underline"
+                  >
+                    {l.name}
+                  </button>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {money.format(l.price)} × {l.qty} = {money.format(l.price * l.qty)}
+                  </p>
                 </div>
 
-                <Button className="mt-3 w-full" onClick={checkout}>{labels.checkout}</Button>
-
-                <Separator className="my-3" />
-
-                <button
-                  type="button"
-                  onClick={() => { if (confirm(labels.resetConfirm)) clearCart() }}
-                  className="w-full text-center text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                >
-                  {labels.reset}
-                </button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="sm" aria-label={labels.decrease} onClick={() => setQty(l.id, l.qty - 1)}>
+                    <Minus />
+                  </Button>
+                  <span className="w-6 text-center text-sm tabular-nums text-foreground">{l.qty}</span>
+                  <Button variant="ghost" size="sm" aria-label={labels.increase} onClick={() => setQty(l.id, l.qty + 1)}>
+                    <Plus />
+                  </Button>
+                  <Button variant="ghost" size="sm" aria-label={labels.remove} onClick={() => setQty(l.id, 0)}>
+                    <X />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AppDialog>
     </>
   )
 }

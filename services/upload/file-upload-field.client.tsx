@@ -4,12 +4,17 @@ import { useRef, useState } from "react"
 import { Loader2, Upload, X, FileText, Film, Image as ImageIcon } from "lucide-react"
 import { toast } from "sonner"
 import { ImageCropper, type CropMode } from "./image-cropper.client"
+import type { ImageCropperUi } from "./image-cropper.i18n"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { uploadFile, type UploadedFile } from "./upload.service"
 
 type Accept = "image" | "video" | "document" | "any"
 
 type Props = {
   accept?: Accept
+  /** Слова обрезчика и общего окна — резолвятся на сервере. */
+  cropperUi: ImageCropperUi
+  dialogUi: AppDialogUi
   onUpload: (file: UploadedFile) => void
   label?: string
   /** Show a preview thumbnail after upload (images only) */
@@ -29,7 +34,7 @@ function FileIcon({ mimeType }: { mimeType: string }) {
   return <FileText size={14} className="text-muted-foreground" />
 }
 
-export function FileUploadField({ accept = "any", onUpload, label = "Upload file", preview = false }: Props) {
+export function FileUploadField({ accept = "any", cropperUi, dialogUi, onUpload, label = "Upload file", preview = false }: Props) {
   const [uploading, setUploading]     = useState(false)
   const [cropSrc, setCropSrc]         = useState<string | null>(null)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -73,6 +78,8 @@ export function FileUploadField({ accept = "any", onUpload, label = "Upload file
       {cropSrc && pendingFile && (
         <ImageCropper
           src={cropSrc}
+          ui={cropperUi}
+          dialogUi={dialogUi}
           onDone={(blob, cropMode) => { setCropSrc(null); handleUpload(pendingFile, blob, cropMode); setPendingFile(null) }}
           onCancel={() => { setCropSrc(null); setPendingFile(null) }}
         />

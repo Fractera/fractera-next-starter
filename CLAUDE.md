@@ -597,6 +597,40 @@ mounted `<Toaster/>` + `toast()` from `sonner`). This covers menus, drawers, mod
 control. Bring non-conforming code to this standard whenever you touch it. Full mapping + recipes →
 `ui-primitives.md`.
 
+**🔒 A MODAL WINDOW IS ONE COMPONENT — `AppDialog`, and you never build a second one.**
+`components/dialog/app-dialog.client.tsx` is the only sanctioned modal in the product. A side
+panel is `Sheet`; a menu is `DropdownMenu`; everything that dims the page and asks for attention
+is `AppDialog`. Writing `fixed inset-0` with a scrim of your own is forbidden, and
+`npm run check:dialogs` (in `prebuild`) rejects it mechanically.
+
+This rule is written from what the tree actually held on 2026-08-17: **eight windows of three
+different species**, three of them hand-rolled out of bare `div`s — no `role="dialog"`, no
+`aria-modal`, no focus trap, no Escape, no scroll lock — while a perfectly good shadcn `Dialog`
+sat in `components/ui/`. Nothing had stopped them: types were fine, the build was green, and on
+screen there was no difference. The difference appears the moment someone uses the window with a
+keyboard or a screen reader. Overlay layers had drifted the same way (`z-50` / `z-[70]` /
+`z-[200]`), and two windows stacked on each other is a defect this project has already shipped
+once — the outer one swallowed the inner one's clicks and its buttons stopped working.
+
+Four laws, all enforced or enforceable:
+
+1. **The primitive owns the shell** — portal, scrim, overlay layer, focus trap, Escape, scroll
+   lock. A caller passes content, never plumbing. `dismissible={false}` is the one sanctioned
+   exception (access denial), and it lives as a parameter, not as a second species of window.
+2. **Chrome words come from `app-dialog.i18n.ts` — all 82 languages.** A window is a reusable
+   part of the product: it appears in any language the owner enables, the minute they enable it.
+3. **Content words arrive as the `ui` prop, resolved on the server.** A client file may only
+   `import type` from a dialog dictionary — 82 languages × a dictionary is hundreds of kilobytes
+   per page. `check:dialogs` enforces this too. The prop is named `ui`, not `labels`.
+4. **A new dialog dictionary is registered in `scripts/check-i18n.mjs` in the same commit.** Two
+   of the three existing ones already carried 82 languages and were guarded by nothing at all,
+   because that list is hand-maintained and nobody had added them.
+
+The single named exception is `components/menu/top/mobile-menu.client.tsx`, and the reason is
+written inside the gate: it is not a modal but a navigation panel anchored *below* the header, so
+that the header bar stays lit and its close button remains visible — an owner decision of
+2026-08-16 that `Sheet side="top"` would silently reverse.
+
 **🔒 TEXT IS A PRIMITIVE TOO — `components/ui/typography.tsx`, never a hand-written heading.**
 `H1 H2 H3 H4` (each with a `content` / `ui` variant), `P`, `Lead`, `Small`, `Eyebrow`. A raw
 `<h1 className="…">` anywhere under `app/`, `components/` or `sections/` fails

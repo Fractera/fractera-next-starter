@@ -17,13 +17,22 @@ import { ProductsPager } from "@/app/[lang]/(protectedLayer)/_components/product
 import { ProductTable } from "@/app/[lang]/(protectedLayer)/_components/products/product-table.client"
 import { ProductTableSkeleton } from "@/app/[lang]/(protectedLayer)/_components/products/product-table-skeleton"
 import type { CartUi } from "@/components/cart/cart.i18n"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { AddToOrder } from "./add-to-order.client"
 import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { ShoppingProductsUi } from "../_data/ui.i18n"
 
 export function ProductsPanel(
-  { lang, currency, labels, common, cart }:
-  { lang: string; currency: string; labels: ShoppingProductsUi; common: ProductListUi; cart: CartUi },
+  { lang, currency, labels, common, cart, dialogUi }:
+  {
+    lang: string
+    currency: string
+    labels: ShoppingProductsUi
+    common: ProductListUi
+    cart: CartUi
+    /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+    dialogUi: AppDialogUi
+  },
 ) {
   const list = useProductList(common.failed)
 
@@ -74,7 +83,7 @@ export function ProductsPanel(
               colPrice: common.colPrice, colId: common.colId, empty: common.empty,
             }}
             hrefFor={(id) => `/${lang}/products/${id}`}
-            rowAction={(p) => <AddToOrder product={p} labels={cart} />}
+            rowAction={(p) => <AddToOrder product={p} labels={cart} dialogUi={dialogUi} />}
           />
 
           <ProductsPager

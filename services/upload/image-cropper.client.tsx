@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { createPortal } from "react-dom"
-import { X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
+import type { ImageCropperUi } from "./image-cropper.i18n"
 
 export type CropMode = "horizontal" | "square" | "vertical"
 
@@ -14,11 +16,15 @@ const RATIOS: Record<CropMode, { w: number; h: number }> = {
 
 type Props = {
   src: string
+  /** Слова обрезчика на языке страницы — резолвятся на сервере. */
+  ui: ImageCropperUi
+  /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+  dialogUi: AppDialogUi
   onDone: (blob: Blob, cropMode: CropMode) => void
   onCancel: () => void
 }
 
-export function ImageCropper({ src, onDone, onCancel }: Props) {
+export function ImageCropper({ src, ui, dialogUi, onDone, onCancel }: Props) {
   const MAX = 280
   const [cropMode, setCropMode] = useState<CropMode>("horizontal")
   const ratio = RATIOS[cropMode]
@@ -90,49 +96,57 @@ export function ImageCropper({ src, onDone, onCancel }: Props) {
     out.toBlob((blob) => { if (blob) onDone(blob, cropMode) }, "image/jpeg", 0.92)
   }
 
-  if (typeof document === "undefined") return null
-
-  return createPortal(
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]">
-      <div className="bg-background rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ width: Math.max(W + 48, 320) }}>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-foreground">Crop image</span>
-          <div className="flex gap-1">
-            {(["horizontal", "square", "vertical"] as CropMode[]).map((m) => (
-              <button key={m} type="button" onClick={() => setCropMode(m)}
-                className={`text-[10px] px-2 py-1 rounded border transition-colors ${cropMode === m ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
-                {m === "horizontal" ? "16:9" : m === "square" ? "1:1" : "9:16"}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
-            <X size={13} />
-          </button>
+  // 🔒 ОКНО СОБИРАЛОСЬ РУКАМИ: свой `createPortal`, своя подложка, свой слой
+  // `z-[200]` — самый высокий в приложении, назначенный без чьего-либо ведома.
+  // Ни `role="dialog"`, ни ловушки фокуса, ни Escape здесь не было; четыре слова
+  // интерфейса стояли по-английски прямо в разметке. Портал, подложку, слой и
+  // доступность теперь приносит общий `AppDialog`, слова — словарь рядом.
+  return (
+    <AppDialog
+      open
+      onOpenChange={v => { if (!v) onCancel() }}
+      ui={dialogUi}
+      size="sm"
+      title={ui.title}
+      titleClassName="text-xs font-semibold"
+      bodyClassName="flex flex-col gap-3"
+      toolbar={
+        /* Соотношение сторон — не оформление, а решение о кадре, и оно должно
+           оставаться на виду, пока человек двигает картинку. */
+        <div className="flex justify-center gap-1">
+          {(["horizontal", "square", "vertical"] as CropMode[]).map((m) => (
+            <Button
+              key={m}
+              type="button"
+              size="sm"
+              variant={cropMode === m ? "default" : "outline"}
+              className="h-7 px-2 text-[10px]"
+              onClick={() => setCropMode(m)}
+            >
+              {m === "horizontal" ? "16:9" : m === "square" ? "1:1" : "9:16"}
+            </Button>
+          ))}
         </div>
-        <canvas
-          ref={canvasRef} width={W} height={H}
-          className="rounded-lg border border-border cursor-grab active:cursor-grabbing bg-muted/30 self-center select-none"
-          style={{ width: W, height: H }}
-          onMouseDown={onMouseDown}
-        />
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-muted-foreground">Scale</span>
-          <input type="range" min={0.05} max={4} step={0.01} value={scale}
-            onChange={(e) => setScale(parseFloat(e.target.value))}
-            className="w-full accent-primary" />
-        </div>
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onCancel}
-            className="text-[11px] px-3 py-1.5 rounded-md border border-border hover:bg-muted transition-colors">
-            Cancel
-          </button>
-          <button type="button" onClick={handleDone}
-            className="text-[11px] px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-            Apply
-          </button>
-        </div>
+      }
+      footer={
+        <>
+          <Button type="button" size="sm" variant="outline" onClick={onCancel}>{ui.cancel}</Button>
+          <Button type="button" size="sm" onClick={handleDone}>{ui.apply}</Button>
+        </>
+      }
+    >
+      <canvas
+        ref={canvasRef} width={W} height={H}
+        className="self-center cursor-grab rounded-lg border border-border bg-muted/30 select-none active:cursor-grabbing"
+        style={{ width: W, height: H }}
+        onMouseDown={onMouseDown}
+      />
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] text-muted-foreground">{ui.scale}</span>
+        <input type="range" min={0.05} max={4} step={0.01} value={scale}
+          onChange={(e) => setScale(parseFloat(e.target.value))}
+          className="w-full accent-primary" />
       </div>
-    </div>,
-    document.body
+    </AppDialog>
   )
 }

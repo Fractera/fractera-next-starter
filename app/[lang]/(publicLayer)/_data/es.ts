@@ -30,6 +30,7 @@ export const es: Partial<HomeCell> = {
     items: [
       { label: '82 idiomas', tone: 'reach' },
       { label: 'SEO incorporado', tone: 'reach' },
+      { label: 'AIO navegación agéntica', tone: 'reach' },
       { label: 'Base de datos propia', tone: 'data' },
       { label: 'Búsqueda vectorial', tone: 'data' },
       { label: 'Grafo de conocimiento', tone: 'data' },
@@ -37,6 +38,7 @@ export const es: Partial<HomeCell> = {
       { label: 'Autorización', tone: 'access' },
       { label: '{roles} roles', tone: 'access' },
       { label: 'GitHub', tone: 'code' },
+      { label: 'Telegram', tone: 'code' },
       { label: 'Arquitectura Fractera', tone: 'code' },
       { label: '100+ más', tone: 'muted' },
     ],

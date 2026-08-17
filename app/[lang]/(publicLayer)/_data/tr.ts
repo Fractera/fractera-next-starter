@@ -30,6 +30,7 @@ export const tr: Partial<HomeCell> = {
     items: [
       { label: '82 dil', tone: 'reach' },
       { label: 'SEO dahili', tone: 'reach' },
+      { label: 'AIO etmen taraması', tone: 'reach' },
       { label: 'Kendi veritabanı', tone: 'data' },
       { label: 'Vektör arama', tone: 'data' },
       { label: 'Bilgi grafiği', tone: 'data' },
@@ -37,6 +38,7 @@ export const tr: Partial<HomeCell> = {
       { label: 'Yetkilendirme', tone: 'access' },
       { label: '{roles} rol', tone: 'access' },
       { label: 'GitHub', tone: 'code' },
+      { label: 'Telegram', tone: 'code' },
       { label: 'Fractera mimarisi', tone: 'code' },
       { label: '100+ daha fazla', tone: 'muted' },
     ],

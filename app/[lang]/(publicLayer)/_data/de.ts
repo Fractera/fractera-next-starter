@@ -30,6 +30,7 @@ export const de: Partial<HomeCell> = {
     items: [
       { label: '82 Sprachen', tone: 'reach' },
       { label: 'SEO integriert', tone: 'reach' },
+      { label: 'AIO agentisches Browsing', tone: 'reach' },
       { label: 'Eigene Datenbank', tone: 'data' },
       { label: 'Vektorsuche', tone: 'data' },
       { label: 'Wissensgraph', tone: 'data' },
@@ -37,6 +38,7 @@ export const de: Partial<HomeCell> = {
       { label: 'Autorisierung', tone: 'access' },
       { label: '{roles} Rollen', tone: 'access' },
       { label: 'GitHub', tone: 'code' },
+      { label: 'Telegram', tone: 'code' },
       { label: 'Fractera-Architektur', tone: 'code' },
       { label: '100+ weitere', tone: 'muted' },
     ],

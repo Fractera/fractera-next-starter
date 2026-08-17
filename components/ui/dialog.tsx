@@ -47,13 +47,28 @@ function DialogOverlay({
   )
 }
 
+// 🔒 ПОДПИСЬ КРЕСТИКА — ПАРАМЕТР, А НЕ СТРОКА В КОДЕ (2026-08-17).
+//
+// Здесь стояло зашитое английское `Close`, и это не косметика: подпись читает
+// программа чтения с экрана, то есть единственный способ узнать назначение
+// кнопки для незрячего человека. Продукт живёт на 82 языках — и на каждом из
+// них окно закрывалось словом «Close».
+//
+// Умолчание оставлено английским НАМЕРЕННО: примитив не знает языка страницы и
+// знать не должен. Правильный вызов идёт через `AppDialog`
+// (`components/dialog/app-dialog.client.tsx`), который подставляет слово из
+// словаря; умолчание — страховка на случай прямого вызова, а не разрешение так
+// вызывать.
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeLabel = "Close",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  /** Подпись крестика для читалок экрана — на языке страницы. */
+  closeLabel?: string
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -74,7 +89,7 @@ function DialogContent({
             className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{closeLabel}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -95,10 +110,13 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 function DialogFooter({
   className,
   showCloseButton = false,
+  closeLabel = "Close",
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
+  /** Подпись кнопки закрытия — на языке страницы, см. DialogContent выше. */
+  closeLabel?: string
 }) {
   return (
     <div
@@ -112,7 +130,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button variant="outline">{closeLabel}</Button>
         </DialogPrimitive.Close>
       )}
     </div>

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { FileUploadField } from "@/services/upload/file-upload-field.client"
 import VoiceInput from "@/_tools/voice-input/client/voice-input.client"
 import type { UploadedFile } from "@/services/upload/upload.service"
+import type { ImageCropperUi } from "@/services/upload/image-cropper.i18n"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 
 type Props = {
   form: { name: string; price: string }
@@ -15,9 +17,12 @@ type Props = {
   onUpload: (f: UploadedFile | null) => void
   lang: string
   labels: { newProduct: string; name: string; price: string; uploadPhoto: string; save: string }
+  /** Слова обрезчика и общего окна — резолвятся на сервере. */
+  cropperUi: ImageCropperUi
+  dialogUi: AppDialogUi
 }
 
-export function ProductForm({ form, setForm, saving, onSave, onUpload, lang, labels }: Props) {
+export function ProductForm({ form, setForm, saving, onSave, onUpload, lang, labels, cropperUi, dialogUi }: Props) {
   const nameRef = useRef<HTMLInputElement>(null)
   return (
     <div className="mb-6 p-4 rounded-xl border border-border bg-muted/30">
@@ -43,6 +48,8 @@ export function ProductForm({ form, setForm, saving, onSave, onUpload, lang, lab
         />
         <FileUploadField
           accept="image"
+          cropperUi={cropperUi}
+          dialogUi={dialogUi}
           preview
           label={labels.uploadPhoto}
           onUpload={f => onUpload(f)}

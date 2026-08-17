@@ -27,6 +27,8 @@ import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-
 import type { ProductListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
+import type { ImageCropperUi } from "@/services/upload/image-cropper.i18n"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Small } from "@/components/ui/typography"
 
@@ -41,8 +43,8 @@ export type ProductsLabels = {
 }
 
 export function ProductsPanel(
-  { lang, currency, labels, common, errors, dialogUi, billingUrl }:
-  { lang: string; currency: string; labels: ProductsLabels; common: ProductListUi; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string },
+  { lang, currency, labels, common, errors, translationsUi, dialogUi, cropperUi, billingUrl }:
+  { lang: string; currency: string; labels: ProductsLabels; common: ProductListUi; errors: PlatformErrors; translationsUi: TranslationsUi; dialogUi: AppDialogUi; cropperUi: ImageCropperUi; billingUrl: string },
 ) {
   const list = useProductList(common.failed)
   const [adding, setAdding] = useState(false)
@@ -142,6 +144,7 @@ export function ProductsPanel(
         <ProductForm
           form={form} setForm={setForm} saving={saving}
           onSave={add} onUpload={setUploaded} lang={lang} labels={labels}
+          cropperUi={cropperUi} dialogUi={dialogUi}
         />
       )}
 
@@ -180,7 +183,8 @@ export function ProductsPanel(
           open
           lang={lang}
           fields={[{ key: "name", label: labels.name, value: justCreated.name }]}
-          ui={dialogUi}
+          ui={translationsUi}
+          dialogUi={dialogUi}
           errors={errors}
           billingUrl={billingUrl}
           onSkip={() => setJustCreated(null)}

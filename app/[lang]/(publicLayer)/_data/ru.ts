@@ -30,6 +30,7 @@ export const ru: Partial<HomeCell> = {
     items: [
       { label: '82 языка', tone: 'reach' },
       { label: 'SEO из коробки', tone: 'reach' },
+      { label: 'AIO — агентный обход', tone: 'reach' },
       { label: 'Своя база данных', tone: 'data' },
       { label: 'Векторный поиск', tone: 'data' },
       { label: 'Граф знаний', tone: 'data' },
@@ -37,6 +38,7 @@ export const ru: Partial<HomeCell> = {
       { label: 'Авторизация', tone: 'access' },
       { label: 'Ролей: {roles}', tone: 'access' },
       { label: 'GitHub', tone: 'code' },
+      { label: 'Telegram', tone: 'code' },
       { label: 'Архитектура Fractera', tone: 'code' },
       { label: '100+ возможностей', tone: 'muted' },
     ],

@@ -15,14 +15,21 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { ShoppingCart, Plus, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/components/ui/dialog"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { addToCart } from "@/components/cart/cart-store"
 import type { CartUi } from "@/components/cart/cart.i18n"
 import type { LocalizedProduct } from "@/lib/products/localize"
 
-export function AddToOrder({ product, labels }: { product: LocalizedProduct; labels: CartUi }) {
+export function AddToOrder(
+  { product, labels, dialogUi }:
+  {
+    product: LocalizedProduct
+    labels: CartUi
+    /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+    dialogUi: AppDialogUi
+  },
+) {
   const [qty, setQty] = useState(1)
   const [asking, setAsking] = useState(false)
 
@@ -52,22 +59,22 @@ export function AddToOrder({ product, labels }: { product: LocalizedProduct; lab
         <ShoppingCart />
       </Button>
 
-      <Dialog open={asking} onOpenChange={setAsking}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base">
-              {labels.confirmAdd.replace("{name}", product.localizedName)}
-            </DialogTitle>
-            <DialogDescription className="text-xs leading-relaxed">
-              {labels.quantity}: {qty}. {labels.confirmAddNote}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-2">
+      <AppDialog
+        open={asking}
+        onOpenChange={setAsking}
+        ui={dialogUi}
+        size="sm"
+        title={labels.confirmAdd.replace("{name}", product.localizedName)}
+        description={`${labels.quantity}: ${qty}. ${labels.confirmAddNote}`}
+        footer={
+          <>
             <Button variant="ghost" size="sm" onClick={() => setAsking(false)}>{labels.cancel}</Button>
             <Button size="sm" onClick={confirm}>{labels.yes}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        }
+      /* Тела у окна НЕТ намеренно: вопрос целиком укладывается в заголовок и
+         пояснение, а придуманный ради симметрии абзац повторял бы их. */
+      />
     </div>
   )
 }

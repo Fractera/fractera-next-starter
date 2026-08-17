@@ -29,6 +29,15 @@ const FILES = [
   ["app/[lang]/_components/cookie-banner/cookie-banner.i18n.ts", "BannerStrings", 82],
   ["components/menu/footer/cookie-settings-button.i18n.ts", "CookieButtonUi", 82],
   ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
+  // 🔒 СЛОВАРИ МОДАЛЬНЫХ ОКОН (внесены 2026-08-17 вместе с единым примитивом).
+  // Два из трёх УЖЕ несли 82 языка и всё это время стояли вне охраны: сторож
+  // проверяет только то, что ему назвали, а назвать их забыли. Дыра тихая —
+  // словарь можно было урезать до десяти языков, и ни один гейт бы не заметил.
+  // С этого дня регистрация нового окна в этом списке — часть того же коммита,
+  // что и само окно.
+  ["components/dialog/app-dialog.i18n.ts", "AppDialogUi", 82],
+  ["components/auth/access-gate.i18n.ts", "AccessGateUi", 82],
+  ["components/i18n/translations-dialog.i18n.ts", "TranslationsUi", 82],
   // Слова публичного каталога и подписи движка материалов — тот же страничный
   // слой, тот же набор из десяти готовых переводов (шаг 507). До этого шага их
   // не проверял никто: словарь каталога отсутствовал в списке, а два словаря

@@ -1,0 +1,14 @@
+{
+  "en": {
+    "title": "Crop image",
+    "scale": "Scale",
+    "cancel": "Cancel",
+    "apply": "Apply"
+  },
+  "ru": {
+    "title": "Обрезать изображение",
+    "scale": "Масштаб",
+    "cancel": "Отмена",
+    "apply": "Применить"
+  }
+}

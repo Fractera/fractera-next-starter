@@ -1,6 +1,7 @@
 import { AccessGate } from "@/components/auth/access-gate.client"
 import { PROTECTED_GROUP_ROLES } from "@/lib/roles"
 import { accessGateUi } from "@/components/auth/access-gate.i18n"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { accountLabels } from "@/components/menu/account/account-menu.i18n"
 import { FlowRail } from "../_components/flow-rail.server"
 
@@ -19,7 +20,7 @@ export default async function Layout(
 ) {
   const { lang } = await params
   return (
-    <AccessGate roles={PROTECTED_GROUP_ROLES.admin} lang={lang} ui={accessGateUi(lang)}>
+    <AccessGate roles={PROTECTED_GROUP_ROLES.admin} lang={lang} ui={accessGateUi(lang)} dialogUi={appDialogUi(lang)}>
       {/* Полоса потока: имя слоя берётся из того же словаря, что и заголовок
           блока в ящике аккаунта (82 языка) — два места, называющие один слой
           разными словами, хуже, чем ни одного. */}

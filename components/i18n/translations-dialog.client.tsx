@@ -19,9 +19,11 @@
 // выйти?» — плата за случай, которого здесь нет.
 
 import { useState } from "react"
-import { AlertTriangle, ExternalLink, HelpCircle, Languages, Loader2, X } from "lucide-react"
+import { AlertTriangle, ExternalLink, HelpCircle, Languages, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { SINGLE_LANG_MODE } from "@/config/translations/translations.config"
 import { adminBase } from "@/lib/runtime-urls"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
@@ -37,13 +39,15 @@ export type { TranslatableField, Drafts }
 // что у панели (/code/CLAUDE.md §4д).
 
 export function TranslationsDialog(
-  { open, lang, fields, ui, errors, billingUrl, onSave, onSkip }: {
+  { open, lang, fields, ui, dialogUi, errors, billingUrl, onSave, onSkip }: {
     open: boolean
     /** Язык интерфейса — он же язык исходных значений. */
     lang: string
     fields: TranslatableField[]
     /** Слова диалога на языке страницы — резолвятся на сервере (§4д). */
     ui: TranslationsUi
+    /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+    dialogUi: AppDialogUi
     /** Сообщения об отказах на языке страницы — из lib/i18n/platform-errors. */
     errors: PlatformErrors
     billingUrl: string
@@ -80,20 +84,34 @@ export function TranslationsDialog(
     : error ? errors.upstream : null
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-background shadow-2xl">
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
-          <p className="flex items-center gap-1.5 text-[12px] font-medium text-foreground">
-            <Languages size={13} />{t.title}
-          </p>
-          <button type="button" onClick={onSkip} title={t.close} className="text-muted-foreground hover:text-foreground">
-            <X size={14} />
-          </button>
+    /* 🔒 ЭТО ОКНО БЫЛО СОБРАНО РУКАМИ ИЗ ГОЛЫХ `div` — и в нём не было НИЧЕГО из
+       того, что делает окно окном: ни `role="dialog"`, ни `aria-modal`, ни
+       ловушки фокуса, ни закрытия по Escape, ни замка прокрутки страницы под
+       ним. Выглядело оно при этом безупречно: увидеть нехватку можно было,
+       только попробовав пользоваться им с клавиатуры. Свой слой `z-[70]` он
+       назначал себе сам — ровно так два окна и оказываются друг поверх друга.
+       Теперь всё это приносит общий `AppDialog`, а здесь остаётся содержимое. */
+    <AppDialog
+      open
+      onOpenChange={v => { if (!v) onSkip() }}
+      ui={dialogUi}
+      size="lg"
+      titleClassName="flex items-center gap-1.5 text-[12px] font-medium"
+      title={<><Languages size={13} />{t.title}</>}
+      description={t.intro}
+      bodyClassName="space-y-2 p-4"
+      footerClassName="block px-4 py-2.5"
+      footer={
+        <div className="flex items-center gap-1.5">
+          <Button size="sm" variant="ghost" onClick={onSkip}>{t.skip}</Button>
+          {/* Родной `title`: работает на касании и переживает выключенный JS. */}
+          <span title={t.hint} className="cursor-help text-muted-foreground">
+            <HelpCircle size={13} />
+          </span>
         </div>
-
-        <div className="shrink-0 space-y-3 px-4 pt-3">
-          <p className="text-[11px] leading-relaxed text-muted-foreground">{t.intro}</p>
-
+      }
+      toolbar={
+        <div className="space-y-3">
           {/* Вкладки полей — только когда полей больше одного. */}
           {fields.length > 1 && (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -147,36 +165,27 @@ export function TranslationsDialog(
             </div>
           )}
         </div>
-
-        {/* Прокручивается ТОЛЬКО список языков. */}
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
-          {targets.map(code => {
-            const value = drafts[code]?.[field?.key ?? ""] ?? ""
-            return (
-              <TranslationCell
-                key={code}
-                lang={code}
-                value={value}
-                multiline={field?.multiline}
-                dirty={Boolean(field) && value.trim() !== field.value.trim()}
-                saved={Boolean(saved[code])}
-                saving={savingLang === code}
-                labels={{ save: t.saveOne, saving: t.saving, savedMark: t.savedMark }}
-                onChange={v => field && setCell(code, field.key, v)}
-                onSave={() => saveOne(code)}
-              />
-            )
-          })}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1.5 border-t border-border px-4 py-2.5">
-          <Button size="sm" variant="ghost" onClick={onSkip}>{t.skip}</Button>
-          {/* Родной `title`: работает на касании и переживает выключенный JS. */}
-          <span title={t.hint} className="cursor-help text-muted-foreground">
-            <HelpCircle size={13} />
-          </span>
-        </div>
-      </div>
-    </div>
+      }
+    >
+      {/* Прокручивается ТОЛЬКО список языков: вкладки и кнопки перевода стоят в
+          полосе `toolbar`, которую тело окна не увозит. */}
+      {targets.map(code => {
+        const value = drafts[code]?.[field?.key ?? ""] ?? ""
+        return (
+          <TranslationCell
+            key={code}
+            lang={code}
+            value={value}
+            multiline={field?.multiline}
+            dirty={Boolean(field) && value.trim() !== field.value.trim()}
+            saved={Boolean(saved[code])}
+            saving={savingLang === code}
+            labels={{ save: t.saveOne, saving: t.saving, savedMark: t.savedMark }}
+            onChange={v => field && setCell(code, field.key, v)}
+            onSave={() => saveOne(code)}
+          />
+        )
+      })}
+    </AppDialog>
   )
 }

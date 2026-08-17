@@ -1,5 +1,6 @@
 import { getAppConfig } from "@/config/app-config"
 import { cartUi } from "@/components/cart/cart.i18n"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { shoppingProductsUi } from "../_data/ui.i18n"
 import { ProductsPanel } from "./products-panel.client"
@@ -27,7 +28,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
-        <ProductsPanel lang={lang} currency={currency} labels={t} common={common} cart={cart} />
+        <ProductsPanel lang={lang} currency={currency} labels={t} common={common} cart={cart} dialogUi={appDialogUi(lang)} />
       </div>
     </main>
   )

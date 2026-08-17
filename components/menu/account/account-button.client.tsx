@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { AccountDrawer, type DrawerLink } from "@/components/menu/account/account-drawer.client";
 import { CartButton } from "@/components/cart/cart-button.client";
 import type { CartUi } from "@/components/cart/cart.i18n";
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n";
 import type { AuthShellSide } from "@/components/menu/account/account-config";
 import type { AccountLabels } from "@/components/menu/account/account-menu.i18n";
 
@@ -17,7 +18,7 @@ import type { AccountLabels } from "@/components/menu/account/account-menu.i18n"
 // the entry point too. UI standard: shadcn Button/buttonVariants + lucide icons.
 type Me = { userId?: string; email?: string; roles?: string[] } | null;
 
-export function AccountButton({ lang, side, labels, links, cart, currency }: {
+export function AccountButton({ lang, side, labels, links, cart, currency, dialogUi }: {
   lang: string;
   side: AuthShellSide;
   labels: AccountLabels;
@@ -26,6 +27,8 @@ export function AccountButton({ lang, side, labels, links, cart, currency }: {
   /** Слова корзины и валюта витрины — для значка заказа слева от кнопки аккаунта. */
   cart?: CartUi;
   currency?: string;
+  /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+  dialogUi?: AppDialogUi;
 }) {
   const [me, setMe] = useState<Me>(undefined as unknown as Me);
 
@@ -43,7 +46,7 @@ export function AccountButton({ lang, side, labels, links, cart, currency }: {
     // `/api/me`, что и у ящика: два островка спрашивали бы одно и то же дважды.
     return (
       <>
-        {cart && currency && <CartButton lang={lang} currency={currency} labels={cart} />}
+        {cart && currency && dialogUi && <CartButton lang={lang} currency={currency} labels={cart} dialogUi={dialogUi} />}
         <AccountDrawer lang={lang} side={side} labels={labels} email={me.email} roles={me.roles} links={links} />
       </>
     );

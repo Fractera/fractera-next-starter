@@ -1,5 +1,7 @@
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
+import { imageCropperUi } from "@/services/upload/image-cropper.i18n"
 import { getAppConfig } from "@/config/app-config"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../_data/ui.i18n"
@@ -28,7 +30,7 @@ export default function ProductsEntry({ lang }: { lang: string }) {
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
   // текущего языка (/code/CLAUDE.md §4д).
   const errors = platformErrors(lang)
-  const dialogUi = translationsUi(lang)
+  const tUi = translationsUi(lang)
 
   return (
     <main className="min-h-screen bg-background">
@@ -40,7 +42,9 @@ export default function ProductsEntry({ lang }: { lang: string }) {
           common={common}
           currency={getAppConfig().commerce.currency}
           errors={errors}
-          dialogUi={dialogUi}
+          translationsUi={tUi}
+          dialogUi={appDialogUi(lang)}
+          cropperUi={imageCropperUi(lang)}
           billingUrl={OPENAI_BILLING_URL}
           labels={{
             add: t.add, cancelAdd: t.cancelAdd, newProduct: t.newProduct,

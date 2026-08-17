@@ -9,6 +9,7 @@ import { appShellAuthSide } from "@/components/menu/account/account-config";
 import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { accountLinks } from "@/lib/menu/account-links";
 import { cartUi } from "@/components/cart/cart.i18n";
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { DrawerToggle } from "@/components/menu/shared/drawer-toggle.client";
 import { featureOn } from "@/config/platform-config";
 import { topMenuUi } from "@/components/menu/top/top-menu.i18n";
@@ -59,6 +60,7 @@ export async function TopMenu({ lang }: { lang: string }) {
       labels={accountLabels(lang)}
       links={accountLinks(lang)}
       cart={cartUi(lang)}
+      dialogUi={appDialogUi(lang)}
       currency={cfg.commerce.currency}
     />
   ) : null;

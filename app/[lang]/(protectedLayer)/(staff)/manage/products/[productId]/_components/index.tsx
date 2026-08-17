@@ -1,6 +1,7 @@
 import { prerenderSlugs } from "@/lib/catalogue"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../../_data/ui.i18n"
 import { ProductCard } from "./product-card.client"
@@ -35,7 +36,7 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
   // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
   // текущего языка (/code/CLAUDE.md §4д).
   const errors = platformErrors(lang)
-  const dialogUi = translationsUi(lang)
+  const tUi = translationsUi(lang)
 
   return (
     <main className="min-h-screen bg-background">
@@ -54,7 +55,8 @@ export default function ProductEntry({ lang, productId }: { lang: string; produc
             productId={productId}
             lang={lang}
             errors={errors}
-            dialogUi={dialogUi}
+            translationsUi={tUi}
+            dialogUi={appDialogUi(lang)}
             billingUrl={OPENAI_BILLING_URL}
             labels={{
               name: t.name, price: t.price, colId: common.colId,

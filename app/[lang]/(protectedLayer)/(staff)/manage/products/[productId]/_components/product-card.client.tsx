@@ -31,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { TranslationsDialog, type Drafts } from "@/components/i18n/translations-dialog.client"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/components/i18n/translations-dialog.i18n"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { useProduct } from "@/app/[lang]/(protectedLayer)/_lib/use-product"
 import { EditableField } from "@/app/[lang]/(protectedLayer)/_components/products/editable-field.client"
 import { H2 } from "@/components/ui/typography";
@@ -45,8 +46,8 @@ export type CardLabels = {
 }
 
 export function ProductCard(
-  { productId, lang, labels, errors, dialogUi, billingUrl, backHref }:
-  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; dialogUi: TranslationsUi; billingUrl: string; backHref: string },
+  { productId, lang, labels, errors, translationsUi, dialogUi, billingUrl, backHref }:
+  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; translationsUi: TranslationsUi; dialogUi: AppDialogUi; billingUrl: string; backHref: string },
 ) {
   const { state, saveField, saveDrafts } = useProduct(productId, lang, {
     savedLabel: labels.fieldSaved,
@@ -152,7 +153,8 @@ export function ProductCard(
           { key: "name", label: labels.name, value: p.localizedName },
           { key: "description", label: labels.descriptionField, value: p.localizedDescription ?? "", multiline: true },
         ]}
-        ui={dialogUi}
+        ui={translationsUi}
+        dialogUi={dialogUi}
         errors={errors}
         billingUrl={billingUrl}
         onSkip={() => setTranslating(false)}

@@ -24,15 +24,23 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { registerRedirectUrl } from "@/lib/runtime-urls"
 import type { AccessGateUi } from "./access-gate.i18n"
 
 type Verdict = "checking" | "allowed" | "denied"
 
 export function AccessGate(
-  { roles, lang, ui, children }:
-  { roles: readonly string[]; lang: string; ui: AccessGateUi; children: React.ReactNode },
+  { roles, lang, ui, dialogUi, children }:
+  {
+    roles: readonly string[]
+    lang: string
+    ui: AccessGateUi
+    /** Слова общего окна — резолвятся на сервере (`appDialogUi(lang)`). */
+    dialogUi: AppDialogUi
+    children: React.ReactNode
+  },
 ) {
   const router = useRouter()
   const t = ui
@@ -59,14 +67,22 @@ export function AccessGate(
   return (
     <>
       {children}
-      <Dialog open>
-        <DialogContent className="max-w-md" onEscapeKeyDown={e => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <ShieldAlert size={16} /> {t.title}
-            </DialogTitle>
-          </DialogHeader>
-
+      {/* 🔒 `dismissible={false}` — ЗАКРЫТЬ ЭТО ОКНО НЕЛЬЗЯ, и это его смысл:
+          закрытие оставило бы человека на странице, которую ему нельзя видеть.
+          Раньше запрет держался одной строкой `onEscapeKeyDown` — а крестик при
+          этом РИСОВАЛСЯ и не работал, потому что окно было открыто наглухо.
+          Кнопка, которая видима и ничего не делает, хуже её отсутствия; теперь
+          её просто нет, и все три пути закрытия перекрыты разом. */}
+      <AppDialog
+        open
+        onOpenChange={() => {}}
+        dismissible={false}
+        size="sm"
+        ui={dialogUi}
+        titleClassName="flex items-center gap-2 text-destructive"
+        title={<><ShieldAlert size={16} /> {t.title}</>}
+      >
+        <div className="flex flex-col gap-2">
           {/* Роли названы поимённо. «Недостаточно прав» без перечня — тупик:
               человек не знает, чего просить и у кого. */}
           <p className="text-sm text-muted-foreground">
@@ -75,6 +91,10 @@ export function AccessGate(
           <p className="text-sm text-muted-foreground">{t.haveAccess}</p>
           <p className="text-sm text-muted-foreground">{t.wrongPlace}</p>
 
+          {/* Кнопки стоят СТОЛБИКОМ и в теле, а не в подвале окна: подвал
+              выкладывает их в строку с обратным порядком на узком экране, и
+              «отмена» оказалась бы первой из трёх. Порядок здесь смысловой —
+              сначала то, ради чего человек пришёл. */}
           <div className="mt-2 flex flex-col gap-2">
             {/* Адрес возврата — ЭТА страница: после входа человек оказывается
                 там, куда шёл, а не на чужой стартовой. */}
@@ -99,8 +119,8 @@ export function AccessGate(
               {t.cancel}
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </AppDialog>
     </>
   )
 }

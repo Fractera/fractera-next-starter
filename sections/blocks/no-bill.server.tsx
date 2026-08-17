@@ -3,6 +3,7 @@ import { inline } from '@/lib/content/blocks/inline'
 import { H3, Lead, Metric, Small } from '@/components/ui/typography'
 import { badgeClass } from '@/sections/tone'
 import { SectionHead } from '@/sections/section-head.server'
+import { architectureLinkUi } from '@/lib/i18n/architecture-link.i18n'
 
 // Счета, которых не будет: чужое имя, перечёркнутое, и то, что вы перестали за
 // него покупать.
@@ -37,7 +38,7 @@ import { SectionHead } from '@/sections/section-head.server'
 // противоположных концах страницы, и одинаковый знак связывает их в пару. Цвет
 // ярлыка — из общей карты тонов (`sections/tone.ts`), той же, что у ряда
 // возможностей вверху.
-export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
+export const noBill: SectionRenderer<'noBill'> = (b, { key: k, lang }) => (
   <section key={k} aria-labelledby={`${k}-t`} className="my-10">
     {/* Шапка раздела — ОБЩИЙ примитив, а не своя разметка: одна анатомия у всех
         разделов страницы держится импортом, а не тем, что я о ней помню. */}
@@ -66,6 +67,21 @@ export const noBill: SectionRenderer<'noBill'> = (b, { key: k }) => (
       <div className="border-t border-border bg-muted/40 px-6 py-8 text-center">
         <H3>{b.title}</H3>
         <Lead className="mx-auto mt-3 max-w-2xl">{inline(b.text, `${k}-b`)}</Lead>
+
+        {/* 🔒 АДРЕС И ПОДПИСЬ СОБИРАЮТСЯ ЗДЕСЬ, А НЕ ЛЕЖАТ В ДАННЫХ (2026-08-17).
+            Материал говорит только «здесь стоит кнопка на страницу архитектуры»;
+            язык в адресе и слово на кнопке — дело секции. Иначе один и тот же
+            платформенный элемент пришлось бы вписывать в десять языковых ячеек,
+            а его адрес — переименовывать в десяти местах разом. */}
+        {b.cta && (
+          <a
+            href={`/${lang}/${b.cta.page}`}
+            className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 text-sm font-bold text-foreground hover:bg-primary/20"
+          >
+            {architectureLinkUi(lang).homeCta}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+          </a>
+        )}
       </div>
     </div>
   </section>

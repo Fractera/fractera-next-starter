@@ -187,6 +187,19 @@ export type LeafBlock =
       items: { vendor: string; text: string; badge: BadgeItem }[]
       title: string
       text: string
+      /**
+       * Кнопка под выводом раздела. Поле МАШИННОЕ: оно называет СТРАНИЦУ, а не
+       * адрес и не подпись.
+       *
+       * 🔒 ПОЧЕМУ ИМЕННО ТАК, А НЕ `{ href, label }`. Адрес страницы зависит от
+       * языка (`/de/architecture`), и вписать его в языковую ячейку значило бы
+       * развести десять адресов, которые разойдутся при первом переименовании.
+       * Подпись — слово одного и того же платформенного элемента, ей место в
+       * словаре (`lib/i18n/architecture-link.i18n.ts`), а не в десяти файлах с
+       * текстом страницы. Тот же приём, что у `heroSplit.image: 'homePage'`:
+       * материал называет НАЗНАЧЕНИЕ, остальное выводит секция.
+       */
+      cta?: { page: 'architecture' }
     }
 // ── Container blocks (composite layouts) ─────────────────────────────────────
 // Containers hold `children: Block[]` and are rendered recursively through the

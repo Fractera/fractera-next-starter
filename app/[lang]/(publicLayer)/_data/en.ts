@@ -136,6 +136,7 @@ export const en: HomeCell = {
     ],
     title: 'You pay nobody',
     text: 'You depend on nobody. The project is yours, end to end.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

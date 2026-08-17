@@ -133,6 +133,7 @@ export const es: Partial<HomeCell> = {
     ],
     title: 'No pagas a nadie',
     text: 'No dependes de nadie. El proyecto es tuyo por completo.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

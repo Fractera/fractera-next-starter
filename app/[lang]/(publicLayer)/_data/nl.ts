@@ -133,6 +133,7 @@ export const nl: Partial<HomeCell> = {
     ],
     title: 'Je betaalt niemand',
     text: 'Je bent van niemand afhankelijk. Het project is volledig van jou.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

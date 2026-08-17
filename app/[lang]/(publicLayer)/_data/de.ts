@@ -133,6 +133,7 @@ export const de: Partial<HomeCell> = {
     ],
     title: 'Sie zahlen an niemanden',
     text: 'Sie hängen von niemandem ab. Das Projekt gehört ganz Ihnen.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

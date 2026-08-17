@@ -134,6 +134,7 @@ export const ru: Partial<HomeCell> = {
     ],
     title: 'Вы никому не платите',
     text: 'Вы ни от кого не зависите. Проект полностью ваш.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

@@ -133,6 +133,7 @@ export const tr: Partial<HomeCell> = {
     ],
     title: 'Kimseye ödeme yapmıyorsunuz',
     text: 'Kimseye bağımlı değilsiniz. Proje tamamen sizin.',
+    cta: { page: 'architecture' },
   },
   {
     kind: 'languageMarquee',

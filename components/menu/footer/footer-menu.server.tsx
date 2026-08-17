@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Linkedin, Facebook } from "lucide-react";
+import { Github, Linkedin, Facebook, Boxes, SlidersHorizontal } from "lucide-react";
 import { BrandX } from "@/components/icons/brand-x";
 import { getAppConfig } from "@/config/app-config";
 import { getMenuGroups } from "@/lib/menu/group-menus";
@@ -20,6 +20,7 @@ import { accountLabels } from "@/components/menu/account/account-menu.i18n";
 import { accountLinks } from "@/lib/menu/account-links";
 import { cartUi } from "@/components/cart/cart.i18n";
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
+import { architectureLinkUi } from "@/lib/i18n/architecture-link.i18n";
 
 // Always-present FOOTER menu (step 160), mirroring FES site-footer in look & behaviour
 // (re-programmed, not copied). Three sections:
@@ -130,6 +131,23 @@ export function FooterMenu({ lang }: { lang: string }) {
             )}
             {bannerOn && <CookieSettingsButton label={cookieButtonUi(lang).settings} />}
 
+            {/* 🔒 АРХИТЕКТУРА — ОБЫЧНАЯ СТРАНИЦА САЙТА, И ССЫЛКА НА НЕЁ ОБЫЧНАЯ
+                (заказ владельца 2026-08-17). Она живёт там же, где privacy,
+                terms и cookies, и по тем же законам: статическая, индексируемая,
+                со своей markdown-версией. Поэтому `Link`, а не `<a>` с
+                `nofollow`: в отличие от панели, эту страницу поисковику показать
+                как раз нужно — она объясняет продукт тому, кто выбирает.
+                Стоит она в полосе ДЕЙСТВИЙ, а не в списке страниц подвала
+                выше: тот список владелец собирает сам в настройках, и чужая
+                строка в нём выглядела бы как его собственная забытая настройка. */}
+            <Link
+              href={`/${lang}/architecture`}
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <Boxes className="size-3.5" />
+              {architectureLinkUi(lang).footer}
+            </Link>
+
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).
                 Панель закрыта авторизацией: без входа она уводит на страницу
                 регистрации, поэтому видимая ссылка ничего не открывает
@@ -145,8 +163,15 @@ export function FooterMenu({ lang }: { lang: string }) {
               <a
                 href={adminUrl}
                 rel="nofollow"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                // 🔒 ЗНАЧОК СЛЕВА (заказ владельца 2026-08-17). Кнопка стояла в
+                // полосе последней и единственной без значка: соседи — вход,
+                // настройки cookie и архитектура — его несут. Ряд, где часть
+                // кнопок помечена, а часть нет, читается как недоделанный, а не
+                // как лаконичный. `gap-1.5` и размер значка — те же, что у
+                // соседей, иначе «единый ряд» держался бы на глазок.
+                className={buttonVariants({ variant: "outline", size: "sm" }) + " gap-1.5"}
               >
+                <SlidersHorizontal className="size-3.5" />
                 {adminLinkLabels(lang).admin}
               </a>
             )}

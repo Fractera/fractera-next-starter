@@ -6,7 +6,15 @@ export const es: Partial<HomeCell> = {
   description: 'Funciona en tu propio servidor y no responde ante nadie más. Dale un nombre en el panel de control — esta línea desaparecerá.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infraestructura de ingeniería agéntica' },
+  {
+    kind: 'heroSplit',
+    pill: 'Infraestructura de ingeniería agéntica',
+    title: 'Este es el starter de tu aplicación',
+    description:
+      'Todo ya está instalado y conectado entre sí — autorización, tu propia base de datos, almacenamiento de archivos, búsqueda vectorial y un centenar de herramientas más, ordenadas de modo que un agente de programación las encuentre sin que haya que explicárselo dos veces. Crea una página de aterrizaje, un SaaS o una automatización que nunca duerme, en cualquiera de los 82 idiomas, sobre un esqueleto pensado para un proyecto que superará el millón de líneas. Alrededor de **nueve veces más rápido** que montar tú mismo la misma pila — y aquí nada llama a casa: ni proveedor, ni suscripción, ni permiso que pedir. El servidor es tuyo, el código es tuyo, **al cien por cien**.',
+    image: 'homePage',
+    imageAlt: 'Plantilla inicial de SaaS',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const es: Partial<HomeCell> = {
     ],
     title: 'No pagas a nadie',
     text: 'No dependes de nadie. El proyecto es tuyo por completo.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Ochenta y dos idiomas, listos antes de que los necesites',
+    note: 'Todos vienen con el producto: activas los que habla tu mercado. La generación estática, la optimización para buscadores y para IA, el caché de datos y la preparación para carga alta mantienen la eficiencia en lo más alto del sector — y la mantienen igual tanto si trabajas con un idioma, con varios o con los ochenta y dos.',
   },
 ],
 }

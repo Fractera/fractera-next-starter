@@ -6,7 +6,15 @@ export const tr: Partial<HomeCell> = {
   description: 'Kendi sunucunuzda çalışır ve başka kimseye hesap vermez. Kontrol panelinde ona bir isim verin — bu satır kaybolacak.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Etmen mühendisliği altyapısı' },
+  {
+    kind: 'heroSplit',
+    pill: 'Etmen mühendisliği altyapısı',
+    title: 'Bu, uygulamanızın başlangıç şablonu',
+    description:
+      'Her şey zaten kurulu ve birbirine bağlı — yetkilendirme, kendi veritabanınız, dosya deposu, vektör arama ve yüz kadar araç daha; hepsi, kod yazan bir etmenin iki kez anlatmaya gerek kalmadan bulacağı biçimde düzenlenmiş. Bir açılış sayfası, bir SaaS ya da hiç uyumayan bir otomasyon kurun — 82 dilin herhangi birinde, bir milyon satırı aşacak bir proje için biçilmiş bir iskelet üzerinde. Aynı yığını kendiniz kurmaya göre yaklaşık **dokuz kat daha hızlı** — ve burada hiçbir şey dışarıyı aramaz: ne sağlayıcı, ne abonelik, ne de izin istenecek biri. Sunucu sizin, kod sizin, **yüzde yüz**.',
+    image: 'homePage',
+    imageAlt: 'SaaS başlangıç şablonu',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const tr: Partial<HomeCell> = {
     ],
     title: 'Kimseye ödeme yapmıyorsunuz',
     text: 'Kimseye bağımlı değilsiniz. Proje tamamen sizin.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Seksen iki dil — ihtiyaç duymadan önce hazır',
+    note: 'Hepsi ürünle birlikte gelir; pazarınızın konuştuklarını siz açarsınız. Statik üretim, arama ve yapay zekâ optimizasyonu, veri önbelleği ve yüksek yüke hazırlık, verimliliği sektörün en üst sınırında tutar — tek dille, birkaç dille ya da seksen iki dilin tamamıyla çalışmanız fark etmez.',
   },
 ],
 }

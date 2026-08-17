@@ -6,7 +6,15 @@ export const pl: Partial<HomeCell> = {
   description: 'Działa na Twoim własnym serwerze i nie odpowiada przed nikim innym. Nadaj jej nazwę w panelu sterowania — ta linia zniknie.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastruktura inżynierii agentowej' },
+  {
+    kind: 'heroSplit',
+    pill: 'Infrastruktura inżynierii agentowej',
+    title: 'To starter Twojej aplikacji',
+    description:
+      'Wszystko jest już zainstalowane i połączone ze sobą — autoryzacja, własna baza danych, magazyn plików, wyszukiwanie wektorowe i sto innych narzędzi, ułożonych tak, by agent kodujący znalazł je bez powtarzania. Zbuduj stronę docelową, SaaS albo automatyzację, która nigdy nie śpi, w każdym z 82 języków, na szkielecie skrojonym pod projekt, który przekroczy milion linii. Około **dziewięć razy szybciej** niż samodzielne złożenie tego samego zestawu — i nic tutaj nie dzwoni na zewnątrz: żadnego dostawcy, żadnej subskrypcji, nikogo, kogo trzeba pytać o zgodę. Serwer jest Twój, kod jest Twój, **w stu procentach**.',
+    image: 'homePage',
+    imageAlt: 'Szablon startowy SaaS',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const pl: Partial<HomeCell> = {
     ],
     title: 'Nie płacisz nikomu',
     text: 'Od nikogo nie zależysz. Projekt jest w całości twój.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Osiemdziesiąt dwa języki — gotowe, zanim będą potrzebne',
+    note: 'Wszystkie są już w produkcie: włączasz te, którymi mówi Twój rynek. Generowanie statyczne, optymalizacja pod wyszukiwarki i pod AI, buforowanie danych i gotowość na duże obciążenie utrzymują wydajność na szczycie branży — i utrzymują ją tak samo, czy pracujesz w jednym języku, w kilku, czy we wszystkich osiemdziesięciu dwóch.',
   },
 ],
 }

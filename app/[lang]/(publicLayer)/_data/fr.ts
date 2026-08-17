@@ -6,7 +6,15 @@ export const fr: Partial<HomeCell> = {
   description: 'Elle fonctionne sur votre propre serveur et ne rend de comptes à personne d\'autre. Donnez-lui un nom dans le panneau de contrôle — cette ligne disparaîtra.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastructure d\'ingénierie agentique' },
+  {
+    kind: 'heroSplit',
+    pill: 'Infrastructure d\'ingénierie agentique',
+    title: 'Voici le starter de votre application',
+    description:
+      'Tout est déjà installé et relié — autorisation, votre propre base de données, stockage de fichiers, recherche vectorielle et une centaine d\'outils de plus, rangés pour qu\'un agent de codage les trouve sans qu\'on le lui explique deux fois. Construisez une page d\'atterrissage, un SaaS ou une automatisation qui ne dort jamais, dans chacune des 82 langues, sur un squelette taillé pour un projet qui dépassera le million de lignes. Environ **neuf fois plus vite** que d\'assembler la même pile vous-même — et rien ici n\'appelle au-dehors : aucun fournisseur, aucun abonnement, personne à qui demander la permission. Le serveur est à vous, le code est à vous, **à cent pour cent**.',
+    image: 'homePage',
+    imageAlt: 'Modèle de démarrage SaaS',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const fr: Partial<HomeCell> = {
     ],
     title: 'Vous ne payez personne',
     text: 'Vous ne dépendez de personne. Le projet est entièrement le vôtre.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Quatre-vingt-deux langues, prêtes avant que vous en ayez besoin',
+    note: 'Toutes sont livrées avec le produit — vous activez celles que parle votre marché. Génération statique, optimisation pour la recherche et pour l\'IA, mise en cache des données et préparation aux fortes charges maintiennent l\'efficacité au sommet du secteur — et la maintiennent de la même façon, que vous travailliez avec une langue, plusieurs ou les quatre-vingt-deux.',
   },
 ],
 }

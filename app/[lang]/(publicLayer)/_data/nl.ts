@@ -6,7 +6,15 @@ export const nl: Partial<HomeCell> = {
   description: 'Ze draait op uw eigen server en legt aan niemand anders verantwoording af. Geef haar een naam in het configuratiescherm — deze regel verdwijnt dan.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastructuur voor agentische engineering' },
+  {
+    kind: 'heroSplit',
+    pill: 'Infrastructuur voor agentische engineering',
+    title: 'Dit is de starter van uw toepassing',
+    description:
+      'Alles is al geïnstalleerd en met elkaar verbonden — autorisatie, een eigen database, bestandsopslag, vectorzoeken en nog honderd andere gereedschappen, zo geordend dat een codeeragent ze vindt zonder dat het twee keer uitgelegd hoeft te worden. Bouw een landingspagina, een SaaS of een automatisering die nooit slaapt, in elk van de 82 talen, op een skelet dat gesneden is voor een project dat de miljoen regels voorbijgaat. Ongeveer **negen keer sneller** dan dezelfde stack zelf samenstellen — en niets hier belt naar huis: geen leverancier, geen abonnement, niemand om toestemming aan te vragen. De server is van u, de code is van u, **voor honderd procent**.',
+    image: 'homePage',
+    imageAlt: 'SaaS-startsjabloon',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const nl: Partial<HomeCell> = {
     ],
     title: 'Je betaalt niemand',
     text: 'Je bent van niemand afhankelijk. Het project is volledig van jou.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Tweeëntachtig talen, klaar voordat u ze nodig hebt',
+    note: 'Ze zitten allemaal in het product — u schakelt die in die uw markt spreekt. Statische generatie, optimalisatie voor zoekmachines en AI, datacaching en gereedheid voor zware belasting houden de efficiëntie op het hoogste niveau van de sector — en houden die even hoog, of u nu met één taal werkt, met enkele of met alle tweeëntachtig.',
   },
 ],
 }

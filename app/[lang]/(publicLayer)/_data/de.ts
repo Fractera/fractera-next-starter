@@ -6,7 +6,15 @@ export const de: Partial<HomeCell> = {
   description: 'Sie läuft auf Ihrem eigenen Server und ist niemandem sonst rechenschaftspflichtig. Geben Sie ihr einen Namen im Kontrollzentrum — diese Zeile verschwindet dann.',
   keywords: '',
   blocks: [
-  { kind: 'hero', pill: 'Infrastruktur für agentisches Engineering' },
+  {
+    kind: 'heroSplit',
+    pill: 'Infrastruktur für agentisches Engineering',
+    title: 'Dies ist der Starter Ihrer Anwendung',
+    description:
+      'Alles ist bereits installiert und miteinander verbunden — Autorisierung, eine eigene Datenbank, Dateispeicher, Vektorsuche und hundert weitere Werkzeuge, so geordnet, dass ein Coding-Agent sie findet, ohne dass man es ihm zweimal erklären muss. Bauen Sie eine Landingpage, ein SaaS oder eine Automatisierung, die niemals schläft — in jeder der 82 Sprachen, auf einem Skelett, das für ein Projekt jenseits einer Million Zeilen zugeschnitten ist. Rund **neunmal schneller**, als denselben Stack selbst zusammenzustellen — und nichts hier telefoniert nach Hause: kein Anbieter, kein Abonnement, niemand, den man um Erlaubnis fragen muss. Der Server gehört Ihnen, der Code gehört Ihnen, **zu hundert Prozent**.',
+    image: 'homePage',
+    imageAlt: 'SaaS-Startvorlage',
+  },
   {
     kind: 'metrics',
     items: [
@@ -120,6 +128,11 @@ export const de: Partial<HomeCell> = {
     ],
     title: 'Sie zahlen an niemanden',
     text: 'Sie hängen von niemandem ab. Das Projekt gehört ganz Ihnen.',
+  },
+  {
+    kind: 'languageMarquee',
+    title: 'Zweiundachtzig Sprachen — bereit, bevor Sie sie brauchen',
+    note: 'Sie alle sind im Produkt enthalten — Sie aktivieren jene, die Ihr Markt spricht. Statische Generierung, Such- und KI-Optimierung, Daten-Caching und Bereitschaft für hohe Last halten die Effizienz an der Spitze der Branche — und zwar gleichermaßen, ob Sie eine Sprache betreiben, mehrere oder alle zweiundachtzig.',
   },
 ],
 }

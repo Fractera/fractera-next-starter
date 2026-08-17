@@ -110,6 +110,7 @@ const SCHEMA = `
     title       TEXT NOT NULL,
     status      TEXT NOT NULL DEFAULT 'new',
     importance  TEXT NOT NULL DEFAULT 'mandatory',
+    kind        TEXT NOT NULL DEFAULT 'work',
     cases       TEXT,
     plan        TEXT,
     result      TEXT,
@@ -117,6 +118,54 @@ const SCHEMA = `
     updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
 `
+
+/**
+ * Колонка `kind` появилась позже таблицы, поэтому её добавляют отдельно.
+ *
+ * 🔒 `CREATE TABLE IF NOT EXISTS` НЕ ДОБАВЛЯЕТ КОЛОНКУ в существующую таблицу —
+ * он молча ничего не делает. Сервер, где шаги завели вчера, остался бы без `kind`,
+ * и «шаг декомпозиции уже есть?» отвечало бы ошибкой вместо ответа.
+ *
+ * Проверять наличие через `PRAGMA table_info` нельзя: слой данных считает `PRAGMA`
+ * командой DDL и возвращает `{ok:true}` без строк. Поэтому добавляем вслепую и
+ * глотаем РОВНО «колонка уже есть» — этот приём уже стоит в `safeAddColumn`
+ * гостевого приложения по той же причине.
+ */
+async function ensureKindColumn() {
+  try {
+    await sql(`ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`)
+  } catch (e) {
+    if (!/duplicate column/i.test(String(e?.message ?? e))) throw e
+  }
+}
+
+/**
+ * 🔒 ИМЯ ШАГА — ОТ ШЕСТИ ДО ДВЕНАДЦАТИ СЛОВ, И ЭТО ПРОВЕРЯЕТ КОД (владелец
+ * 2026-08-17: «число — шесть или восемь слов, максимально подробно описывающих
+ * шаг»).
+ *
+ * Просьба в описании инструмента исполнением не является — проект платил за этот
+ * урок отдельно (`reports/patterns/model-rule-needs-code-check.md`). Короткое имя
+ * («fix bug», «catalogue») через месяц не отвечает ни на один вопрос, а очередь
+ * из тридцати таких имён нечитаема вовсе.
+ *
+ * Верхняя граница не педантизм: имя длиннее двенадцати слов — это уже задание, а
+ * заданию отведено поле `plan`, где его прочитают целиком.
+ */
+const TITLE_MIN = 6
+const TITLE_MAX = 12
+function titleProblem(title) {
+  const words = String(title).trim().split(/\s+/).filter(Boolean)
+  if (words.length < TITLE_MIN || words.length > TITLE_MAX) {
+    return {
+      error: "title_shape",
+      words: words.length,
+      required: `${TITLE_MIN}-${TITLE_MAX} words describing the step in detail`,
+      example: "build minimal working skeleton with routes api and stubbed navigation",
+    }
+  }
+  return null
+}
 
 const STATUSES = ["new", "in-progress", "blocked", "done", "cancelled"]
 const IMPORTANCE = ["optional", "mandatory", "critical"]
@@ -199,16 +248,48 @@ function resolveProduct(requested) {
 // номер появился.
 const PRODUCTS_FILE = path.join(ROOT, "PRODUCTS-CONFIG", "products-config.json")
 
-function indexStep(productId, number) {
+function patchProduct(productId, patch) {
   if (!productId || productId === "platform") return
   try {
     const config = JSON.parse(fs.readFileSync(PRODUCTS_FILE, "utf-8"))
     const product = (config.products ?? []).find(p => p.id === productId)
     if (!product) return
-    const steps = [...new Set([...(product.steps ?? []), number])].sort((a, b) => a - b)
-    product.steps = steps
+    Object.assign(product, patch(product))
     fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(config, null, 2) + "\n", "utf-8")
   } catch { /* конфига нет — оглавление подождёт, шаг важнее */ }
+}
+
+function indexStep(productId, number) {
+  patchProduct(productId, (p) => ({
+    steps: [...new Set([...(p.steps ?? []), number])].sort((a, b) => a - b),
+  }))
+}
+
+/**
+ * Восемь состояний разработки — тот же список и тот же порядок, что в
+ * `bridges/app/lib/products-config.ts`. Очередь, а не набор: по ней считается
+ * «что дальше».
+ */
+const DEV_STATUSES = [
+  "not-started", "decomposition", "skeleton", "revision",
+  "building", "acceptance", "extra-tasks", "done",
+]
+
+/**
+ * Двигать состояние ТОЛЬКО ВПЕРЁД.
+ *
+ * 🔒 ОТКАТ НАЗАД ЗДЕСЬ ЗАПРЕЩЁН, И ЭТО НЕ ОСТОРОЖНОСТЬ. Продукт, дошедший до
+ * приёмки, закрывает по ходу дела и мелкие шаги; если бы каждый закрытый шаг
+ * пересчитывал состояние «по фактам», приёмка откатывалась бы в «выполнение
+ * шагов» при первой же правке. Назад двигает владелец в панели — осознанно.
+ */
+function advanceDevStatus(productId, target) {
+  const wanted = DEV_STATUSES.indexOf(target)
+  if (wanted < 0) return
+  patchProduct(productId, (p) => {
+    const now = DEV_STATUSES.indexOf(p.devStatus ?? "not-started")
+    return wanted > now ? { devStatus: target } : {}
+  })
 }
 
 // ── Инструменты ──────────────────────────────────────────────────────────────
@@ -315,18 +396,47 @@ const TOOLS = [
   {
     name: "steps_create",
     description:
-      "Create a step. Its number is issued here (max + 1) and is permanent. A step that serves no use "
-      + "case is work nobody ordered — pass the case slugs it exists for.",
+      "Create a step. Its number is issued here and is permanent — closing a step never renames it. "
+      + "The title is 6-12 words describing the step in detail; short titles are refused. A step for a "
+      + "product must name the use cases it serves — work that serves no case is work nobody ordered. "
+      + "Pass status 'done' with a result to record work that is already finished.",
     inputSchema: {
       type: "object",
       properties: {
-        title: { type: "string" },
+        title: { type: "string", description: "6-12 words, English, detailed: 'build minimal working skeleton with routes api and stubbed navigation'" },
         product_id: { type: "string", description: "product id, or 'platform' for server-wide work" },
         plan: { type: "string", description: "what to do, in full — this is the brief, not a headline" },
-        cases: { type: "array", items: { type: "string" } },
+        cases: { type: "array", items: { type: "string" }, description: "case ids this step serves; required unless product is 'platform'" },
         importance: { type: "string", enum: IMPORTANCE },
+        status: { type: "string", enum: STATUSES, description: "defaults to 'new'; 'done' records already-finished work" },
+        result: { type: "string", description: "the report — pass it together with status 'done'" },
       },
       required: ["title"],
+    },
+  },
+  {
+    name: "steps_decompose_start",
+    description:
+      "Put the product's confirmed use cases into development: creates the ONE decomposition step whose "
+      + "job is to turn them into an ordered queue, and moves the product to the 'decomposition' stage. "
+      + "Idempotent — if that step already exists it is returned, not duplicated. Refuses while no case "
+      + "is confirmed.",
+    inputSchema: { type: "object", properties: { product_id: { type: "string" } } },
+  },
+  {
+    name: "steps_close",
+    description:
+      "Close a step in one call: status 'done' plus the report, and the product's development stage moves "
+      + "forward if this step earned it. The report is required — a closed step with no report cannot be "
+      + "read back a month later.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        number: { type: "integer" },
+        result: { type: "string" },
+        stage: { type: "string", enum: DEV_STATUSES, description: "optional: the stage this step completes" },
+      },
+      required: ["number", "result"],
     },
   },
   {
@@ -354,6 +464,45 @@ const row = r => ({
   ...r,
   cases: r.cases ? JSON.parse(r.cases) : [],
 })
+
+const stamp = () => new Date().toISOString().replace(/\.\d+Z$/, "Z")
+
+/**
+ * Вставка шага с выдачей номера. Вынесена, потому что вставляют трое:
+ * `steps_create`, шаг декомпозиции и — в будущем — панель.
+ *
+ * 🔒 НОМЕР — ОТ МАКСИМУМА КОГДА-ЛИБО ВЫДАННОГО, включая закрытые и отменённые:
+ * переиспользованный номер сделал бы оглавление в PRODUCTS-CONFIG указателем на
+ * два разных шага сразу.
+ *
+ * 🔒 И С ПОВТОРОМ ПРИ СТОЛКНОВЕНИИ — это пойманный дефект, а не запас прочности.
+ * «Прочитать максимум, затем вставить» — две операции, и между ними влезает
+ * второй пишущий: проверка конвейером дала ровно это, `UNIQUE constraint failed`,
+ * на втором шаге из двух. Очередь вызовов снимает гонку ВНУТРИ процесса, но
+ * второй агент работает другим процессом и очереди не видит. Первичный ключ
+ * отказывает честно, а мы берём следующий свободный и пробуем снова.
+ */
+async function insertStep({ productId, title, status, importance, cases, plan, result, kind }) {
+  await ensureKindColumn()
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { rows } = await sql("SELECT MAX(number) AS m FROM development_steps")
+    const number = Number(rows[0]?.m ?? 0) + 1
+    try {
+      await sql(
+        `INSERT INTO development_steps (number, product_id, title, status, importance, kind, cases, plan, result)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [number, productId, title, status, importance, kind || "work",
+         JSON.stringify(cases ?? []), plan ?? "", result ?? ""],
+      )
+      indexStep(productId, number)
+      return { ok: true, number, product_id: productId, title, status, importance, kind: kind || "work" }
+    } catch (e) {
+      // Чужой отказ не глотаем: повторяем ТОЛЬКО столкновение по ключу.
+      if (!/unique|constraint/i.test(String(e?.message ?? e))) throw e
+    }
+  }
+  return { error: "number_collision", note: "five attempts lost the race for a free number" }
+}
 
 async function callTool(name, args = {}) {
   // ── Кейсы: файлы, базы не касаются вовсе ───────────────────────────────────
@@ -480,8 +629,34 @@ async function callTool(name, args = {}) {
   if (name === "steps_create") {
     const title = String(args.title ?? "").trim()
     if (!title) return { error: "title_required" }
+    const shape = titleProblem(title)
+    if (shape) return shape
+
     const productId = String(args.product_id ?? "platform").trim() || "platform"
     const importance = IMPORTANCE.includes(args.importance) ? args.importance : "mandatory"
+
+    // 🔒 ШАГ ПРОДУКТА ОБЯЗАН НАЗВАТЬ КЕЙСЫ. «Платформа» — законное исключение:
+    // тема, языки, офлайн-кэш принадлежат всему серверу и кейса не имеют. У
+    // продукта кейс есть всегда, и шаг без него — работа, которую никто не
+    // заказывал. Отказ называет, из чего выбирать, а не просто отказывает.
+    const cases = Array.isArray(args.cases) ? args.cases.map(String).filter(Boolean) : []
+    if (productId !== "platform" && !cases.length) {
+      return {
+        error: "cases_required",
+        note: "a step for a product must name the use cases it serves",
+        available: readCases(productId).map(c => ({ id: c.id, status: c.status })),
+      }
+    }
+
+    const status = STATUSES.includes(args.status) ? args.status : "new"
+    if (!STATUSES.includes(args.status) && args.status !== undefined) {
+      return { error: "unknown_status", allowed: STATUSES }
+    }
+    // Закрытый шаг без отчёта не заводится: через месяц он не отвечает ни на
+    // один вопрос, а исправить это будет уже некому.
+    if (status === "done" && !String(args.result ?? "").trim()) {
+      return { error: "result_required", note: "a step recorded as done must carry its report" }
+    }
 
     // 🔒 НОМЕР — ОТ МАКСИМУМА КОГДА-ЛИБО ВЫДАННОГО, включая закрытые и
     // отменённые: переиспользованный номер сделал бы оглавление в
@@ -494,23 +669,78 @@ async function callTool(name, args = {}) {
     // двух. Внутри процесса очередь вызовов это снимает, но второй агент — или
     // панель — работает другим процессом, и очередь его не видит. Первичный
     // ключ отказывает честно, а мы берём следующий свободный и пробуем снова.
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const { rows } = await sql("SELECT MAX(number) AS m FROM development_steps")
-      const number = Number(rows[0]?.m ?? 0) + 1
-      try {
-        await sql(
-          `INSERT INTO development_steps (number, product_id, title, status, importance, cases, plan)
-           VALUES (?, ?, ?, 'new', ?, ?, ?)`,
-          [number, productId, title, importance, JSON.stringify(args.cases ?? []), String(args.plan ?? "")],
-        )
-        indexStep(productId, number)
-        return { ok: true, number, product_id: productId, title, status: "new", importance }
-      } catch (e) {
-        // Чужой отказ не глотаем: повторяем ТОЛЬКО столкновение по ключу.
-        if (!/unique|constraint/i.test(String(e?.message ?? e))) throw e
+    return insertStep({
+      productId, title, status, importance, cases,
+      plan: String(args.plan ?? ""), result: String(args.result ?? ""),
+      kind: String(args.kind ?? "work"),
+    })
+  }
+
+  // Пустить кейсы в разработку. Шаг ровно один и на весь продукт: повторный
+  // вызов возвращает существующий, а не заводит второй такой же.
+  if (name === "steps_decompose_start") {
+    const resolved = resolveProduct(args.product_id)
+    if (resolved.error) return resolved
+    const pid = resolved.product.id
+
+    const cases = readCases(pid)
+    const confirmed = cases.filter(c => c.status === "confirmed")
+    if (!confirmed.length) {
+      return {
+        error: "nothing_confirmed",
+        note: "development starts from CONFIRMED cases; ask the owner to confirm them in the panel",
+        total: cases.length,
       }
     }
-    return { error: "number_collision", note: "five attempts lost the race for a free number" }
+
+    await ensureKindColumn()
+    const { rows } = await sql(
+      "SELECT * FROM development_steps WHERE product_id = ? AND kind = 'decomposition' ORDER BY number LIMIT 1",
+      [pid],
+    )
+    if (rows.length) {
+      advanceDevStatus(pid, "decomposition")
+      return { ok: true, existed: true, ...row(rows[0]) }
+    }
+
+    const created = await insertStep({
+      productId: pid,
+      title: "decompose confirmed use cases into an ordered development step queue",
+      status: "new",
+      importance: "critical",
+      kind: "decomposition",
+      cases: confirmed.map(c => c.id),
+      plan:
+        "Read every confirmed use case of this product and turn it into an ordered queue of development "
+        + "steps through steps_create.\n\n"
+        + "The FIRST step of that queue is always the same and is not negotiable: the minimal working "
+        + "skeleton — the whole architecture present in the filesystem, the API routes in place, and "
+        + "navigation walking end to end on stubs. Nothing real behind it yet. Everything after it fills "
+        + "the stubs in, one case at a time.\n\n"
+        + "Every step names the cases it serves and carries a title of 6-12 words. When the queue is "
+        + "written, close this step with steps_close.",
+      result: "",
+    })
+    if (created.ok) advanceDevStatus(pid, "decomposition")
+    return created
+  }
+
+  if (name === "steps_close") {
+    const number = Number(args.number)
+    const result = String(args.result ?? "").trim()
+    if (!result) return { error: "result_required" }
+    const { rows } = await sql("SELECT * FROM development_steps WHERE number = ?", [number])
+    if (!rows.length) return { error: "not_found", number }
+
+    await sql(
+      "UPDATE development_steps SET status = 'done', result = ?, updated_at = ? WHERE number = ?",
+      [result, stamp(), number],
+    )
+    // Этап продукта двигается ТОЛЬКО вперёд и только когда его назвали: закрытый
+    // шаг сам по себе о стадии ничего не говорит, а угадывать её по числу
+    // закрытых значило бы откатывать приёмку при каждой мелкой правке.
+    if (args.stage) advanceDevStatus(String(rows[0].product_id), String(args.stage))
+    return callTool("steps_get", { number })
   }
 
   if (name === "steps_update") {
@@ -518,7 +748,13 @@ async function callTool(name, args = {}) {
     const sets = []
     const params = []
     const put = (column, value) => { sets.push(`${column} = ?`); params.push(value) }
-    if (args.title !== undefined) put("title", String(args.title))
+    // Правка имени проверяется тем же правилом, что и создание: иначе шаг,
+    // заведённый по закону, переименовывался бы в «fix» через минуту после.
+    if (args.title !== undefined) {
+      const shape = titleProblem(args.title)
+      if (shape) return shape
+      put("title", String(args.title).trim())
+    }
     if (args.plan !== undefined) put("plan", String(args.plan))
     if (args.result !== undefined) put("result", String(args.result))
     if (args.cases !== undefined) put("cases", JSON.stringify(args.cases ?? []))
@@ -531,7 +767,7 @@ async function callTool(name, args = {}) {
       put("importance", args.importance)
     }
     if (!sets.length) return { error: "nothing_to_change" }
-    put("updated_at", new Date().toISOString().replace(/\.\d+Z$/, "Z"))
+    put("updated_at", stamp())
     params.push(number)
     const { changes } = await sql(
       `UPDATE development_steps SET ${sets.join(", ")} WHERE number = ?`, params,

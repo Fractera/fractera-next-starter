@@ -53,6 +53,10 @@ const SCHEMA = `
     status      TEXT NOT NULL DEFAULT 'new',
     -- optional | mandatory | critical
     importance  TEXT NOT NULL DEFAULT 'mandatory',
+    -- work | decomposition. Шаг декомпозиции — единственный на продукт, и его
+    -- ищут запросом, а не по совпадению заголовка: строка, по которой сверяются,
+    -- переживёт ровно до первой правки формулировки.
+    kind        TEXT NOT NULL DEFAULT 'work',
     -- Слаги кейсов, ради которых шаг существует, JSON-массивом. Шаг, не
     -- служащий ни одному кейсу, — это работа, которую никто не заказывал.
     cases       TEXT,

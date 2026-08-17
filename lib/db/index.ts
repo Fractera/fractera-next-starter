@@ -3,6 +3,7 @@ import { slugify } from "@/lib/ids"
 import { mkdirSync } from "fs"
 import { join, dirname } from "path"
 import { remoteDb } from "./remote-client"
+import { dataService } from "@/lib/fractera/data-service"
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS products (
@@ -302,6 +303,17 @@ async function initRemoteSchema() {
   await remoteDb.exec(DROP_LEGACY.trim())
 }
 
-export const db = (process.env.REMOTE_DATA_URL && process.env.DATA_API_KEY)
+// 🔒 ВЫБОР ХРАНИЛИЩА СПРАШИВАЕТ КЛЮЧ У ОБЩЕГО РЕШАТЕЛЯ (2026-08-17).
+//
+// Здесь стояло `process.env.DATA_API_KEY` — имя, которого в окружении сервера
+// нет: установщик пишет `DATA_SECRET`. Условие никогда не выполнялось, и КАЖДЫЙ
+// сервер работал с локальным SQLite вместо слоя данных, ни разу об этом не
+// сказав: обе ветки исправны, отличается только адресат записи.
+//
+// Адрес по-прежнему обязателен явно. `dataService()` подставляет `localhost:3300`
+// по умолчанию, и полагаться на это умолчание здесь нельзя: на машине
+// разработчика без `REMOTE_DATA_URL` приложение начало бы стучаться в
+// несуществующую службу вместо того, чтобы честно открыть локальный файл.
+export const db = (process.env.REMOTE_DATA_URL && dataService().key)
   ? (initRemoteSchema().catch(console.error), remoteDb)
   : makeLocalDb()

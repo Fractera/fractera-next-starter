@@ -39,8 +39,13 @@ function readEnvFile(file) {
 }
 readEnvFile(path.join(ROOT, ".env.local"))
 
+// 🔒 ИМЯ КЛЮЧА — `DATA_SECRET`, и `DATA_API_KEY` остаётся запасным (2026-08-17).
+// Установщик пишет в слот `DATA_SECRET`; `DATA_API_KEY` встречается только в
+// файле, который панель выдаёт на машину разработчика. Спросив одно имя, сервер
+// молча ушёл бы в локальный SQLite и показал бы владельцу ЧУЖУЮ пустую очередь
+// шагов вместо настоящей. Порядок тот же, что в `lib/fractera/data-service.ts`.
 const REMOTE_DATA_URL = process.env.REMOTE_DATA_URL
-const DATA_API_KEY = process.env.DATA_API_KEY
+const DATA_API_KEY = process.env.DATA_SECRET || process.env.DATA_API_KEY
 
 // ── Доступ к базе: тот же выбор, что делает приложение ───────────────────────
 //

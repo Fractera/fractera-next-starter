@@ -116,19 +116,16 @@ export function ProjectTypeMarquee({ cards, lang, ui, dialogUi }: Props) {
               </ul>
             </Section>
 
+            {/* 🔒 СПИСКА ВОПРОСОВ QUIZ ЗДЕСЬ НЕТ (решение владельца 2026-08-17).
+                Он занимал 91 КБ на язык из 106 — 422 вопроса, — и стоял на
+                публичной витрине только затем, чтобы его показать. Задаёт их
+                панель, и там они остались. Без него окно переводится целиком, а
+                не с английским куском посередине. */}
             <Section title={ui.signals}>
               <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3 text-muted-foreground">
                 {entry.signals.map((x, i) => <li key={i}>{x}</li>)}
               </ul>
             </Section>
-
-            {entry.questions.length > 0 && (
-              <Section title={ui.questions}>
-                <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                  {entry.questions.map((x, i) => <li key={i}>{x}</li>)}
-                </ol>
-              </Section>
-            )}
           </div>
         )}
       </AppDialog>

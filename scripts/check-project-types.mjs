@@ -20,7 +20,11 @@ const CATALOG = join(ROOT, "config", "project-types.ts");
 const WORDS = join(ROOT, "lib", "i18n", "project-types.i18n.json");
 
 const REQUIRED_STRINGS = ["title", "tagline", "definition"];
-const REQUIRED_ARRAYS = ["examples", "signals", "questions"];
+// 🔒 СПИСКА ВОПРОСОВ QUIZ В ПУБЛИЧНОМ КОРПУСЕ НЕТ (решение владельца 2026-08-17):
+// он весил 91 КБ на язык — 86% всего объёма, 422 вопроса, — а задаёт их панель,
+// там они и остались. Встретив поле вопросов здесь, НЕ возвращайте его: витрине
+// оно не нужно, а перевод корпуса на каждый новый язык подорожал бы всемеро.
+const REQUIRED_ARRAYS = ["examples", "signals"];
 
 let failed = 0;
 const fail = (code, msg) => { failed++; console.log(`  ✗ [${code}] ${msg}`); };
@@ -47,13 +51,21 @@ for (const lang of langs) {
     }
     for (const k of REQUIRED_ARRAYS) {
       if (!Array.isArray(e[k])) { fail("field-not-array", `${lang}.${id}.${k} — не список`); continue; }
-      // `custom.questions` пуст ОСОЗНАННО: вопросы к своему направлению пишет
-      // владелец. Это единственная законная пустота во всём корпусе.
-      if (!e[k].length && !(id === "custom" && k === "questions")) {
+      if (!e[k].length) {
         fail("field-empty", `${lang}.${id}.${k} — пустой список`);
       }
       if (e[k].some(v => typeof v !== "string" || !v.trim())) {
         fail("field-empty", `${lang}.${id}.${k} — в списке есть пустая строка`);
+      }
+      // 🔒 ДЛИНА СПИСКА ОБЯЗАНА СОВПАДАТЬ С ОСНОВОЙ. Правило записано по
+      // реальному промаху: при переводе на испанский у «Доставки» потерялся один
+      // признак из трёх. Потеря тихая — запись остаётся валидной, поле непустое,
+      // и заметить её можно только сравнив два языка глазами. У всех записей
+      // корпуса по четыре примера и по три признака, и расхождение здесь всегда
+      // означает пропуск при переводе, а не замысел.
+      const baseLen = words.en[id]?.[k]?.length;
+      if (lang !== "en" && baseLen !== undefined && e[k].length !== baseLen) {
+        fail("field-length", `${lang}.${id}.${k} — ${e[k].length} против ${baseLen} у en: при переводе потерялась или добавилась строка`);
       }
     }
   }

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "development-steps": {
+      "command": "node",
+      "args": ["scripts/mcp/development-steps.mjs"],
+      "env": {}
+    }
+  }
+}

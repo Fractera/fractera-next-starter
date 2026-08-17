@@ -29,7 +29,7 @@ instruction-set block below. Kept in one place on purpose — two copies of a la
 It is the authority on WHICH of this project's documents exist for you at all. A document listed as
 switched off is not read even when another part of this instruction asks for it — **this block wins**.
 
-**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `development-docs/DEVELOPMENT-STEPS/`
+**Active:** `development-docs/PLATFORM-TOOLS.md`, `development-docs/ARCHITECTURE.md`, `development-docs/GLOSSARY.md`, `development-docs/LESSONS.md`, `development-docs/ANTI-PATTERNS.md`, `development-docs/DESIGN.md`, `development-docs/PARALLEL-ROUTING.md`, `development-docs/CODING-STANDARDS.md`, `development-docs/TROUBLESHOOTING.md`, `development-docs/TESTING.md`, `development-docs/SINGLE-AGENT.md`, `development-docs/PASSPORT.md`, `development-docs/USE-CASES/`, `MCP development-steps → development_steps`
 
 **Switched OFF — do not read, do not demand, do not report as missing:** `development-docs/DYNAMIC-WORKFLOWS.md`, `development-docs/CONTEXT-STATE.md`
 
@@ -136,6 +136,42 @@ stay exactly where they were.
 
 **Say the product and its roots in your report** — one line, before the diff. That single line is what makes this
 rule checkable instead of merely stated: any change outside those roots is then visible to the owner at a glance.
+
+### 🗄 Development steps live in the DATABASE — `steps_*` through the `development-steps` MCP
+
+**There is no `DEVELOPMENT-STEPS/` folder any more, and you never recreate one.** A step is a row in the
+table `development_steps`, reached through five tools the MCP server in this repository exposes
+(`scripts/mcp/development-steps.mjs`, registered in `.mcp.json` — your client starts it for you):
+
+| Tool | What it answers |
+|---|---|
+| `steps_next` | what do I work on now (lowest open number, optionally for one product) |
+| `steps_list` | the queue, filtered by product and/or status |
+| `steps_get` | one step in full — its brief, the cases it serves, its result |
+| `steps_create` | a new step; its number is issued by the table and is permanent |
+| `steps_update` | change the brief, move the status, write the result on closing |
+
+**Why it stopped being files.** Two folders (`NEW-STEPS/`, `COMPLETED-STEPS/`) work while there are ten
+steps and one reader. They break on three things at once: *"show me the open steps of this product"*
+required reading EVERY file; the status lived in two places — the folder name and the text inside; and
+closing a step meant moving a file, two disk operations of which the second can fail, leaving a step that
+is finished in its text and unfinished in its location.
+
+**Statuses: `new` · `in-progress` · `blocked` · `done` · `cancelled`.** Importance:
+`optional` · `mandatory` · `critical`. Both lists are closed — the MCP rejects anything else and tells you
+what it accepts, rather than storing a value nobody else understands.
+
+**Every step names its product** (`product_id`), and `platform` is a real answer for work the whole server
+shares — the theme, the languages, the offline cache. A step created for a product also writes its number
+into that product's record in `PRODUCTS-CONFIG/products-config.json`, so the register answers "what has
+been done on this product" without walking the table. That index is derived: if it ever disagrees with the
+table, the table is right.
+
+**A step that serves no use case is work nobody ordered** — pass the case slugs to `steps_create`. That
+field is what makes a step answerable a month later: which scenario was this for?
+
+**The owner sees the same rows** in the control panel, under Documents → Development steps. That page is
+read-only by design: the step is written by whoever does the work.
 
 ### 📥 `development-docs/USE-CASES/<product-id>/RAW/` — the raw material, and you normally leave it closed
 
@@ -729,9 +765,8 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     delegated steps of the same task type, the orchestrator's handed-over instructions are SYSTEMATICALLY
     incomplete about something AND one of YOUR OWN skills covers exactly that gap, you MAY materialize ONE
     service feedback step addressed to the orchestrator:
-    DEVELOPMENT-STEPS/NEW-STEPS/&lt;NN&gt;-agent-feedback-&lt;your-agent&gt;-&lt;topic&gt;.md (NN = next free
-    number across NEW-STEPS + COMPLETED-STEPS), an ordinary step file ending with the standard fractera:step
-    machine block whose plan carries { "kind": "agent-feedback", "from": "&lt;your-agent&gt;", "to":
+    one step through `steps_create` (MCP development-steps) titled "agent-feedback: &lt;topic&gt;", with
+    product `platform` and a plan that carries { "kind": "agent-feedback", "from": "&lt;your-agent&gt;", "to":
     "orchestrator", "taskType": "&lt;X&gt;", "skill": "&lt;skill-name&gt;" }. Body skeleton (keep this intent
     verbatim): "Service message from coding agent &lt;you&gt; to the orchestrator: while working on tasks of
     type &lt;X&gt;, the instructions you hand over describe &lt;what&gt; insufficiently. Among my own skills I
@@ -745,7 +780,9 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <action>Detect and announce mode: curl /api/rag/status OR test -d /opt/fractera/app -> PROD (changes
       visible only after deploy) else DEV (hot-reload, Brain offline); discipline identical in both.</action>
     <action>Read development-docs/ARCHITECTURE.md (the system's fundamental layers + your rights per layer), development-docs/GLOSSARY.md
-      (terms) and COMPLETED-STEPS/ (history — don't re-solve solved problems).</action>
+      (terms) and the closed steps — `steps_list` with status `done` (history — don't re-solve solved
+      problems). Steps are ROWS IN THE DATABASE, not files: see the block "Development steps live in the
+      database" below.</action>
     <action>Read the INSTRUCTION SET block in section 1 FIRST: it is the authority on which of the
       documents below you read at all. A document listed as switched off is not read, not demanded and
       never reported as missing. When development-docs/CONTEXT-STATE.md is listed as on, read it before any other document:
@@ -812,12 +849,12 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
       word (never blind-replace — the same byte may stand for á/é/í/ñ elsewhere), then rebuild. The content
       emitters already REFUSE broken chars on write (prevention); the scanner catches what already sits in
       the tree (detection).</action>
-    <gate>CONTEXT-STATE.md read and reconciled with git (when the mechanism is ON); mode announced; development-docs/ARCHITECTURE.md + development-docs/GLOSSARY.md + development-docs/LESSONS.md + COMPLETED-STEPS/ read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
+    <gate>CONTEXT-STATE.md read and reconciled with git (when the mechanism is ON); mode announced; development-docs/ARCHITECTURE.md + development-docs/GLOSSARY.md + development-docs/LESSONS.md + the closed steps (`steps_list` status done) read (+ the project root README when the step is a project node); app config read via `npm run read:app-config`; rag status known; language set known</gate>
   </stage>
 
   <stage id="6.1" name="Triage">
     <triage>
-      <trigger n="1" type="next-step" source="NEW-STEPS/" goto="6.3"/>
+      <trigger n="1" type="next-step" source="steps_next (MCP development-steps)" goto="6.3"/>
       <trigger n="2" type="direct-task" goto="6.3"/>
     </triage>
     <brainstorm ref="section-2" mode="adaptive">survey until "go/proceed"; next-step -> minimal,
@@ -843,18 +880,18 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
   </stage>
 
   <stage id="6.3" name="Open a step">
-    <action>create NEW-STEPS/{NN}-slug.md with the fractera:step block and importance
-      (optional|mandatory|critical); exact format in development-steps.md. Describe inputs, planned result,
+    <action>create the step with `steps_create` (MCP development-steps): title, product_id, the case
+      slugs it serves, importance (optional|mandatory|critical), and a plan describing inputs, planned result,
       intermediate results (decomposition), planned routing-tree changes.</action>
-    <action>NAME THE PRODUCT in the step: `product: &lt;product-id&gt;` in the fractera:step block, or
-      `product: platform` when the work belongs to no single product — the theme, the languages, the offline
+    <action>NAME THE PRODUCT in the step: `product_id` is the product's id, or
+      `platform` when the work belongs to no single product — the theme, the languages, the offline
       cache, anything the whole server shares. Both values are real answers; a step that names neither cannot
       be read back in a month, and "what changed in this product" stops being answerable at all. Never force a
       product id onto platform-wide work: a field that lies is worse than a field that is absent.</action>
     <action>MATERIALIZE-FIRST (step 172, mandatory): write EVERY sub-step known now as its own
-      NEW-STEPS/ file BEFORE executing any of them — each file = a real spec (inputs, planned result,
-      what executes it), not a one-liner. The step chain on disk IS the plan history: a process death
-      loses nothing, and a cold session resumes from the files. Executing work whose future steps
+      row through `steps_create` BEFORE executing any of them — each row = a real spec (inputs, planned result,
+      what executes it), not a one-liner. The queue in the table IS the plan history: a process death
+      loses nothing, and a cold session resumes with `steps_next`. Executing work whose future steps
       exist only in your context/memory is a defect (growing MORE steps in later cycles is normal;
       starting with an unmaterialized queue is not). The frozen pipeline (owner_content_orchestrate)
       does this mechanically — persists the whole approved queue, marks the live step in-progress,
@@ -879,7 +916,7 @@ expressed as XML for unambiguous branching. Read the whole block before acting.
     <action>take the next to-do from the route's own README.md; do the next sub-step:</action>
     <substep id="6.4.2.1" name="finish">clear the item from README.md (declared -> live once the real
       route file exists)</substep>
-    <substep id="6.4.2.2" name="decompose">add new sub-steps to NEW-STEPS/ and new to-dos to the route's README.md</substep>
+    <substep id="6.4.2.2" name="decompose">create new sub-steps with `steps_create` and new to-dos in the route's README.md</substep>
     <action>mark each iteration in the task checklist</action>
     <action>while waiting on a deploy/feedback, don't idle; on a long step do not cross the 50% context boundary</action>
     <note name="composition">composition = assembling the page from parallel-routing slots + reusable
@@ -938,14 +975,15 @@ done; echo $S
   </stage>
 
   <stage id="6.9" name="Close the step">
-    <action>move {NN}-slug.md from NEW-STEPS/ to DEVELOPMENT-STEPS/COMPLETED-STEPS/ (status:completed,
-      completedAt); write a maximally complete report (no abridgement): what was done, what you hit,
-      deploy errors, model, tokens</action>
-    <gate>file in COMPLETED-STEPS/ with status/completedAt set and a complete report</gate>
+    <action>close the step with `steps_update` (status: done, result: a maximally complete report, no
+      abridgement): what was done, what you hit, deploy errors, model, tokens. `updated_at` is stamped for
+      you — do not write a date into the text, a second copy of a timestamp only ever disagrees with the
+      first.</action>
+    <gate>the step reads back from `steps_get` with status done and a complete result</gate>
   </stage>
 
   <stage id="6.10" name="Ingest to memory">
-    <action>POST /api/rag/ingest (header X-Agent-Identity) the completed step file (from COMPLETED-STEPS/)
+    <action>POST /api/rag/ingest (header X-Agent-Identity) the closed step (read it back with `steps_get`)
       AND everything created during the step: new anti-patterns, ADRs/docs, development-docs/GLOSSARY.md terms</action>
     <gate>ingest returned OK for the step file and every artifact created</gate>
   </stage>
@@ -961,7 +999,7 @@ done; echo $S
       original request from 6.1:</rule>
     <requires ref="6.6">two independent proofs hold</requires>
     <requires ref="6.8">deploy COMPLETED and the live URL returns HTTP 200</requires>
-    <requires ref="6.9">the step sits in COMPLETED-STEPS/</requires>
+    <requires ref="6.9">the step reads back as done, with its result written</requires>
     <requires ref="6.10">the step is ingested</requires>
     <on-red>any gate red -> the process is IN PROGRESS: never say "done"; loop back to the failing stage and
       re-run from there</on-red>

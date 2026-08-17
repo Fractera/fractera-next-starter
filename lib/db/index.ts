@@ -26,6 +26,44 @@ const SCHEMA = `
     media_blur   TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  -- ── Шаги разработки (владелец 2026-08-17) ─────────────────────────────────
+  --
+  -- 🔒 РАНЬШЕ ЭТО БЫЛИ ФАЙЛЫ: development-docs/DEVELOPMENT-STEPS/{NEW,COMPLETED}.
+  -- Конвейер из двух папок работает, пока шагов десяток и читает их один агент.
+  -- Он ломается на трёх вещах сразу: «покажи все незакрытые шаги этого продукта»
+  -- требует прочитать КАЖДЫЙ файл; статус хранится и в имени папки, и внутри
+  -- файла, то есть в двух местах; а перенос между папками — это две операции с
+  -- диском, из которых вторая может не случиться.
+  --
+  -- Таблица отвечает на вопрос запросом и держит статус в одном месте.
+  --
+  -- 🔒 НОМЕР СКВОЗНОЙ ПО ВСЕМУ СЕРВЕРУ, А НЕ ВНУТРИ ПРОДУКТА. Номера шагов лежат
+  -- ещё и в PRODUCTS-CONFIG оглавлением («шаги этого продукта: 12, 13»), и
+  -- нумерация внутри продукта сделала бы это оглавление бессмысленным: число 12
+  -- само по себе не называло бы шаг. Сквозной номер называет.
+  CREATE TABLE IF NOT EXISTS development_steps (
+    number      INTEGER PRIMARY KEY,
+    -- Чей это шаг. 'platform' — законное значение, а не заглушка: тема, языки,
+    -- офлайн-кэш принадлежат всему серверу, и навязанный им product_id был бы
+    -- полем, которое врёт.
+    product_id  TEXT NOT NULL DEFAULT 'platform',
+    title       TEXT NOT NULL,
+    -- new | in-progress | blocked | done | cancelled
+    status      TEXT NOT NULL DEFAULT 'new',
+    -- optional | mandatory | critical
+    importance  TEXT NOT NULL DEFAULT 'mandatory',
+    -- Слаги кейсов, ради которых шаг существует, JSON-массивом. Шаг, не
+    -- служащий ни одному кейсу, — это работа, которую никто не заказывал.
+    cases       TEXT,
+    -- Задание: что сделать. Пишется при создании и правится на этапе
+    -- перепроверки (devStatus = revision).
+    plan        TEXT,
+    -- Отчёт: что вышло. Пусто, пока шаг не закрыт.
+    result      TEXT,
+    created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+    updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS development_steps_product ON development_steps (product_id, status);
   CREATE TABLE IF NOT EXISTS site_settings (
     id            INTEGER PRIMARY KEY DEFAULT 1,
     custom_domain TEXT,

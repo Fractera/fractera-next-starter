@@ -112,7 +112,7 @@ export function publicSurfaces(lang: string): Surface[] {
           '',
           `— ${post.authorName}, ${post.date}`,
           '',
-          blocksToMarkdown(post.blocks),
+          blocksToMarkdown(post.blocks, home.siteName),
           '',
           faqToMarkdown(post.faq),
         ]
@@ -140,7 +140,7 @@ export function publicSurfaces(lang: string): Surface[] {
       description: page.description,
       section: sub === '/architecture' ? 'main' : 'legal',
       body: () =>
-        [`# ${page.title}`, '', `> ${page.description}`, '', blocksToMarkdown(page.blocks)].join('\n').trim(),
+        [`# ${page.title}`, '', `> ${page.description}`, '', blocksToMarkdown(page.blocks, home.siteName)].join('\n').trim(),
     })
   }
 

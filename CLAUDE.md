@@ -626,10 +626,13 @@ Four laws, all enforced or enforceable:
    of the three existing ones already carried 82 languages and were guarded by nothing at all,
    because that list is hand-maintained and nobody had added them.
 
-The single named exception is `components/menu/top/mobile-menu.client.tsx`, and the reason is
-written inside the gate: it is not a modal but a navigation panel anchored *below* the header, so
-that the header bar stays lit and its close button remains visible — an owner decision of
-2026-08-16 that `Sheet side="top"` would silently reverse.
+**The exception list is empty, and deliberately so.** One file stays hand-rolled —
+`components/menu/top/mobile-menu.client.tsx` — but it is not an exception: it is not a modal at
+all. It is a navigation panel anchored *below* the header, so the header bar stays lit and its
+close button remains visible (an owner decision of 2026-08-16 that `Sheet side="top"` would
+silently reverse), and it is positioned by coordinates rather than `inset-0`, so the rule never
+touches it. Listing a file that does not break a rule is a lie in the list: the next reader takes
+it for a debt being hidden.
 
 **🔒 TEXT IS A PRIMITIVE TOO — `components/ui/typography.tsx`, never a hand-written heading.**
 `H1 H2 H3 H4` (each with a `content` / `ui` variant), `P`, `Lead`, `Small`, `Eyebrow`. A raw

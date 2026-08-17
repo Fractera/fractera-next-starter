@@ -17,6 +17,7 @@ export const nl: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'SaaS-startsjabloon',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

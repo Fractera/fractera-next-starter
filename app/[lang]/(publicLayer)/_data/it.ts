@@ -17,6 +17,7 @@ export const it: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'Modello iniziale SaaS',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

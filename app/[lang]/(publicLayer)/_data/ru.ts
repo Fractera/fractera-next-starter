@@ -17,6 +17,7 @@ export const ru: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'Стартовый шаблон SaaS',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

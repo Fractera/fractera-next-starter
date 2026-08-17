@@ -19,6 +19,7 @@ export const en: HomeCell = {
     image: 'homePage',
     imageAlt: 'SaaS starter template',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

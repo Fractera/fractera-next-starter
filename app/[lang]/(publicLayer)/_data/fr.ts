@@ -17,6 +17,7 @@ export const fr: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'Modèle de démarrage SaaS',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

@@ -17,6 +17,7 @@ export const tr: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'SaaS başlangıç şablonu',
   },
+  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [

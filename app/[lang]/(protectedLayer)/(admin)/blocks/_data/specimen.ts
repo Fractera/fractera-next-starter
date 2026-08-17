@@ -255,6 +255,13 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'projectTypeMarquee',
+    when: 'A marquee of the 22 project directions a customer can build — landing page, store, company brain. Read from config/project-types.ts and its corpus, never from page data, so it cannot drift from the catalogue the control panel offers. Right-to-left, pure CSS, 200px of blur at both edges; clicking a card pauses the belt and opens a reference dialog with no buttons at all. Title and note are optional and normally absent: the section sits directly under the hero, where a second heading argues with the H1.',
+    blocks: [
+      { kind: 'projectTypeMarquee' },
+    ],
+  },
+  {
     kind: 'badges',
     when: 'A row of capability labels. The tone is a MEANING group, not a colour.',
     blocks: [

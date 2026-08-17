@@ -1,0 +1,70 @@
+import words from "./project-types.i18n.json"
+import { PROJECT_TYPES, type ProjectTypeId } from "@/config/project-types"
+
+// Слова двадцати двух направлений продукта.
+//
+// 🔒 ФОРМА «ТИП ЗДЕСЬ, СЛОВА В JSON РЯДОМ» — та же, что у панели управления, и по
+// той же причине: корпус приезжает одним файлом от внешней модели перевода, и
+// вписывать его руками в исходник нельзя. Она же — условие работы обменника
+// (`scripts/i18n-export.mjs`).
+//
+// 🔒 ЯЗЫКОВ ДВА, И ЭТО СОСТОЯНИЕ КОРПУСА, А НЕ РЕШЕНИЕ. Слова перенесены
+// ДОСЛОВНО из панели (`bridges/app/lib/i18n/admin-translations.json`, ключ
+// `projectTypes.<id>`), а там на 2026-08-17 существуют только `en` и `ru`.
+// Восемьдесят два — цель корпуса панели. Пока их нет, карточки на остальных
+// языках показывают английские слова, и это видно честно, а не подменяется
+// выдуманным переводом. Пополняется одной командой владельца:
+//
+//   npm run i18n:export project-types --langs <языки>
+//   npm run i18n:import project-types <ответ модели>
+//
+// 🔒 ЭТОТ МОДУЛЬ НЕ ИМПОРТИРУЕТСЯ ИЗ КЛИЕНТА. Полный корпус — 306 КБ; в браузер
+// уезжают только заголовки с подписями (1.8 КБ на язык), а тело окна берётся по
+// нажатию отдельным запросом. Серверный компонент зовёт `projectTypeCards(lang)`
+// и передаёт результат островку пропсами.
+
+/** Запись одного направления: то, что человек читает о нём. */
+export type ProjectTypeEntry = {
+  /** Имя направления на карточке. */
+  title: string
+  /** Строка под именем: чем это направление отличается от соседних. */
+  tagline: string
+  /** Что это такое — первый абзац окна. */
+  definition: string
+  examples: string[]
+  /** «Это про вас, если…» — признаки, по которым узнают своё. */
+  signals: string[]
+  /** О чём спросит Quiz, если выбрать это направление. */
+  questions: string[]
+}
+
+/** Карточка ленты: только то, что видно, пока окно закрыто. */
+export type ProjectTypeCard = {
+  id: ProjectTypeId
+  title: string
+  tagline: string
+}
+
+const WORDS = words as Record<string, Record<string, ProjectTypeEntry>>
+
+/**
+ * Слова направления на языке страницы, с откатом на английский ПОКЛЮЧЕВО.
+ *
+ * 🔒 ОТКАТ ИМЕННО ПОКЛЮЧЕВОЙ, А НЕ ЦЕЛИКОМ. Корпус пополняется по языкам
+ * постепенно, и язык, где переведены заголовок с подписью, но ещё не переведены
+ * вопросы, — нормальное промежуточное состояние. Откат целым объектом выбросил
+ * бы уже сделанный перевод из-за одного недостающего поля.
+ */
+export function projectType(lang: string, id: ProjectTypeId): ProjectTypeEntry {
+  const base = WORDS.en[id]
+  const cell = WORDS[lang]?.[id] ?? WORDS[lang.slice(0, 2)]?.[id]
+  return cell ? { ...base, ...cell } : base
+}
+
+/** Все карточки в порядке каталога — заголовок и подпись, без тела окна. */
+export function projectTypeCards(lang: string): ProjectTypeCard[] {
+  return PROJECT_TYPES.map(id => {
+    const e = projectType(lang, id)
+    return { id, title: e.title, tagline: e.tagline }
+  })
+}

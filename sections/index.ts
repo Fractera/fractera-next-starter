@@ -18,6 +18,7 @@ import { group } from './blocks/group.server'
 import { hero } from './blocks/hero.server'
 import { heroSplit } from './blocks/hero-split.server'
 import { languageMarquee } from './blocks/language-marquee.server'
+import { projectTypeMarquee } from './blocks/project-type-marquee.server'
 import { badges } from './blocks/badges.server'
 import { panel } from './blocks/panel.server'
 import { metrics } from './blocks/metrics.server'
@@ -42,5 +43,5 @@ import { statement } from './blocks/statement.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, cards, card, statement, noBill, languageMarquee,
+  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, cards, card, statement, noBill, languageMarquee, projectTypeMarquee,
 }

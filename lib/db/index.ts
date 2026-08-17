@@ -284,6 +284,9 @@ function makeLocalDb() {
   if (!cols.has('description')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN description TEXT`)
   if (!cols.has('i18n'))        safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN i18n       TEXT`)
 
+  // Колонки, появившиеся позже своей таблицы, — см. `LATE_COLUMNS`.
+  for (const sql of LATE_COLUMNS) safeAddColumn(sqlite, sql)
+
   seedProducts(sqlite)
   // (step 500) The ALTER blocks for deployment_records / telegram_notes / automation_finance
   // / automation_images are gone with their tables — those warehouses belonged to the
@@ -302,9 +305,31 @@ function makeLocalDb() {
   }
 }
 
+/**
+ * Колонки, добавленные ПОСЛЕ появления своей таблицы.
+ *
+ * 🔒 `CREATE TABLE IF NOT EXISTS` НЕ ДОБАВЛЯЕТ КОЛОНКУ — на сервере, где таблица
+ * уже есть, он молча ничего не делает. Проверено живьём 2026-08-17: `kind`
+ * объявили в SCHEMA, развернули, и колонки в базе не появилось.
+ *
+ * Добавляем вслепую и глотаем РОВНО «колонка уже есть»: это и есть штатный
+ * результат на всех серверах, кроме первого запуска. Тот же приём, что у
+ * `safeAddColumn` для локального пути.
+ */
+const LATE_COLUMNS = [
+  `ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`,
+]
+
 async function initRemoteSchema() {
   await remoteDb.exec(SCHEMA.trim())
   await remoteDb.exec(DROP_LEGACY.trim())
+  for (const sql of LATE_COLUMNS) {
+    try {
+      await remoteDb.exec(sql)
+    } catch (e) {
+      if (!/duplicate column/i.test(String(e))) throw e
+    }
+  }
 }
 
 // 🔒 ВЫБОР ХРАНИЛИЩА СПРАШИВАЕТ КЛЮЧ У ОБЩЕГО РЕШАТЕЛЯ (2026-08-17).

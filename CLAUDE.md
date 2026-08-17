@@ -78,38 +78,40 @@ that finds the divergence. If you believe a second agent is warranted, say so in
 working here. Details: `development-docs/SINGLE-AGENT.md`.
 <!-- fractera:instruction-set end -->
 
-### 🛑 `development-docs/USE-CASES/` — no confirmed user cases, no development
+### 🛑 Cases and steps — the gate, and the skill that owns the rest
 
 **Use cases live per PRODUCT: `development-docs/USE-CASES/<product-id>/CASES/`.** One server carries many
-products — a landing page, a store, a company brain — and each has its own cases, its own pages and its own
-data. The register of products is `PRODUCTS-CONFIG/products-config.json`; read it first, it is small.
+products — a landing page, a store, a company brain — and each has its own cases, pages and data. The
+register is `PRODUCTS-CONFIG/products-config.json`; read it first, it is small.
 
 **Which product am I working on?**
 
 1. **One product in the register** — that one. Do not ask.
 2. **Several** — work it out from the request: a named address, a folder, the product's title. State which
    one you picked and why, in one line, before you write anything.
-3. **Cannot work it out** — **ask, and write no code until answered.** Not a preference: a change made in the
-   wrong product is invisible until someone else's product breaks.
+3. **Cannot work it out** — **ask, and write no code until answered.** Not a preference: a change made in
+   the wrong product is invisible until someone else's product breaks.
 
-**Name the product in every report and in the step file.** A step that does not say which product it served
+**Name the product in every report and in every step.** A step that does not say which product it served
 cannot be read back a month later.
 
-**If `development-docs/USE-CASES/<product-id>/CASES/` holds no CONFIRMED case, you do not start building. This is a
-stop, not a preference.**
+**🛑 No CONFIRMED case, no building. This is a stop, not a preference.** Each case file is one scenario in
+the owner's words: who uses the product, what brought them, what must be true when they are done. **A case
+the owner has not confirmed is a guess the model wrote** — building on it is building on a guess. Say which
+cases are missing or unconfirmed and point at the Use cases section of the control panel: its Quiz creates
+them, and that conversation IS the first task, not a delay before the real one. **Only the owner confirms**
+— you may add, rewrite and withdraw, and there is deliberately no tool for you to grant a confirmation.
 
-Each file there is one scenario in the owner's words: who uses the product, what brought them, what must
-be true when they are done. A case carries a status. **A case the owner has not confirmed is a guess the
-model wrote** — building on it is building on a guess, and the panel keeps its alarm lit until every case
-is confirmed.
+**Everything else about this area is a SKILL, not text here.** Anything shaped like *"start building"*,
+*"what do we do next"*, *"decompose the cases"*, *"add or close a step"*, *"add or fix a use case"* →
+**load `manage-cases-and-steps` and follow it.** It carries the procedure: reading the gate, the
+decomposition step, how a step is named (6-12 words, enforced by the server), what closes one, and the
+laws of editing a case. Steps are ROWS in a database and cases are FILES; both are reached through the
+`fractera-project` MCP, and the folder of step files no longer exists — never recreate it.
 
-**What to do instead of building.** Say which cases are missing or unconfirmed, and point at the Use cases
-section of the control panel: it runs a Quiz — seven opening questions, then a conversation that turns
-into cases. That conversation IS the first task, not a delay before the real one.
-
-**Once they exist, read `development-docs/USE-CASES/<product-id>/CASES/` at session start** and treat it as the target every change is
-measured against. If a request serves no case, say so before writing code — either the request is wrong or
-the cases are out of date, and both are worth a sentence.
+Why a pointer and not the procedure: everything in this file is paid for at the start of every session,
+relevant or not. The skill arrives when the work calls for it. The same thing in prose, for a human, is
+`development-docs/CASE-TO-STEP.md` — and when the two disagree, the skill is what actually runs.
 
 ### 🧱 The four roots of a product — where you may write, and where you may not
 
@@ -136,42 +138,6 @@ stay exactly where they were.
 
 **Say the product and its roots in your report** — one line, before the diff. That single line is what makes this
 rule checkable instead of merely stated: any change outside those roots is then visible to the owner at a glance.
-
-### 🗄 Development steps live in the DATABASE — `steps_*` through the `fractera-project` MCP
-
-**There is no `DEVELOPMENT-STEPS/` folder any more, and you never recreate one.** A step is a row in the
-table `development_steps`, reached through five tools the MCP server in this repository exposes
-(`scripts/mcp/fractera-project.mjs`, registered in `.mcp.json` — your client starts it for you):
-
-| Tool | What it answers |
-|---|---|
-| `steps_next` | what do I work on now (lowest open number, optionally for one product) |
-| `steps_list` | the queue, filtered by product and/or status |
-| `steps_get` | one step in full — its brief, the cases it serves, its result |
-| `steps_create` | a new step; its number is issued by the table and is permanent |
-| `steps_update` | change the brief, move the status, write the result on closing |
-
-**Why it stopped being files.** Two folders (`NEW-STEPS/`, `COMPLETED-STEPS/`) work while there are ten
-steps and one reader. They break on three things at once: *"show me the open steps of this product"*
-required reading EVERY file; the status lived in two places — the folder name and the text inside; and
-closing a step meant moving a file, two disk operations of which the second can fail, leaving a step that
-is finished in its text and unfinished in its location.
-
-**Statuses: `new` · `in-progress` · `blocked` · `done` · `cancelled`.** Importance:
-`optional` · `mandatory` · `critical`. Both lists are closed — the MCP rejects anything else and tells you
-what it accepts, rather than storing a value nobody else understands.
-
-**Every step names its product** (`product_id`), and `platform` is a real answer for work the whole server
-shares — the theme, the languages, the offline cache. A step created for a product also writes its number
-into that product's record in `PRODUCTS-CONFIG/products-config.json`, so the register answers "what has
-been done on this product" without walking the table. That index is derived: if it ever disagrees with the
-table, the table is right.
-
-**A step that serves no use case is work nobody ordered** — pass the case slugs to `steps_create`. That
-field is what makes a step answerable a month later: which scenario was this for?
-
-**The owner sees the same rows** in the control panel, under Documents → Development steps. That page is
-read-only by design: the step is written by whoever does the work.
 
 ### 📥 `development-docs/USE-CASES/<product-id>/RAW/` — the raw material, and you normally leave it closed
 

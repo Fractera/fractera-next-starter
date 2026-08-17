@@ -3,7 +3,9 @@ import type { HomeCell } from './index'
 // Языковая ячейка главной. Перевод перенесён из прежнего словаря без изменений.
 export const nl: Partial<HomeCell> = {
   title: 'Dit is de starter van uw toepassing',
-  description: 'Ze draait op uw eigen server en legt aan niemand anders verantwoording af. Geef haar een naam in het configuratiescherm — deze regel verdwijnt dan.',
+  // Описание для ПОИСКА — коротко: сниппет обрезается примерно на 160 знаках.
+  // Развёрнутый текст первого экрана живёт в секции `heroSplit` ниже.
+  description: 'Uw server, uw code: autorisatie, database, opslag en vectorzoeken zijn al verbonden. Bouw een landingspagina of een SaaS in 82 talen.',
   keywords: '',
   blocks: [
   {

@@ -3,7 +3,9 @@ import type { HomeCell } from './index'
 // Языковая ячейка главной. Перевод перенесён из прежнего словаря без изменений.
 export const fr: Partial<HomeCell> = {
   title: 'Voici le starter de votre application',
-  description: 'Elle fonctionne sur votre propre serveur et ne rend de comptes à personne d\'autre. Donnez-lui un nom dans le panneau de contrôle — cette ligne disparaîtra.',
+  // Описание для ПОИСКА — коротко: сниппет обрезается примерно на 160 знаках.
+  // Развёрнутый текст первого экрана живёт в секции `heroSplit` ниже.
+  description: 'Votre serveur, votre code : autorisation, base de données, stockage et recherche vectorielle déjà reliés. Créez une landing page ou un SaaS en 82 langues.',
   keywords: '',
   blocks: [
   {

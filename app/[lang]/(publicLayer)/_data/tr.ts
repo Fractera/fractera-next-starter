@@ -3,7 +3,9 @@ import type { HomeCell } from './index'
 // Языковая ячейка главной. Перевод перенесён из прежнего словаря без изменений.
 export const tr: Partial<HomeCell> = {
   title: 'Bu, uygulamanızın başlangıç şablonu',
-  description: 'Kendi sunucunuzda çalışır ve başka kimseye hesap vermez. Kontrol panelinde ona bir isim verin — bu satır kaybolacak.',
+  // Описание для ПОИСКА — коротко: сниппет обрезается примерно на 160 знаках.
+  // Развёрнутый текст первого экрана живёт в секции `heroSplit` ниже.
+  description: 'Kendi sunucunuz, kendi kodunuz: yetkilendirme, veritabanı, depolama ve vektör arama zaten bağlı. 82 dilde bir açılış sayfası ya da SaaS kurun.',
   keywords: '',
   blocks: [
   {

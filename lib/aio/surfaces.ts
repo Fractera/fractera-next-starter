@@ -9,6 +9,7 @@ import { footerPage } from '@/lib/pages/footer-page'
 import { data as privacyData } from '@/app/[lang]/(publicLayer)/(footerPages)/privacy/_data'
 import { data as termsData } from '@/app/[lang]/(publicLayer)/(footerPages)/terms/_data'
 import { data as cookiesData } from '@/app/[lang]/(publicLayer)/(footerPages)/cookies/_data'
+import { data as architectureData } from '@/app/[lang]/(publicLayer)/(footerPages)/architecture/_data'
 
 // ПЕРЕЧЕНЬ ПУБЛИЧНЫХ ПОВЕРХНОСТЕЙ — ОДИН НА ВЕСЬ AIO (шаг 505).
 //
@@ -126,13 +127,18 @@ export function publicSurfaces(lang: string): Surface[] {
     [privacyData, '/privacy'],
     [termsData, '/terms'],
     [cookiesData, '/cookies'],
+    // Архитектура живёт в той же папке и по тем же законам, что правовые
+    // страницы, поэтому идёт тем же циклом. Раздел карты у неё, однако, 'main':
+    // это описание продукта, а не документ, и в списке правовых читатель искал бы
+    // его последним.
+    [architectureData, '/architecture'],
   ] as const) {
     const page = footerPage(data as never, lang)
     surfaces.push({
       subPath: sub,
       title: page.title,
       description: page.description,
-      section: 'legal',
+      section: sub === '/architecture' ? 'main' : 'legal',
       body: () =>
         [`# ${page.title}`, '', `> ${page.description}`, '', blocksToMarkdown(page.blocks)].join('\n').trim(),
     })

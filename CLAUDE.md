@@ -119,7 +119,7 @@ A product is not a label. It owns four places, and they are **derived from its r
 
 | What | Where | Derived from |
 |---|---|---|
-| pages | `app/[lang]/<segment>/` — or `app/[lang]/(root)/` for the product holding `/` | its `route` |
+| pages | `app/[lang]/(publicLayer)/<segment>/` — or `(publicLayer)/` itself for the product holding `/` | its `route` |
 | logic | `lib/products/<product-id>/` | its `id` |
 | tables | `<product-id>_*` | its `id` |
 | use cases | `development-docs/USE-CASES/<product-id>/` | its `id` |

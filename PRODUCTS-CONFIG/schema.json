@@ -2,114 +2,304 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "version": {
-      "type": "number"
+    "id": {
+      "type": "string"
     },
-    "products": {
+    "title": {
+      "type": "string"
+    },
+    "titleAuto": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "landing",
+        "portfolio",
+        "corporate",
+        "media",
+        "directory",
+        "booking",
+        "qr-menu",
+        "store",
+        "learning",
+        "tours",
+        "delivery",
+        "marketplace",
+        "saas",
+        "crm",
+        "attestation",
+        "scheduler",
+        "ai-coach",
+        "agents",
+        "competitors",
+        "company-brain",
+        "business-brain",
+        "custom"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "surface": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "headless"
+      ]
+    },
+    "route": {
+      "type": "string"
+    },
+    "published": {
+      "type": "boolean"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "decomposition",
+        "development",
+        "analysis"
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "in-progress",
+        "review",
+        "testing",
+        "extra-cycle",
+        "done"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "intake": {
+      "type": "object",
+      "properties": {
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "seed": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "questions",
+        "answers",
+        "seed"
+      ],
+      "additionalProperties": {}
+    },
+    "cases": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "id": {
+          "slug": {
             "type": "string"
           },
           "title": {
             "type": "string"
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "landing",
-              "portfolio",
-              "corporate",
-              "media",
-              "directory",
-              "booking",
-              "qr-menu",
-              "store",
-              "learning",
-              "tours",
-              "delivery",
-              "marketplace",
-              "saas",
-              "crm",
-              "attestation",
-              "scheduler",
-              "ai-coach",
-              "agents",
-              "competitors",
-              "company-brain",
-              "business-brain",
-              "custom"
+          "summary": {
+            "type": "string"
+          },
+          "confirmed": {
+            "type": "boolean"
+          },
+          "confirmedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ]
           },
-          "surface": {
-            "type": "string",
-            "enum": [
-              "public",
-              "private",
-              "headless"
-            ]
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "summary",
+          "confirmed",
+          "confirmedAt",
+          "updatedAt"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "number"
           },
-          "route": {
+          "title": {
             "type": "string"
           },
           "status": {
             "type": "string",
             "enum": [
-              "draft",
-              "building",
-              "live"
+              "new",
+              "in-progress",
+              "blocked",
+              "done",
+              "cancelled"
             ]
+          },
+          "importance": {
+            "type": "string",
+            "enum": [
+              "optional",
+              "mandatory",
+              "critical"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "work",
+              "decomposition"
+            ]
+          },
+          "cases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plan": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string"
           },
-          "titleAuto": {
-            "type": "boolean"
-          },
-          "description": {
+          "updatedAt": {
             "type": "string"
-          },
-          "devStatus": {
-            "type": "string",
-            "enum": [
-              "not-started",
-              "decomposition",
-              "skeleton",
-              "revision",
-              "building",
-              "acceptance",
-              "extra-tasks",
-              "done"
-            ]
-          },
-          "steps": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
           }
         },
         "required": [
-          "id",
+          "number",
           "title",
-          "type",
-          "surface",
-          "route",
           "status",
-          "createdAt"
+          "importance",
+          "kind",
+          "cases",
+          "plan",
+          "result",
+          "createdAt",
+          "updatedAt"
         ],
         "additionalProperties": {}
       }
     },
-    "maxId": {
-      "type": "number"
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "purpose"
+        ],
+        "additionalProperties": {}
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "intake",
+              "decomposition",
+              "development",
+              "analysis"
+            ]
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "in-progress",
+              "review",
+              "testing",
+              "extra-cycle",
+              "done"
+            ]
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "system"
+            ]
+          }
+        },
+        "required": [
+          "at",
+          "phase",
+          "stage",
+          "by"
+        ],
+        "additionalProperties": {}
+      }
     }
   },
   "required": [
-    "version",
-    "products"
+    "id",
+    "title",
+    "type",
+    "surface",
+    "route",
+    "published",
+    "phase",
+    "stage",
+    "createdAt",
+    "updatedAt",
+    "intake",
+    "cases",
+    "steps",
+    "pages",
+    "history"
   ],
   "additionalProperties": {}
 }

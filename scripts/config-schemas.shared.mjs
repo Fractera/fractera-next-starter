@@ -65,10 +65,10 @@ export const CONFIGS = [
   {
     id: "products",
     source: "config/products-config.schema.ts",
-    exportName: "productsConfigSchema",
+    exportName: "productDossierSchema",
     target: "PRODUCTS-CONFIG/schema.json",
     defaultsSource: "config/products-config.defaults.ts",
-    defaultsExport: "DEFAULT_PRODUCTS_CONFIG",
+    defaultsExport: "DEFAULT_PRODUCT_DOSSIER",
     defaultsTarget: "PRODUCTS-CONFIG/defaults.json",
   },
 ]

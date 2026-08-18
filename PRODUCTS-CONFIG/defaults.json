@@ -1,4 +1,21 @@
 {
-  "version": 1,
-  "products": []
+  "id": "p0",
+  "title": "p0",
+  "type": "custom",
+  "surface": "public",
+  "route": "",
+  "published": false,
+  "phase": "intake",
+  "stage": "waiting",
+  "createdAt": "",
+  "updatedAt": "",
+  "intake": {
+    "questions": [],
+    "answers": [],
+    "seed": ""
+  },
+  "cases": [],
+  "steps": [],
+  "pages": [],
+  "history": []
 }

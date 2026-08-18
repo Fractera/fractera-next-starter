@@ -1,19 +1,14 @@
 # PRODUCTS-CONFIG — which products live on this server
 
-Holds `products-config.json`: the register of products built on this one server. A product is
-a landing page, a store, a company brain, a Telegram agent — anything with its own purpose,
-its own use cases and its own place to live.
+🔒 **One product, one file.**  holds everything that product IS: the record, the intake
+questions and answers, the use cases with their confirmations, the development steps, the pages plan,
+the phase and the history of transitions. Beside it:  — an allocator of permanent ids and
+nothing else — and , the Quiz transcript (raw material, not state).
 
-## Why this file exists
-
-One server carries many products. That is the whole point of the platform: today a landing
-page, tomorrow a company brain automating internal work, next month a catalogue — all on the
-same machine, the same auth, the same data layer.
-
-Without a register there is no answer to the only question that matters once there are two:
-**which product does this use case belong to?** A use case that belongs to "the project" is a
-use case nobody can build from, because "the project" is not a place — it has no address, no
-folder and no tables.
+Until 2026-08-18 this folder held a single  and the rest of a product lived in
+three other places: cases as markdown under , questions and answers in
+, steps as rows in the  table. Answering «where is this product» meant reading
+four stores, and any two of them could drift apart in silence.
 
 ## How it works
 

@@ -7,11 +7,12 @@
 ## Product — the unit of work inside one server
 
 One server carries many products: a landing page today, a store tomorrow, a company brain next month.
-Each is a record in `PRODUCTS-CONFIG/products-config.json`.
+Each one is a **dossier** — `PRODUCTS-CONFIG/<id>.json`, one file holding everything that product is.
 
 | Term | What it means |
 |---|---|
 | **product** | one of the things this server carries. Has an `id` that never changes and means nothing (`p1`, `p2`), a title the owner may rename freely, a structure, a surface and an address |
+| **dossier** (`PRODUCTS-CONFIG/<id>.json`) | one file holding EVERYTHING that product is: the record, the intake questions and answers, the use cases with their confirmations, the steps, the pages plan, the phase and the history. Beside it `registry.json` hands out permanent ids and nothing else, and `<id>.quiz.jsonl` is the Quiz transcript — raw material, not state |
 | **structure** | one of the twelve directions the owner picks first (`store`, `landing`, `company-brain`, …). Decides the seven opening questions and the default surface. Not a file type, not an architecture |
 | **surface** | where the product lives: `public` — its own address · `private` — a tab in the control panel · `headless` — channels and schedule only, no screen at all |
 | **the four roots** | pages · logic · tables · use cases. Derived from the record, never invented — **and they are your boundary**: working on a use case of a product you write inside them and nowhere else |

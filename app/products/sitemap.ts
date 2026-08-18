@@ -40,9 +40,17 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   const index = Number(await id) || 0
   const size = sitemapChunkSize(SUPPORTED_LANGUAGES.length)
 
-  const rows = (await db.prepare(
-    "SELECT id, created_at FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?"
-  ).all(size, index * size)) as unknown as { id: string; created_at: string }[]
+  // Данные недоступны — карта выходит пустой, но выходит. Падение здесь роняет
+  // сборку ЦЕЛИКОМ: карта сайта порождается на этапе сбора данных о страницах,
+  // и её отказ уносит вместе с собой весь сайт (провал развёртывания 2026-08-18).
+  let rows: { id: string; created_at: string }[] = []
+  try {
+    rows = (await db.prepare(
+      "SELECT id, created_at FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    ).all(size, index * size)) as unknown as { id: string; created_at: string }[]
+  } catch (err) {
+    console.error("[sitemap] Данные недоступны — карта товаров пуста. Причина:", err)
+  }
 
   // Адрес — тем же `urlFor`, что и канонический адрес самой карточки (шаг 503):
   // в одноязычном режиме языкового сегмента нет, и склеенный вручную путь вёл бы

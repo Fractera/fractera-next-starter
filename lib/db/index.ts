@@ -272,19 +272,8 @@ function makeLocalDb() {
   const sqlite = new Database(dbPath)
   sqlite.exec(SCHEMA)
   sqlite.exec(DROP_LEGACY)
-  const cols = new Set(
-    (sqlite.prepare('PRAGMA table_info(products)').all() as Array<{ name: string }>).map(c => c.name)
-  )
-  if (!cols.has('media_id'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_id   TEXT`)
-  if (!cols.has('media_url'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_url  TEXT`)
-  if (!cols.has('media_width'))  safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_width  INTEGER`)
-  if (!cols.has('media_height')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_height INTEGER`)
-  if (!cols.has('media_blur'))   safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN media_blur   TEXT`)
-  if (!cols.has('created_by')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN created_by TEXT NOT NULL DEFAULT 'system'`)
-  if (!cols.has('description')) safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN description TEXT`)
-  if (!cols.has('i18n'))        safeAddColumn(sqlite, `ALTER TABLE products ADD COLUMN i18n       TEXT`)
 
-  // Колонки, появившиеся позже своей таблицы, — см. `LATE_COLUMNS`.
+  // Лестница колонок — ОДНА на обе дороги к базе, см. `LATE_COLUMNS`.
   for (const sql of LATE_COLUMNS) safeAddColumn(sqlite, sql)
 
   seedProducts(sqlite)
@@ -315,8 +304,29 @@ function makeLocalDb() {
  * Добавляем вслепую и глотаем РОВНО «колонка уже есть»: это и есть штатный
  * результат на всех серверах, кроме первого запуска. Тот же приём, что у
  * `safeAddColumn` для локального пути.
+ *
+ * 🔒 ЛЕСТНИЦА ОДНА НА ОБЕ ДОРОГИ К БАЗЕ (найдено падением развёртывания 2026-08-18).
+ *
+ * Здесь список был коротким, а колонки товаров добавлял отдельный блок ВНУТРИ
+ * `makeLocalDb()` — то есть только на локальной дороге. Пока приложение писало в
+ * файл, это было незаметно. Коммит `4c21090` (2026-08-17) перевёл его на слой
+ * данных, лестница перестала выполняться вовсе, и слой данных начал отвечать
+ * `no such column: description` на КАЖДЫЙ запрос каталога — витрина, карта сайта и
+ * панель товаров разом.
+ *
+ * Расходятся такие пары молча: обе ветки исправны по отдельности. Поэтому список
+ * ровно один, а исполнителей у него два — `makeLocalDb()` и `initRemoteSchema()`.
+ * Новая колонка дописывается СЮДА и никуда больше.
  */
 const LATE_COLUMNS = [
+  `ALTER TABLE products ADD COLUMN media_id     TEXT`,
+  `ALTER TABLE products ADD COLUMN media_url    TEXT`,
+  `ALTER TABLE products ADD COLUMN media_width  INTEGER`,
+  `ALTER TABLE products ADD COLUMN media_height INTEGER`,
+  `ALTER TABLE products ADD COLUMN media_blur   TEXT`,
+  `ALTER TABLE products ADD COLUMN created_by   TEXT NOT NULL DEFAULT 'system'`,
+  `ALTER TABLE products ADD COLUMN description  TEXT`,
+  `ALTER TABLE products ADD COLUMN i18n         TEXT`,
   `ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`,
 ]
 
@@ -332,6 +342,32 @@ async function initRemoteSchema() {
   }
 }
 
+/**
+ * Удалённая дорога ЖДЁТ схему, а не бежит с ней наперегонки.
+ *
+ * 🔒 ЗАЧЕМ. Подготовка схемы запускалась при загрузке модуля и никем не
+ * дожидалась: первый же запрос уходил в слой данных ОДНОВРЕМЕННО с созданием
+ * таблиц. На пустой базе это лотерея — успела лестница колонок или нет, — а
+ * проигрыш выглядит как «no such column» в случайном месте и не воспроизводится.
+ *
+ * Обещание одно на процесс: каждый вызов дожидается ЕГО, поэтому подготовка
+ * по-прежнему выполняется единожды.
+ */
+function awaitingSchema(ready: Promise<unknown>): typeof remoteDb {
+  const stmt = (sql: string) => {
+    const inner = remoteDb.prepare(sql)
+    return {
+      async all(...args: unknown[]) { await ready; return inner.all(...args) },
+      async get(...args: unknown[]) { await ready; return inner.get(...args) },
+      async run(...args: unknown[]) { await ready; return inner.run(...args) },
+    }
+  }
+  return {
+    prepare: stmt,
+    async exec(sql: string) { await ready; return remoteDb.exec(sql) },
+  }
+}
+
 // 🔒 ВЫБОР ХРАНИЛИЩА СПРАШИВАЕТ КЛЮЧ У ОБЩЕГО РЕШАТЕЛЯ (2026-08-17).
 //
 // Здесь стояло `process.env.DATA_API_KEY` — имя, которого в окружении сервера
@@ -344,5 +380,10 @@ async function initRemoteSchema() {
 // разработчика без `REMOTE_DATA_URL` приложение начало бы стучаться в
 // несуществующую службу вместо того, чтобы честно открыть локальный файл.
 export const db = (process.env.REMOTE_DATA_URL && dataService().key)
-  ? (initRemoteSchema().catch(console.error), remoteDb)
+  ? awaitingSchema(initRemoteSchema().catch(err => {
+      // Слой данных недоступен или отказал — приложение продолжает работать и
+      // отвечает заглушкой (см. `lib/catalogue.ts`). Молчать здесь нельзя:
+      // без этой строки причина пустой витрины не называется нигде.
+      console.error("[db] Схема в слое данных не подготовлена:", err)
+    }))
   : makeLocalDb()

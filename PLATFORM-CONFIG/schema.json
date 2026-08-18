@@ -44,6 +44,14 @@
     "parallelRouting": {
       "type": "boolean"
     },
+    "developmentMode": {
+      "type": "string",
+      "enum": [
+        "classic",
+        "steps",
+        "cases"
+      ]
+    },
     "instructions": {
       "type": "object",
       "propertyNames": {

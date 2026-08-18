@@ -229,6 +229,12 @@
           },
           "purpose": {
             "type": "string"
+          },
+          "cases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [

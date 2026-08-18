@@ -58,7 +58,12 @@ export const productDossierSchema = z.looseObject({
   }),
   cases: z.array(useCaseSchema),
   steps: z.array(stepSchema),
-  pages: z.array(z.looseObject({ path: z.string(), purpose: z.string() })),
+  pages: z.array(z.looseObject({
+    path: z.string(),
+    purpose: z.string(),
+    /** Слаги кейсов страницы: хранятся слаги, показываются заголовки. */
+    cases: z.array(z.string()).optional(),
+  })),
   history: z.array(z.looseObject({
     at: z.string(),
     phase: z.enum(PHASES),

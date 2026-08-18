@@ -15,8 +15,9 @@ the active language by rewriting the URL prefix (`/en/… ↔ /es/…`). It rend
 **nothing** when only one language is configured, so it is safe to ship always.
 
 This skill is **self-sufficient**: it is plain file editing. It does NOT depend on
-memory, or any other agent. The full multilingual standard is
-`CRUD-DOCS/workspace-standards/multilingual-content.md`.
+memory, or any other agent. The two shapes a translated string may take — language cells and one
+`.i18n.ts` map — are in `development-docs/GLOSSARY.md`; the content side is
+`development-docs/CONTENT-ENGINE.md`.
 
 ## When to use
 

@@ -100,14 +100,17 @@ moment it lands in a skill.** When the table is empty, this whole section goes w
 
 Fix or delete each, then remove the line.
 
-- The panel lists `development-docs/PLATFORM-TOOLS.md` as active. **The file does not exist.**
-- The panel lists `development-docs/USE-CASES/` as active. **The folder does not exist.**
-- `development-docs/DEVELOPMENT-STEPS/` exists on disk, while the rule says the folder of step files is
-  gone and must never be recreated. Steps are rows in `development_steps`, reached through the
-  `fractera-project` MCP.
-- Four skills point at `CRUD-DOCS/workspace-standards/…`, removed in step 500:
-  `create-multilingual-content-entry`, `install-language-switcher-dropdown`,
-  `persist-env-var-with-rebuild`, `manage-app-settings`.
-- `development-docs/CASE-TO-STEP.md` declares itself a duplicate of a skill.
+- The panel lists `development-docs/USE-CASES/` as active. **The folder does not exist**, and no
+  mechanism creates it: the panel's Quiz writes cases, and nobody has run it here.
+- Five documents exist in this starter but have **no template in the panel** (`_content/`):
+  `SEO.md`, `AIO.md`, `PWA.md`, `SECTIONS.md`, `CASE-TO-STEP.md`. A slot built from this starter gets
+  them by the clone; a slot built from any other repository never gets them at all, and its pages in the
+  panel open empty.
 - The machine layer is meant to be English; `SECTIONS.md`, `SEO.md`, `AIO.md`, `PWA.md` and
   `API-MAP.md` are in Russian.
+
+**Cleared on 2026-08-18** (kept as a record until this section goes): `PLATFORM-TOOLS.md` was listed as
+active while nothing ever created it — the panel now generates it the first time the document set is
+saved, so an empty tool list is reported as a fact instead of the file being absent · the dead
+`DEVELOPMENT-STEPS/` folder was deleted · three skills stopped pointing at `CRUD-DOCS/`, removed in
+step 500 · `GLOSSARY.md` lost the automation ontology of the deleted Projects layer.

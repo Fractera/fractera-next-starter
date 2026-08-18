@@ -17,7 +17,8 @@ Give the deployed app a build-time environment variable that actually reaches vi
 on this redeploy and every future one. This is the agent-facing side of the
 **build-time env & redeploy** standard.
 
-Full reference: `CRUD-DOCS/workspace-standards/build-time-env-and-redeploy.md`.
+There is no separate reference document: this skill is the whole standard. (It used to point at
+`CRUD-DOCS/workspace-standards/build-time-env-and-redeploy.md`, removed in step 500.)
 
 ## The one rule
 

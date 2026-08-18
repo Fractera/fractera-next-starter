@@ -13,9 +13,9 @@ description: >
 
 Add a piece of multilingual content so it scales to many languages **by construction** —
 a new language is a new file, a partial translation is fine, and no page ever says
-`if language == X`. The full engine standard (architecture, source of every component,
-scaling) is `CRUD-DOCS/workspace-standards/content-engine.md`; the focused i18n recipe is
-`CRUD-DOCS/workspace-standards/multilingual-content.md`; this skill is their operational entry.
+`if language == X`. The full engine standard — architecture, every component, how it scales, the law of
+the two links and what the gate rejects — is `development-docs/CONTENT-ENGINE.md`; this skill is its
+operational entry.
 
 This skill is **self-sufficient**: it is plain file editing. It does NOT depend on any service,
 on memory, or on any other agent. If you are the only agent in the project, you can still

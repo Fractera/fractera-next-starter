@@ -18,7 +18,7 @@ try {
     writeFileSync(join(ROOT, s.target), s.text, "utf8")
     console.log(`✓ ${s.target}`)
   }
-  console.log(`Схем записано: ${schemas.length}`)
+  console.log(`Записано файлов: ${schemas.length} (схема и умолчания на каждый конфиг)`)
 } catch (err) {
   console.error(`Схемы не собраны: ${err.message}`)
   process.exit(2)

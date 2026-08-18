@@ -20,11 +20,15 @@ servers. "Off by default" is not "the owner turned it off": the fallback applies
 owner has spoken, and stops the moment they touch the switch. Ask `featureDecided()` when the
 difference matters.
 
-## Schema
+## Schema and defaults
 
-`schema.json`, beside this file — **generated** from `config/platform-config.defaults.ts` and
-`config/platform-config.schema.ts` by `npm run build:config-schemas`, and guarded by
-`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+Two **generated** files beside `platform-config.json`, neither written by hand: **`schema.json`**
+(the shape) and **`defaults.json`** (`FEATURE_DEFAULTS` — the answer while a switch is untouched).
+Both from `npm run build:config-schemas`, guarded by `npm run check:config-schemas` in `prebuild`.
+
+The defaults are copied here as data because this folder is where they are looked for; they stay
+JSON rather than `.ts` because nothing in a data folder may require a compiler. The single
+definition remains `config/platform-config.defaults.ts`.
 
 🔒 **It describes the FILE, not the reader's answer**, and this is the one config where the two
 differ. On disk lie the owner's decisions — the switches they touched, the routing mode, the

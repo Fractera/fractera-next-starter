@@ -20,13 +20,26 @@ make a route dynamic; `force-dynamic` would, and it is not used here.
 the app serves the committed defaults. A partial file is normal too — only the keys the owner
 changed need to be present.
 
-## Schema
+## Schema and defaults
 
-`schema.json`, beside this file. It is **generated** from `config/app-config.defaults.ts` (the
-type) and `config/app-config.schema.ts` (the zod description of it) by
-`npm run build:config-schemas`; `npm run check:config-schemas` runs in `prebuild` and fails the
-build when the generated file has drifted from the type. Never write it by hand — a schema that
-stops matching the type is worse than no schema, because it is read and believed.
+Two **generated** files sit beside `app-config.json`, and neither is written by hand:
+
+- **`schema.json`** — the shape, from `config/app-config.defaults.ts` (the type) and
+  `config/app-config.schema.ts` (its zod description).
+- **`defaults.json`** — what the application actually serves while this folder's `app-config.json`
+  stays empty, from `DEFAULT_APP_CONFIG`.
+
+Both come from `npm run build:config-schemas`; `npm run check:config-schemas` runs in `prebuild`
+and fails the build when either has drifted from the type. A generated file that stops matching
+the type is worse than none, because it is read and believed.
+
+🔒 **Why the defaults are copied here as DATA rather than left in `config/` alone.** A person
+opening this folder sees `{}` and concludes "empty, this cannot be working" — that exact reading
+cost a session on 2026-08-18. The truth is that the JSON holds only the owner's decisions and the
+defaults answer for everything else, so the defaults belong where they are looked for. They arrive
+as JSON and not as a `.ts` file on purpose: nothing in a data folder may require a compiler, or
+the folder would hold two kinds of file with different laws — one applying instantly, the other
+only after a rebuild.
 
 The reader validates against it and **heals a wrong-typed value with that value's default —
 per key**, never by dropping the file and never by rewriting it. An unknown key passes through

@@ -1,0 +1,12 @@
+{
+  "topMenu": true,
+  "footerPages": true,
+  "cookieBanner": false,
+  "offlineCache": true,
+  "auth": false,
+  "breadcrumbs": false,
+  "faq": false,
+  "themeToggle": true,
+  "widthToggle": true,
+  "languageSwitcher": true
+}

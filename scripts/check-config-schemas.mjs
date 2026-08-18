@@ -41,10 +41,10 @@ for (const s of schemas) {
 }
 
 if (stale.length) {
-  console.error("check:config-schemas — схемы разошлись с типами:")
+  console.error("check:config-schemas — порождённые файлы разошлись с типами:")
   for (const line of stale) console.error(`  ✗ ${line}`)
   console.error("Лечение: npm run build:config-schemas")
   process.exit(1)
 }
 
-console.log(`check:config-schemas — все ${schemas.length} схемы свежие`)
+console.log(`check:config-schemas — порождённые файлы свежие: ${schemas.length}`)

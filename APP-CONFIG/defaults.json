@@ -1,0 +1,84 @@
+{
+  "name": "Fractera — Agentic Engineering Infrastructure",
+  "short_name": "Fractera",
+  "description": "Agentic Engineering Infrastructure — your own server, your own code, run and configured from one control panel.",
+  "url": "",
+  "manifest": "/manifest.webmanifest",
+  "mailSupport": "admin@fractera.ai",
+  "lang": "en",
+  "images": {
+    "ogImage": null,
+    "loading-dark": "/placeholders/logo-dark.png",
+    "loading-light": "/placeholders/logo-light.png",
+    "notFound-dark": "/placeholders/logo-dark.png",
+    "notFound-light": "/placeholders/logo-light.png",
+    "error500-dark": "/placeholders/logo-dark.png",
+    "error500-light": "/placeholders/logo-light.png",
+    "homePage-dark": "/placeholders/home.jpg",
+    "homePage-light": "/placeholders/home.jpg"
+  },
+  "logo": null,
+  "icons": {
+    "faviconAny": "/favicon.ico",
+    "icon32": "/icons/favicon-32.png",
+    "icon48": "/icons/favicon-48.png",
+    "icon192": "/icons/icon-192.png",
+    "icon512": "/icons/icon-512.png",
+    "icon512Maskable": "/icons/icon-512-maskable.png",
+    "appleTouch": "/icons/apple-touch-icon.png"
+  },
+  "iconSet": null,
+  "pwa": {
+    "themeColor": "#ffffff",
+    "backgroundColor": "#ffffff",
+    "startUrl": "/",
+    "display": "standalone",
+    "scope": "/",
+    "orientation": "portrait-primary"
+  },
+  "themeColors": {
+    "light": "#ffffff",
+    "dark": "#09090b"
+  },
+  "seo": {
+    "indexing": "allow",
+    "titleTemplate": "%s | Fractera",
+    "robotsIndex": true,
+    "robotsFollow": true,
+    "disallowPaths": [
+      "/api",
+      "/api/*",
+      "/_next",
+      "/_next/*"
+    ],
+    "locales": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "social": {
+      "twitter": "@fractera"
+    }
+  },
+  "og": {
+    "type": "website",
+    "siteName": "Fractera",
+    "imageWidth": 1200,
+    "imageHeight": 630
+  },
+  "author": {
+    "name": "Fractera",
+    "email": "admin@fractera.ai"
+  },
+  "analytics": {
+    "enabled": false
+  },
+  "jsonLd": {
+    "website": true,
+    "organization": true,
+    "localBusiness": false
+  },
+  "geo": {},
+  "commerce": {
+    "currency": "USD"
+  }
+}

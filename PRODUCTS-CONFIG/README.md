@@ -27,11 +27,13 @@ Until 2026-08-18 the second half of that sentence was untrue: the panel wrote th
 only. It is now read by `config/products-config.ts` (`getProductsConfig`, `getProductById`,
 `getPublicProducts`), the same shape as the three neighbours.
 
-## Schema
+## Schema and defaults
 
-`schema.json`, beside this file — **generated** from `config/products-config.defaults.ts` and
-`config/products-config.schema.ts` by `npm run build:config-schemas`, guarded by
-`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+Two **generated** files beside `products-config.json`, neither written by hand: **`schema.json`**
+(the shape) and **`defaults.json`** (`{ "version": 1, "products": [] }` — a server where nobody has
+created a product yet). Both from `npm run build:config-schemas`, guarded by
+`npm run check:config-schemas` in `prebuild`. The single definition stays in
+`config/products-config.defaults.ts`; a data folder may hold no file that needs a compiler.
 
 `type` is checked against the catalogue of 22 project structures, because a value outside it means
 the panel and the slot have drifted apart. `id` and `route` are **not** validated beyond being

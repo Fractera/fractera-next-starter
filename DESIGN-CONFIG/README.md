@@ -14,11 +14,17 @@ At render time `lib/design-css.ts` turns the tokens into CSS and the root layout
 the browser sees a link immediately, while an `@import` inside `<style>` costs an extra network
 round-trip before the font is even requested.
 
-## Schema
+## Schema and defaults
 
-`schema.json`, beside this file — **generated** from `config/design-config.defaults.ts` and
-`config/design-config.schema.ts` by `npm run build:config-schemas`, guarded by
-`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+Two **generated** files beside `design-config.json`, neither written by hand: **`schema.json`**
+(the shape) and **`defaults.json`**. Both from `npm run build:config-schemas`, guarded by
+`npm run check:config-schemas` in `prebuild`.
+
+🔒 **`defaults.json` here is deliberately almost empty**, and that is the honest answer: the
+defaults of APPEARANCE are not data, they are the project theme
+(`config/design/design-minimal-001.css`). Copying the palette into JSON would create a second
+palette that drifts from the first on the first edit — silently, because the page still looks
+fine, just not like the CSS says.
 
 It checks **types, not colours**: a number where `radius` expects a string is healed with the
 default, while `#0b0f19`, `oklch(…)` and `color-mix(…)` all pass untouched. Enumerating valid

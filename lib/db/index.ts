@@ -266,6 +266,37 @@ function seedProducts(sqlite: Database.Database) {
   }
 }
 
+/**
+ * Тот же посев, но через слой данных.
+ *
+ * 🔒 ЗАЧЕМ ВТОРАЯ ФУНКЦИЯ, А НЕ ОБЩАЯ. Локальная дорога знает синхронный
+ * `better-sqlite3`, удалённая — асинхронный HTTP; общего исполнителя у них нет.
+ * Общий у них СПИСОК — `SEED`, и он ровно один: расходятся не механизмы, а
+ * данные, и данные здесь не дублируются.
+ *
+ * 🔒 ПОЧЕМУ ЭТО ПОЯВИЛОСЬ (владелец, новый сервер 2026-08-19). Посев жил только
+ * внутри `makeLocalDb()`. Пока приложение писало в файл, стартер приезжал с двумя
+ * примерами; после перехода на слой данных (`4c21090`) каталог свежего сервера
+ * стал пустым — та же асимметрия двух дорог, что и у лестницы колонок.
+ *
+ * 🔒 ОТКАЗ НЕ РОНЯЕТ ПРИЛОЖЕНИЕ. Посев — удобство, а не условие работы: слой
+ * данных может быть ещё не поднят. Не удалось — скажем в лог и продолжим, а
+ * следующий старт посеет. Тот же закон, что у посева картинок (`seed-media.mjs`).
+ */
+async function seedProductsRemote() {
+  try {
+    const row = (await remoteDb.prepare('SELECT COUNT(*) AS n FROM products').get()) as { n?: number } | null
+    if (Number(row?.n ?? 0) > 0) return
+    for (const p of SEED) {
+      await remoteDb.prepare(
+        'INSERT OR IGNORE INTO products (id, name, price, description, i18n, media_url, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).run(seedId(p.name), p.name, p.price, p.description, JSON.stringify(p.i18n), p.media_url, 'starter')
+    }
+  } catch (err) {
+    console.error("[db] Примеры каталога не посеяны — слой данных не ответил. Причина:", err)
+  }
+}
+
 function makeLocalDb() {
   const dbPath = process.env.APP_DB_PATH ?? join(process.cwd(), "data", "app.db")
   mkdirSync(dirname(dbPath), { recursive: true })
@@ -340,6 +371,9 @@ async function initRemoteSchema() {
       if (!/duplicate column/i.test(String(e))) throw e
     }
   }
+  // Примеры каталога — обеими дорогами одинаково; посев идёт ПОСЛЕ лестницы,
+  // иначе на старой таблице он писал бы в ещё не существующие колонки.
+  await seedProductsRemote()
 }
 
 /**

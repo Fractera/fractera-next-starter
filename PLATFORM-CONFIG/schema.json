@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "features": {
+      "type": "object",
+      "properties": {
+        "auth": {
+          "type": "boolean"
+        },
+        "breadcrumbs": {
+          "type": "boolean"
+        },
+        "faq": {
+          "type": "boolean"
+        },
+        "themeToggle": {
+          "type": "boolean"
+        },
+        "widthToggle": {
+          "type": "boolean"
+        },
+        "languageSwitcher": {
+          "type": "boolean"
+        },
+        "topMenu": {
+          "type": "boolean"
+        },
+        "footerPages": {
+          "type": "boolean"
+        },
+        "cookieBanner": {
+          "type": "boolean"
+        },
+        "offlineCache": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "routingMode": {
+      "type": "string"
+    },
+    "parallelRouting": {
+      "type": "boolean"
+    },
+    "instructions": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "instructionsSnapshot": {
+      "anyOf": [
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "commands": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "additionalProperties": {}
+}

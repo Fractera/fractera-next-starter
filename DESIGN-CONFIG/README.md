@@ -14,6 +14,22 @@ At render time `lib/design-css.ts` turns the tokens into CSS and the root layout
 the browser sees a link immediately, while an `@import` inside `<style>` costs an extra network
 round-trip before the font is even requested.
 
+## Schema
+
+`schema.json`, beside this file — **generated** from `config/design-config.defaults.ts` and
+`config/design-config.schema.ts` by `npm run build:config-schemas`, guarded by
+`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+
+It checks **types, not colours**: a number where `radius` expects a string is healed with the
+default, while `#0b0f19`, `oklch(…)` and `color-mix(…)` all pass untouched. Enumerating valid
+colour forms would forbid half of them and buy nothing — a wrong colour is visible on the first
+page, a wrong type is not.
+
+## Skill
+
+**`use-design-config`** — which token reaches which part of the interface, and what the theme
+already provides. The detail lives there, not here.
+
 ## Rules
 
 - **Empty means "the theme decides".** Every value here is an OVERRIDE. A missing key is not a gap

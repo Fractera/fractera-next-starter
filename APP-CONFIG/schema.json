@@ -1,0 +1,504 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "short_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "manifest": {
+      "type": "string"
+    },
+    "mailSupport": {
+      "type": "string"
+    },
+    "lang": {
+      "type": "string"
+    },
+    "images": {
+      "type": "object",
+      "properties": {
+        "ogImage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "loading-dark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "loading-light": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notFound-dark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notFound-light": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error500-dark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error500-light": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "homePage-dark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "homePage-light": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ogImage",
+        "loading-dark",
+        "loading-light",
+        "notFound-dark",
+        "notFound-light",
+        "error500-dark",
+        "error500-light",
+        "homePage-dark",
+        "homePage-light"
+      ],
+      "additionalProperties": {}
+    },
+    "logo": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "icons": {
+      "type": "object",
+      "properties": {
+        "faviconAny": {
+          "type": "string"
+        },
+        "icon32": {
+          "type": "string"
+        },
+        "icon48": {
+          "type": "string"
+        },
+        "icon192": {
+          "type": "string"
+        },
+        "icon512": {
+          "type": "string"
+        },
+        "icon512Maskable": {
+          "type": "string"
+        },
+        "appleTouch": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "iconSet": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "files": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "files"
+          ],
+          "additionalProperties": {}
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "pwa": {
+      "type": "object",
+      "properties": {
+        "themeColor": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "startUrl": {
+          "type": "string"
+        },
+        "display": {
+          "type": "string",
+          "enum": [
+            "fullscreen",
+            "standalone",
+            "minimal-ui",
+            "browser"
+          ]
+        },
+        "scope": {
+          "type": "string"
+        },
+        "orientation": {
+          "type": "string",
+          "enum": [
+            "any",
+            "portrait-primary",
+            "landscape-primary"
+          ]
+        }
+      },
+      "required": [
+        "themeColor",
+        "backgroundColor",
+        "startUrl",
+        "display"
+      ],
+      "additionalProperties": {}
+    },
+    "themeColors": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "string"
+        },
+        "dark": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "light",
+        "dark"
+      ],
+      "additionalProperties": {}
+    },
+    "seo": {
+      "type": "object",
+      "properties": {
+        "indexing": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "disallow"
+          ]
+        },
+        "titleTemplate": {
+          "type": "string"
+        },
+        "robotsIndex": {
+          "type": "boolean"
+        },
+        "robotsFollow": {
+          "type": "boolean"
+        },
+        "keywords": {
+          "type": "string"
+        },
+        "canonicalBase": {
+          "type": "string"
+        },
+        "sitemapUrl": {
+          "type": "string"
+        },
+        "disallowPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "locales": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "defaultLocale": {
+          "type": "string"
+        },
+        "googleVerification": {
+          "type": "string"
+        },
+        "yandexVerification": {
+          "type": "string"
+        },
+        "social": {
+          "type": "object",
+          "properties": {
+            "twitter": {
+              "type": "string"
+            },
+            "github": {
+              "type": "string"
+            },
+            "linkedin": {
+              "type": "string"
+            },
+            "facebook": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "indexing",
+        "robotsIndex",
+        "robotsFollow",
+        "social"
+      ],
+      "additionalProperties": {}
+    },
+    "og": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "website",
+            "article",
+            "blog",
+            "product",
+            "documentation",
+            "profile",
+            "video.other"
+          ]
+        },
+        "locale": {
+          "type": "string"
+        },
+        "siteName": {
+          "type": "string"
+        },
+        "imageWidth": {
+          "type": "number"
+        },
+        "imageHeight": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "imageWidth",
+        "imageHeight"
+      ],
+      "additionalProperties": {}
+    },
+    "author": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "twitter": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "facebook": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "jobTitle": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": {}
+    },
+    "analytics": {
+      "type": "object",
+      "properties": {
+        "googleAnalyticsId": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": {}
+    },
+    "jsonLd": {
+      "type": "object",
+      "properties": {
+        "website": {
+          "type": "boolean"
+        },
+        "organization": {
+          "type": "boolean"
+        },
+        "localBusiness": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "website",
+        "organization",
+        "localBusiness"
+      ],
+      "additionalProperties": {}
+    },
+    "geo": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "string"
+        },
+        "longitude": {
+          "type": "string"
+        },
+        "hours": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "commerce": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "currency"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "name",
+    "short_name",
+    "description",
+    "url",
+    "manifest",
+    "mailSupport",
+    "lang",
+    "images",
+    "logo",
+    "icons",
+    "iconSet",
+    "pwa",
+    "themeColors",
+    "seo",
+    "og",
+    "author",
+    "analytics",
+    "jsonLd",
+    "geo",
+    "commerce"
+  ],
+  "additionalProperties": {}
+}

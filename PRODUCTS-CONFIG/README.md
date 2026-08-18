@@ -22,6 +22,26 @@ contract as the neighbouring `APP-CONFIG`, `DESIGN-CONFIG` and `PLATFORM-CONFIG`
 one writer, one reader, read per request, applied **without a rebuild**. Flipping a product
 from `draft` to `live` publishes it; nothing is rebuilt and nothing is deployed.
 
+Until 2026-08-18 the second half of that sentence was untrue: the panel wrote this file and
+**nothing in the application read it** — no type, no reader. The registry existed for human eyes
+only. It is now read by `config/products-config.ts` (`getProductsConfig`, `getProductById`,
+`getPublicProducts`), the same shape as the three neighbours.
+
+## Schema
+
+`schema.json`, beside this file — **generated** from `config/products-config.defaults.ts` and
+`config/products-config.schema.ts` by `npm run build:config-schemas`, guarded by
+`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+
+`type` is checked against the catalogue of 22 project structures, because a value outside it means
+the panel and the slot have drifted apart. `id` and `route` are **not** validated beyond being
+strings: the first is eternal and meaningless by design, the second is the owner's to change.
+
+## Skill
+
+**`use-products-config`** — how a product's record turns into its four roots, and what changes
+when its surface or address changes. The detail lives there, not here.
+
 ## One record
 
 ```json

@@ -3,6 +3,8 @@ import { readFileSync } from "fs"
 import { join } from "path"
 import { cache } from "react"
 import { DEFAULT_DESIGN_CONFIG, type DesignConfig } from "./design-config.defaults"
+import { designConfigSchema } from "./design-config.schema"
+import { validateConfig } from "./config-validate"
 
 // Читатель живого оформления. Приёмы намеренно те же, что у соседей
 // (`app-config.ts`, `platform-config.ts`): чтение с диска, `cache()` на один
@@ -32,7 +34,7 @@ const CONFIG_PATH =
 export const getDesignConfig = cache((): DesignConfig => {
   try {
     const raw = JSON.parse(readFileSync(CONFIG_PATH, "utf8")) as Partial<DesignConfig>
-    return {
+    const merged: DesignConfig = {
       colors: {
         light: raw.colors?.light ?? {},
         dark: raw.colors?.dark ?? {},
@@ -41,6 +43,11 @@ export const getDesignConfig = cache((): DesignConfig => {
       type: raw.type ?? {},
       shape: raw.shape ?? {},
     }
+    // Проверка по схеме — после слияния: до него объект заведомо неполон, и каждая
+    // отсутствующая ветка выглядела бы нарушением. Неверный ТИП значения (число
+    // вместо строки в `radius`) лечится умолчанием этой ветки; цвет строкой не
+    // проверяется вовсе — см. комментарий схемы.
+    return validateConfig(designConfigSchema, merged, DEFAULT_DESIGN_CONFIG, "DESIGN-CONFIG")
   } catch {
     return DEFAULT_DESIGN_CONFIG
   }

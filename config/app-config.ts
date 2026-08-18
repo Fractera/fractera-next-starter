@@ -2,6 +2,8 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { cache } from "react";
 import { AppConfig, DEFAULT_APP_CONFIG } from "./app-config.defaults";
+import { appConfigSchema } from "./app-config.schema";
+import { validateConfig } from "./config-validate";
 
 // Server-only loader for the live site config. The config is a REAL JSON file on disk
 // (APP-CONFIG/app-config.json at the project working dir = /opt/fractera/app), edited via
@@ -66,10 +68,19 @@ function normalize(cfg: AppConfig): AppConfig {
 }
 
 // Read + merge the live config. Cached per request render pass; fresh across requests.
+//
+// Порядок трёх шагов значим. `deepMerge` даёт ПОЛНЫЙ объект (файл несёт только
+// изменённые ключи), `validateConfig` лечит значения не того типа их умолчаниями —
+// по одному ключу, не файлом целиком, — и лишь потом `normalize` доводит поля,
+// которые обязаны быть пригодны для `new URL` и `Intl.NumberFormat`.
+//
+// Ветка `i18n` в типе не объявлена и живёт в файле — её сохраняет `loose` у схемы:
+// незнакомый ключ проходит как есть, потому что панель бывает новее слота.
 export const getAppConfig = cache((): AppConfig => {
   try {
     const raw = readFileSync(CONFIG_PATH, "utf8");
-    return normalize(deepMerge(DEFAULT_APP_CONFIG, JSON.parse(raw)));
+    const merged = deepMerge(DEFAULT_APP_CONFIG, JSON.parse(raw));
+    return normalize(validateConfig(appConfigSchema, merged, DEFAULT_APP_CONFIG, "APP-CONFIG"));
   } catch {
     return DEFAULT_APP_CONFIG;
   }

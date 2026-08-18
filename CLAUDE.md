@@ -1,19 +1,88 @@
 # CLAUDE.md
 
-**Rebuilt from zero on 2026-08-18.** The previous version — 980 lines, one sixth of it a production
-deployment pipeline this project no longer has — was deleted, not edited. It is in git history if a
-sentence of it is ever needed again.
+Ты — агент-программист. Ты работаешь на локальной машине архитектора и создаёшь приложение Next 16+
+full stack, строго следуя инфраструктуре агентной инженерии Fractera (далее ИАИФ).
 
-**What this file is going to be:** a thin orchestrator. It routes a request to the skill that owns it
-and holds nothing else. A law with a trigger becomes a skill; a set of permitted values becomes a tool
-contract; only a law that must hold always and has no trigger stays here.
+ИАИФ — это сервер Ubuntu. В зависимости от переключателя `FRACTERA_IP_NODOMAIN_MODE` (три файла
+`.env.local`: `app/`, `bridges/app/`, `services/auth/`) он работает либо на IP — сейчас
+`109.199.105.213`, — либо на домене; сейчас переключатель `false`, домен `aifa.dev`. Архитектура:
 
-**What it is right now:** almost empty, plus one temporary inventory below. Do not treat the inventory
-as the instruction — it is a queue of things to move out.
+- `3000` — твоё приложение, навык `use-passport`
+- `3001` — авторизация, навык `use-auth`
+    - чем войти: провайдеры входа — навык `use-auth-providers`
+    - что увидит вошедший: роли и связанные с ними страницы — навык `use-roles`
+- `3002` — панель управления, навык `use-panel`
+- `3300` — слой данных, навык `use-data`
+    - база данных — навык `use-database`
+    - хранилище объектов (файлы, изображения) — навык `use-object-storage`
+    - векторное хранилище (поиск по смыслу) — навык `use-vector-memory`
+- `3400` — карта, навык `use-map`
+- `3500` — каналы связи, навык `use-channels`
+- `9621` — агентный RAG, навык `use-agentic-rag`
+
+## Четыре конфига
+
+Панель пишет, приложение читает на каждый запрос, применяется без пересборки.
+
+- `APP-CONFIG` — личность продукта: имя, описание, бренд, SEO → навык `use-app-config`
+- `PLATFORM-CONFIG` — наличие возможностей: десять выключателей → навык `use-platform-config`
+- `DESIGN-CONFIG` — оформление: цвета, шрифты, шкала, формы → навык `use-design-config`
+- `PRODUCTS-CONFIG` — что несёт сервер: реестр продуктов → навык `use-products-config`
+
+Устройство у всех одно: `<X>-CONFIG/<x>-config.json` — значения · `<X>-CONFIG/schema.json` —
+порождённая схема · `config/<x>-config.defaults.ts` — тип и умолчания · `config/<x>-config.ts` —
+читатель. Пустой файл и отсутствующий файл означают одно: владелец не высказался, работают
+умолчания.
+
+**Закон.** Менять значения в рамках схемы — можно. Заводить новые сущности — нельзя: поле обязано
+существовать одновременно в типе, в панели и в её проверке, иначе оно исчезнет при первом же
+сохранении из панели. Схему правит платформа, а не проект.
+
+## Где ты сейчас
+
+Машина: локальная, архитектора. Предмет разработки: приложение `3000`.
+
+**Состояние проекта.** `*****` = значение, которое обязан подставлять механизм состояния; пока вписано
+руками и потому стареет.
+
+- репозиторий: `r672442251-gif/aifa8` `*****`
+- режим: `FRACTERA_IP_NODOMAIN_MODE=false` → домен `aifa.dev`, протокол https `*****`
+- авто-развёртывание: `off` `*****`
+
+**Синхронизация — два канала.**
+
+1. **GitHub.** `pull` / `push`, локальная машина ↔ сервер. Развёртывание: кнопка «Развернуть» либо
+   режим `autoDeploy` — `off` | `pull` | `pull+deploy`. Опрос репозитория 60 с, требуемая тишина
+   120 с, webhook и публичный адрес не нужны. По умолчанию `off`: сборка идёт на той же машине,
+   которая отвечает посетителям.
+2. **Службы сервера.** `3300`, `3400`, `9621` отвечают локальной копии как облачные: один адрес, один
+   ключ, те же строки, файлы и векторы, что у развёрнутого приложения.
+
+**Авторизация.**
+
+- локально: вход отключён, роль `architect`, входит в каждую группу прав → видно всё;
+- `FRACTERA_IP_NODOMAIN_MODE=true`: вход отключён **на самом сервере** (`shouldBypassAuth()`),
+  протокол http, сервис-воркер не регистрируется — браузер требует защищённого контекста;
+- `false`: домен, https, роли строго, вход на отдельном узле `auth.<домен>`;
+- следствие: право доступа локально не проверяется вовсе. Страница, открытая при разработке, в
+  продакшне может не показаться — это работа роли, а не поломка. Сказать это до жалобы, а не после.
 
 <!-- fractera:instruction-set begin -->
 **Managed by the control panel — do not edit this block by hand.**
 <!-- fractera:instruction-set end -->
+
+---
+
+**Переписан с нуля 2026-08-18.** Прежняя версия — 980 строк, шестая часть из них конвейер
+продакшн-разработки, которого у проекта больше нет, — удалена целиком, а не отредактирована. Текст
+остался в истории git.
+
+**Чем файл станет:** тонкий оркестратор. Он направляет просьбу к навыку, который ею владеет, и не
+держит ничего сверх этого. Закон с поводом становится навыком; набор допустимых значений — контрактом
+инструмента; здесь остаётся только закон, который обязан действовать всегда и повода не имеет.
+
+**Чем он является сейчас:** почти пустым, плюс два временных перечня ниже. Перечни — очередь на
+вынос, а не инструкция.
 
 ---
 
@@ -108,6 +177,15 @@ Fix or delete each, then remove the line.
   panel open empty.
 - The machine layer is meant to be English; `SECTIONS.md`, `SEO.md`, `AIO.md`, `PWA.md` and
   `API-MAP.md` are in Russian.
+- **Механизм состояния не существует.** Всё, помеченное `*****`, вписано руками и устареет при первом
+  переносе, смене домена или переключении режима. Нужен механизм: панель пишет эти значения сама, в
+  управляемую область, как уже делает с набором инструкций. Искать долги по строке `*****`.
+- **Названо шестнадцать навыков, написано два.** Существуют `manage-cases-and-steps` и
+  `manage-app-settings`; остальные — имена-заготовки: `use-passport`, `use-auth`,
+  `use-auth-providers`, `use-roles`, `use-panel`, `use-data`, `use-database`, `use-object-storage`,
+  `use-vector-memory`, `use-map`, `use-channels`, `use-agentic-rag`, `use-app-config`,
+  `use-platform-config`, `use-design-config`, `use-products-config`. Имя-заготовка честнее
+  подробностей, вписанных в инструкцию, но ссылка на несуществующий навык остаётся обещанием.
 
 **Cleared on 2026-08-18** (kept as a record until this section goes): `PLATFORM-TOOLS.md` was listed as
 active while nothing ever created it — the panel now generates it the first time the document set is

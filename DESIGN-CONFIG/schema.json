@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "colors": {
+      "type": "object",
+      "properties": {
+        "light": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string"
+            },
+            "secondary": {
+              "type": "string"
+            },
+            "accent": {
+              "type": "string"
+            },
+            "background": {
+              "type": "string"
+            },
+            "foreground": {
+              "type": "string"
+            },
+            "muted": {
+              "type": "string"
+            },
+            "border": {
+              "type": "string"
+            },
+            "destructive": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {}
+        },
+        "dark": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string"
+            },
+            "secondary": {
+              "type": "string"
+            },
+            "accent": {
+              "type": "string"
+            },
+            "background": {
+              "type": "string"
+            },
+            "foreground": {
+              "type": "string"
+            },
+            "muted": {
+              "type": "string"
+            },
+            "border": {
+              "type": "string"
+            },
+            "destructive": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "light",
+        "dark"
+      ],
+      "additionalProperties": {}
+    },
+    "fonts": {
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "object",
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "import": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "family"
+          ],
+          "additionalProperties": {}
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "import": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "family"
+          ],
+          "additionalProperties": {}
+        },
+        "mono": {
+          "type": "object",
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "import": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "family"
+          ],
+          "additionalProperties": {}
+        }
+      },
+      "additionalProperties": {}
+    },
+    "type": {
+      "type": "object",
+      "properties": {
+        "scale": {
+          "type": "number"
+        },
+        "leading": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "shape": {
+      "type": "object",
+      "properties": {
+        "radius": {
+          "type": "string"
+        },
+        "borderWidth": {
+          "type": "string"
+        },
+        "spaceScale": {
+          "type": "number"
+        },
+        "appWidth": {
+          "type": "string"
+        },
+        "heroWidth": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "colors",
+    "fonts",
+    "type",
+    "shape"
+  ],
+  "additionalProperties": {}
+}

@@ -20,6 +20,24 @@ make a route dynamic; `force-dynamic` would, and it is not used here.
 the app serves the committed defaults. A partial file is normal too — only the keys the owner
 changed need to be present.
 
+## Schema
+
+`schema.json`, beside this file. It is **generated** from `config/app-config.defaults.ts` (the
+type) and `config/app-config.schema.ts` (the zod description of it) by
+`npm run build:config-schemas`; `npm run check:config-schemas` runs in `prebuild` and fails the
+build when the generated file has drifted from the type. Never write it by hand — a schema that
+stops matching the type is worse than no schema, because it is read and believed.
+
+The reader validates against it and **heals a wrong-typed value with that value's default —
+per key**, never by dropping the file and never by rewriting it. An unknown key passes through
+untouched: the panel may be newer than this slot, and discarding its field would throw away the
+owner's decision.
+
+## Skill
+
+**`use-app-config`** — what each setting actually does to the project. This README stays short on
+purpose: the skill carries the detail and arrives when the work calls for it.
+
 ## Rules
 
 - **Never edit this file by hand to change a setting.** Your edit is not what the app reads

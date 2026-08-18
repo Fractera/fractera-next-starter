@@ -20,6 +20,26 @@ servers. "Off by default" is not "the owner turned it off": the fallback applies
 owner has spoken, and stops the moment they touch the switch. Ask `featureDecided()` when the
 difference matters.
 
+## Schema
+
+`schema.json`, beside this file — **generated** from `config/platform-config.defaults.ts` and
+`config/platform-config.schema.ts` by `npm run build:config-schemas`, and guarded by
+`npm run check:config-schemas` in `prebuild`. Never write it by hand.
+
+🔒 **It describes the FILE, not the reader's answer**, and this is the one config where the two
+differ. On disk lie the owner's decisions — the switches they touched, the routing mode, the
+document set for the agent. `featureOn()` returns the full picture: every capability's value plus
+a separate answer to "did the owner decide this". Only what is really on disk can be validated on
+read.
+
+A switch of the wrong type is healed exactly like a missing one — with its default — and the
+owner stays "not decided", which is the truth about them.
+
+## Skill
+
+**`use-platform-config`** — what each switch turns on, and what disappears from the site when it
+is off. The detail lives there, not here.
+
 ## Rules
 
 - **Never import this from a client component** — it reads from disk. Resolve values in a

@@ -26,55 +26,28 @@ import { cache } from "react";
 // 🔒 НИКОГДА НЕ ИМПОРТИРОВАТЬ ИЗ КЛИЕНТСКОГО КОМПОНЕНТА — здесь `fs`. Значения
 // уезжают в островки пропсами из серверного компонента.
 
-export type FeatureKey =
-  | "auth"
-  | "breadcrumbs"
-  | "faq"
-  | "themeToggle"
-  | "widthToggle"
-  | "languageSwitcher"
-  | "topMenu"
-  | "footerPages"
-  | "cookieBanner"
-  | "offlineCache";
+// 🔒 ФОРМА И УМОЛЧАНИЯ ПЕРЕЕХАЛИ в `config/platform-config.defaults.ts`
+// (2026-08-18), чтобы четыре конфига слота были устроены одинаково: у каждого
+// пара «данные + читатель». Здесь они ре-экспортируются, поэтому прежние импорты
+// из `@/config/platform-config` продолжают работать без правок.
+export {
+  FEATURE_DEFAULTS,
+  DEFAULT_PLATFORM_CONFIG_FILE,
+} from "./platform-config.defaults";
+export type {
+  FeatureKey,
+  PlatformConfig,
+  PlatformConfigFile,
+} from "./platform-config.defaults";
 
-/**
- * Состояние проекта, который ещё ни разу не настраивали.
- *
- * 🔒 ЗНАЧЕНИЯ ПРОДУБЛИРОВАНЫ, А НЕ ИМПОРТИРОВАНЫ из панели намеренно: панель —
- * чужой репозиторий, её здесь нет и не будет. Дублируется девять булевых
- * значений; связь держится тем, что источник назван прямо здесь.
- * Источник: `bridges/app/lib/platform-features.shared.ts` (`FEATURE_DEFAULTS`).
- */
-export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
-  topMenu: true,
-  footerPages: true,
-  cookieBanner: false,
-  offlineCache: true,
-  auth: false,
-  breadcrumbs: false,
-  faq: false,
-  themeToggle: true,
-  widthToggle: true,
-  languageSwitcher: true,
-};
-
-export type PlatformConfig = {
-  features: Record<FeatureKey, boolean>;
-  /**
-   * Решал ли владелец судьбу возможности САМ.
-   *
-   * 🔒 ЗАЧЕМ ЭТО ОТДЕЛЬНО ОТ `features`. «Выключено по умолчанию» и «владелец
-   * выключил» — разные вещи, и путать их значит ломать работающие серверы.
-   * Авторизация до этого механизма жила сборочной переменной; будь у нас только
-   * `features.auth === false`, каждый такой сервер молча потерял бы кнопку входа
-   * при первом же развёртывании. Поэтому запасное значение применяется, ПОКА
-   * владелец не высказался, и перестаёт — как только он тронул выключатель.
-   */
-  explicit: Record<FeatureKey, boolean>;
-  /** Параллельная маршрутизация — читается двумя историческими именами. */
-  parallel: boolean;
-};
+import {
+  FEATURE_DEFAULTS as DEFAULTS,
+  DEFAULT_PLATFORM_CONFIG_FILE,
+  type FeatureKey,
+  type PlatformConfig,
+} from "./platform-config.defaults";
+import { platformConfigSchema } from "./platform-config.schema";
+import { validateConfig } from "./config-validate";
 
 const CONFIG_PATH =
   process.env.PLATFORM_CONFIG_PATH ??
@@ -89,20 +62,31 @@ const CONFIG_PATH =
  * уронить страницу из-за одной сломанной скобки в настройках.
  */
 export const getPlatformConfig = cache((): PlatformConfig => {
-  let raw: Record<string, unknown> = {};
+  let parsed: unknown = {};
   try {
-    raw = JSON.parse(readFileSync(CONFIG_PATH, "utf8")) as Record<string, unknown>;
+    parsed = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
   } catch {
-    raw = {};
+    parsed = {};
   }
+
+  // Схема описывает ФАЙЛ, а не этот ответ: на диске лежат решения владельца, а
+  // возвращается полная картина. Выключатель не того типа лечится тем же путём,
+  // что и его отсутствие, — умолчанием, и владелец при этом остаётся «не
+  // высказавшимся», что для `explicit` и есть правда.
+  const raw = validateConfig(
+    platformConfigSchema,
+    parsed,
+    DEFAULT_PLATFORM_CONFIG_FILE,
+    "PLATFORM-CONFIG",
+  ) as Record<string, unknown>;
 
   const saved = (raw.features ?? {}) as Record<string, unknown>;
   const features = {} as Record<FeatureKey, boolean>;
   const explicit = {} as Record<FeatureKey, boolean>;
-  for (const key of Object.keys(FEATURE_DEFAULTS) as FeatureKey[]) {
+  for (const key of Object.keys(DEFAULTS) as FeatureKey[]) {
     const own = typeof saved[key] === "boolean";
     explicit[key] = own;
-    features[key] = own ? (saved[key] as boolean) : FEATURE_DEFAULTS[key];
+    features[key] = own ? (saved[key] as boolean) : DEFAULTS[key];
   }
 
   return {

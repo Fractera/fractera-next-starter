@@ -55,7 +55,7 @@ full stack, строго следуя инфраструктуре агентн�
 | `run.sh <файл>` · `run.sh -c '<команда>'` | выполняет команду на сервере; тело идёт файлом или на stdin |
 | `copy.sh <путь>…` | пакует пути одним архивом, распаковывает в `/opt/fractera/app` |
 | `status.sh` | держатель порта и цепочка `ppid`, uptime дважды, рестарты, замок панели, `/opt/fractera/app/DEPLOY_STATE.json`, `/api/health` |
-| `deploy.sh [<путь>…]` | доставка → замок панели → сборка с меткой коммита → `pm2 reload` → сверка |
+| `deploy.sh [<путь>…]` | доставка → сборка → `pm2 reload` → сверка; есть `FRACTERA_DEPLOY_SECRET` — сборку запускает панель (её очередь, журнал и откат), нет — собираем по SSH и журнал панели остаётся со старой записью |
 
 Доступ — `FRACTERA_SSH_HOST`, `FRACTERA_SSH_PORT`, `FRACTERA_SSH_USER`, `FRACTERA_SSH_KEY_PATH` в `.env.local`
 проекта (панель → «Переменные окружения» → выгрузка); ключ и `known_hosts` — в `.fractera-ssh/`, папка в

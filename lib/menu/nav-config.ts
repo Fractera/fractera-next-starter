@@ -97,7 +97,7 @@ function toChild(slot: NavSlot, raw: RawItem, lang: string): MenuChild | null {
 /**
  * Страницы подвала, которые проект показывает БЕЗ всякой настройки.
  *
- * 🔒 СВЕЖИЙ ПРОЕКТ ОБЯЗАН ВЫГЛЯДЕТЬ ГОТОВЫМ (владелец, 2026-08-12). Три страницы
+ * 🔒 СВЕЖИЙ ПРОЕКТ ОБЯЗАН ВЫГЛЯДЕТЬ ГОТОВЫМ (владелец, 2026-08-12). Эти страницы
  * лежат в дереве с первой минуты, и подвал без ссылок на них выглядел бы
  * поломкой: страницы есть, а дойти до них неоткуда. Владелец откроет раздел
  * панели — его набор станет главным, и этот список больше не применяется.
@@ -109,6 +109,11 @@ const DEFAULT_FOOTER: { id: string; href: string; label: string }[] = [
   { id: "privacy", href: "/privacy", label: "Privacy" },
   { id: "terms", href: "/terms", label: "Terms" },
   { id: "cookies", href: "/cookies", label: "Cookies" },
+  // Подпись — «Accessible», а не «Accessibility»: предел подписи 12 знаков, и
+  // полное слово (13) приехало бы в подвал свежего проекта как «Accessibili…».
+  // Адрес и заголовок самой страницы при этом полные — обрезка живёт только в
+  // кнопке. Владелец переименует пункт в панели, если захочет иначе.
+  { id: "accessibility", href: "/accessibility", label: "Accessible" },
 ];
 
 export function defaultFooterGroups(lang: string): MenuGroup[] {

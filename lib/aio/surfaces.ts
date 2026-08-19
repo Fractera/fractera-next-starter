@@ -10,6 +10,7 @@ import { data as privacyData } from '@/app/[lang]/(publicLayer)/(footerPages)/pr
 import { data as termsData } from '@/app/[lang]/(publicLayer)/(footerPages)/terms/_data'
 import { data as cookiesData } from '@/app/[lang]/(publicLayer)/(footerPages)/cookies/_data'
 import { data as architectureData } from '@/app/[lang]/(publicLayer)/(footerPages)/architecture/_data'
+import { data as accessibilityData } from '@/app/[lang]/(publicLayer)/(footerPages)/accessibility/_data'
 
 // ПЕРЕЧЕНЬ ПУБЛИЧНЫХ ПОВЕРХНОСТЕЙ — ОДИН НА ВЕСЬ AIO (шаг 505).
 //
@@ -127,6 +128,10 @@ export function publicSurfaces(lang: string): Surface[] {
     [privacyData, '/privacy'],
     [termsData, '/terms'],
     [cookiesData, '/cookies'],
+    // Заявление о доступности — документ того же рода, что правовые: короткий
+    // текст о свойствах сайта, который читатель ищет в подвале. Раздел карты у
+    // него 'legal' по той же причине.
+    [accessibilityData, '/accessibility'],
     // Архитектура живёт в той же папке и по тем же законам, что правовые
     // страницы, поэтому идёт тем же циклом. Раздел карты у неё, однако, 'main':
     // это описание продукта, а не документ, и в списке правовых читатель искал бы

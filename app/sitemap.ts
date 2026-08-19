@@ -13,6 +13,21 @@ import { POSTS } from "./[lang]/(publicLayer)/blog/_list.generated"
 // (`/products/sitemap/0.xml`, `/1.xml`, …).
 export const revalidate = 3600
 
+// СТРАНИЦЫ ПОДВАЛА — `app/[lang]/(publicLayer)/(footerPages)/*`.
+//
+// 🔒 ИХ ЗДЕСЬ НЕ БЫЛО ВОВСЕ (найдено 2026-08-19, при заведении «Доступности»).
+// Тот же дефект, что был у блога: страницы статические, переведённые, с
+// разметкой для машин — и ни одна не названа в карте. Проверка `check:seo`
+// молчала потому, что считает разделами только папки первого уровня в
+// `app/[lang]`, а группы в скобках (`(publicLayer)`, `(footerPages)`) для неё
+// прозрачны и в обход не попадают. Прозрачность групп для URL не делает их
+// прозрачными для карты.
+//
+// Список литеральный, а не обход папок: карта — файл сборки, и обход дерева в
+// ней означал бы, что забытая приватная страница попадает в карту сама. Новая
+// страница подвала добавляется сюда строкой, как и в `lib/aio/surfaces.ts`.
+const FOOTER_PAGES = ["/privacy", "/terms", "/cookies", "/accessibility", "/architecture"] as const
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const site = brand().siteUrl
   if (!site) return []
@@ -47,6 +62,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: "monthly",
         priority: 0.7,
       })
+    }
+    // Приоритет ниже разделов: это справочные документы, а не то, ради чего на
+    // сайт приходят. Частота — `yearly`: текст правовой страницы меняется
+    // редко, и обещать поисковику иное значит тратить его обходы впустую.
+    for (const sub of FOOTER_PAGES) {
+      out.push({ url: urlFor(lang, sub), changeFrequency: "yearly", priority: 0.3 })
     }
   }
   // В одноязычном режиме `urlFor` для каждого языка даёт один и тот же адрес — но

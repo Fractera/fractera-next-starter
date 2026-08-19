@@ -54,3 +54,6 @@ app/[lang]/**/_list.generated.ts
 
 # Превью статических изображений: считаются на сборке (scripts/generate-image-previews.mjs)
 lib/images/previews.generated.ts
+
+# доступ к серверу: приватный ключ и known_hosts (scripts/server/*) — только на этой машине
+.fractera-ssh/

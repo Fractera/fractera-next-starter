@@ -66,7 +66,7 @@ export const nl: Partial<HomeCell> = {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Zes stappen vanaf een lege server' },
+          { kind: 'h3', text: 'Zeven stappen vanaf een lege server' },
           {
             kind: 'olist',
             items: [
@@ -75,6 +75,7 @@ export const nl: Partial<HomeCell> = {
           'Gebruik de instellingen om uw project te beschrijven: naam, beschrijving, logo, SEO. [App-instellingen]({admin}/{lang}/app-settings)',
           'Koppel GitHub en stuur de code van de server naar uw repository. [GitHub]({admin}/{lang}/github)',
           'Kloon die repository naar uw eigen machine, ontwikkel daar en stuur terug.',
+          'Breng het omgevingsbestand `.env.local` naar uw machine — git vervoert het nooit, en zonder dit start de lokale kopie niet. [Omgevingsvariabelen]({admin}/{lang}/env)',
           'Druk op Deploy in het paneel — de server neemt uw commit over en bouwt zichzelf opnieuw op. [Implementaties]({admin}/{lang}/deployments)',
             ],
           },

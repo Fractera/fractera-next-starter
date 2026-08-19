@@ -66,7 +66,7 @@ export const pl: Partial<HomeCell> = {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Sześć kroków od pustego serwera' },
+          { kind: 'h3', text: 'Siedem kroków od pustego serwera' },
           {
             kind: 'olist',
             items: [
@@ -75,6 +75,7 @@ export const pl: Partial<HomeCell> = {
           'Użyj ustawień, aby opisać swój projekt: nazwę, opis, logo, SEO. [Ustawienia aplikacji]({admin}/{lang}/app-settings)',
           'Połącz GitHub i wyślij kod serwera do swojego repozytorium. [GitHub]({admin}/{lang}/github)',
           'Sklonuj to repozytorium na własną maszynę, pracuj tam i wysyłaj zmiany z powrotem.',
+          'Przenieś plik środowiska `.env.local` na swój komputer — git nigdy go nie przewozi, a bez niego lokalna kopia się nie uruchomi. [Zmienne środowiskowe]({admin}/{lang}/env)',
           'Naciśnij Wdróż w panelu — serwer pobiera Twój commit i sam się przebudowuje. [Wdrożenia]({admin}/{lang}/deployments)',
             ],
           },

@@ -68,7 +68,7 @@ export const en: HomeCell = {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Six steps from a bare server' },
+          { kind: 'h3', text: 'Seven steps from a bare server' },
           {
             kind: 'olist',
             items: [
@@ -77,6 +77,7 @@ export const en: HomeCell = {
           'Use the settings to describe your project: name, description, logo, SEO. [App settings]({admin}/{lang}/app-settings)',
           'Connect GitHub and push the server\'s code into your repository. [GitHub]({admin}/{lang}/github)',
           'Clone that repository onto your own machine, develop there, and push back.',
+          'Move the environment file `.env.local` to your machine — git never carries it, and without it your local copy will not start. [Environment variables]({admin}/{lang}/env)',
           'Press Deploy in the panel — the server takes your commit and rebuilds itself. [Deployments]({admin}/{lang}/deployments)',
             ],
           },

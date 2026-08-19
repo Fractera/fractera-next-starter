@@ -66,7 +66,7 @@ export const fr: Partial<HomeCell> = {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Six étapes depuis un serveur vide' },
+          { kind: 'h3', text: 'Sept étapes depuis un serveur vide' },
           {
             kind: 'olist',
             items: [
@@ -75,6 +75,7 @@ export const fr: Partial<HomeCell> = {
           'Utilisez les réglages pour décrire votre projet : nom, description, logo, SEO. [Réglages de l\'app]({admin}/{lang}/app-settings)',
           'Connectez GitHub et envoyez le code du serveur vers votre dépôt. [GitHub]({admin}/{lang}/github)',
           'Clonez ce dépôt sur votre propre machine, développez-y, puis renvoyez vos changements.',
+          "Transférez le fichier d'environnement `.env.local` sur votre machine — git ne le transporte jamais, et sans lui la copie locale ne démarre pas. [Variables d'environnement]({admin}/{lang}/env)",
           'Cliquez sur Déployer dans le panneau — le serveur récupère votre commit et se reconstruit lui-même. [Déploiements]({admin}/{lang}/deployments)',
             ],
           },

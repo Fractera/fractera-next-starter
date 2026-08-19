@@ -66,7 +66,7 @@ export const tr: Partial<HomeCell> = {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Boş sunucudan altı adım' },
+          { kind: 'h3', text: 'Boş sunucudan yedi adım' },
           {
             kind: 'olist',
             items: [
@@ -75,6 +75,7 @@ export const tr: Partial<HomeCell> = {
           'Projenizi ayarlarda tanımlayın: ad, açıklama, logo, SEO. [Uygulama ayarları]({admin}/{lang}/app-settings)',
           'GitHub\'ı bağlayın ve sunucunun kodunu deponuza gönderin. [GitHub]({admin}/{lang}/github)',
           'O depoyu kendi makinenize klonlayın, orada geliştirin ve geri gönderin.',
+          'Ortam dosyası `.env.local` dosyasını makinenize taşıyın — git onu asla taşımaz ve o olmadan yerel kopya başlamaz. [Ortam değişkenleri]({admin}/{lang}/env)',
           'Paneldeki Dağıt düğmesine basın — sunucu commit\'inizi alır ve kendini yeniden inşa eder. [Dağıtımlar]({admin}/{lang}/deployments)',
             ],
           },

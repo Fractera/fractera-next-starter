@@ -86,12 +86,13 @@ export const nl: Partial<HomeCell> = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Aanbevolen voordat u begint' },
-          { kind: 'p', text: 'Geen van beide blokkeert iets. Beide besparen herwerk.' },
+          { kind: 'p', text: 'Niets hiervan blokkeert iets. Alle drie besparen herwerk.' },
           {
             kind: 'list',
             items: [
               '**Een OpenAI-sleutel.** Zonder sleutel stelt de Quiz geen vragen, en zonder cases weigert de codeagent te bouwen. De site werkt gewoon — alleen vectorzoeken en de kennisgraaf blijven leeg. Eenmalig ingevoerd; de kosten gaan rechtstreeks naar je modelaanbieder. [OpenAI-sleutel]({admin}/{lang}/openai)',
               '**Een eigen domein.** Op een numeriek adres is er geen certificaat en geen installeerbare app — een browser geeft die alleen over een beveiligde verbinding. Later verhuizen verandert elk paginaadres, dus vóór indexering is het goedkoper. [Domein]({admin}/{lang}/domain)',
+              '**Claude-extensie voor Chrome.** Zonder die ziet de agent alleen broncode: consolefouten, gedrag zonder JavaScript en hoe de afgewerkte pagina er werkelijk uitziet staan nergens in de code. Met die opent hij de pagina zelf en repareert wat er is, niet wat hij vermoedde. [Ontwikkelgereedschap]({admin}/{lang}/dev-tools)',
             ],
           },
         ],

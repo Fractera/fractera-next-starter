@@ -86,12 +86,13 @@ export const tr: Partial<HomeCell> = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Başlamadan önce önerilir' },
-          { kind: 'p', text: 'İkisi de hiçbir şeyi engellemez. İkisi de yeniden yapmaktan kurtarır.' },
+          { kind: 'p', text: 'Bunların hiçbiri bir şeyi engellemez. Üçü de yeniden yapmaktan kurtarır.' },
           {
             kind: 'list',
             items: [
               '**Bir OpenAI anahtarı.** Onsuz Quiz soru sormaz, senaryo olmadan da kodlayan ajan inşa etmeyi reddeder. Site yine de çalışır — yalnızca vektör arama ve bilgi grafiği boş kalır. Bir kez girilir; masraf doğrudan model sağlayıcınıza gider. [OpenAI anahtarı]({admin}/{lang}/openai)',
               '**Kendi alan adınız.** Sayısal bir adreste ne sertifika ne de kurulabilir uygulama olur — tarayıcı bunları yalnızca güvenli bağlantıda verir. Sonradan taşınmak her sayfanın adresini değiştirir, bu yüzden dizine eklenmeden önce daha ucuza gelir. [Alan adı]({admin}/{lang}/domain)',
+              '**Chrome için Claude eklentisi.** O olmadan ajan yalnızca kaynak kodu görür: konsol hataları, JavaScript kapalıyken davranış ve sayfanın gerçekte nasıl göründüğü kodun hiçbir yerinde yazmaz. Onunla sayfayı kendisi açar ve tahminini değil, gerçeği düzeltir. [Geliştirme araçları]({admin}/{lang}/dev-tools)',
             ],
           },
         ],

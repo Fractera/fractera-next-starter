@@ -86,12 +86,13 @@ export const fr: Partial<HomeCell> = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Recommandé avant de commencer' },
-          { kind: 'p', text: 'Ni l\'un ni l\'autre ne bloque quoi que ce soit. Les deux évitent de refaire le travail.' },
+          { kind: 'p', text: 'Rien de tout cela ne bloque quoi que ce soit. Les trois évitent de refaire le travail.' },
           {
             kind: 'list',
             items: [
               '**Une clé OpenAI.** Sans elle, le Quiz ne pose aucune question, et sans cas l\'agent programmeur refuse de construire. Le site fonctionne quand même — seuls la recherche vectorielle et le graphe de connaissances restent vides. Saisie une fois ; la dépense va directement à votre fournisseur de modèle. [Clé OpenAI]({admin}/{lang}/openai)',
               '**Votre propre domaine.** Sur une adresse numérique, il n\'y a ni certificat ni application installable — le navigateur ne les accorde que sur connexion sécurisée. Déménager plus tard change l\'adresse de chaque page : c\'est moins cher avant l\'indexation. [Domaine]({admin}/{lang}/domain)',
+              "**Extension Claude pour Chrome.** Sans elle, l'agent ne voit que le code : les erreurs de console, le comportement sans JavaScript et l'aspect réel de la page ne sont écrits nulle part. Avec elle, il ouvre la page lui-même et corrige ce qui est là, pas ce qu'il a supposé. [Outils de développement]({admin}/{lang}/dev-tools)",
             ],
           },
         ],

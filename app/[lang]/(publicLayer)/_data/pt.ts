@@ -86,12 +86,13 @@ export const pt: Partial<HomeCell> = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Recomendado antes de começar' },
-          { kind: 'p', text: 'Nenhum dos dois bloqueia nada. Ambos poupam retrabalho.' },
+          { kind: 'p', text: 'Nada disto bloqueia nada. Os três poupam retrabalho.' },
           {
             kind: 'list',
             items: [
               '**Uma chave OpenAI.** Sem ela o Quiz não faz perguntas, e sem casos o agente programador recusa-se a construir. O site continua a funcionar — só a pesquisa vetorial e o grafo de conhecimento ficam vazios. Introduz-se uma vez; o custo vai direto para o seu fornecedor de modelo. [Chave OpenAI]({admin}/{lang}/openai)',
               '**Um domínio seu.** Num endereço numérico não há certificado nem aplicação instalável — o navegador só os concede em ligação segura. Mudar mais tarde altera o endereço de cada página, por isso sai mais barato antes da indexação. [Domínio]({admin}/{lang}/domain)',
+              '**Extensão Claude para Chrome.** Sem ela o agente vê apenas o código: os erros de consola, o comportamento sem JavaScript e o aspeto real da página não estão escritos em lado nenhum. Com ela abre a página sozinho e corrige o que lá está, não o que supôs. [Ferramentas de desenvolvimento]({admin}/{lang}/dev-tools)',
             ],
           },
         ],

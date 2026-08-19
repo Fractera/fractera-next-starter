@@ -88,12 +88,13 @@ export const en: HomeCell = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Recommended before you start' },
-          { kind: 'p', text: 'Neither blocks anything. Both save rework.' },
+          { kind: 'p', text: 'None of these blocks anything. All three save rework.' },
           {
             kind: 'list',
             items: [
               '**An OpenAI key.** Without it the Quiz asks no questions, and with no cases the coding agent refuses to build. The site still works — only vector search and the knowledge graph stay empty. Entered once; the cost goes straight to your model provider. [OpenAI key]({admin}/{lang}/openai)',
               '**Your own domain.** On a numeric address there is no certificate and no installable app — a browser grants those only over a secure connection. Moving later changes every page address, so it is cheaper before they are indexed. [Domain]({admin}/{lang}/domain)',
+              '**Claude extension for Chrome.** Without it the agent sees only source: console errors, behaviour with JavaScript off and how the finished page actually looks are written nowhere in the code. With it he opens the page himself and fixes what is there instead of what he guessed. [Development tools]({admin}/{lang}/dev-tools)',
             ],
           },
         ],

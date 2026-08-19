@@ -86,12 +86,13 @@ export const de: Partial<HomeCell> = {
         tone: 'access',
         children: [
           { kind: 'h3', text: 'Empfohlen vor dem Start' },
-          { kind: 'p', text: 'Keines von beiden blockiert etwas. Beide ersparen Nacharbeit.' },
+          { kind: 'p', text: 'Nichts davon blockiert etwas. Alle drei ersparen Nacharbeit.' },
           {
             kind: 'list',
             items: [
               '**Ein OpenAI-Schlüssel.** Ohne ihn stellt das Quiz keine Fragen, und ohne Fälle weigert sich der Programmier-Agent zu bauen. Die Website läuft trotzdem — leer bleiben nur die Vektorsuche und der Wissensgraph. Einmal eingegeben; die Kosten gehen direkt an Ihren Modellanbieter. [OpenAI-Schlüssel]({admin}/{lang}/openai)',
               '**Eine eigene Domain.** Unter einer Zahlenadresse gibt es weder Zertifikat noch installierbare App — der Browser gewährt beides nur über eine sichere Verbindung. Ein späterer Umzug ändert jede Seitenadresse, vor der Indexierung ist er billiger. [Domain]({admin}/{lang}/domain)',
+              '**Claude-Erweiterung für Chrome.** Ohne sie sieht der Agent nur den Quelltext: Konsolenfehler, das Verhalten ohne JavaScript und das fertige Aussehen der Seite stehen nirgendwo im Code. Mit ihr öffnet er die Seite selbst und repariert nach Tatsachen statt nach Vermutung. [Entwicklungswerkzeuge]({admin}/{lang}/dev-tools)',
             ],
           },
         ],

@@ -267,10 +267,45 @@ Sonner — других нет.
 
 ## Навыки
 
-Навык грузится по поводу: инструкция называет дверь, навык несёт процедуру. Написаны семь —
-`manage-app-settings`, `manage-top-menu`, `manage-footer-pages`, `manage-cookie-banner`,
-`expand-site-language`, `persist-env-var-with-rebuild`, `audit-broken-characters`. Встретил имя,
-которого нет, — скажи и работай без него, не выдумывая содержание.
+Навык грузится по поводу: инструкция называет дверь, навык несёт процедуру. Встретил имя со статусом
+`—` — скажи об этом и работай без него, не выдумывая содержание.
+
+**Статусы:** ✅ написан · 🔨 в работе · — не начат.
+
+| Навык | Про что | Статус |
+|---|---|---|
+| `manage-app-settings` | настройки приложения в панели | ✅ |
+| `manage-top-menu` | верхнее меню | ✅ |
+| `manage-footer-pages` | страницы подвала | ✅ |
+| `manage-cookie-banner` | баннер cookie | ✅ |
+| `expand-site-language` | добавить язык к готовому сайту | ✅ |
+| `persist-env-var-with-rebuild` | переменная сборки переживает развёртывание | ✅ |
+| `audit-broken-characters` | битые символы после потерь при переносе | ✅ |
+| `create-multilingual-content-entry` | многоязычная запись контента | ✅ |
+| `install-language-switcher-dropdown` | переключатель языков | ✅ |
+| `manage-app-shell-auth` | кнопка входа в оболочке | ✅ |
+| `use-static-pages` | публичная страница папкой на запись: три слоя, языковые ячейки, карта, машинный близнец | — |
+| `use-dynamic-pages` | публичная страница из данных: срез предрендера, ISR по метке, порционная карта | — |
+| `use-sections` | слой секций: завести вид, договор рендерера | — |
+| `use-design` | оформление: `DESIGN-CONFIG`, примитивы, типографика | — |
+| `use-primitives` | диалог, текст, размеры, шрифт — по одному владельцу на вид | — |
+| `use-code-shape` | форма кода: `proxy.ts`, сегменты, `@api`, статика-первой | — |
+| `use-routes` | группы прав, две модели страницы, границы импорта | — |
+| `use-translations` | два вида словарей, экспорт-импорт переводов | — |
+| `use-testing` | два пруфа из разных плоскостей, негативный контроль | — |
+| `use-troubleshooting` | «работало у меня, на сервере нет» | — |
+| `use-browser` | глаза агента: консоль, без-JS, сервис-воркер | — |
+| `use-dynamic-workflows` | волны агентов: как владелец включает и чем платит | — |
+| `use-seo` · `use-aio` · `use-pwa` | поиск · машинные читатели · устанавливаемое приложение | — |
+| `use-app-config` · `use-platform-config` · `use-design-config` · `use-products-config` | четыре конфига | — |
+| `use-passport` | твоё приложение `3000` | — |
+| `use-auth` · `use-auth-providers` · `use-roles` | вход, провайдеры, роли | — |
+| `use-panel` | панель управления | — |
+| `use-data` · `use-database` · `use-object-storage` · `use-vector-memory` | слой данных и три склада | — |
+| `use-map` · `use-channels` · `use-agentic-rag` | карта · каналы · агентный RAG | — |
+| `use-multi-lang` | 82 языка, набор и форма маршрутов | — |
+| `use-development-steps` · `use-use-cases` | режимы `steps` и `cases` | — |
+| `use-deploy` | доставка на сервер, сборка, доказательство | — |
 
 <!-- fractera:instruction-set begin -->
 **Managed by the control panel — do not edit this block by hand.**

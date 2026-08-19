@@ -23,6 +23,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["better-sqlite3"],
+
+  // 🔒 МОМЕНТ СБОРКИ ВЫЧИСЛЯЕТСЯ ОДИН РАЗ — ЗДЕСЬ, А НЕ НА ЗАПРОС.
+  // `next.config.ts` читается сборкой, и всё, что объявлено в `env`, Next
+  // подставляет в бандл literal-ом. Поэтому `/api/health` отдаёт МОМЕНТ
+  // СБОРКИ, а не момент старта процесса: вычисли его в модуле маршрута —
+  // получишь время загрузки модуля, и после `pm2 reload` без пересборки
+  // значение обновится, соврав, что сборка новая.
+  env: {
+    NEXT_PUBLIC_BUILT_AT: new Date().toISOString(),
+  },
 };
 
 export default nextConfig;

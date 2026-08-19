@@ -1,0 +1,130 @@
+---
+name: use-static-pages
+description: >
+  Build or change a STATIC PUBLIC page — a blog post, a footer page, the home page, any page whose
+  content somebody authored and every visitor sees the same. Use when the owner says "add an article",
+  "write a page about X", "add a section to that page", "translate this post", or when you are about
+  to create any folder under app/[lang]/(publicLayer). This is the FIRST of the three page models:
+  a folder per item, prerendered, indexed. Data that grows without limit is the second model
+  (use-dynamic-pages) and a user's own screen is the third — do not carry these rules there.
+  Read this before writing the first file, because the two defects this area produces are invisible
+  until late: a page nobody can find, and a page that ships one project's identity into another's.
+---
+
+# use-static-pages
+
+**A page is a LIST OF BLOCKS in a language cell, not a laid-out file.** Everything below follows from
+that. The engine's rule: everything a page needs lives in its own folder, everything shared lives once
+in the engine, nothing in between.
+
+---
+
+## 1. Four layers
+
+```
+route shell   app/[lang]/(publicLayer)/<tab>/<slug>/page.tsx   3 lines, re-exports ./_components
+per page      _components/  view      index.tsx — calls the factory
+              _data/        data      meta.ts + one cell per enabled language + index.ts
+              _lib/         functions resolve/list + type contracts   (a tab has one, a page rarely)
+engine        lib/content/  factories create-content-page.tsx · create-content-post.tsx
+                            resolve.ts (cell resolver, EN fallback) · blocks/{types,registry,inline,links}
+              lib/parser-fs.mjs        generates _list.generated.ts on predev/prebuild — gitignored
+sections      sections/blocks/<kind>.server.tsx   ONE kind, ONE file — the renderers
+              sections/index.ts                   the full set · sections/contract.ts the contract
+```
+
+🔒 **Localized UI strings are DATA** → `_data`, never `_lib`. Type contracts are CODE → `_lib/types.ts`.
+🔒 **`lib/content/blocks/types.ts` has zero imports on purpose** — a leaf of the graph. Engine types are
+imported, never extended.
+
+## 2. Recipe: a new post
+
+Six files, all inside one folder. "Copy an existing folder" beats "write from scratch" every time.
+
+```
+app/[lang]/(publicLayer)/blog/<slug>/
+  page.tsx                 re-export of ./_components
+  _components/index.tsx    createContentPost({ … })
+  _data/meta.ts            non-translatable: slug, date, tags, hero, author
+  _data/<lang>.ts          one cell per ENABLED language
+  _data/index.ts           { meta, en, overrides: { … } }
+  index.md/route.ts        markdownRoute('/blog/<slug>') — the machine twin
+```
+
+A footer page is the same shape with `createContentPage`, and needs three more edits **outside** the
+folder — this is where the engine stops being self-contained:
+
+| Also edit | Why |
+|---|---|
+| `lib/aio/surfaces.ts` | without the entry `/index.md` answers 404 and `llms.txt` never learns the page |
+| `app/sitemap.ts` | groups in brackets are invisible to `check:seo`, so nothing will notice the miss |
+| `lib/menu/nav-config.ts` → `DEFAULT_FOOTER` | the footer links of a FRESH project; the owner's own list lives in the panel |
+
+Posts need none of the three: `parser-fs` finds them, and the blog list feeds the sitemap.
+
+## 3. Language cells
+
+**One cell per ENABLED language** — the set is `NEXT_PUBLIC_SUPPORTED_LANGUAGES`, not the count your
+neighbours happen to have. An enabled language with no cell is not a smaller post: it is the English
+post at a foreign address, announcing itself as a translation. `resolve.ts` falls back to English key
+by key, so a partial cell is legal and honest.
+
+The slug is language-agnostic and chosen once from the English title. One post spans all languages.
+
+## 4. 🔒 The law of the two links
+
+Enforced by `check:content`, and every rule below is a defect that already shipped.
+
+**External — always absolute.** It carries a host, opens in a new tab, and `lib/content/blocks/links.ts`
+adds `rel="noopener noreferrer nofollow"` — omitting `nofollow` for **this project's own** domain, read
+from `APP-CONFIG`. A relative external link is a bug: the post travels into projects that do not have
+the page it points at.
+
+**Internal — one form only:** `[%SITE%](/ru)` — the site root in the language of that cell. The label is
+the literal token `%SITE%`, replaced at render time by the site's own name. **Every cell carries one.**
+A name typed in by hand freezes one project's identity into content copied into every other project.
+
+The same form is legal in an `href:` field — `cta`, a linked `figure`.
+
+## 5. 🔒 Identity comes from settings
+
+Author, site name, own domain, currency — from `APP-CONFIG`, never typed into `_data`. Leave
+`meta.author` out and the byline comes from the project's settings; fill it only for a genuine guest.
+Rule `brand-in-data` refuses the rest.
+
+## 6. Need something that WORKS, not prose?
+
+A calculator, a picker, a list that saves — **that is a kind of section, not a page of its own**:
+a server renderer in `sections/blocks/<kind>.server.tsx` resolves data and dictionary and mounts an
+island from `components/`. Pattern to copy: `project-type-marquee.server.tsx`.
+
+🔒 **No file under `sections/` carries `"use client"`** — a property of the layer, not an accident.
+
+A page of its own is for something that needs its OWN ADDRESS — searched for, linked to, in the sitemap.
+Its body is still blocks.
+
+## 7. What the gate checks — `npm run check:content`
+
+| Rule | Rejects |
+|---|---|
+| `link-not-absolute` | a relative link that is not the root form |
+| `root-link-label` | a root link whose label is not `%SITE%` |
+| `asset-missing` | `heroVideo` / `heroPoster` / `src` with no file in `public/` |
+| `brand-in-data` | the site's name written into `_data` |
+| `cell-missing` | `_data/index.ts` imports a language file that does not exist |
+| `single-language` | a post with no translation at all |
+| `no-root-link` | a cell with no link home — counted **per file** |
+| `translation-coverage` | an ENABLED language with no cell — warning in build, refusal under `--strict` |
+
+Also: `check:sections` (every kind has a specimen on the catalogue page), `check:aio` (markdown twin),
+`check:seo` (metadata, alternates, `openGraph.url`). They read files, they do not build — run them.
+
+## 8. Before you call it done
+
+1. `npm run check:content`, `check:sections`, `check:aio`, `check:seo` — green. They were green BEFORE
+   your change too, so green alone proves nothing.
+2. Still static: no `force-dynamic`, no `cookies()` / `headers()` / `auth()`, no `"use client"` under
+   the tab.
+3. Open the page in every enabled language and read it.
+4. Never hand-edit `_list.generated.ts`; never introduce a dynamic `[slug]` here — that is the second
+   model, and it has its own skill.

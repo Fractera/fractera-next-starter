@@ -53,18 +53,22 @@ fx_load() {
   chmod 600 "$FX_KEY" 2>/dev/null || true
   FX_KNOWN="$FX_ROOT/.fractera-ssh/known_hosts"
   mkdir -p "$(dirname "$FX_KNOWN")"
-  FX_SSH_OPTS=(-i "$FX_KEY" -p "$FX_PORT"
+  FX_COMMON_OPTS=(-i "$FX_KEY"
     -o BatchMode=yes
     -o StrictHostKeyChecking=accept-new
     -o UserKnownHostsFile="$FX_KNOWN"
     -o ConnectTimeout=15
     -o ServerAliveInterval=30)
+  # У ssh порт — `-p`, у scp — `-P`; `-p` для scp означает «сохранить время файла»,
+  # и номер порта уезжает в список копируемых файлов.
+  FX_SSH_OPTS=(-p "$FX_PORT" "${FX_COMMON_OPTS[@]}")
+  FX_SCP_OPTS=(-P "$FX_PORT" "${FX_COMMON_OPTS[@]}")
 }
 
 # Тело команды читается со stdin вызывающего. Ничего не экранируем — нечего.
 fx_ssh() { ssh "${FX_SSH_OPTS[@]}" "$FX_USER@$FX_HOST" bash -s; }
 
-fx_scp() { scp "${FX_SSH_OPTS[@]}" "$1" "$FX_USER@$FX_HOST:$2"; }
+fx_scp() { scp "${FX_SCP_OPTS[@]}" "$1" "$FX_USER@$FX_HOST:$2"; }
 
 if [ "${1:-}" = "--lib" ]; then return 0; fi
 

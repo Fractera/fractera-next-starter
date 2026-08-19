@@ -14,8 +14,8 @@
 //   4. patch each `_data/index.ts` (post overrides + group UI map) and `group.ts` (languages)
 //      idempotently, and retrofit old groups' `_lib/post.ts` mapper with the needsTranslation
 //      passthrough,
-//   5. return the pages that need translating in `pagesNeedingTranslation` — the AGENT then opens
-//      one step with `steps_create` (MCP fractera-project). The script writes no step itself.
+//   5. return the pages that need translating in `pagesNeedingTranslation` — the AGENT then names
+//      them to the owner, who opens a step in the panel. The script writes no step itself.
 //
 // PRECONDITION: <L> must already be in the slot's NEXT_PUBLIC_SUPPORTED_LANGUAGES (App Settings →
 // rebuild) — otherwise the build bakes without it (steps 138/143). Refused here if not.
@@ -233,8 +233,8 @@ async function patchPostMapper(outRoot, tab, plan) {
 // `mkdir recursive` создаёт её молча, поэтому дефект был бы не отказом, а тихо
 // возрождённой параллельной историей проекта.
 //
-// Шаг теперь заводит АГЕНТ вызовом `steps_create`: скрипт возвращает список
-// страниц в `pagesNeedingTranslation`, и этого достаточно — писать шаги умеет
+// Шаг заводит ВЛАДЕЛЕЦ в панели: скрипт возвращает список страниц в
+// `pagesNeedingTranslation`, агент их называет, и этого достаточно — шаги пишет
 // один код, а не три.
 
 // ── main ────────────────────────────────────────────────────────────────────

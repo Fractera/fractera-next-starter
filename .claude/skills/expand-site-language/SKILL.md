@@ -48,10 +48,10 @@ If you are tempted to reach for one of those to add a language: **stop and use t
   cross-language duplicate. `canonical` + `hreflang` stay correct automatically (derived from the
   language set). When a page is translated, the marker clears and it becomes indexable on the next Deploy.
 - **Non-blocking.** The fan-out returns the pages that need translating in `pagesNeedingTranslation`;
-  **you then open one step per language with `steps_create`** (MCP `fractera-project`), listing those
-  pages in its plan. Translation happens later, in that step, possibly with a different model — the main
-  work is never blocked by translation limits. The scripts write no steps themselves: steps are rows in
-  the database, and one code writes them, not three.
+  **name them to the owner so a step per language can be opened in the panel**, listing those pages in
+  its plan. Translation happens later, in that step, possibly with a different model — the main work is
+  never blocked by translation limits. The scripts write no steps themselves: steps live in the
+  product's dossier, and one writer keeps them, not three.
 
 ## Flow
 

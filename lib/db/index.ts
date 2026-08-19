@@ -76,6 +76,24 @@ const SCHEMA = `
     domain_error  TEXT,
     updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
+  -- ── Список дел (2026-08-19) ────────────────────────────────────────────────
+  --
+  -- Образец РАБОТАЮЩЕЙ вещи, а не разметки: таблица здесь, дверь в
+  -- app/api/todos, островок на странице. Показывает третью ступень лестницы
+  -- «что кладут на страницу» — ту, где нужна не секция, а поведение с данными.
+  --
+  -- Таблица объявлена ЗДЕСЬ и больше нигде: makeLocalDb() и initRemoteSchema()
+  -- выполняют эту же константу, поэтому и локальная база, и серверная получают её
+  -- сами. Отдельных файлов миграции в проекте нет.
+  --
+  -- 🔒 ОБРАТНЫХ КАВЫЧЕК ЗДЕСЬ БЫТЬ НЕ МОЖЕТ: SCHEMA — шаблонная строка, и кавычка
+  -- в комментарии SQL закрывает её, разваливая файл. Проверено check:types.
+  CREATE TABLE IF NOT EXISTS todos (
+    id         TEXT PRIMARY KEY NOT NULL,
+    title      TEXT NOT NULL,
+    done       INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

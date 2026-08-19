@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const lang of SUPPORTED_LANGUAGES) {
     out.push({ url: urlFor(lang, ""), changeFrequency: "daily", priority: 1 })
     out.push({ url: urlFor(lang, "/products"), changeFrequency: "daily", priority: 0.8 })
+    out.push({ url: urlFor(lang, "/todo"), changeFrequency: "weekly", priority: 0.3 })
     // 🔒 БЛОГ И ЕГО ПОСТЫ — ЗДЕСЬ, А НЕ В КАРТЕ ТОВАРОВ (найдено 2026-08-13).
     //
     // Карта перечисляла главную и товары, а блога не знала вовсе: раздел

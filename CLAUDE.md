@@ -148,8 +148,8 @@ full stack, строго следуя инфраструктуре агентн�
 
 ## Что строим
 
-Источник задачи — **подтверждённый кейс продукта**, а не догадка. Кейсы лежат в
-`development-docs/USE-CASES/<product-id>/CASES/`, подтверждает их только владелец в панели.
+Источник задачи — **подтверждённый кейс продукта**, а не догадка. Кейсы лежат в досье продукта —
+`PRODUCTS-CONFIG/<id>.json`, массив `cases`; подтверждает их только владелец в панели.
 
 Нет подтверждённого кейса — не строим: назвать, каких не хватает, и указать на раздел «Кейсы».
 Шаги разработки — строки таблицы, достаются через MCP `fractera-project`; заводит и закрывает их
@@ -157,10 +157,11 @@ full stack, строго следуя инфраструктуре агентн�
 
 ## Как строим
 
-Цикл: `pull` → правка → `push` → сборка. Работая по кейсу продукта, пишешь в его четырёх корнях:
-страницы `app/[lang]/(publicLayer)/<segment>/`, логика `lib/products/<id>/`, таблицы `<id>_*`, кейсы
-`USE-CASES/<id>/`. Общее поднимается в `components/` и `lib/`, и этот переезд называется в шаге, а не
-делается молча. Чужой продукт не трогаешь никогда — его поломка всплывёт недели спустя.
+Цикл: `pull` → правка → `push` → сборка. Работая по кейсу продукта, пишешь в его трёх корнях на
+диске: страницы `app/[lang]/(publicLayer)/<segment>/`, логика `lib/products/<id>/`, таблицы `<id>_*`.
+Четвёртое — не папка: кейсы, шаги и план страниц живут в досье `PRODUCTS-CONFIG/<id>.json`, и пишет
+туда панель, а не ты. Общее поднимается в `components/` и `lib/`, и этот переезд называется в шаге, а
+не делается молча. Чужой продукт не трогаешь никогда — его поломка всплывёт недели спустя.
 
 ## Ограничения кода
 
@@ -298,8 +299,13 @@ moment it lands in a skill.** When the table is empty, this whole section goes w
 
 Fix or delete each, then remove the line.
 
-- The panel lists `development-docs/USE-CASES/` as active. **The folder does not exist**, and no
-  mechanism creates it: the panel's Quiz writes cases, and nobody has run it here.
+- **The dossier migration (2026-08-18) stopped halfway.** The panel and `config/products-config.ts`
+  read and write `PRODUCTS-CONFIG/<id>.json`; the `fractera-project` MCP still reads cases from
+  `development-docs/USE-CASES/<id>/CASES/` and the product list from `PRODUCTS-CONFIG/products-config.json`,
+  a file deleted from this starter in `5fb0961`. So `products_list` and `cases_gate` answer
+  "no products" on a server that has them, and the skill `manage-cases-and-steps` still calls cases
+  files. Migrate `scripts/mcp/fractera-project.mjs` and the skill onto the dossier, or the gate will
+  keep refusing work that is ready.
 - Five documents exist in this starter but have **no template in the panel** (`_content/`):
   `SEO.md`, `AIO.md`, `PWA.md`, `SECTIONS.md`, `CASE-TO-STEP.md`. A slot built from this starter gets
   them by the clone; a slot built from any other repository never gets them at all, and its pages in the

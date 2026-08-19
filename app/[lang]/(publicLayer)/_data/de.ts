@@ -14,6 +14,7 @@ export const de: Partial<HomeCell> = {
     title: 'Dies ist der Starter Ihrer Anwendung',
     description:
       'Alles ist bereits installiert und miteinander verbunden — Autorisierung, eine eigene Datenbank, Dateispeicher, Vektorsuche und hundert weitere Werkzeuge, so geordnet, dass ein Coding-Agent sie findet, ohne dass man es ihm zweimal erklären muss. Bauen Sie eine Landingpage, ein SaaS oder eine Automatisierung, die niemals schläft — in jeder der 82 Sprachen, auf einem Skelett, das für ein Projekt jenseits einer Million Zeilen zugeschnitten ist. Rund **neunmal schneller**, als denselben Stack selbst zusammenzustellen — und nichts hier telefoniert nach Hause: kein Anbieter, kein Abonnement, niemand, den man um Erlaubnis fragen muss. Der Server gehört Ihnen, der Code gehört Ihnen, **zu hundert Prozent**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Gratis holen und skalieren' },
     image: 'homePage',
     imageAlt: 'SaaS-Startvorlage',
   },
@@ -50,7 +51,7 @@ export const de: Partial<HomeCell> = {
     title: 'So funktioniert es',
     note: 'Von einem leeren Server bis zu Ihrem eigenen Code im Betrieb. Alles Folgende läuft auf Hardware, die Ihnen gehört.',
     steps: [
-      { title: 'Den Server aufsetzen', text: 'Rollen Sie ihn mit dem Installations-Roboter von Fractera aus. Sie erhalten ein Betriebssystem, eine Startvorlage, das Bedienfeld, die Speicher und die Autorisierung — installiert und miteinander verbunden.' },
+      { title: 'Den Server aufsetzen', text: 'Rollen Sie ihn mit dem [Installations-Roboter](https://www.fractera.ai/deployments/vps) von Fractera aus. Sie erhalten ein Betriebssystem, eine Startvorlage, das Bedienfeld, die Speicher und die Autorisierung — installiert und miteinander verbunden.' },
       { title: 'Dort entwickeln, wo Sie ohnehin arbeiten', text: 'Synchronisieren Sie mit GitHub, klonen Sie dann auf Ihren eigenen Rechner und starten Sie Claude Code oder Codex. Die Daten kommen weiterhin von Ihrem Server; der Code läuft in Ihrer eigenen IDE.' },
       { title: 'Pushen — und es rollt sich selbst aus', text: 'Beenden Sie die Arbeit auf dem lokalen Rechner und schicken Sie das Projekt zu GitHub. Das startet sofort eine neue Auslieferung auf Ihrem eigenen Server — und der Besucher sieht das neue Projekt.' },
     ],
@@ -67,6 +68,7 @@ export const de: Partial<HomeCell> = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Sieben Schritte vom leeren Server' },
+          { kind: 'p', text: 'Starten Sie den [Installations-Roboter](https://www.fractera.ai/deployments/vps), um dieses Projekt zu bekommen.' },
           {
             kind: 'olist',
             items: [
@@ -111,7 +113,7 @@ export const de: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Und das ist kein Rat, sondern eine Produktregel: Solange auch nur ein Fall unbestätigt ist, hält das Panel den Alarm aufrecht und der Coding-Agent weigert sich zu bauen. Auf einer ungelesenen Vermutung zu bauen kostet mehr, als gar nicht zu bauen.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz öffnen' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Gratis holen und skalieren' },
   {
     kind: 'cards',
     badge: 'Architektur',

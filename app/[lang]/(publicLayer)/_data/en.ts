@@ -16,6 +16,7 @@ export const en: HomeCell = {
     title: 'This is your application starter',
     description:
       'Everything is already installed and wired together — authorization, your own database, file storage, vector search and a hundred tools more, organised so a coding agent finds them without being told twice. Build a landing page, a SaaS, or automation that never sleeps, in any of 82 languages, on a skeleton cut for a project that will pass a million lines. Roughly **nine times faster** than assembling the same stack yourself — and nothing here calls home: no vendor, no subscription, nobody to ask for permission. The server is yours, the code is yours, **one hundred percent**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Take it free, scale it up' },
     image: 'homePage',
     imageAlt: 'SaaS starter template',
   },
@@ -52,7 +53,7 @@ export const en: HomeCell = {
     title: 'How it works',
     note: 'From a bare server to your own code in production. Everything below runs on hardware that is yours.',
     steps: [
-      { title: 'Stand up the server', text: 'Deploy it with the Fractera installer robot. You get an operating system, a starter template, the control panel, storage and authorization — installed and wired together.' },
+      { title: 'Stand up the server', text: 'Deploy it with the Fractera [installer robot](https://www.fractera.ai/deployments/vps). You get an operating system, a starter template, the control panel, storage and authorization — installed and wired together.' },
       { title: 'Develop where you already work', text: 'Sync with GitHub, then clone onto your own machine and run Claude Code or Codex. The data keeps coming from your server; the code runs in your own IDE.' },
       { title: 'Push, and it deploys itself', text: 'Finish on the local machine and push the project to GitHub. That immediately starts a new deployment on your own server — and the visitor sees the new project.' },
     ],
@@ -69,6 +70,7 @@ export const en: HomeCell = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Seven steps from a bare server' },
+          { kind: 'p', text: 'Start the [installer robot](https://www.fractera.ai/deployments/vps) to get this project.' },
           {
             kind: 'olist',
             items: [
@@ -113,7 +115,7 @@ export const en: HomeCell = {
     ],
   },
   { kind: 'statement', text: 'And this is a product rule, not advice: while a single case is unconfirmed the panel keeps its alarm lit and the coding agent refuses to build. Building on an unread guess costs more than not building at all.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Open Quiz' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Take it free, scale it up' },
   {
     kind: 'cards',
     badge: 'Architecture',

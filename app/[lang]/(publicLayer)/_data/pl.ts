@@ -14,6 +14,7 @@ export const pl: Partial<HomeCell> = {
     title: 'To starter Twojej aplikacji',
     description:
       'Wszystko jest już zainstalowane i połączone ze sobą — autoryzacja, własna baza danych, magazyn plików, wyszukiwanie wektorowe i sto innych narzędzi, ułożonych tak, by agent kodujący znalazł je bez powtarzania. Zbuduj stronę docelową, SaaS albo automatyzację, która nigdy nie śpi, w każdym z 82 języków, na szkielecie skrojonym pod projekt, który przekroczy milion linii. Około **dziewięć razy szybciej** niż samodzielne złożenie tego samego zestawu — i nic tutaj nie dzwoni na zewnątrz: żadnego dostawcy, żadnej subskrypcji, nikogo, kogo trzeba pytać o zgodę. Serwer jest Twój, kod jest Twój, **w stu procentach**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Weź za darmo i skaluj' },
     image: 'homePage',
     imageAlt: 'Szablon startowy SaaS',
   },
@@ -50,7 +51,7 @@ export const pl: Partial<HomeCell> = {
     title: 'Jak to działa',
     note: 'Od pustego serwera do twojego kodu na produkcji. Wszystko poniżej działa na sprzęcie, który należy do ciebie.',
     steps: [
-      { title: 'Postaw serwer', text: 'Wdróż go robotem instalacyjnym Fractera. Dostajesz system operacyjny, szablon startowy, panel sterowania, magazyny i autoryzację — zainstalowane i połączone ze sobą.' },
+      { title: 'Postaw serwer', text: 'Wdróż go [robotem instalacyjnym](https://www.fractera.ai/deployments/vps) Fractera. Dostajesz system operacyjny, szablon startowy, panel sterowania, magazyny i autoryzację — zainstalowane i połączone ze sobą.' },
       { title: 'Pracuj tam, gdzie zwykle', text: 'Zsynchronizuj z GitHubem, potem sklonuj na własną maszynę i uruchom Claude Code albo Codex. Dane nadal płyną z twojego serwera; kod działa w twoim IDE.' },
       { title: 'Wyślij — wdroży się samo', text: 'Skończ pracę na lokalnej maszynie i wyślij projekt na GitHub. To natychmiast uruchamia nowe wdrożenie na twoim własnym serwerze — a odwiedzający widzi nowy projekt.' },
     ],
@@ -67,6 +68,7 @@ export const pl: Partial<HomeCell> = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Siedem kroków od pustego serwera' },
+          { kind: 'p', text: 'Uruchom [robota instalacyjnego](https://www.fractera.ai/deployments/vps), aby otrzymać ten projekt.' },
           {
             kind: 'olist',
             items: [
@@ -111,7 +113,7 @@ export const pl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'I to nie jest rada, lecz reguła produktu: dopóki choć jeden przypadek jest niezatwierdzony, panel utrzymuje włączony alarm, a agent programujący odmawia budowy. Budowanie na nieprzeczytanym domyśle kosztuje więcej niż niebudowanie wcale.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Otwórz Quiz' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Weź za darmo i skaluj' },
   {
     kind: 'cards',
     badge: 'Architektura',

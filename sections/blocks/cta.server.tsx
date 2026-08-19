@@ -1,34 +1,29 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
-import { linkAttrs, resolveRootHref } from '@/lib/content/blocks/links'
+import { CtaButton } from '@/sections/cta-button.server'
 
 // Призыв к действию.
 //
 // 🔒 ПОДПИСЬ НАД КНОПКОЙ НЕОБЯЗАТЕЛЬНА (2026-08-16, замечено владельцем). Когда
 // кнопка стоит внутри раздела, чей заголовок уже сказал то же самое, подпись —
-// дословный повтор через полэкрана. Так и вышло, когда Quiz вынули из рамки:
-// одна и та же фраза оказалась заголовком раздела и абзацем над кнопкой.
-// Кнопка без подписи — по-прежнему кнопка; абзац без содержания — просто шум.
-export const cta: SectionRenderer<'cta'> = (b, { key: k }) => (
-  <div key={k} className="my-4 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6">
-    {b.text && <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>}
-    <a
-      // Кнопка подчиняется тому же закону ссылок, что и текст (`./links.ts`):
-      // внешняя открывается в новой вкладке и получает `rel`, внутренняя на
-      // корень — учитывает одноязычный режим, где языкового сегмента нет.
-      href={resolveRootHref(b.href)}
-      {...linkAttrs(b.href)}
-      // 🔒 ТЕКСТ НА ЗАЛИВКЕ — `text-primary-foreground`, А НЕ `text-foreground`
-      // (2026-08-12). Здесь стояло `text-foreground`: цвет обычного текста
-      // СТРАНИЦЫ, то есть тёмный на светлой теме. На тёмной заливке кнопки он
-      // сливался с ней. Переменные ходят парой — фон `primary` и текст на нём
-      // `primary-foreground`, — и это единственный способ остаться читаемым в
-      // обеих темах. Значок наследует цвет текста (`currentColor`), поэтому
-      // чинится вместе с надписью.
-      className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-    >
-      {b.label}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-    </a>
-  </div>
-)
+// дословный повтор через полэкрана.
+//
+// 🔒 НЕТ ПОДПИСИ — НЕТ И РАМКИ (владелец 2026-08-19). Рамка существует, чтобы
+// держать подпись; без неё она держала пустоту: кнопка жалась влево, а справа
+// тянулся пустой прямоугольник во всю ширину. Владелец назвал это словом
+// «некрасиво», и он прав — контейнер без содержимого читается как поломка
+// вёрстки, а не как воздух.
+//
+// Кнопка одна на все места, где предлагается действие, — sections/cta-button:
+// вторая копия классов совпадала бы с первой ровно до первой правки цвета.
+export const cta: SectionRenderer<'cta'> = (b, { key: k }) =>
+  b.text ? (
+    <div key={k} className="my-4 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6">
+      <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>
+      <CtaButton href={b.href}>{b.label}</CtaButton>
+    </div>
+  ) : (
+    <div key={k} className="my-4">
+      <CtaButton href={b.href}>{b.label}</CtaButton>
+    </div>
+  )

@@ -14,6 +14,7 @@ export const es: Partial<HomeCell> = {
     title: 'Este es el starter de tu aplicación',
     description:
       'Todo ya está instalado y conectado entre sí — autorización, tu propia base de datos, almacenamiento de archivos, búsqueda vectorial y un centenar de herramientas más, ordenadas de modo que un agente de programación las encuentre sin que haya que explicárselo dos veces. Crea una página de aterrizaje, un SaaS o una automatización que nunca duerme, en cualquiera de los 82 idiomas, sobre un esqueleto pensado para un proyecto que superará el millón de líneas. Alrededor de **nueve veces más rápido** que montar tú mismo la misma pila — y aquí nada llama a casa: ni proveedor, ni suscripción, ni permiso que pedir. El servidor es tuyo, el código es tuyo, **al cien por cien**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Llévatelo gratis y escala' },
     image: 'homePage',
     imageAlt: 'Plantilla inicial de SaaS',
   },
@@ -50,7 +51,7 @@ export const es: Partial<HomeCell> = {
     title: 'Cómo funciona',
     note: 'De un servidor vacío a tu propio código en producción. Todo lo de abajo corre sobre hardware que es tuyo.',
     steps: [
-      { title: 'Levanta el servidor', text: 'Despliégalo con el robot instalador de Fractera. Obtienes un sistema operativo, una plantilla de inicio, el panel de control, los almacenamientos y la autorización — instalados y conectados entre sí.' },
+      { title: 'Levanta el servidor', text: 'Despliégalo con el [robot instalador](https://www.fractera.ai/deployments/vps) de Fractera. Obtienes un sistema operativo, una plantilla de inicio, el panel de control, los almacenamientos y la autorización — instalados y conectados entre sí.' },
       { title: 'Desarrolla donde ya trabajas', text: 'Sincroniza con GitHub, luego clona en tu propia máquina y ejecuta Claude Code o Codex. Los datos siguen llegando de tu servidor; el código se ejecuta en tu propio IDE.' },
       { title: 'Haz push y se despliega solo', text: 'Termina en la máquina local y envía el proyecto a GitHub. Eso lanza de inmediato un nuevo despliegue en tu propio servidor — y el visitante ve el nuevo proyecto.' },
     ],
@@ -67,6 +68,7 @@ export const es: Partial<HomeCell> = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Siete pasos desde un servidor vacío' },
+          { kind: 'p', text: 'Lanza el [robot instalador](https://www.fractera.ai/deployments/vps) para obtener este proyecto.' },
           {
             kind: 'olist',
             items: [
@@ -111,7 +113,7 @@ export const es: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Y esto no es un consejo, sino una regla del producto: mientras quede un solo caso sin confirmar, el panel mantiene la alarma encendida y el agente programador se niega a construir. Construir sobre una conjetura sin leer cuesta más que no construir nada.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Abrir Quiz' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Llévatelo gratis y escala' },
   {
     kind: 'cards',
     badge: 'Arquitectura',

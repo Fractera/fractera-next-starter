@@ -14,6 +14,7 @@ export const nl: Partial<HomeCell> = {
     title: 'Dit is de starter van uw toepassing',
     description:
       'Alles is al geïnstalleerd en met elkaar verbonden — autorisatie, een eigen database, bestandsopslag, vectorzoeken en nog honderd andere gereedschappen, zo geordend dat een codeeragent ze vindt zonder dat het twee keer uitgelegd hoeft te worden. Bouw een landingspagina, een SaaS of een automatisering die nooit slaapt, in elk van de 82 talen, op een skelet dat gesneden is voor een project dat de miljoen regels voorbijgaat. Ongeveer **negen keer sneller** dan dezelfde stack zelf samenstellen — en niets hier belt naar huis: geen leverancier, geen abonnement, niemand om toestemming aan te vragen. De server is van u, de code is van u, **voor honderd procent**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Neem het gratis en schaal op' },
     image: 'homePage',
     imageAlt: 'SaaS-startsjabloon',
   },
@@ -50,7 +51,7 @@ export const nl: Partial<HomeCell> = {
     title: 'Hoe het werkt',
     note: 'Van een lege server naar je eigen code in productie. Alles hieronder draait op hardware die van jou is.',
     steps: [
-      { title: 'Zet de server neer', text: 'Rol hem uit met de installatierobot van Fractera. Je krijgt een besturingssysteem, een startsjabloon, het bedieningspaneel, de opslag en de autorisatie — geïnstalleerd en met elkaar verbonden.' },
+      { title: 'Zet de server neer', text: 'Rol hem uit met de [installatierobot](https://www.fractera.ai/deployments/vps) van Fractera. Je krijgt een besturingssysteem, een startsjabloon, het bedieningspaneel, de opslag en de autorisatie — geïnstalleerd en met elkaar verbonden.' },
       { title: 'Ontwikkel waar je al werkt', text: 'Synchroniseer met GitHub, kloon daarna naar je eigen machine en start Claude Code of Codex. De data blijft van je server komen; de code draait in je eigen IDE.' },
       { title: 'Push, en het rolt zichzelf uit', text: 'Rond af op de lokale machine en stuur het project naar GitHub. Dat start meteen een nieuwe uitrol op je eigen server — en de bezoeker ziet het nieuwe project.' },
     ],
@@ -67,6 +68,7 @@ export const nl: Partial<HomeCell> = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Zeven stappen vanaf een lege server' },
+          { kind: 'p', text: 'Start de [installatierobot](https://www.fractera.ai/deployments/vps) om dit project te krijgen.' },
           {
             kind: 'olist',
             items: [
@@ -111,7 +113,7 @@ export const nl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'En dit is geen advies maar een productregel: zolang er één case onbevestigd blijft, houdt het paneel het alarm aan en weigert de codeeragent te bouwen. Bouwen op een ongelezen gok kost meer dan helemaal niet bouwen.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz openen' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Neem het gratis en schaal op' },
   {
     kind: 'cards',
     badge: 'Architectuur',

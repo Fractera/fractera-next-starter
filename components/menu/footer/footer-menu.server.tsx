@@ -144,7 +144,11 @@ export function FooterMenu({ lang }: { lang: string }) {
               href={`/${lang}/architecture`}
               className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
             >
-              <Boxes className="size-3.5" />
+              {/* 🔒 НА ТЕЛЕФОНЕ ОСТАЁТСЯ ТОЛЬКО СЛОВО (владелец 2026-08-19).
+                  Значок и надпись рядом съедают ширину узкой полосы, и две
+                  кнопки переносятся в две строки. Слово несёт смысл, значок —
+                  украшение; на узком экране режется украшение. */}
+              <Boxes className="hidden size-3.5 sm:inline-block" />
               {architectureLinkUi(lang).footer}
             </Link>
 
@@ -171,7 +175,7 @@ export function FooterMenu({ lang }: { lang: string }) {
                 // соседей, иначе «единый ряд» держался бы на глазок.
                 className={buttonVariants({ variant: "outline", size: "sm" }) + " gap-1.5"}
               >
-                <SlidersHorizontal className="size-3.5" />
+                <SlidersHorizontal className="hidden size-3.5 sm:inline-block" />
                 {adminLinkLabels(lang).admin}
               </a>
             )}

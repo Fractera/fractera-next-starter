@@ -4,6 +4,7 @@ import { StaticImage } from '@/components/media/static-image.server'
 import { getAppConfig } from '@/config/app-config'
 import { getLogoPath } from '@/config/app-config.defaults'
 import { inline } from '@/lib/content/blocks/inline'
+import { CtaButton } from '@/sections/cta-button.server'
 import { H1 } from '@/components/ui/typography'
 
 // Первый экран лендинга: знак и лейбл по центру, под ними слово слева и
@@ -97,6 +98,17 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
             <p className="text-base leading-relaxed text-muted-foreground">
               {inline(b.description, `${k}-d`)}
             </p>
+            {/* 🔒 ГЛАВНОЕ ДЕЙСТВИЕ — НА ПЕРВОМ ЭКРАНЕ (владелец 2026-08-19).
+                Первый экран объяснял продукт и не предлагал ничего: ближайшая
+                кнопка ждала пятью секциями ниже. Та же кнопка повторяется там,
+                где раньше стоял призыв Quiz, — одним компонентом, а не копией
+                классов. Секции без призыва он не навязывается: поле
+                необязательное. */}
+            {b.cta && (
+              <div className="mt-2">
+                <CtaButton href={b.cta.href}>{b.cta.label}</CtaButton>
+              </div>
+            )}
           </div>
 
           {/* 🔒 КАРТИНКА ЗАНИМАЕТ КОЛОНКУ ЦЕЛИКОМ (2026-08-15). Здесь стояло

@@ -14,6 +14,7 @@ export const tr: Partial<HomeCell> = {
     title: 'Bu, uygulamanızın başlangıç şablonu',
     description:
       'Her şey zaten kurulu ve birbirine bağlı — yetkilendirme, kendi veritabanınız, dosya deposu, vektör arama ve yüz kadar araç daha; hepsi, kod yazan bir etmenin iki kez anlatmaya gerek kalmadan bulacağı biçimde düzenlenmiş. Bir açılış sayfası, bir SaaS ya da hiç uyumayan bir otomasyon kurun — 82 dilin herhangi birinde, bir milyon satırı aşacak bir proje için biçilmiş bir iskelet üzerinde. Aynı yığını kendiniz kurmaya göre yaklaşık **dokuz kat daha hızlı** — ve burada hiçbir şey dışarıyı aramaz: ne sağlayıcı, ne abonelik, ne de izin istenecek biri. Sunucu sizin, kod sizin, **yüzde yüz**.',
+    cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Ücretsiz al, ölçekle' },
     image: 'homePage',
     imageAlt: 'SaaS başlangıç şablonu',
   },
@@ -50,7 +51,7 @@ export const tr: Partial<HomeCell> = {
     title: 'Nasıl çalışır',
     note: 'Boş bir sunucudan kendi kodunuzun yayına çıkmasına kadar. Aşağıdakilerin tamamı size ait donanımda çalışır.',
     steps: [
-      { title: 'Sunucuyu ayağa kaldırın', text: 'Fractera kurulum robotuyla dağıtın. Bir işletim sistemi, başlangıç şablonu, kontrol paneli, depolar ve yetkilendirme — kurulu ve birbirine bağlı olarak elinize geçer.' },
+      { title: 'Sunucuyu ayağa kaldırın', text: 'Fractera [kurulum robotuyla](https://www.fractera.ai/deployments/vps) dağıtın. Bir işletim sistemi, başlangıç şablonu, kontrol paneli, depolar ve yetkilendirme — kurulu ve birbirine bağlı olarak elinize geçer.' },
       { title: 'Zaten çalıştığınız yerde geliştirin', text: 'GitHub ile eşitleyin, sonra kendi makinenize klonlayın ve Claude Code ya da Codex çalıştırın. Veriler sunucunuzdan gelmeye devam eder; kod kendi IDE\'nizde çalışır.' },
       { title: 'Gönderin, kendi kendine yayınlansın', text: 'Yerel makinede işi bitirin ve projeyi GitHub\'a gönderin. Bu, kendi sunucunuzda hemen yeni bir dağıtım başlatır — ve ziyaretçi yeni projeyi görür.' },
     ],
@@ -67,6 +68,7 @@ export const tr: Partial<HomeCell> = {
         tone: 'data',
         children: [
           { kind: 'h3', text: 'Boş sunucudan yedi adım' },
+          { kind: 'p', text: 'Bu projeyi almak için [kurulum robotunu](https://www.fractera.ai/deployments/vps) başlatın.' },
           {
             kind: 'olist',
             items: [
@@ -111,7 +113,7 @@ export const tr: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Ve bu bir öneri değil, bir ürün kuralıdır: tek bir vaka bile onaylanmamışken panel alarmını yanık tutar ve kodlama ajanı inşa etmeyi reddeder. Okunmamış bir tahmin üzerine inşa etmek, hiç inşa etmemekten daha pahalıya mal olur.' },
-  { kind: 'cta', href: '{admin}/{lang}/doc-use-cases', label: 'Quiz\'i aç' },
+  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Ücretsiz al, ölçekle' },
   {
     kind: 'cards',
     badge: 'Mimari',

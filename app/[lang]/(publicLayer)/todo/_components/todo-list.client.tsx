@@ -16,7 +16,7 @@
 // списке до ответа сервера; отказ возвращает список назад и говорит причину.
 // Ожидание круга к серверу на каждое нажатие читается как «не работает».
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Loader2, Trash2 } from "lucide-react"
 import type { TodoUi } from "../_data/ui.i18n"
 
@@ -36,6 +36,21 @@ export function TodoList({ initial, ui }: { initial: Todo[]; ui: TodoUi }) {
     })
     if (!r.ok) throw new Error(String((await r.json().catch(() => ({}))).error ?? r.status))
   }
+
+  // 🔒 СТРОКИ ПЕРЕЧИТЫВАЮТСЯ ПРИ ОТКРЫТИИ (найдено живой проверкой 2026-08-19).
+  //
+  // Первая отрисовка приходит с сервера и лежит в статике: посетитель и поисковик
+  // видят список без JS. Но статика — это СНИМОК: страница, собранная минуту
+  // назад, покажет вчерашние строки, и добавленный пункт не появится, пока не
+  // истечёт окно ISR. Для изменчивых данных снимок годится как первая краска и
+  // не годится как истина.
+  //
+  // Каталог этим не болеет: его сбрасывает метка при изменении товара. У списка
+  // дел такой метки нет и быть не должно — он меняется каждую секунду.
+  useEffect(() => {
+    void reload()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function reload() {
     const r = await fetch("/api/todos", { cache: "no-store" })

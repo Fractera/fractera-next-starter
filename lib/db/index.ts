@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type Database from "better-sqlite3"
 import { slugify } from "@/lib/ids"
 import { mkdirSync } from "fs"
 import { join, dirname } from "path"
@@ -316,9 +316,22 @@ async function seedProductsRemote() {
 }
 
 function makeLocalDb() {
+  // 🔒 ДРАЙВЕР ГРУЗИТСЯ ЗДЕСЬ, А НЕ ПЕРВОЙ СТРОКОЙ ФАЙЛА (2026-08-19).
+  //
+  // `better-sqlite3` — нативный модуль: ему нужны node-gyp и компилятор C++.
+  // Импорт наверху загружал его ВСЕГДА, в том числе когда приложение работает
+  // удалённой дорогой и локальная база не открывается ни разу. На Windows это
+  // означало, что `npm run dev` не поднимался вовсе — у разработчика, которому
+  // локальная база не нужна: его `.env.local` из панели указывает на живой слой
+  // данных сервера.
+  //
+  // Тип берётся через `import type` и в сборку не попадает; сам драйвер
+  // требуется только на локальной дороге, то есть ровно тогда, когда он нужен.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const SqliteDatabase: typeof Database = require("better-sqlite3")
   const dbPath = process.env.APP_DB_PATH ?? join(process.cwd(), "data", "app.db")
   mkdirSync(dirname(dbPath), { recursive: true })
-  const sqlite = new Database(dbPath)
+  const sqlite = new SqliteDatabase(dbPath)
   sqlite.exec(SCHEMA)
   sqlite.exec(DROP_LEGACY)
 

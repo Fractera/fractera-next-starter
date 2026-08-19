@@ -39,6 +39,26 @@ const AUTH_FORM_PATHS = new Set(["/login", "/register", "/guest-login", "/logout
 // architect-role gate; a valid session (or x-agent-identity / IP bypass) is enough.
 const ADMIN_API_PREFIXES: string[] = [];
 
+// 🔒 ПУБЛИЧНЫЕ ДВЕРИ — ИХ НАДО НАЗЫВАТЬ, ИНАЧЕ ИХ ЗАКРОЕТ ГЕЙТ (найдено 2026-08-19).
+//
+// Гейт ниже закрывает /api/* целиком, и в режиме обхода это незаметно: локально и
+// на голом IP вход отключён, всё отвечает. На домене та же дверь отдаёт 401 —
+// проверено живьём: кнопка «показать ещё» в каталоге получала Unauthorized, то
+// есть каталог за первой партией товаров переставал существовать для посетителя.
+//
+// Признак публичной двери один: она отдаёт то, что и так лежит в разметке
+// публичной страницы. Прятать за сессией нечего, а прятать — значит ломать.
+//
+// Дверь, работающая для гостя, обязана быть НАЗВАНА здесь. Забыли назвать —
+// возможность работает у разработчика и падает у покупателя.
+const PUBLIC_API_PREFIXES = [
+  "/api/health",
+  "/api/catalogue",   // догрузка витрины: те же товары, что в статическом HTML
+  "/api/todos",       // образец работающей вещи на публичной странице
+  "/api/i18n",        // строки интерфейса — они и так в разметке
+  "/api/project-types",
+];
+
 // Non-content root pages that live at the ROOT and never take a language prefix
 // (an operator visits /dashboard, not /en/dashboard). The language router below
 // skips any path whose first segment is one of these. The architect service pages
@@ -156,7 +176,7 @@ async function apiAuthGate(request: NextRequest): Promise<NextResponse> {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/api/") && pathname !== "/api/health") {
+  if (pathname.startsWith("/api/") && !PUBLIC_API_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     if (!shouldBypassAuth()) {
       const agentIdentity = request.headers.get("x-agent-identity");
       if (!agentIdentity) {

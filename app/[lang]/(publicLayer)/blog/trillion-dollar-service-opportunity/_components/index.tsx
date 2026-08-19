@@ -2,7 +2,6 @@ import { createContentPost } from '@/lib/content/create-content-post'
 import { VideoFacade } from '@/components/media/video-facade.client'
 import { blogPost } from '../../_lib/post'
 import { getBlogUi } from '../../_data'
-import { brand } from '@/lib/brand'
 import { data } from '../_data'
 
 // Entry for this blog post. Bilingual (en + ru override). The hero is overridden
@@ -37,8 +36,11 @@ const post = createContentPost({
   chrome: (lang, p) => {
     const ui = getBlogUi(lang)
     return {
+      // Корень сайта в путь НЕ вписывается: его печатает сам компонент крошек
+      // (`components/nav/breadcrumbs.server.tsx`). Пока он стоял здесь, каждая
+      // страница показывала «Fractera / Fractera / Блог / …» и объявляла в
+      // разметке `BreadcrumbList` два одинаковых первых пункта.
       breadcrumbs: [
-        { label: brand().name, href: `/${lang}` },
         { label: ui.breadcrumbBlog, href: `/${lang}/blog` },
         { label: p.title },
       ],

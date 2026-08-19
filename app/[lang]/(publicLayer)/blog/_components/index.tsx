@@ -1,18 +1,32 @@
 import type { Metadata } from 'next'
 import { buildAlternates, urlFor } from '@/lib/seo/alternates'
-import { metaForLang } from '@/config/app-config'
 import { brand } from '@/lib/brand'
 import { blogList } from '../_lib/post'
 import { getBlogUi } from '../_data'
 import { POSTS } from '../_list.generated'
 import { StaticImage } from '@/components/media/static-image.server'
-import { H1, H2, H3 } from '@/components/ui/typography'
+import { H2, H3, P, Small } from '@/components/ui/typography'
 import { PageHeader } from "@/components/content-page/page-header.server"
+import { PageShell } from "@/components/content-page/page-shell"
 
 // Entry for the /blog router page. Standard router shape: page.tsx is thin and
 // re-exports this. The post list is auto-discovered: POSTS comes from
 // _list.generated.ts (built by lib/parser-fs from the co-located blog folders).
 // All visible strings are DATA — they live in ../_data (getBlogUi), never inline.
+//
+// 🔒 ЭТА СТРАНИЦА БЫЛА ЕДИНСТВЕННОЙ ПУБЛИЧНОЙ СТРАНИЦЕЙ ВНЕ ОБЩЕЙ ОБОЛОЧКИ
+// (владелец, 2026-08-19: «блог выпадает из общей концепции дизайна»). Она
+// открывала свой `<main>`, свою ленту со своим воздухом, печатала над заголовком
+// НЕ надзаголовок раздела, а целиком SEO-название сайта («Блог · Fractera —
+// Agentic Engineering Infrastructure | Fractera»), не давала крошек — которые
+// есть у каталога и у каждого поста — и набирала текст карточек классами вместо
+// примитивов типографики. Ни одно из этих решений не было осознанным: просто
+// каждое из них принималось ЗДЕСЬ, а у соседних страниц — в общем месте.
+//
+// Теперь оболочка приходит из `PageShell`, шапка — из `PageHeader` с крошками
+// того же вида, что у каталога, а текст — из примитивов. Разметка `BreadcrumbList`
+// больше не пишется здесь руками: её печатает компонент крошек, и она физически
+// не может разойтись с нарисованным путём.
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params
@@ -49,116 +63,104 @@ export default async function BlogIndex({ params }: { params: Promise<{ lang: st
   const posts = blogList(POSTS, lang)
   const [featured, ...rest] = posts
 
-  const breadcrumb = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: brand().name, item: `${brand().siteUrl}/` },
-      { '@type': 'ListItem', position: 2, name: ui.breadcrumbBlog, item: `${brand().siteUrl}/${lang}/blog` },
-    ],
-  }
-
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <main className="min-h-screen bg-background text-foreground">
-        <div data-app-column className="flex flex-col gap-12 px-6 py-[var(--page-py-content)]">
-          <PageHeader
-            lang={lang}
-            eyebrow={`${ui.eyebrow} · ${metaForLang(lang).title}`}
-            title={ui.indexTitle}
-            subtitle={ui.indexIntro}
-          />
+    <PageShell className="flex flex-col gap-12">
+      <PageHeader
+        lang={lang}
+        breadcrumbs={[{ label: ui.breadcrumbBlog }]}
+        title={ui.indexTitle}
+        subtitle={ui.indexIntro}
+      />
 
-          {featured && (
+      {featured && (
+        <a
+          href={`/${lang}/blog/${featured.slug}`}
+          className="group grid grid-cols-1 overflow-hidden rounded-3xl border border-border transition-colors hover:border-foreground/30 md:grid-cols-2"
+        >
+          <div className="relative aspect-video overflow-hidden bg-muted md:aspect-auto">
+            {/* Главная карточка стоит на первом экране, поэтому `priority`:
+                ленивая загрузка здесь отложила бы ровно то, ради чего человек
+                пришёл. Ширина в вёрстке — половина полосы на широком экране. */}
+            <StaticImage
+              src={featured.image}
+              alt={featured.title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
+            />
+            <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+              {ui.featured}
+            </span>
+          </div>
+          <div className="flex flex-col gap-4 p-8 md:p-10">
+            <div className="flex flex-wrap items-center gap-2">
+              {featured.tags.slice(0, 2).map(t => (
+                <span key={t} className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
+                  {t}
+                </span>
+              ))}
+            </div>
+            <H2>
+              {featured.title}
+            </H2>
+            {/* Текст карточки — примитив шкалы, а не свои классы: `text-base`
+                не двигается вместе с множителем `--type-scale` из панели. */}
+            <P>{featured.excerpt}</P>
+            <div className="mt-auto flex items-center gap-3 pt-2 text-sm text-muted-foreground">
+              <time dateTime={featured.date}>{formatDate(featured.date, lang)}</time>
+              <span aria-hidden>·</span>
+              <span>{featured.readingMinutes} {ui.minRead}</span>
+              <span className="ml-auto inline-flex items-center gap-1.5 font-medium text-primary group-hover:text-primary">
+                {ui.read}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+      )}
+
+      {rest.length > 0 && (
+        <div className="flex flex-col gap-5">
+          {rest.map(post => (
             <a
-              href={`/${lang}/blog/${featured.slug}`}
-              className="group grid grid-cols-1 overflow-hidden rounded-3xl border border-border transition-colors hover:border-foreground/30 md:grid-cols-2"
+              key={post.slug}
+              href={`/${lang}/blog/${post.slug}`}
+              className="group grid grid-cols-[8rem_1fr] items-stretch gap-4 overflow-hidden rounded-2xl border border-border transition-colors hover:border-foreground/30 sm:grid-cols-[12rem_1fr] sm:gap-6"
             >
-              <div className="relative aspect-video overflow-hidden bg-muted md:aspect-auto">
-                {/* Главная карточка стоит на первом экране, поэтому `priority`:
-                    ленивая загрузка здесь отложила бы ровно то, ради чего человек
-                    пришёл. Ширина в вёрстке — половина полосы на широком экране. */}
+              {/* Fixed 4:3 illustration container on the left. Its fixed width
+                  makes the 4:3 height — and thus the whole card's height —
+                  constant at any screen width (8rem→6rem tall, sm 12rem→9rem). */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                {/* Карточки списка лежат ниже сгиба — грузятся лениво (по
+                    умолчанию у `next/image`), и до загрузки на их месте стоит
+                    размытая копия, а не пустой прямоугольник. Ширина в вёрстке
+                    фиксирована контейнером, отсюда точные `sizes`. */}
                 <StaticImage
-                  src={featured.image}
-                  alt={featured.title}
+                  src={post.image}
+                  alt={post.title}
                   fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 640px) 6rem, 12rem"
                   className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
                 />
-                <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
-                  {ui.featured}
-                </span>
               </div>
-              <div className="flex flex-col gap-4 p-8 md:p-10">
-                <div className="flex flex-wrap items-center gap-2">
-                  {featured.tags.slice(0, 2).map(t => (
-                    <span key={t} className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <H2>
-                  {featured.title}
-                </H2>
-                <p className="text-base leading-relaxed text-muted-foreground">{featured.excerpt}</p>
-                <div className="mt-auto flex items-center gap-3 pt-2 text-sm text-muted-foreground">
-                  <time dateTime={featured.date}>{formatDate(featured.date, lang)}</time>
+              {/* Content clamped so it always fits the fixed card height: title
+                  max 1 line, excerpt max 2 lines, meta pinned to the bottom. */}
+              <div className="flex min-w-0 flex-col gap-1.5 py-3 pr-5 sm:gap-2 sm:py-4 sm:pr-6">
+                <H3 variant="ui" className="line-clamp-1">
+                  {post.title}
+                </H3>
+                <Small className="line-clamp-2">{post.excerpt}</Small>
+                <div className="mt-auto flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                  <time dateTime={post.date}>{formatDate(post.date, lang)}</time>
                   <span aria-hidden>·</span>
-                  <span>{featured.readingMinutes} {ui.minRead}</span>
-                  <span className="ml-auto inline-flex items-center gap-1.5 font-medium text-primary group-hover:text-primary">
-                    {ui.read}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                  </span>
+                  <span>{post.readingMinutes} {ui.minRead}</span>
                 </div>
               </div>
             </a>
-          )}
-
-          {rest.length > 0 && (
-            <div className="flex flex-col gap-5">
-              {rest.map(post => (
-                <a
-                  key={post.slug}
-                  href={`/${lang}/blog/${post.slug}`}
-                  className="group grid grid-cols-[8rem_1fr] items-stretch gap-4 overflow-hidden rounded-2xl border border-border transition-colors hover:border-foreground/30 sm:grid-cols-[12rem_1fr] sm:gap-6"
-                >
-                  {/* Fixed 4:3 illustration container on the left. Its fixed width
-                      makes the 4:3 height — and thus the whole card's height —
-                      constant at any screen width (8rem→6rem tall, sm 12rem→9rem). */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                    {/* Карточки списка лежат ниже сгиба — грузятся лениво (по
-                        умолчанию у `next/image`), и до загрузки на их месте стоит
-                        размытая копия, а не пустой прямоугольник. Ширина в вёрстке
-                        фиксирована контейнером, отсюда точные `sizes`. */}
-                    <StaticImage
-                      src={post.image}
-                      alt={post.title}
-                      fill
-                      sizes="(max-width: 640px) 6rem, 12rem"
-                      className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100"
-                    />
-                  </div>
-                  {/* Content clamped so it always fits the fixed card height: title
-                      max 1 line, excerpt max 2 lines, meta pinned to the bottom. */}
-                  <div className="flex min-w-0 flex-col gap-1.5 py-3 pr-5 sm:gap-2 sm:py-4 sm:pr-6">
-                    <H3 variant="ui" className="line-clamp-1">
-                      {post.title}
-                    </H3>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">{post.excerpt}</p>
-                    <div className="mt-auto flex items-center gap-2 pt-1 text-xs text-muted-foreground">
-                      <time dateTime={post.date}>{formatDate(post.date, lang)}</time>
-                      <span aria-hidden>·</span>
-                      <span>{post.readingMinutes} {ui.minRead}</span>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
-      </main>
-    </>
+      )}
+    </PageShell>
   )
 }

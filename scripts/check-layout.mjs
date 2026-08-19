@@ -62,12 +62,24 @@ function walk(dir, out = []) {
 
 const rel = f => path.relative(ROOT, f)
 
+// 🔒 СТОРОЖ ЧИТАЕТ КОД, А НЕ КОММЕНТАРИИ. Правило, объяснённое в файле словами
+// («здесь стоял свой `<main>`»), — это текст ОБ оболочке, а не оболочка. Пока
+// комментарии не отброшены, сторож наказывает ровно за то объяснение, которое
+// сам же и потребовал написать, и его отключают целиком.
+function code(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")   // блочные, включая JSX {/* … */}
+    .split("\n")
+    .filter(line => !/^\s*\/\//.test(line))
+    .join("\n")
+}
+
 // ── 1. У страницы со своим `<main>` есть лента ──────────────────────────────
 //
 // Ищем именно `<main`: это и есть признак «файл рисует страницу целиком».
 // Компонент внутри страницы `<main>` не открывает и под правило не подпадает.
 for (const file of walk(LANG_DIR)) {
-  const src = fs.readFileSync(file, "utf8")
+  const src = code(fs.readFileSync(file, "utf8"))
   if (!/<main[\s>]/.test(src)) continue
 
   const key = path.relative(LANG_DIR, file)
@@ -77,6 +89,55 @@ for (const file of walk(LANG_DIR)) {
     fail(
       "page-without-column",
       `${rel(file)}: страница рисует свой <main>, но ленты нет — переключатель ширины в подвале на ней не делает ничего`,
+    )
+  }
+}
+
+// ── 1а. Публичная страница не открывает СВОЮ оболочку ───────────────────────
+//
+// 🔒 ЧТО ЭТО ЛОВИТ (2026-08-19, нашёл владелец: «блог выпадает из общей
+// концепции дизайна»). Метка ленты у списка блога БЫЛА — правило 1 проходило, —
+// но `<main>`, воздух ленты и её внутренний ритм страница писала сама. На момент
+// правки на четырёх публичных страницах стояло три разных воздуха и два разных
+// тега ленты. Глаз читает это как «другая оболочка», а ни один гейт не видел
+// ничего: каждая страница по отдельности была правильной.
+//
+// Поэтому оболочку теперь открывает ровно один компонент — `PageShell`, — а
+// страница решает только то, что внутри.
+const SHELL = path.join("components", "content-page", "page-shell.tsx")
+const PUBLIC_DIRS = [
+  path.join(LANG_DIR, "(publicLayer)"),
+  path.join(ROOT, "components", "content-page"),
+]
+
+for (const dir of PUBLIC_DIRS) {
+  for (const file of walk(dir)) {
+    const r = rel(file)
+    if (r === SHELL) continue
+    const src = code(fs.readFileSync(file, "utf8"))
+    if (!/<main[\s>]/.test(src)) continue
+    fail(
+      "own-page-shell",
+      `${r}: страница открывает свой <main>. Оболочка публичной страницы одна — components/content-page/page-shell.tsx (PageShell): свой <main> означает свой воздух и свой ритм, а расходятся они молча`,
+    )
+  }
+}
+
+// ── 1б. Крошки не начинаются с корня сайта ──────────────────────────────────
+//
+// 🔒 КОРЕНЬ ПЕЧАТАЕТ САМ КОМПОНЕНТ КРОШЕК (`components/nav/breadcrumbs.server.tsx`,
+// первая крошка = имя сайта из настроек). Страница, вписавшая его ещё раз,
+// показывала «Fractera / Fractera / Блог» и объявляла в разметке `BreadcrumbList`
+// два одинаковых первых пункта — поисковику это видно так же хорошо, как человеку.
+// На момент правки так было у ОБОИХ постов блога и у всех четырёх страниц подвала.
+const DOUBLE_ROOT = /breadcrumbs:\s*\[\s*\{\s*label:\s*(brand\(\)\.name|metaForLang\([^)]*\)\.siteName)/
+for (const dir of [path.join(ROOT, "app"), path.join(ROOT, "components")]) {
+  for (const file of walk(dir)) {
+    const src = code(fs.readFileSync(file, "utf8"))
+    if (!DOUBLE_ROOT.test(src)) continue
+    fail(
+      "breadcrumb-root-twice",
+      `${rel(file)}: путь начинается с имени сайта, а его уже печатает компонент крошек — получается «Сайт / Сайт / Страница» и две одинаковые записи в BreadcrumbList`,
     )
   }
 }

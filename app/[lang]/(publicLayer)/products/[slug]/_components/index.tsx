@@ -11,7 +11,8 @@ import { getAppConfig } from "@/config/app-config"
 import { productById, prerenderSlugs } from "@/lib/catalogue"
 import { localizeProduct } from "@/lib/products/localize"
 import { catalogueUi } from "../../_data"
-import { H1 } from '@/components/ui/typography'
+import { H1 } from "@/components/ui/typography"
+import { PageShell } from "@/components/content-page/page-shell"
 
 // ПУБЛИЧНАЯ СТРАНИЦА ТОВАРА — статика через ISR.
 //
@@ -100,40 +101,40 @@ export default async function ProductPage({ lang, slug }: { lang: string; slug: 
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div data-app-column className="px-6 py-[var(--page-py-work)]">
-        <Breadcrumbs
-          lang={lang}
-          trail={[{ label: t.title, href: `/${lang}/products` }, { label: p.localizedName }]}
-        />
+    /* Оболочка — общая (`PageShell`, 2026-08-19): свой `<main>` со своей лентой
+       и своим воздухом здесь стоял ровно потому, что решение принималось в этом
+       файле, а не в общем месте. */
+    <PageShell jsonLd={<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}>
+      <Breadcrumbs
+        lang={lang}
+        trail={[{ label: t.title, href: `/${lang}/products` }, { label: p.localizedName }]}
+      />
 
-        <article className="mt-6">
-          {p.media_url && (
-            <figure className="mb-6 overflow-hidden rounded-2xl border border-border bg-muted/30">
-              <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} sizes="(max-width: 640px) 50vw, 280px" className="mx-auto h-72 w-full object-contain p-6" />
-            </figure>
-          )}
+      <article className="mt-6">
+        {p.media_url && (
+          <figure className="mb-6 overflow-hidden rounded-2xl border border-border bg-muted/30">
+            <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} sizes="(max-width: 640px) 50vw, 280px" className="mx-auto h-72 w-full object-contain p-6" />
+          </figure>
+        )}
 
-          <H1>{p.localizedName}</H1>
-          <p className="mt-2 text-xl font-medium text-foreground">
-            {/* Валюта показывается человеку тем же значением, что уезжает в разметку:
-                цифра без валюты не значит ничего ни для того, ни для другого. */}
-            {new Intl.NumberFormat(lang, { style: "currency", currency }).format(p.price)}
-          </p>
+        <H1>{p.localizedName}</H1>
+        <p className="mt-2 text-xl font-medium text-foreground">
+          {/* Валюта показывается человеку тем же значением, что уезжает в разметку:
+              цифра без валюты не значит ничего ни для того, ни для другого. */}
+          {new Intl.NumberFormat(lang, { style: "currency", currency }).format(p.price)}
+        </p>
 
-          {p.localizedDescription && (
-            <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground">{p.localizedDescription}</p>
-          )}
+        {p.localizedDescription && (
+          <p className="mt-4 max-w-prose text-sm leading-relaxed text-muted-foreground">{p.localizedDescription}</p>
+        )}
 
-          <Link
-            href={`/${lang}/products`}
-            className="mt-8 inline-block text-xs text-muted-foreground underline hover:text-foreground"
-          >
-            ← {t.backToCatalogue}
-          </Link>
-        </article>
-      </div>
-    </main>
+        <Link
+          href={`/${lang}/products`}
+          className="mt-8 inline-block text-xs text-muted-foreground underline hover:text-foreground"
+        >
+          ← {t.backToCatalogue}
+        </Link>
+      </article>
+    </PageShell>
   )
 }

@@ -28,7 +28,11 @@ const page = createContentPage({
     }
   },
   chrome: (lang, content) => ({
-    breadcrumbs: [{ label: brand().name, href: `/${lang}` }, { label: content.title }],
+    // Корень сайта в путь НЕ вписывается: его печатает сам компонент крошек
+    // (`components/nav/breadcrumbs.server.tsx`). Пока он стоял здесь, страница
+    // показывала «Fractera / Fractera / Заголовок» и объявляла в разметке
+    // `BreadcrumbList` два одинаковых первых пункта.
+    breadcrumbs: [{ label: content.title }],
     backHref: `/${lang}`,
     backLabel: brand().name,
   }),

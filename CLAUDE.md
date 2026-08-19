@@ -116,7 +116,6 @@
 | `(protectedLayer)/(staff)/manage/products`, `…/[productId]` | рабочее место сотрудника: список и карточка |
 | `(protectedLayer)/(admin)/administration/products`, `(admin)/blocks` | администрирование |
 | `(protectedLayer)/(finance)/accounting/products` | финансовый доступ |
-| `(publicLayer)/todo` | работающая вещь: таблица, дверь, островок, статическая оболочка |
 
 Группа прав не импортирует у соседней: общее поднимается в `components/` и `lib/`.
 

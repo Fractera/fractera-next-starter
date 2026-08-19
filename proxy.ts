@@ -54,7 +54,6 @@ const ADMIN_API_PREFIXES: string[] = [];
 const PUBLIC_API_PREFIXES = [
   "/api/health",
   "/api/catalogue",   // догрузка витрины: те же товары, что в статическом HTML
-  "/api/todos",       // образец работающей вещи на публичной странице
   "/api/i18n",        // строки интерфейса — они и так в разметке
   "/api/project-types",
 ];

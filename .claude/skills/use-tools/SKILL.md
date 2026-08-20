@@ -71,6 +71,17 @@ rather than adding your own: the microphone, the cropper and the code viewer are
 Name refusals plainly and link to where they are cured; "could not" tells a person nothing about
 what to do next.
 
+## If a tool was deleted, do not rebuild it from memory
+
+The starter's own tools live in its latest version:
+**https://github.com/Fractera/fractera-next-starter**. Take the ARCHITECTURE from there — folder
+shape, contract, layer boundaries — not the text or the images of that project. Copying a whole page
+into someone else's product carries their identity along with it; copying the structure is exactly
+what the specimens exist for.
+
+A tool rebuilt from memory differs from the original in the details nobody notices until the first
+refusal: no focus trap, the card's language lost, the reason hidden behind "could not".
+
 ## Proof
 
 A tool is done when it works in a browser on both sides — not when types are green. Green types

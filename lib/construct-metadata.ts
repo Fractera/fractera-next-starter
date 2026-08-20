@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { AppConfig, ContentType } from "@/config/app-config.defaults";
-import { iconUrl, resolveBrandName } from "@/config/app-config.defaults";
+import { iconUrl, resolveBrandName, twitterHandle } from "@/config/app-config.defaults";
 import { getAppConfig, configValueForLang } from "@/config/app-config";
 
 // Build a Next Metadata object from the live site config (Admin -> Site Settings).
@@ -138,8 +138,11 @@ export function constructMetadata(args: ConstructArgs = {}): Metadata {
       title,
       description: desc,
       ...(image ? { images: [image] } : {}),
-      creator: cfg.seo.social.twitter,
-      site: cfg.seo.social.twitter,
+      // Псевдоним берётся ОДНИМ резолвером (шаг 523): исторический ключ, а если он
+      // пуст — запись конструктора, ведущая в X. Прямое чтение `seo.social.twitter`
+      // теряло автора у всех, кто завёл X новым списком.
+      creator: twitterHandle(cfg.seo),
+      site: twitterHandle(cfg.seo),
     },
     robots: {
       index,

@@ -348,7 +348,12 @@ export function socialHref(link: SocialLink): string {
  */
 export function resolveSocialLinks(seo: { social?: SocialConfig; socialLinks?: SocialLink[] } | undefined): SocialLink[] {
   if (!seo) return [];
-  if (seo.socialLinks?.length) return seo.socialLinks;
+  // 🔒 «ВЕТКИ НЕТ» И «ВЕТКА ПУСТА» — РАЗНЫЕ СОСТОЯНИЯ (шаг 523, тот же закон, по
+  // которому живут меню подвала). Здесь стояло `socialLinks?.length`, и пустой
+  // список читался как «владелец конструктора не открывал»: убрав из панели все
+  // записи, он получал обратно четыре унаследованные ссылки. Решение человека
+  // «сетей у меня нет» молча отменялось.
+  if (Array.isArray(seo.socialLinks)) return seo.socialLinks;
   const s = seo.social;
   if (!s) return [];
   const out: SocialLink[] = [];
@@ -367,6 +372,23 @@ export function resolveSocialLinks(seo: { social?: SocialConfig; socialLinks?: S
   legacy("linkedin", "LinkedIn", s.linkedin, "https://linkedin.com/company/{value}");
   legacy("facebook", "Facebook", s.facebook, "https://facebook.com/{value}");
   return out;
+}
+
+/**
+ * Псевдоним для карточки Twitter/X — ОДИН источник вместо двух (шаг 523).
+ *
+ * Карточка читала `seo.social.twitter` напрямую. После конструктора владелец
+ * заводит X записью в `socialLinks`, и старый ключ остаётся пустым — карточка
+ * молча теряла бы автора. Поэтому: сперва исторический ключ (он у работающих
+ * проектов заполнен), затем первая запись, чей адрес ведёт в X.
+ */
+export function twitterHandle(seo: { social?: SocialConfig; socialLinks?: SocialLink[] } | undefined): string | undefined {
+  const legacy = seo?.social?.twitter;
+  if (legacy) return legacy;
+  const link = resolveSocialLinks(seo).find((l) => /\/\/(?:www\.)?(?:twitter|x)\.com\//i.test(socialHref(l)));
+  if (!link) return undefined;
+  const v = link.value.trim().replace(/^@/, "");
+  return v ? `@${v}` : undefined;
 }
 
 /** Адреса профилей для разметки `sameAs`. */

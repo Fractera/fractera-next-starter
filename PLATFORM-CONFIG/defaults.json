@@ -3,7 +3,7 @@
   "footerPages": true,
   "cookieBanner": false,
   "offlineCache": true,
-  "auth": false,
+  "auth": true,
   "breadcrumbs": false,
   "faq": false,
   "themeToggle": true,

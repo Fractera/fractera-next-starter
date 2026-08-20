@@ -5,6 +5,24 @@
 // Подключается любой сущностью с переводимыми полями: продукт сегодня,
 // категория и страница завтра.
 //
+// 🔒 ЗЕРКАЛО. Такой же инструмент лежит в панели —
+// `ai-workspace/bridges/app/_tools/translations-dialog/`, и записан в её реестре
+// инструментов. Копия намеренная: панель применяет его в СВОИХ формах и живёт
+// вне репозитория пользователя, а это приложение обязано работать с выключенной
+// панелью. Одна общая копия убила бы одно из двух.
+//
+// Расходятся ровно три вещи, и каждая по своей причине:
+//   • окно: здесь общий `AppDialog` приложения, там shadcn `Dialog` панели;
+//   • языки: здесь из `translations.config` самого приложения, там приходят
+//     пропсом — их знает сервер панели;
+//   • дверь перевода: здесь `/api/i18n/translate`, там `/api/config/nav/translate`.
+// Поведение общее: карточка на язык, автоперевод, сохранение по одному языку.
+//
+// 🔒 ПЕРЕЕХАЛ ИЗ `components/i18n/` В `_tools/` (шаг 529). Пока он лежал среди
+// обычных компонентов и не значился в реестре, найти его было негде — и кнопку
+// перевода в панели построили заново, самоделкой без интерфейса. Инструмент без
+// дома не существует, как бы хорош он ни был.
+//
 // 🔒 ОДНОЯЗЫЧНОЕ ПРИЛОЖЕНИЕ ЭТОГО ДИАЛОГА НЕ ВИДИТ. Переводить не на что, и
 // спрашивать об этом человека — отнимать время вопросом без ответа. Проверка
 // стоит первой строкой: вызывающему о ней помнить не надо.
@@ -28,7 +46,7 @@ import { SINGLE_LANG_MODE } from "@/config/translations/translations.config"
 import { adminBase } from "@/lib/runtime-urls"
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import { TranslationCell } from "./translation-cell.client"
-import type { TranslationsUi } from "./translations-dialog.i18n"
+import type { TranslationsUi } from "../types/translations-dialog.i18n"
 import { useTranslations, type Drafts, type TranslatableField } from "./use-translations"
 
 export type { TranslatableField, Drafts }

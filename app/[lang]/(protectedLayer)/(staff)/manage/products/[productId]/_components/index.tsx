@@ -1,6 +1,6 @@
 import { prerenderSlugs } from "@/lib/catalogue"
 import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
-import { translationsUi } from "@/components/i18n/translations-dialog.i18n"
+import { translationsUi } from "@/_tools/translations-dialog/types/translations-dialog.i18n"
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../../_data/ui.i18n"

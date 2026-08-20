@@ -16,7 +16,15 @@ function absUrl(path: string, base: string): string {
 }
 
 export function buildOrganizationSchema(cfg: AppConfig): Schema {
-  const sameAs = socialUrls(cfg.seo.social);
+  // 🔒 ПЕРЕДАЁТСЯ `cfg.seo`, А НЕ `cfg.seo.social` (шаг 523, найдено замером).
+  // Здесь стояло `socialUrls(cfg.seo.social)` — то есть ОДНО наследство из
+  // четырёх ключей. У `socialUrls` есть путь совместимости для такого вызова, и
+  // он молча срабатывал: открытый список `socialLinks` в разметку не попадал
+  // вовсе. Владелец заводил Telegram конструктором, подвал его показывал, а
+  // машинам сайт продолжал заявлять `twitter.com/fractera` — умолчание стартера,
+  // к владельцу отношения не имеющее. Ошибка не падает и не видна глазом:
+  // проверяется только чтением `sameAs` в разметке.
+  const sameAs = socialUrls(cfg.seo);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",

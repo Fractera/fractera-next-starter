@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { shouldBypassAuth } from "@/lib/auth/auth-bypass";
+import { shouldBypassAuthEdge } from "@/lib/auth/auth-bypass.edge";
 import { getSession } from "@/lib/auth/get-session";
 import { authBaseFromHost, projectsBaseFromHost } from "@/lib/auth-base-server";
 import {
@@ -176,7 +176,7 @@ async function apiAuthGate(request: NextRequest): Promise<NextResponse> {
   }
 
   if (pathname.startsWith("/api/") && !PUBLIC_API_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    if (!shouldBypassAuth()) {
+    if (!shouldBypassAuthEdge()) {
       const agentIdentity = request.headers.get("x-agent-identity");
       if (!agentIdentity) {
         const sessionToken =

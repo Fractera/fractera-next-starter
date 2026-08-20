@@ -24,6 +24,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { AppDialog } from "@/components/dialog/app-dialog.client";
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n";
 
 export type CropMode = "horizontal" | "square" | "vertical";
 
@@ -44,9 +46,19 @@ export type CropperLabels = { title: string; scale: string; cancel: string; appl
 const FALLBACK: CropperLabels = { title: "Crop image", scale: "Scale", cancel: "Cancel", apply: "Apply" };
 
 export function ImageCropper(
-  { src, labels, onDone, onCancel, force }: {
+  { src, labels, dialogUi, onDone, onCancel, force }: {
     src: string;
     labels?: CropperLabels;
+    /**
+     * Слова ОБЩЕГО окна продукта (`appDialogUi(lang)`).
+     *
+     * 🔒 РАСХОЖДЕНИЕ С КОПИЕЙ ПАНЕЛИ, и оно осознанное. Там окно собрано руками
+     * из `div`; здесь это запрещено гейтом `check:dialogs` и запрещено по делу:
+     * ручная подложка не несёт ни `role="dialog"`, ни ловушки фокуса, ни
+     * Escape, ни замка прокрутки. Выглядит одинаково — пользоваться с клавиатуры
+     * нельзя. Тот же путь однажды уже прошёл диалог переводов.
+     */
+    dialogUi: AppDialogUi;
     onDone: (blob: Blob, cropMode: string) => void;
     onCancel: () => void;
     /**
@@ -138,10 +150,16 @@ export function ImageCropper(
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4">
-      <div className="flex flex-col gap-3 rounded-xl bg-background p-4 shadow-xl" style={{ width: Math.max(W + 48, 320) }}>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-foreground">{t.title}</span>
+    <AppDialog
+      open
+      onOpenChange={(v) => { if (!v) onCancel(); }}
+      ui={dialogUi}
+      title={t.title}
+      size="md"
+      bodyClassName="flex flex-col gap-3 p-4"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-end">
           {/* Пропорция заперта — выбора нет и показывать его незачем: кнопки,
               которые ничего не меняют, хуже их отсутствия. */}
           {!force && (
@@ -176,6 +194,6 @@ export function ImageCropper(
           <Button size="sm" onClick={handleDone}>{t.apply}</Button>
         </div>
       </div>
-    </div>
+    </AppDialog>
   );
 }

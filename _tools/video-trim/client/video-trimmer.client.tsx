@@ -29,7 +29,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { X, Loader2, Play, Scissors } from "lucide-react";
+import { Loader2, Play, Scissors } from "lucide-react";
+import { AppDialog } from "@/components/dialog/app-dialog.client";
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n";
 
 export type TrimmerLabels = {
   title: string; start: string; end: string; keeping: string; lossless: string;
@@ -41,8 +43,18 @@ const fill = (t: string, vars: Record<string, string>) =>
   t.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
 export function VideoTrimmer(
-  { mediaBase, itemId, name, serverDuration, labels, onClose }: {
+  { mediaBase, itemId, name, serverDuration, labels, dialogUi, onClose }: {
     mediaBase: string;
+    /**
+     * Слова ОБЩЕГО окна продукта (`appDialogUi(lang)`).
+     *
+     * 🔒 РАСХОЖДЕНИЕ С КОПИЕЙ ПАНЕЛИ, и оно осознанное. Там окно собрано руками
+     * из `div` с подложкой; здесь это запрещено гейтом `check:dialogs` — и
+     * запрещено по делу: ручная подложка не несёт ни `role="dialog"`, ни ловушки
+     * фокуса, ни Escape, ни замка прокрутки. Выглядит одинаково, а пользоваться
+     * с клавиатуры нельзя. Крестик тоже больше не свой: его рисует общее окно.
+     */
+    dialogUi: AppDialogUi;
     itemId: string;
     name: string;
     // Измерено ffprobe на сервере при загрузке. Это АВТОРИТЕТ: запись экрана
@@ -137,14 +149,16 @@ export function VideoTrimmer(
     `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}.${Math.floor((s % 1) * 10)}`;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4" onClick={onClose}>
-      <div className="flex w-full max-w-2xl flex-col gap-3 rounded-xl bg-background p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-[12px] font-medium text-foreground">
-            <Scissors size={13} /> {labels.title}
-          </span>
-          <Button variant="ghost" size="icon-xs" onClick={onClose}><X size={13} /></Button>
-        </div>
+    <AppDialog
+      open
+      onOpenChange={(v) => { if (!v) onClose(); }}
+      ui={dialogUi}
+      titleClassName="flex items-center gap-1.5 text-[12px] font-medium"
+      title={<><Scissors size={13} />{labels.title}</>}
+      size="lg"
+      bodyClassName="flex flex-col gap-3 p-4"
+    >
+      <div className="flex flex-col gap-3">
 
         <video ref={videoRef} src={src} controls className="max-h-[46vh] w-full rounded-lg bg-black" />
 
@@ -199,6 +213,6 @@ export function VideoTrimmer(
           <p className="text-[11px] text-muted-foreground">{labels.reading}</p>
         )}
       </div>
-    </div>
+    </AppDialog>
   );
 }

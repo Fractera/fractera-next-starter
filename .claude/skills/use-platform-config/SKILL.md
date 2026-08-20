@@ -1,11 +1,12 @@
 ---
 name: use-platform-config
 description: >
-  Everything about PLATFORM-CONFIG — the ten switches that decide which capabilities the site
+  Everything about PLATFORM-CONFIG — the eleven switches that decide which capabilities the site
   offers: top menu, footer pages, cookie banner, sign-in, breadcrumbs, FAQ, theme toggle, width
-  toggle, language switcher, offline cache. Use when the owner says "turn off the menu", "remove
-  the cookie notice", "hide the login button", "we don't need breadcrumbs", "add a header",
-  "the switch does nothing", or anything about a capability being present or absent. ALSO use
+  toggle, language switcher, socials row, offline cache. Use when the owner says "turn off the
+  menu", "remove the cookie notice", "hide the login button", "we don't need breadcrumbs", "hide
+  the social icons", "add a header", "the switch does nothing", or anything about a capability
+  being present or absent. ALSO use
   BEFORE building any header, footer, consent strip, theme or language control of your own —
   they already exist, they are switched, and a hand-rolled copy answers to nobody.
 ---
@@ -42,7 +43,7 @@ was a panel that said OFF while the site showed the feature. That is gone; do no
 component and hand the boolean to an island as a prop. Importing it from a client component is a
 build error, and that is the correct answer.
 
-## 2. The ten switches and where each is read
+## 2. The eleven switches and where each is read
 
 Measured in a browser on a live server, 2026-08-20 — not inferred from the code.
 
@@ -56,6 +57,7 @@ Measured in a browser on a live server, 2026-08-20 — not inferred from the cod
 | `themeToggle` | on | footer menu — **both clusters**, desktop and mobile |
 | `widthToggle` | on | footer menu, desktop cluster |
 | `languageSwitcher` | on | footer menu — **both clusters** |
+| `socials` | on | footer menu — the row of network icons |
 | `breadcrumbs` | off | `components/content-page/page-header.server.tsx` |
 | `faq` | off | `lib/content/create-content-post.tsx`, `create-content-page.tsx` |
 
@@ -77,6 +79,12 @@ feature stays alive on half the devices, producing a bug report that does not re
   from is `nav.authSide` in `APP-CONFIG`.
 - **`cookieBanner`** is a setting, never a deletion. Deleting the component to "turn it off" takes the
   switch away from every project built afterwards.
+- **`socials`** hides the ROW. Which networks and which profiles is `seo.socialLinks` in
+  `APP-CONFIG` — see `use-app-config`. The split is the owner's and it is right: "I don't want to
+  see socials" is a question of the capability EXISTING, "which accounts are mine" is content.
+  Before the switch existed, the row appeared merely because records existed, and the only way to
+  remove it was to delete the data. The switch does **not** gate `sameAs`: hiding the row is a
+  layout decision, while `sameAs` is the site's claim to machines that these accounts are its own.
 
 ## 4. Making a change visible
 
@@ -114,7 +122,22 @@ Facts that bite: menu labels are capped at 12 characters (`lib/menu/nav-config.t
 exactly one level; "menu on, zero buttons" is a valid state, not a defect; the account button and the
 cart are always on the right.
 
-## 6. Defaults live in TWO repositories
+## 6. A new switch lives in FOUR places, plus the panel
+
+Adding a switch and finding it dead is the most common way to lose a day here. Only one of the four
+omissions tells you anything.
+
+| # | Where | Miss it and |
+|---|---|---|
+| 1 | `config/platform-config.defaults.ts` — the key in the union | the build fails, loudly. The only honest failure of the four. |
+| 2 | `config/platform-config.defaults.ts` — the default value | an owner who never spoke gets `undefined` instead of a decision |
+| 3 | **`config/platform-config.schema.ts`** | **validation strips the unknown key on save — silently.** The file on disk looks right, the reader falls back to the default, the switch looks broken. |
+| 4 | `PLATFORM-CONFIG/{schema,defaults}.json` | `check:config-schemas` fails the build on the server |
+
+Number three cost three separate detours in one day. Number four is generated, never hand-written:
+`npm run build:config-schemas`. The fifth place — the form in the panel — is in another repository.
+
+## 7. Defaults live in TWO repositories
 
 `config/platform-config.defaults.ts` here, and `bridges/app/lib/platform-features.shared.ts` in the
 panel. Duplicated on purpose — the panel is a foreign repository to this project — so **any change to
@@ -130,12 +153,17 @@ Skip that and the build fails on the server, not here.
 writes only the keys listed there and carries the rest over from the existing config. Put it back into
 that list and saving from one page starts wiping the choice made on another.
 
-## 7. Before you call it done
+## 8. Before you call it done
 
 1. Set the switch **off**, purge the cache, open the page in a browser, confirm the thing is gone.
 2. Set it **on**, purge, confirm it is back. One direction proves nothing: a feature can be absent for
    its own reasons.
-3. For anything with structured data (breadcrumbs, FAQ), check the markup too — not only the pixels.
+3. For anything with structured data (breadcrumbs, FAQ, socials), check the markup too — not only
+   the pixels.
+
+🔒 **Count ELEMENTS, not words.** Searching the HTML for `twitter` says nothing: the word also lives
+in `sameAs`, in a class name, in a comment. Count `<a href=…>` in the footer instead. Measuring by
+words once produced the confident verdict "the socials gate does not work" about a gate that worked.
 4. `npm run check:menu`, `check:types`, and `check:config-schemas` if you touched a default.
 
 🔒 Green gates are not proof. Four of these ten switches shipped dead for months with every gate

@@ -126,6 +126,13 @@ export const tr: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Yüksek yüke hazır',
+    text:
+      'Vibe coding\'in gizli gerçeği: bir projenin büyük bölümü yüksek yük, veritabanı sorgularından tasarruf ve önbellekleme düşünülmeden yazılır. Geliştiriciler bunu bilmediği için değil — bu standardı bir çatı katmanının içinde tutmak gerçekten zor olduğu için. Çok sayıda küçük ayrıntı bir sayfayı sessizce statik üretimden dinamik render\'a iter. Ve fark yüzde beş ya da on değildir: bazı durumlarda sunucunuzun üzerindeki yük bin kat artar, sunucu ve platform faturanız da onunla birlikte büyür. Fractera uzun bir deneyimin üzerine kuruludur: web geliştirmede otuz yılı aşkın deneyim. Yüksek yük, arama motoru optimizasyonu ve veritabanlarında tasarrufla ilgili her şey bu projenin DNA\'sına yazılmıştır. Onun iskeletidir, onun yaşam gücüdür. Ve size ücretsiz aittir.',
+    cite: 'Roma Armstrong · Fractera\'nın kurucusu',
+  },
+  {
     kind: 'noBill',
     badge: 'Bağımsızlık',
     heading: 'Tümüyle bağımsız bir alan',

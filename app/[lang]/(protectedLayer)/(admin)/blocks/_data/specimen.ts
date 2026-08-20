@@ -56,11 +56,17 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'quote',
-    when: 'Somebody else’s words. `cite` names the author.',
+    when: 'Somebody else’s words. `cite` names the author; the optional `lead` is a headline-sized first line INSIDE the quote — a field rather than a second kind, so the drawing cannot drift.',
     blocks: [
       {
         kind: 'quote',
         text: 'A quote is the one place where the text is not yours — so the block shows attribution, and the attribution is a separate field rather than a line of prose.',
+        cite: 'The engine, on itself',
+      },
+      {
+        kind: 'quote',
+        lead: 'The same block, with a lead',
+        text: 'The lead is not a heading tag: inside a quotation it would announce a section that does not exist, both in the table of contents and in the machine twin. It is a first line that simply reads larger.',
         cite: 'The engine, on itself',
       },
     ],

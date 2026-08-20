@@ -127,6 +127,13 @@ export const en: HomeCell = {
       { kind: 'card', children: [{ kind: 'p', text: 'The skeleton is built for a project that will outgrow a million lines: every entity owns its folder, the shared layer does not grow with their number, and routes and permissions are declared where they are enforced. Stability here is not a promise but a consequence — a new page adds nothing to a central spine.' }] },
     ],
   },
+  {
+    kind: 'quote',
+    lead: 'Ready for heavy load',
+    text:
+      'The hidden reality of vibe coding: most of a project is built with no thought for heavy load, for saving database queries, for caching. Not because developers do not know about it — but because holding that standard inside a framework is genuinely hard. Too many small things quietly push a page off static generation and into dynamic rendering. And the difference is not five percent, or ten: in some cases the load on your server grows a thousandfold, and your bill for servers and platforms grows with it. Fractera is built on one long experience: more than thirty years of web development. Everything about heavy load, search optimisation and saving on databases is written into the DNA of this project. It is its skeleton and its life force. And it is yours for free.',
+    cite: 'Roma Armstrong · founder of Fractera',
+  },
   // Завершающая секция (outro) — всегда последняя, всегда во всю ширину.
   {
     kind: 'noBill',

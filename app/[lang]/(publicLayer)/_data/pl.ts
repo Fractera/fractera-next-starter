@@ -126,6 +126,13 @@ export const pl: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Gotowe na wysokie obciążenie',
+    text:
+      'Ukryta rzeczywistość vibe codingu: większość projektu powstaje bez myśli o wysokim obciążeniu, o oszczędzaniu zapytań do bazy danych, o buforowaniu. Nie dlatego, że programiści o tym nie wiedzą — ale dlatego, że utrzymanie tego standardu wewnątrz frameworka jest naprawdę trudne. Zbyt wiele drobiazgów po cichu spycha stronę z generowania statycznego do renderowania dynamicznego. A różnica to nie pięć ani dziesięć procent: w niektórych przypadkach obciążenie waszego serwera rośnie tysiąckrotnie, a razem z nim rośnie rachunek za serwery i platformy. Fractera jest zbudowana na długim własnym doświadczeniu: ponad trzydzieści lat w tworzeniu stron. Wszystko, co dotyczy wysokiego obciążenia, optymalizacji dla wyszukiwarek i oszczędzania na bazach danych, jest zapisane w DNA projektu. To jego szkielet, to jego siła życiowa. I jest wasza za darmo.',
+    cite: 'Roma Armstrong · założyciel Fractery',
+  },
+  {
     kind: 'noBill',
     badge: 'Niezależność',
     heading: 'W pełni niezależna przestrzeń',

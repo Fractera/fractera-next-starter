@@ -126,6 +126,13 @@ export const de: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Bereit für hohe Last',
+    text:
+      'Die verborgene Realität des Vibe Codings: Der größte Teil eines Projekts entsteht ohne Gedanken an hohe Last, an das Sparen von Datenbankabfragen, an Caching. Nicht weil Entwickler davon nichts wüssten — sondern weil es sehr schwer ist, diesen Standard innerhalb eines Frameworks zu halten. Zu viele Kleinigkeiten schieben eine Seite unbemerkt von der statischen Generierung ins dynamische Rendering. Und der Unterschied sind nicht fünf oder zehn Prozent: In manchen Fällen wächst die Last auf Ihrem Server um das Tausendfache, und Ihre Rechnung für Server und Plattformen wächst mit. Fractera ist auf einer langen Erfahrung gebaut: mehr als dreißig Jahre Webentwicklung. Alles, was mit hoher Last, Suchmaschinenoptimierung und Sparsamkeit bei Datenbanken zu tun hat, steht in der DNA dieses Projekts. Es ist sein Skelett, es ist seine Lebenskraft. Und sie gehört Ihnen kostenlos.',
+    cite: 'Roma Armstrong · Gründer von Fractera',
+  },
+  {
     kind: 'noBill',
     badge: 'Unabhängigkeit',
     heading: 'Ein vollständig unabhängiger Raum',

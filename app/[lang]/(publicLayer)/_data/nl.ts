@@ -126,6 +126,13 @@ export const nl: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Klaar voor hoge belasting',
+    text:
+      'De verborgen werkelijkheid van vibe coding: het grootste deel van een project wordt gebouwd zonder aan hoge belasting te denken, aan het besparen van databasequery\'s, aan caching. Niet omdat ontwikkelaars daar niets van weten — maar omdat het echt moeilijk is die standaard binnen een framework vast te houden. Te veel kleinigheden duwen een pagina geruisloos van statische generatie naar dynamische rendering. En het verschil is geen vijf of tien procent: in sommige gevallen groeit de belasting op uw server duizendvoudig, en uw rekening voor servers en platforms groeit mee. Fractera is gebouwd op een lange ervaring: meer dan dertig jaar webontwikkeling. Alles wat met hoge belasting, zoekmachineoptimalisatie en besparen op databases te maken heeft, staat geschreven in het DNA van dit project. Het is zijn skelet, het is zijn levenskracht. En die is gratis van u.',
+    cite: 'Roma Armstrong · oprichter van Fractera',
+  },
+  {
     kind: 'noBill',
     badge: 'Onafhankelijkheid',
     heading: 'Een volledig onafhankelijke ruimte',

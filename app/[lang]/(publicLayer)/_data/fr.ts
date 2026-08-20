@@ -126,6 +126,13 @@ export const fr: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Prêt pour la haute charge',
+    text:
+      'La réalité cachée du vibe coding : l\'essentiel d\'un projet se construit sans penser à la haute charge, à l\'économie de requêtes vers la base de données, à la mise en cache. Non parce que les développeurs l\'ignorent — mais parce que tenir ce standard à l\'intérieur d\'un framework est vraiment difficile. Trop de petites choses font glisser une page, sans bruit, de la génération statique vers le rendu dynamique. Et l\'écart n\'est ni de cinq ni de dix pour cent : dans certains cas la charge sur votre serveur est multipliée par mille, et votre facture de serveurs et de plateformes avec elle. Fractera est bâtie sur une longue expérience : plus de trente ans de développement web. Tout ce qui touche à la haute charge, à l\'optimisation pour les moteurs de recherche et à l\'économie sur les bases de données est inscrit dans l\'ADN du projet. C\'est son squelette et sa force vitale. Et elle est à vous, gratuitement.',
+    cite: 'Roma Armstrong · fondateur de Fractera',
+  },
+  {
     kind: 'noBill',
     badge: 'Indépendance',
     heading: 'Un espace entièrement indépendant',

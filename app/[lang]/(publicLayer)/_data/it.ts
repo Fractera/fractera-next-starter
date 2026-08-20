@@ -126,6 +126,13 @@ export const it: Partial<HomeCell> = {
     ],
   },
   {
+    kind: 'quote',
+    lead: 'Pronto per carichi elevati',
+    text:
+      'La realtà nascosta del vibe coding: gran parte di un progetto viene costruita senza pensare al carico elevato, al risparmio di query verso il database, alla cache. Non perché gli sviluppatori non lo sappiano — ma perché tenere questo standard dentro un framework è davvero difficile. Troppe piccole cose spingono in silenzio una pagina dalla generazione statica al rendering dinamico. E la differenza non è del cinque o del dieci per cento: in certi casi il carico sul vostro server cresce di mille volte, e con esso cresce la vostra fattura per server e piattaforme. Fractera è costruita su una lunga esperienza: più di trent\'anni di sviluppo web. Tutto ciò che riguarda il carico elevato, l\'ottimizzazione per i motori di ricerca e il risparmio sui database è scritto nel DNA del progetto. È il suo scheletro, è la sua forza vitale. Ed è vostra gratis.',
+    cite: 'Roma Armstrong · fondatore di Fractera',
+  },
+  {
     kind: 'noBill',
     badge: 'Indipendenza',
     heading: 'Uno spazio del tutto indipendente',

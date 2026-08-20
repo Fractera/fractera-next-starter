@@ -30,7 +30,12 @@ export type LeafBlock =
   | { kind: 'p'; text: string }
   | { kind: 'h2'; text: string }
   | { kind: 'h3'; text: string }
-  | { kind: 'quote'; text: string; cite?: string }
+  // Цитата. `cite` — автор, `lead` — необязательная первая строка, которая
+  // читается как заголовок самой цитаты (крупнее тела, жирная, подчёркнутая).
+  // Заведена как ПОЛЕ, а не как новый вид: рисунок остаётся тем же, меняется
+  // только наличие первой строки — второй вид разошёлся бы с этим на первой же
+  // правке темы, ровно как чуть не разошлись `founder` и `statement`.
+  | { kind: 'quote'; text: string; cite?: string; lead?: string }
   | { kind: 'list'; items: string[] }
   | { kind: 'olist'; items: string[] }
   | { kind: 'figure'; media: 'image' | 'video'; src: string; alt: string; caption?: string; href?: string }

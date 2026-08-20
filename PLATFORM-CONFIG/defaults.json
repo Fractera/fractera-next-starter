@@ -8,5 +8,6 @@
   "faq": false,
   "themeToggle": true,
   "widthToggle": true,
-  "languageSwitcher": true
+  "languageSwitcher": true,
+  "socials": true
 }

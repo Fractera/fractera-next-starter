@@ -83,7 +83,11 @@ export function FooterMenu({ lang }: { lang: string }) {
     ? (fromConfig ?? [...defaultFooterGroups(lang), ...getMenuGroups("footer", lang)])
     : [];
   const ui = footerLabels(lang);
-  const socials = footerSocials(cfg.seo);
+  // 🔒 ВИДИМОСТЬ — ВОПРОС PLATFORM-CONFIG, СОДЕРЖАНИЕ — APP-CONFIG (шаг 523,
+  // разделение владельца). Прежде ряд значков появлялся просто оттого, что в
+  // APP-CONFIG есть записи: «не хочу видеть соцсети» было невыполнимо иначе как
+  // удалением данных. Теперь это выключатель, а записи остаются на месте.
+  const socials = featureOn("socials") ? footerSocials(cfg.seo) : [];
   const address = cfg.geo?.address;
 
   // Кнопка настроек cookie появляется РОВНО тогда, когда есть сам баннер: она

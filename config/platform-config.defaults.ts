@@ -16,7 +16,8 @@ export type FeatureKey =
   | "topMenu"
   | "footerPages"
   | "cookieBanner"
-  | "offlineCache";
+  | "offlineCache"
+  | "socials";
 
 /**
  * Состояние проекта, который ещё ни разу не настраивали.
@@ -47,6 +48,12 @@ export const FEATURE_DEFAULTS: Record<FeatureKey, boolean> = {
   themeToggle: true,
   widthToggle: true,
   languageSwitcher: true,
+  // 🔒 ОДИННАДЦАТЫЙ (шаг 523, требование владельца). Прежде блок соцсетей в
+  // подвале появлялся просто оттого, что в APP-CONFIG есть записи: видимость была
+  // побочным эффектом данных, а не решением. «Не хочу видеть соцсети» — вопрос
+  // НАЛИЧИЯ ВОЗМОЖНОСТИ, и его место здесь; «какие сети и какие адреса» — вопрос
+  // APP-CONFIG. Умолчание true: у кого записи есть, тот их и видит, как раньше.
+  socials: true,
 };
 
 /**

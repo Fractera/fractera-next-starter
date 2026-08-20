@@ -14,16 +14,22 @@ import { CtaButton } from '@/sections/cta-button.server'
 // «некрасиво», и он прав — контейнер без содержимого читается как поломка
 // вёрстки, а не как воздух.
 //
+// 🔒 КНОПКА СТОИТ ПО ЦЕНТРУ (владелец 2026-08-20). Прижатая влево, она читается
+// как продолжение абзаца, а не как приглашение к действию: взгляд, дойдя до
+// конца текста, уходит вниз по левому краю и минует её. Центр — единственное
+// место, где кнопка принадлежит СЕБЕ, а не предыдущей строке. Это касается обеих
+// её раскладок: и внутри рамки с подписью, и отдельно стоящей.
+//
 // Кнопка одна на все места, где предлагается действие, — sections/cta-button:
 // вторая копия классов совпадала бы с первой ровно до первой правки цвета.
 export const cta: SectionRenderer<'cta'> = (b, { key: k }) =>
   b.text ? (
-    <div key={k} className="my-4 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6">
+    <div key={k} className="my-4 flex flex-col items-center gap-4 rounded-2xl border border-primary/30 bg-primary/[0.06] p-6 text-center">
       <p className="text-base font-medium text-foreground">{inline(b.text, k)}</p>
       <CtaButton href={b.href}>{b.label}</CtaButton>
     </div>
   ) : (
-    <div key={k} className="my-4">
+    <div key={k} className="my-4 flex justify-center">
       <CtaButton href={b.href}>{b.label}</CtaButton>
     </div>
   )

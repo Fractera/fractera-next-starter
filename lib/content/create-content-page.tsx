@@ -5,6 +5,7 @@ import { buildAlternates } from '@/lib/seo/alternates'
 import { author, authorSameAs } from '@/lib/author'
 import { brand } from '@/lib/brand'
 import { StandardContentPage, type Breadcrumb } from '@/components/content-page/standard-content-page'
+import { featureOn } from '@/config/platform-config'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // createContentPage — the page factory. It turns a content descriptor into a
@@ -133,6 +134,19 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
     const url = `${SITE}/${lang}${meta.subPath}`
     const ogImageUrl = abs(meta.ogImage)
 
+
+    // 🔒 ВЫКЛЮЧАТЕЛЬ FAQ БЫЛ МЁРТВЫМ (шаг 522, 2026-08-20). Панель его предлагала,
+    // конфиг хранил, а страница рисовала вопросы всегда: проверено браузером —
+    // при `faq: false` на живом сервере стояли и блок «Frequently asked questions»,
+    // и разметка `FAQPage`.
+    //
+    // 🔒 ГЕЙТ У ИСТОЧНИКА, А НЕ У ДВУХ ПОТРЕБИТЕЛЕЙ. Вопросы уходят в ДВА места —
+    // видимый блок и структурированные данные. Закрыть только видимое значит
+    // пообещать машине то, чего на странице нет; закрывать оба по отдельности —
+    // оставить третье место следующему, кто добавит потребителя. Гасится массив:
+    // оба потребителя уже проверяют его длину.
+    const faq = featureOn("faq") ? c.faq : undefined
+
     const jsonLd: Record<string, unknown>[] = [
       {
         '@context': 'https://schema.org',
@@ -168,11 +182,11 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
       // Осталась одна, и она стоит там же, где НАРИСОВАННЫЙ путь: объявленное
       // поисковику и показанное человеку обязаны совпадать по построению, а не
       // по внимательности того, кто правит.
-      ...(c.faq && c.faq.length > 0
+      ...(faq && faq.length > 0
         ? [{
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
-            mainEntity: c.faq.map(f => ({
+            mainEntity: faq.map(f => ({
               '@type': 'Question',
               name: f.q,
               acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -195,7 +209,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
           heroAlt={c.title}
           hero={hero?.(lang)}
           blocks={c.blocks}
-          faq={c.faq}
+          faq={faq}
           backHref={backHref}
           backLabel={backLabel}
           sections={sections?.(lang)}

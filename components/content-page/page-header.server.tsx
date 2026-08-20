@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { Breadcrumbs, type Crumb } from "@/components/nav/breadcrumbs.server"
+import { featureOn } from "@/config/platform-config"
 import { H1, Lead, Eyebrow } from "@/components/ui/typography"
 
 // ШАПКА СТРАНИЦЫ — ОДИН ПОРЯДОК И ОДИН РИТМ НА ВЕСЬ САЙТ.
@@ -63,7 +64,13 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-4">
-      {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumbs lang={lang} trail={breadcrumbs} />}
+      {/* 🔒 ВЫКЛЮЧАТЕЛЬ КРОШЕК БЫЛ МЁРТВЫМ (шаг 522, 2026-08-20): при `breadcrumbs: false`
+          проверка браузером нашла на /privacy и `nav[aria-label="Breadcrumb"]`, и разметку
+          `BreadcrumbList`. Гейт стоит здесь, потому что разметка для поисковика живёт ВНУТРИ
+          компонента крошек — гасится и она, одним условием. */}
+      {featureOn("breadcrumbs") && breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumbs lang={lang} trail={breadcrumbs} />
+      )}
 
       <header className={`flex flex-col gap-4 ${divider ? "border-b border-border pb-8" : ""}`}>
         {eyebrow ? (

@@ -72,6 +72,22 @@ export function FooterMenu({ lang }: { lang: string }) {
   // Кнопка настроек cookie появляется РОВНО тогда, когда есть сам баннер: она
   // его и открывает. Баннер выключен — кнопка вела бы в никуда.
   const bannerOn = featureOn("cookieBanner");
+
+  // 🔒 ТРИ ВЫКЛЮЧАТЕЛЯ ПОДВАЛА БЫЛИ МЁРТВЫМИ (шаг 522, 2026-08-20). Панель их
+  // предлагала, конфиг их хранил, а подвал рисовал кнопки безусловно: проверка
+  // браузером показала «Theme: dark» и «Narrow the screen» на странице во ВСЕХ
+  // трёх положениях конфига. Выключатель, который ничего не выключает, хуже
+  // отсутствующего — человек считает задачу решённой.
+  //
+  // Гейт стоит ЗДЕСЬ, в серверном компоненте, а не внутри островков: `featureOn`
+  // читает диск и помечен `server-only`, островку его не отдать.
+  //
+  // 🔒 КЛАСТЕРА ДВА — настольный и мобильный, и кнопки в них ПОВТОРЯЮТСЯ. Гейт
+  // обязан стоять в обоих: закрыть один — значит выключить кнопку на половине
+  // устройств и получить отчёт «у меня не работает», который не воспроизводится.
+  const themeOn = featureOn("themeToggle");
+  const widthOn = featureOn("widthToggle");
+  const langSwitchOn = featureOn("languageSwitcher");
   // Вход/аккаунт в подвале — та же кнопка, что и в шапке, и тот же ящик:
   // человек, докрутивший до низа страницы, не должен возвращаться наверх.
   const authSide = appShellAuthSide();
@@ -212,15 +228,15 @@ export function FooterMenu({ lang }: { lang: string }) {
             ))}
             {/* Content-width toggle (wide ↔ normal) — ported from the Projects zone footer;
                 governs the [data-app-column] width. Hidden on mobile (own full-width mode). */}
-            <AppWidthToggle labels={widthLabels(lang)} />
-            <ThemeToggle labels={{ system: ui.system, light: ui.light, dark: ui.dark }} />
-            <LanguageSwitcher />
+            {widthOn && <AppWidthToggle labels={widthLabels(lang)} />}
+            {themeOn && <ThemeToggle labels={{ system: ui.system, light: ui.light, dark: ui.dark }} />}
+            {langSwitchOn && <LanguageSwitcher />}
           </div>
 
           {/* Mobile cluster — theme · language · social-hamburger (rightmost) */}
           <div className="flex sm:hidden items-center gap-2 shrink-0">
-            <ThemeToggle labels={{ system: ui.system, light: ui.light, dark: ui.dark }} />
-            <LanguageSwitcher />
+            {themeOn && <ThemeToggle labels={{ system: ui.system, light: ui.light, dark: ui.dark }} />}
+            {langSwitchOn && <LanguageSwitcher />}
             <FooterSocialDropdown
               socials={socials.map(({ href, label, icon }) => ({ href, label, icon }))}
               label={ui.social}

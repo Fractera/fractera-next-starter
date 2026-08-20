@@ -5,6 +5,7 @@ import { buildAlternates } from '@/lib/seo/alternates'
 import { author, authorSameAs } from '@/lib/author'
 import { brand } from '@/lib/brand'
 import { StandardContentPage, type Breadcrumb } from '@/components/content-page/standard-content-page'
+import { featureOn } from '@/config/platform-config'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // createContentPost — the POST factory (sibling of createContentPage). One
@@ -152,6 +153,19 @@ export function createContentPost(config: ContentPostConfig) {
         ? { '@type': 'Person', '@id': author().id, name: author().name, url: author().url, sameAs: authorSameAs() }
         : { '@type': 'Organization', name: brand().legalName, url: brand().siteUrl }
 
+
+    // 🔒 ВЫКЛЮЧАТЕЛЬ FAQ БЫЛ МЁРТВЫМ (шаг 522, 2026-08-20). Панель его предлагала,
+    // конфиг хранил, а страница рисовала вопросы всегда: проверено браузером —
+    // при `faq: false` на живом сервере стояли и блок «Frequently asked questions»,
+    // и разметка `FAQPage`.
+    //
+    // 🔒 ГЕЙТ У ИСТОЧНИКА, А НЕ У ДВУХ ПОТРЕБИТЕЛЕЙ. Вопросы уходят в ДВА места —
+    // видимый блок и структурированные данные. Закрыть только видимое значит
+    // пообещать машине то, чего на странице нет; закрывать оба по отдельности —
+    // оставить третье место следующему, кто добавит потребителя. Гасится массив:
+    // оба потребителя уже проверяют его длину.
+    const faq = featureOn("faq") ? post.faq : undefined
+
     const jsonLd: Record<string, unknown>[] = [
       {
         '@context': 'https://schema.org',
@@ -182,11 +196,11 @@ export function createContentPost(config: ContentPostConfig) {
           item: i === breadcrumbs.length - 1 ? url : abs(b.href ?? subPath),
         })),
       },
-      ...(post.faq && post.faq.length > 0
+      ...(faq && faq.length > 0
         ? [{
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
-            mainEntity: post.faq.map(f => ({
+            mainEntity: faq.map(f => ({
               '@type': 'Question',
               name: f.q,
               acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -222,7 +236,7 @@ export function createContentPost(config: ContentPostConfig) {
           heroImage={post.heroImage}
           hero={post.hero}
           blocks={post.blocks}
-          faq={post.faq}
+          faq={faq}
           backHref={backHref}
           backLabel={backLabel}
         />

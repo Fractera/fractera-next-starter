@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Github, Linkedin, Facebook, Boxes, SlidersHorizontal } from "lucide-react";
 import { BrandX } from "@/components/icons/brand-x";
 import { getAppConfig } from "@/config/app-config";
+import { resolveSocialLinks, socialHref } from "@/config/app-config.defaults";
 import { getMenuGroups } from "@/lib/menu/group-menus";
 import { navGroupsFromConfig, defaultFooterGroups } from "@/lib/menu/nav-config";
 import { featureOn } from "@/config/platform-config";
@@ -36,19 +37,35 @@ import { architectureLinkUi } from "@/lib/i18n/architecture-link.i18n";
 // here on the server) and a serializable string `icon` key (for the mobile
 // FooterSocialDropdown client component — a function/component cannot cross the
 // server→client boundary as a prop).
-function socialLinks(social: { twitter?: string; github?: string; linkedin?: string; facebook?: string } | undefined) {
-  // Тип значка описан ПО ПОТРЕБЛЕНИЮ, а не «как у lucide»: рисуется он вызовом с
-  // одним `className`, и этого достаточно. Привязка к типу конкретной библиотеки
-  // требовала бы от собственного знака X её внутренних полей — то есть запрещала
-  // бы иметь свой значок там, где в библиотеке его нет.
-  type SocialLink = { href: string; label: string; Icon: (p: { className?: string }) => React.ReactNode; icon: SocialKey };
-  if (!social) return [] as SocialLink[];
-  const out: SocialLink[] = [];
-  if (social.github) out.push({ href: social.github, label: "GitHub", Icon: Github, icon: "github" });
-  if (social.twitter) out.push({ href: social.twitter.startsWith("http") ? social.twitter : `https://twitter.com/${social.twitter.replace("@", "")}`, label: "X", Icon: BrandX, icon: "twitter" });
-  if (social.linkedin) out.push({ href: social.linkedin.startsWith("http") ? social.linkedin : `https://linkedin.com/company/${social.linkedin}`, label: "LinkedIn", Icon: Linkedin, icon: "linkedin" });
-  if (social.facebook) out.push({ href: social.facebook.startsWith("http") ? social.facebook : `https://facebook.com/${social.facebook}`, label: "Facebook", Icon: Facebook, icon: "facebook" });
-  return out;
+// 🔒 СПИСОК, А НЕ ЦЕПОЧКА УСЛОВИЙ (шаг 523). Здесь стояли четыре `if` с зашитыми
+// правилами сборки адреса — по одному на сеть. Пятая сеть в такую форму не влезала
+// вовсе, а правило её ссылки взять было неоткуда. Теперь правило хранится ВМЕСТЕ с
+// записью (`urlTemplate`), и подвал только рисует то, что посчитал общий резолвер.
+//
+// Тип значка описан ПО ПОТРЕБЛЕНИЮ, а не «как у lucide»: рисуется он вызовом с одним
+// `className`, и этого достаточно. Привязка к типу конкретной библиотеки запрещала бы
+// иметь свой знак там, где в библиотеке его нет.
+type FooterSocial = { href: string; label: string; Icon: (p: { className?: string }) => React.ReactNode; icon: SocialKey };
+
+// Знаки для четырёх исторических сетей остаются встроенными: они уже нарисованы и
+// не требуют похода в медиатеку. Новая запись приносит свой значок полем `icon`.
+const BUILTIN_ICONS: Record<string, (p: { className?: string }) => React.ReactNode> = {
+  github: Github,
+  twitter: BrandX,
+  linkedin: Linkedin,
+  facebook: Facebook,
+};
+
+function footerSocials(seo: Parameters<typeof resolveSocialLinks>[0]): FooterSocial[] {
+  return resolveSocialLinks(seo).map((link) => {
+    const Builtin = BUILTIN_ICONS[link.id];
+    const Icon = Builtin ?? ((p: { className?: string }) =>
+      link.icon
+        ? // eslint-disable-next-line @next/next/no-img-element
+          <img src={link.icon} alt="" aria-hidden className={p.className} />
+        : <Boxes className={p.className} />);
+    return { href: socialHref(link), label: link.name, Icon, icon: (link.id as SocialKey) };
+  });
 }
 
 export function FooterMenu({ lang }: { lang: string }) {
@@ -66,7 +83,7 @@ export function FooterMenu({ lang }: { lang: string }) {
     ? (fromConfig ?? [...defaultFooterGroups(lang), ...getMenuGroups("footer", lang)])
     : [];
   const ui = footerLabels(lang);
-  const socials = socialLinks(cfg.seo?.social);
+  const socials = footerSocials(cfg.seo);
   const address = cfg.geo?.address;
 
   // Кнопка настроек cookie появляется РОВНО тогда, когда есть сам баннер: она

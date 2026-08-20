@@ -57,7 +57,8 @@
     "defaultLocale": "en",
     "social": {
       "twitter": "@fractera"
-    }
+    },
+    "socialLinks": []
   },
   "og": {
     "type": "website",

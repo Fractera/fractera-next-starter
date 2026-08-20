@@ -319,6 +319,36 @@
             }
           },
           "additionalProperties": {}
+        },
+        "socialLinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "urlTemplate": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "urlTemplate",
+              "value"
+            ],
+            "additionalProperties": {}
+          }
         }
       },
       "required": [

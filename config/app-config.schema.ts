@@ -22,6 +22,16 @@ const socialSchema = z.looseObject({
   facebook: z.string().optional(),
 });
 
+// Открытый список сетей (шаг 523). Правило сборки адреса хранится ВМЕСТЕ со
+// значением, поэтому пятая сеть добавляется записью, а не правкой кода.
+const socialLinkSchema = z.looseObject({
+  id: z.string(),
+  name: z.string(),
+  urlTemplate: z.string(),
+  value: z.string(),
+  icon: z.string().optional(),
+});
+
 const imageSlot = z.string().nullable();
 
 export const appConfigSchema = z.looseObject({
@@ -85,6 +95,7 @@ export const appConfigSchema = z.looseObject({
     googleVerification: z.string().optional(),
     yandexVerification: z.string().optional(),
     social: socialSchema,
+    socialLinks: z.array(socialLinkSchema).optional(),
   }),
 
   og: z.looseObject({

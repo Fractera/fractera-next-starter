@@ -48,6 +48,38 @@ export interface SocialConfig {
   facebook?: string;
 }
 
+/**
+ * Одна соцсеть — САМОСТОЯТЕЛЬНАЯ ЗАПИСЬ, а не ключ в закрытом наборе (шаг 523).
+ *
+ * 🔒 ЧТО ЭТО ЛЕЧИТ. `SocialConfig` выше — четыре зашитых ключа, и к каждому намертво
+ * привязаны значок и правило сборки адреса. Пятая сеть не добавляется вовсе: значка
+ * для неё нет, а правило ссылки взять неоткуда. И у каждой сети правило своё —
+ * `t.me/<псевдоним>`, `wa.me/<номер>`, у LinkedIn личный профиль это `/in/`, а не
+ * `/company/`. Свободное поле ввода этого не знает и молча собирает нерабочий адрес.
+ *
+ * Поэтому запись несёт ПРАВИЛО вместе со значением: адрес считается, а не угадывается.
+ */
+export interface SocialLink {
+  /** Вечный идентификатор записи: на нём держатся порядок и значок. */
+  id: string;
+  /** Каноническое имя сети — «Telegram», «X», «LinkedIn». Его предлагает модель. */
+  name: string;
+  /**
+   * Правило сборки адреса: `https://t.me/{value}`.
+   *
+   * Плейсхолдера нет — значит `urlTemplate` уже полный адрес, и `value` не участвует.
+   * Так выражается сеть, у которой нет предсказуемой формы профиля.
+   */
+  urlTemplate: string;
+  /** То, что ввёл владелец: псевдоним, номер, полный адрес. */
+  value: string;
+  /**
+   * Значок, ПОЛОЖЕННЫЙ В ПРОЕКТ (`/api/media/<id>/file`), а не ссылка на чужой хост:
+   * страница обязана работать офлайн. Значка может не быть — это законное состояние.
+   */
+  icon?: string;
+}
+
 export type ContentType = "website" | "article" | "blog" | "product" | "documentation";
 export type OpenGraphTypeConfig = ContentType | "profile" | "video.other";
 
@@ -109,6 +141,11 @@ export interface AppConfig {
     googleVerification?: string;
     yandexVerification?: string;
     social: SocialConfig;
+    /**
+     * Открытый список сетей (шаг 523). Пусто или отсутствует — работают четыре
+     * ключа `social` выше, и ни один существующий проект ссылок не теряет.
+     */
+    socialLinks?: SocialLink[];
   };
 
   og: {
@@ -249,6 +286,10 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
     googleVerification: undefined,
     yandexVerification: undefined,
     social: { twitter: "@fractera", github: undefined, linkedin: undefined, facebook: undefined },
+    // Пустой список — «владелец ещё не добавлял сетей конструктором»; работают
+    // четыре ключа выше. Поле обязано быть здесь: схема порождается из умолчаний,
+    // и отсутствующее в них поле панель вычистит при первом сохранении.
+    socialLinks: [],
   },
 
   og: { type: "website", locale: undefined, siteName: "Fractera", imageWidth: 1200, imageHeight: 630 },
@@ -289,15 +330,48 @@ export function iconUrl(cfg: AppConfig, name: string): string | null {
   return `/api/media/icons/${cfg.iconSet.id}/file/${file}`;
 }
 
-export function socialUrls(social: SocialConfig | undefined): string[] {
-  if (!social) return [];
-  const out: string[] = [];
-  if (social.twitter)
-    out.push(social.twitter.startsWith("http") ? social.twitter : `https://twitter.com/${social.twitter.replace("@", "")}`);
-  if (social.github) out.push(social.github);
-  if (social.linkedin)
-    out.push(social.linkedin.startsWith("http") ? social.linkedin : `https://linkedin.com/company/${social.linkedin}`);
-  if (social.facebook)
-    out.push(social.facebook.startsWith("http") ? social.facebook : `https://facebook.com/${social.facebook}`);
+/** Готовый адрес записи: правило плюс значение. */
+export function socialHref(link: SocialLink): string {
+  const v = link.value.trim().replace(/^@/, "");
+  if (!link.urlTemplate.includes("{value}")) return link.urlTemplate;
+  return link.urlTemplate.replace("{value}", encodeURIComponent(v));
+}
+
+/**
+ * Список сетей для показа — ЕДИНСТВЕННОЕ место, где решается, что показывать.
+ *
+ * 🔒 СТАРЫЕ КЛЮЧИ ЧИТАЮТСЯ ДОСЛОВНО, ВКЛЮЧАЯ ИХ СТРАННОСТИ. У LinkedIn здесь
+ * `/company/`, хотя для личного профиля это неверно. Исправить правило ЗАДНИМ
+ * ЧИСЛОМ нельзя: на работающих серверах в конфиге лежит значение, собранное под
+ * это правило, и смена шаблона молча увела бы живую ссылку в другое место.
+ * Новые записи получают правило от модели и этой странности не наследуют.
+ */
+export function resolveSocialLinks(seo: { social?: SocialConfig; socialLinks?: SocialLink[] } | undefined): SocialLink[] {
+  if (!seo) return [];
+  if (seo.socialLinks?.length) return seo.socialLinks;
+  const s = seo.social;
+  if (!s) return [];
+  const out: SocialLink[] = [];
+  const legacy = (id: string, name: string, value: string | undefined, template: string) => {
+    if (!value) return;
+    out.push({
+      id,
+      name,
+      value,
+      urlTemplate: value.startsWith("http") ? value : template,
+      icon: undefined,
+    });
+  };
+  legacy("github", "GitHub", s.github, "https://github.com/{value}");
+  legacy("twitter", "X", s.twitter, "https://twitter.com/{value}");
+  legacy("linkedin", "LinkedIn", s.linkedin, "https://linkedin.com/company/{value}");
+  legacy("facebook", "Facebook", s.facebook, "https://facebook.com/{value}");
   return out;
+}
+
+/** Адреса профилей для разметки `sameAs`. */
+export function socialUrls(seo: { social?: SocialConfig; socialLinks?: SocialLink[] } | SocialConfig | undefined): string[] {
+  // Прежняя подпись принимала САМ `social`; вызовы такого вида продолжают работать.
+  const arg = seo && ("social" in seo || "socialLinks" in seo) ? seo : { social: seo as SocialConfig | undefined };
+  return resolveSocialLinks(arg as { social?: SocialConfig; socialLinks?: SocialLink[] }).map(socialHref);
 }

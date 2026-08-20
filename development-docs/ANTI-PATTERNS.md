@@ -10,6 +10,13 @@ gets rediscovered as "but my case is different".
 
 Format: a heading, one line of context, the mechanism of the failure, and what to do instead.
 
+🔒 **KEEP EVERY ENTRY SHORT — this file is not a place for reports.** One paragraph of mechanism, one
+small code block, and stop. Budget: **about 700 characters, never more than twelve lines of prose.**
+An agent loads this file WHOLE while it has a task to do; it is not documentation somebody sits down to
+read. An entry that grows into a report page stops being read, and the law inside it dies together with
+the attention it lost. If a case genuinely needs pages, those pages belong to its step — this file keeps
+only the one-paragraph law that came out of it.
+
 ---
 
 # Premature Reset
@@ -134,4 +141,38 @@ _No tasks._
 
 <!-- fractera:pattern
 {"kind":"anti","category":"","number":5,"name":"Deleting dependencies that nothing imports","status":"draft","description":"After the chat-interface components were removed (components/ai-elements/, 19 files), thirteen packages were left with zero imports anywhere in the tree: @xterm/xterm, @xterm/addon-fit, streamdown and its four modules, ai, react-markdown, use-stick-to-bottom, @xyflow/react, react-rnd, motion. Every mechanical check agrees they are dead weight, and the conclusion is wrong: they are kept on purpose by the owner's decision of 2026-08-15, because the starter's capability examples will be built on them. The trap is that the evidence looks conclusive - grep over the whole tree returns nothing, the build succeeds without them, and a task worded as 'make the starter lighter' points straight at them. Intent is not recoverable from a repository: nothing in the code says 'waiting for an example', so the rule cannot be derived, it has to be read. Instead: leave them; when the weight of the starter or npm ci time genuinely comes up, name these packages as a deliberate reserve rather than debt and let the owner decide. This covers PACKAGES only - orphaned FILES are cleaned normally, as those 19 were.","code":"","tasks":[]}
+-->
+
+---
+
+# headers() or cookies() on a public page
+
+> Anti-pattern · stable
+
+Calling `headers()`, `cookies()` or `draftMode()` inside a page or layout opts that route out of static
+generation — Next must then render it on every request. Nothing fails and no gate complains: the page
+still works, it simply stopped being prerendered, and if the call sits in a LAYOUT the whole subtree
+under it goes dynamic with it. Do not reach for them to read a language, a theme or a session on a
+public page: the language is already in the `[lang]` segment, and identity belongs to a client island
+asking `/api/me`. A page that truly cannot be static is an architect's decision, not a convenience.
+
+## Source code example
+
+```tsx
+// ❌ makes this page — and everything under a layout that does it — dynamic
+import { cookies } from "next/headers"
+const theme = (await cookies()).get("theme")
+
+// ✅ language from the address, identity from an island
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params
+  return <Body lang={lang} />   // <AccountButton /> asks /api/me in the browser
+}
+```
+
+## Steps
+_No tasks._
+
+<!-- fractera:pattern
+{"kind":"anti","category":"","number":6,"name":"headers() or cookies() on a public page","status":"stable","description":"Calling headers(), cookies() or draftMode() inside a page or layout opts that route out of static generation - Next must then render it on every request. Nothing fails and no gate complains: the page still works, it simply stopped being prerendered, and if the call sits in a LAYOUT the whole subtree under it goes dynamic with it. Do not reach for them to read a language, a theme or a session on a public page: the language is already in the [lang] segment, and identity belongs to a client island asking /api/me. A page that truly cannot be static is an architect decision, not a convenience.","code":"// dynamic — do not\nimport { cookies } from \"next/headers\"\nconst theme = (await cookies()).get(\"theme\")\n\n// language from the address, identity from an island\nexport default async function Page({ params }) {\n  const { lang } = await params\n  return <Body lang={lang} />\n}","tasks":[]}
 -->

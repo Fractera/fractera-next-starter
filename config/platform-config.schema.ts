@@ -20,6 +20,9 @@ const featureFlags = z.looseObject({
   themeToggle: z.boolean().optional(),
   widthToggle: z.boolean().optional(),
   languageSwitcher: z.boolean().optional(),
+  // Одиннадцатый (шаг 523). Без строки ЗДЕСЬ проверка молча вычищает ключ, и
+  // читатель падает на умолчание: выключатель выглядит нерабочим при верном файле.
+  socials: z.boolean().optional(),
   topMenu: z.boolean().optional(),
   footerPages: z.boolean().optional(),
   cookieBanner: z.boolean().optional(),

@@ -23,6 +23,9 @@
         "languageSwitcher": {
           "type": "boolean"
         },
+        "socials": {
+          "type": "boolean"
+        },
         "topMenu": {
           "type": "boolean"
         },

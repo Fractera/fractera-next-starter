@@ -10,5 +10,485 @@
     "scale": "Масштаб",
     "cancel": "Отмена",
     "apply": "Применить"
+  },
+  "es": {
+    "title": "Recortar imagen",
+    "scale": "Escala",
+    "cancel": "Cancelar",
+    "apply": "Aplicar"
+  },
+  "fr": {
+    "title": "Recadrer l'image",
+    "scale": "Échelle",
+    "cancel": "Annuler",
+    "apply": "Appliquer"
+  },
+  "de": {
+    "title": "Bild zuschneiden",
+    "scale": "Skalierung",
+    "cancel": "Abbrechen",
+    "apply": "Übernehmen"
+  },
+  "it": {
+    "title": "Ritaglia immagine",
+    "scale": "Scala",
+    "cancel": "Annulla",
+    "apply": "Applica"
+  },
+  "pt": {
+    "title": "Recortar imagem",
+    "scale": "Escala",
+    "cancel": "Cancelar",
+    "apply": "Aplicar"
+  },
+  "pl": {
+    "title": "Przytnij obraz",
+    "scale": "Skala",
+    "cancel": "Anuluj",
+    "apply": "Zastosuj"
+  },
+  "tr": {
+    "title": "Görseli kırp",
+    "scale": "Ölçek",
+    "cancel": "İptal",
+    "apply": "Uygula"
+  },
+  "nl": {
+    "title": "Afbeelding bijsnijden",
+    "scale": "Schaal",
+    "cancel": "Annuleren",
+    "apply": "Toepassen"
+  },
+  "sv": {
+    "title": "Beskär bild",
+    "scale": "Skala",
+    "cancel": "Avbryt",
+    "apply": "Verkställ"
+  },
+  "no": {
+    "title": "Beskjær bilde",
+    "scale": "Skala",
+    "cancel": "Avbryt",
+    "apply": "Bruk"
+  },
+  "da": {
+    "title": "Beskær billede",
+    "scale": "Skala",
+    "cancel": "Annuller",
+    "apply": "Anvend"
+  },
+  "fi": {
+    "title": "Rajaa kuva",
+    "scale": "Mittakaava",
+    "cancel": "Peruuta",
+    "apply": "Käytä"
+  },
+  "is": {
+    "title": "Klippa mynd",
+    "scale": "Kvarði",
+    "cancel": "Hætta við",
+    "apply": "Nota"
+  },
+  "el": {
+    "title": "Περικοπή εικόνας",
+    "scale": "Κλίμακα",
+    "cancel": "Ακύρωση",
+    "apply": "Εφαρμογή"
+  },
+  "cs": {
+    "title": "Oříznout obrázek",
+    "scale": "Měřítko",
+    "cancel": "Zrušit",
+    "apply": "Použít"
+  },
+  "sk": {
+    "title": "Orezať obrázok",
+    "scale": "Mierka",
+    "cancel": "Zrušiť",
+    "apply": "Použiť"
+  },
+  "hu": {
+    "title": "Kép vágása",
+    "scale": "Méretezés",
+    "cancel": "Mégse",
+    "apply": "Alkalmaz"
+  },
+  "ro": {
+    "title": "Decupare imagine",
+    "scale": "Scară",
+    "cancel": "Anulare",
+    "apply": "Aplică"
+  },
+  "hr": {
+    "title": "Izreži sliku",
+    "scale": "Skala",
+    "cancel": "Odustani",
+    "apply": "Primijeni"
+  },
+  "sl": {
+    "title": "Obreži sliko",
+    "scale": "Merilo",
+    "cancel": "Prekliči",
+    "apply": "Uporabi"
+  },
+  "et": {
+    "title": "Kärbi pilti",
+    "scale": "Mastaap",
+    "cancel": "Tühista",
+    "apply": "Rakenda"
+  },
+  "lv": {
+    "title": "Apgriezt attēlu",
+    "scale": "Mērogs",
+    "cancel": "Atcelt",
+    "apply": "Lietot"
+  },
+  "lt": {
+    "title": "Apkirpti vaizdą",
+    "scale": "Mastelis",
+    "cancel": "Atšaukti",
+    "apply": "Taikyti"
+  },
+  "mt": {
+    "title": "Aqta' l-istampa",
+    "scale": "Skala",
+    "cancel": "Ikkanċella",
+    "apply": "Applika"
+  },
+  "ca": {
+    "title": "Retalla la imatge",
+    "scale": "Escala",
+    "cancel": "Cancel·la",
+    "apply": "Aplica"
+  },
+  "gl": {
+    "title": "Recortar imaxe",
+    "scale": "Escala",
+    "cancel": "Cancelar",
+    "apply": "Aplicar"
+  },
+  "cy": {
+    "title": "Tocio delwedd",
+    "scale": "Graddfa",
+    "cancel": "Canslo",
+    "apply": "Gweithredu"
+  },
+  "ga": {
+    "title": "Bearr an íomhá",
+    "scale": "Scála",
+    "cancel": "Cealaigh",
+    "apply": "Cuir i bhfeidhm"
+  },
+  "eu": {
+    "title": "Irudia moztu",
+    "scale": "Eskala",
+    "cancel": "Utzi",
+    "apply": "Aplikatu"
+  },
+  "uk": {
+    "title": "Обрізати зображення",
+    "scale": "Масштаб",
+    "cancel": "Скасувати",
+    "apply": "Застосувати"
+  },
+  "be": {
+    "title": "Абрэзаць выяву",
+    "scale": "Маштаб",
+    "cancel": "Скасаваць",
+    "apply": "Ужыць"
+  },
+  "bg": {
+    "title": "Изрязване на изображение",
+    "scale": "Мащаб",
+    "cancel": "Отказ",
+    "apply": "Приложи"
+  },
+  "sr": {
+    "title": "Исеци слику",
+    "scale": "Размера",
+    "cancel": "Откажи",
+    "apply": "Примени"
+  },
+  "bs": {
+    "title": "Izreži sliku",
+    "scale": "Skala",
+    "cancel": "Otkaži",
+    "apply": "Primijeni"
+  },
+  "mk": {
+    "title": "Отсечи слика",
+    "scale": "Размер",
+    "cancel": "Откажи",
+    "apply": "Примени"
+  },
+  "sq": {
+    "title": "Prit imazhin",
+    "scale": "Shkalla",
+    "cancel": "Anulo",
+    "apply": "Zbato"
+  },
+  "kk": {
+    "title": "Суретті кесу",
+    "scale": "Масштаб",
+    "cancel": "Бас тарту",
+    "apply": "Қолдану"
+  },
+  "uz": {
+    "title": "Rasmni kesish",
+    "scale": "Masshtab",
+    "cancel": "Bekor qilish",
+    "apply": "Qo'llash"
+  },
+  "ky": {
+    "title": "Сүрөттү кесүү",
+    "scale": "Масштаб",
+    "cancel": "Жокко чыгаруу",
+    "apply": "Колдонуу"
+  },
+  "tg": {
+    "title": "Буридани расм",
+    "scale": "Миқёс",
+    "cancel": "Бекор кардан",
+    "apply": "Татбиқ кардан"
+  },
+  "tk": {
+    "title": "Suraty kesmek",
+    "scale": "Masştab",
+    "cancel": "Ýatyr",
+    "apply": "Ulan"
+  },
+  "az": {
+    "title": "Şəkli kəs",
+    "scale": "Miqyas",
+    "cancel": "Ləğv et",
+    "apply": "Tətbiq et"
+  },
+  "hy": {
+    "title": "Կտրել պատկերը",
+    "scale": "Մասշտաբ",
+    "cancel": "Չեղարկել",
+    "apply": "Կիրառել"
+  },
+  "ka": {
+    "title": "სურათის ამოჭრა",
+    "scale": "მასშტაბი",
+    "cancel": "გაუქმება",
+    "apply": "გამოყენება"
+  },
+  "mn": {
+    "title": "Зургийг тайрах",
+    "scale": "Хэмжээ",
+    "cancel": "Цуцлах",
+    "apply": "Хэрэглэх"
+  },
+  "ar": {
+    "title": "اقتصاص الصورة",
+    "scale": "المقياس",
+    "cancel": "إلغاء",
+    "apply": "تطبيق"
+  },
+  "he": {
+    "title": "חיתוך תמונה",
+    "scale": "קנה מידה",
+    "cancel": "ביטול",
+    "apply": "החל"
+  },
+  "fa": {
+    "title": "برش تصویر",
+    "scale": "مقیاس",
+    "cancel": "لغو",
+    "apply": "اعمال"
+  },
+  "ku": {
+    "title": "Wêne qut bike",
+    "scale": "Pîvan",
+    "cancel": "Betal ke",
+    "apply": "Bicîh bîne"
+  },
+  "af": {
+    "title": "Sny prent",
+    "scale": "Skaal",
+    "cancel": "Kanselleer",
+    "apply": "Pas toe"
+  },
+  "sw": {
+    "title": "Pogoa picha",
+    "scale": "Kiwango",
+    "cancel": "Ghairi",
+    "apply": "Tumia"
+  },
+  "ha": {
+    "title": "Yanke hoto",
+    "scale": "Ma'auni",
+    "cancel": "Soke",
+    "apply": "Yi amfani"
+  },
+  "yo": {
+    "title": "Ge àwòrán",
+    "scale": "Ìwọ̀n",
+    "cancel": "Fagilé",
+    "apply": "Lò"
+  },
+  "ig": {
+    "title": "Bepụ foto",
+    "scale": "Ọkọlọtọ",
+    "cancel": "Kagbuo",
+    "apply": "Tinye"
+  },
+  "am": {
+    "title": "ምስል ቁረጥ",
+    "scale": "መጠን",
+    "cancel": "ይቅር",
+    "apply": "ተግብር"
+  },
+  "zu": {
+    "title": "Sika isithombe",
+    "scale": "Isikali",
+    "cancel": "Khansela",
+    "apply": "Sebenzisa"
+  },
+  "xh": {
+    "title": "Sika umfanekiso",
+    "scale": "Isikali",
+    "cancel": "Rhoxisa",
+    "apply": "Sebenzisa"
+  },
+  "rw": {
+    "title": "Gukata ifoto",
+    "scale": "Igipimo",
+    "cancel": "Kureka",
+    "apply": "Gukoresha"
+  },
+  "so": {
+    "title": "Jar sawirka",
+    "scale": "Cabbir",
+    "cancel": "Jooji",
+    "apply": "Isticmaal"
+  },
+  "zh": {
+    "title": "裁剪图片",
+    "scale": "缩放",
+    "cancel": "取消",
+    "apply": "应用"
+  },
+  "ja": {
+    "title": "画像を切り抜く",
+    "scale": "拡大縮小",
+    "cancel": "キャンセル",
+    "apply": "適用"
+  },
+  "ko": {
+    "title": "이미지 자르기",
+    "scale": "배율",
+    "cancel": "취소",
+    "apply": "적용"
+  },
+  "hi": {
+    "title": "छवि क्रॉप करें",
+    "scale": "स्केल",
+    "cancel": "रद्द करें",
+    "apply": "लागू करें"
+  },
+  "ur": {
+    "title": "تصویر کاٹیں",
+    "scale": "پیمانہ",
+    "cancel": "منسوخ کریں",
+    "apply": "لاگو کریں"
+  },
+  "bn": {
+    "title": "ছবি ক্রপ করুন",
+    "scale": "স্কেল",
+    "cancel": "বাতিল করুন",
+    "apply": "প্রয়োগ করুন"
+  },
+  "te": {
+    "title": "చిత్రాన్ని క్రాప్ చేయండి",
+    "scale": "స్కేల్",
+    "cancel": "రద్దు చేయండి",
+    "apply": "వర్తించండి"
+  },
+  "mr": {
+    "title": "प्रतिमा क्रॉप करा",
+    "scale": "स्केल",
+    "cancel": "रद्द करा",
+    "apply": "लागू करा"
+  },
+  "kn": {
+    "title": "ಚಿತ್ರವನ್ನು ಕ್ರಾಪ್ ಮಾಡಿ",
+    "scale": "ಪ್ರಮಾಣ",
+    "cancel": "ರದ್ದುಮಾಡಿ",
+    "apply": "ಅನ್ವಯಿಸಿ"
+  },
+  "gu": {
+    "title": "છબી ક્રોપ કરો",
+    "scale": "સ્કેલ",
+    "cancel": "રદ કરો",
+    "apply": "લાગુ કરો"
+  },
+  "ml": {
+    "title": "ചിത്രം ക്രോപ്പ് ചെയ്യുക",
+    "scale": "സ്കെയിൽ",
+    "cancel": "റദ്ദാക്കുക",
+    "apply": "പ്രയോഗിക്കുക"
+  },
+  "ta": {
+    "title": "படத்தை வெட்டு",
+    "scale": "அளவு",
+    "cancel": "ரத்துசெய்",
+    "apply": "பயன்படுத்து"
+  },
+  "ne": {
+    "title": "तस्बिर काट्नुहोस्",
+    "scale": "स्केल",
+    "cancel": "रद्द गर्नुहोस्",
+    "apply": "लागू गर्नुहोस्"
+  },
+  "vi": {
+    "title": "Cắt ảnh",
+    "scale": "Tỷ lệ",
+    "cancel": "Hủy",
+    "apply": "Áp dụng"
+  },
+  "th": {
+    "title": "ครอบตัดรูปภาพ",
+    "scale": "มาตราส่วน",
+    "cancel": "ยกเลิก",
+    "apply": "นำไปใช้"
+  },
+  "id": {
+    "title": "Pangkas gambar",
+    "scale": "Skala",
+    "cancel": "Batal",
+    "apply": "Terapkan"
+  },
+  "ms": {
+    "title": "Pangkas imej",
+    "scale": "Skala",
+    "cancel": "Batal",
+    "apply": "Guna pakai"
+  },
+  "tl": {
+    "title": "I-crop ang larawan",
+    "scale": "Sukat",
+    "cancel": "Kanselahin",
+    "apply": "Ilapat"
+  },
+  "my": {
+    "title": "ပုံဖြတ်ရန်",
+    "scale": "အချိုးအစား",
+    "cancel": "မလုပ်တော့",
+    "apply": "အသုံးပြုမည်"
+  },
+  "km": {
+    "title": "កាត់រូបភាព",
+    "scale": "មាត្រដ្ឋាន",
+    "cancel": "បោះបង់",
+    "apply": "អនុវត្ត"
+  },
+  "lo": {
+    "title": "ຕັດຮູບພາບ",
+    "scale": "ຂະໜາດ",
+    "cancel": "ຍົກເລີກ",
+    "apply": "ນຳໃຊ້"
   }
 }

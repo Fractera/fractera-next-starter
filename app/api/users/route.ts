@@ -35,6 +35,11 @@ export async function GET(req: NextRequest) {
   const params = new URLSearchParams({ page: String(Math.max(1, Number(url.searchParams.get("page")) || 1)) })
   const q = url.searchParams.get("q")?.trim()
   if (q) params.set("q", q.slice(0, 100))
+  // Размер страницы едет дальше как есть: закрытый набор значений проверяет
+  // служба, и повторять её список здесь значило бы завести второй источник
+  // правды о том, какие ступени законны.
+  const perPage = url.searchParams.get("perPage")
+  if (perPage) params.set("perPage", perPage)
 
   // Адрес службы выводится из ЗАГОЛОВКА ЗАПРОСА, а не из `NEXT_PUBLIC_*`: те
   // запекаются на сборке и устаревают при переходе с IP на домен, который

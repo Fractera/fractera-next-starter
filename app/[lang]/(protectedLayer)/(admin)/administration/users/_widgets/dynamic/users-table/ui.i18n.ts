@@ -35,7 +35,9 @@ export type UsersTableUi = {
   forbidden: string
   unreachable: string
   rolesRequired: string
-  total: string
+  /** «Записей: {count}» — подстановка обязательна. */
+  count: string
+  perPage: string
   prev: string
   next: string
   first: string
@@ -70,7 +72,8 @@ const DICT: Record<string, UsersTableUi> = {
     forbidden: "Only an administrator or an architect may see and change accounts.",
     unreachable: "The authentication service did not answer.",
     rolesRequired: "An account keeps at least one role.",
-    total: "accounts",
+    count: "Accounts: {count}",
+    perPage: "Per page",
     prev: "Previous page",
     next: "Next page",
     first: "First page",
@@ -100,7 +103,8 @@ const DICT: Record<string, UsersTableUi> = {
     forbidden: "Видеть и менять записи вправе администратор и архитектор.",
     unreachable: "Служба авторизации не ответила.",
     rolesRequired: "У записи остаётся хотя бы одна роль.",
-    total: "записей",
+    count: "Записей: {count}",
+    perPage: "На странице",
     prev: "Предыдущая страница",
     next: "Следующая страница",
     first: "Первая страница",

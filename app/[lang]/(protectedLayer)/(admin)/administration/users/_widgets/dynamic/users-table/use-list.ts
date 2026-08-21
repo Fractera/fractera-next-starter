@@ -2,11 +2,16 @@
 
 // Поведение таблицы учётных записей — СВОЁ, как у соседних виджетов.
 //
-// 🔒 ЧЕМ ОНО ОТЛИЧАЕТСЯ ОТ ТАБЛИЦ ТОВАРОВ, И ПОЧЕМУ ОБЩИМ БЫТЬ НЕ МОЖЕТ.
-// Записи живут в СЛУЖБЕ авторизации, а не в базе приложения: размер страницы
-// задаёт она (сто строк) и менять его отсюда нечем. Поэтому здесь нет ни выбора
-// числа строк, ни ключа хранения этого выбора — те строки у соседей не «лишние»,
-// они просто про другой источник.
+// 🔒 ЧЕМ ОНО ОТЛИЧАЕТСЯ ОТ ТАБЛИЦ ТОВАРОВ. Записи живут в СЛУЖБЕ авторизации, а
+// не в базе приложения: выборку, поиск и счёт страниц ведёт она, мы лишь
+// передаём ей вопрос. Отсюда и размер страницы — не наше решение, а параметр
+// запроса: служба принимает закрытый набор ступеней и молча приводит к
+// ближайшей законной, если попросить иное.
+//
+// 🪦 Здесь стояло «выбора числа строк тут нет и быть не может, служба режет по
+// сто». Отменено 2026-08-21: владелец указал, что селектора не хватает, и
+// правильным ответом было расширить СЛУЖБУ, а не объяснять пользователю
+// ограничение. Тот же порядок, что с ролью администратора.
 //
 // 🔒 ЗАКРЫТА ПО УМОЛЧАНИЮ. Пока человек не нажал, служба не спрошена. Список
 // людей — самая дорогая и самая чувствительная выборка на этой странице, и
@@ -16,7 +21,7 @@
 // первое означает «вам сюда нельзя», второе — «служба не ответила». Одна общая
 // фраза «не удалось» заставила бы владельца искать неисправность там, где её нет.
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import type { UsersTableUi } from "./ui.i18n"
 
@@ -58,6 +63,12 @@ export function rolesOf(raw: string): string[] {
   }
 }
 
+// 🔒 КЛЮЧ ХРАНЕНИЯ СВОЙ У КАЖДОЙ ТАБЛИЦЫ (шаг 521). Человек, поставивший сто
+// строк здесь, не должен получить сто строк в каталоге товаров: это разные
+// задачи и разные привычки.
+const SIZE_KEY = "fractera-users-per-page"
+export const PAGE_SIZES = [10, 20, 50, 100]
+
 export function useUsersList(ui: UsersTableUi) {
   const [revealed, setRevealed] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -68,14 +79,24 @@ export function useUsersList(ui: UsersTableUi) {
   // Что НАБРАНО и что ПРИМЕНЕНО — разные вещи, иначе список дёргается, пока
   // человек печатает.
   const [query, setQuery] = useState("")
+  const [perPage, setPerPage] = useState(20)
+
+  // Выбор человека переживает перезагрузку: он делается один раз и относится к
+  // привычке, а не к сеансу. Читается ПОСЛЕ первой отрисовки — на сервере
+  // localStorage нет, и обращение к нему в теле компонента ломает гидратацию.
+  useEffect(() => {
+    const saved = Number(localStorage.getItem(SIZE_KEY))
+    if (PAGE_SIZES.includes(saved)) setPerPage(saved)
+  }, [])
 
   const load = useCallback(
-    async (opts: { page?: number; q?: string } = {}) => {
+    async (opts: { page?: number; q?: string; perPage?: number } = {}) => {
       const nextPage = opts.page ?? 1
       const q = opts.q ?? ""
+      const size = opts.perPage ?? perPage
       setLoading(true)
       try {
-        const params = new URLSearchParams({ page: String(nextPage) })
+        const params = new URLSearchParams({ page: String(nextPage), perPage: String(size) })
         if (q) params.set("q", q)
         const res = await fetch(`/api/users?${params}`, { cache: "no-store" })
         const data = await res.json().catch(() => ({}))
@@ -89,8 +110,11 @@ export function useUsersList(ui: UsersTableUi) {
         setPage(nextPage)
         // Число страниц считает сторона, знающая размер страницы: у службы он
         // свой, и вычислять его здесь значило бы дублировать её решение.
-        const perPage = Number(data.perPage) || 100
-        setPages(Math.max(1, Math.ceil((Number(data.total) || list.length) / perPage)))
+        // Число страниц считает сторона, знающая, сколько строк она отдала:
+        // служба подтверждает применённый размер своим ответом, и верить надо
+        // ему, а не тому, что мы просили.
+        const applied = Number(data.perPage) || size
+        setPages(Math.max(1, Math.ceil((Number(data.total) || list.length) / applied)))
         setRevealed(true)
       } catch {
         toast.error(ui.unreachable)
@@ -98,8 +122,20 @@ export function useUsersList(ui: UsersTableUi) {
         setLoading(false)
       }
     },
-    [ui],
+    [ui, perPage],
   )
 
-  return { revealed, loading, rows, total, page, pages, query, setQuery, load }
+  /** Сменить размер страницы: запомнить выбор и вернуться к первой странице. */
+  const changeSize = useCallback(
+    (size: number) => {
+      setPerPage(size)
+      localStorage.setItem(SIZE_KEY, String(size))
+      // С первой страницы, а не с текущей: на новой нарезке «страница пять»
+      // означает другое место списка, и человек оказался бы не там, где был.
+      void load({ page: 1, q: query, perPage: size })
+    },
+    [load, query],
+  )
+
+  return { revealed, loading, rows, total, page, pages, perPage, query, setQuery, load, changeSize }
 }

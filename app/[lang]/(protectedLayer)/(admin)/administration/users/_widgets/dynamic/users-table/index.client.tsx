@@ -29,7 +29,7 @@ import { UsersPager } from "./pager.client"
 import type { UsersTableUi } from "./ui.i18n"
 
 export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
-  const { revealed, loading, rows, total, page, pages, query, setQuery, load } = useUsersList(ui)
+  const { revealed, loading, rows, total, page, pages, perPage, query, setQuery, load, changeSize } = useUsersList(ui)
   const cols = {
     colAccount: ui.colAccount,
     colRoles: ui.colRoles,
@@ -93,7 +93,15 @@ export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
 
           {/* Подвал — как у соседних списков: счёт слева, переходы справа, под
               таблицей. Человек листает после того, как дочитал строки. */}
-          <UsersPager ui={ui} total={total} page={page} pages={pages} onPage={p => load({ page: p, q: query })} />
+          <UsersPager
+            ui={ui}
+            total={total}
+            page={page}
+            pages={pages}
+            perPage={perPage}
+            onPage={p => load({ page: p, q: query })}
+            onSize={changeSize}
+          />
         </>
       )}
     </>

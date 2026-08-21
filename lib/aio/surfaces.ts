@@ -11,7 +11,6 @@ import { data as termsData } from '@/app/[lang]/(publicLayer)/(footerPages)/term
 import { data as cookiesData } from '@/app/[lang]/(publicLayer)/(footerPages)/cookies/_data'
 import { data as architectureData } from '@/app/[lang]/(publicLayer)/(footerPages)/architecture/_data'
 import { data as accessibilityData } from '@/app/[lang]/(publicLayer)/(footerPages)/accessibility/_data'
-import { data as aboutData } from '@/app/[lang]/(publicLayer)/(footerPages)/about-us/_data'
 
 // ПЕРЕЧЕНЬ ПУБЛИЧНЫХ ПОВЕРХНОСТЕЙ — ОДИН НА ВЕСЬ AIO (шаг 505).
 //
@@ -137,7 +136,6 @@ export function publicSurfaces(lang: string): Surface[] {
     // идёт тем же циклом. Раздел карты — 'main', а не 'legal': это рассказ о
     // компании, за которым приходят, а не справочный документ, и в списке
     // правовых машинный читатель искал бы его последним.
-    [aboutData, '/about-us'],
     // Архитектура живёт в той же папке и по тем же законам, что правовые
     // страницы, поэтому идёт тем же циклом. Раздел карты у неё, однако, 'main':
     // это описание продукта, а не документ, и в списке правовых читатель искал бы
@@ -149,7 +147,7 @@ export function publicSurfaces(lang: string): Surface[] {
       subPath: sub,
       title: page.title,
       description: page.description,
-      section: sub === '/architecture' || sub === '/about-us' ? 'main' : 'legal',
+      section: sub === '/architecture' ? 'main' : 'legal',
       body: () =>
         [`# ${page.title}`, '', `> ${page.description}`, '', blocksToMarkdown(page.blocks, home.siteName)].join('\n').trim(),
     })

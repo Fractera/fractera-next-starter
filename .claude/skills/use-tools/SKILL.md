@@ -11,6 +11,10 @@ description: >
 
 # use-tools
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 A tool here is a small reusable piece with a home: one folder, one entry in the registry, one page
 on the panel's showcase that says what it does and what it needs. Not a helper hidden in a feature
 folder — those are invisible, and invisible is the same as absent.

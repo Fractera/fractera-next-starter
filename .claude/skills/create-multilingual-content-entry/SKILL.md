@@ -11,6 +11,10 @@ description: >
 
 # create-multilingual-content-entry
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 Add a piece of multilingual content so it scales to many languages **by construction** —
 a new language is a new file, a partial translation is fine, and no page ever says
 `if language == X`. The full engine standard — architecture, every component, how it scales, the law of

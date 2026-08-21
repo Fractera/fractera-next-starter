@@ -12,6 +12,10 @@ description: >
 
 # use-design
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 ## The default is one brand, and that is the product, not a limitation
 
 This project is standardised into a single visual identity on purpose. Headings, lists, tables,

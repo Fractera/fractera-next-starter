@@ -12,6 +12,10 @@ description: >
 
 # place-page-in-menu
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 ## The page probably exists
 
 "I want a subscriptions page in the top menu" describes an outcome, not an order for a new file.

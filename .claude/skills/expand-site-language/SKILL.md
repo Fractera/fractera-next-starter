@@ -17,6 +17,10 @@ metadata:
 
 # expand-site-language
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 The ONE way to take a site that already has content in one or two languages and **safely scale it
 to another language**. Deterministic file operations, **NO code generation, NO external translation
 API** (you are the translator — subscription rule). Self-sufficient: any single agent can do it.

@@ -13,6 +13,10 @@ description: >
 
 # use-platform-config
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 The file is `PLATFORM-CONFIG/platform-config.json` in the project root. The panel writes it, the
 app reads it on every render, and a change needs **no rebuild**.
 

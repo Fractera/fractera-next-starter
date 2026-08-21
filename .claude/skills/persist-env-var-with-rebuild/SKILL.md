@@ -13,6 +13,10 @@ description: >
 
 # persist-env-var-with-rebuild
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 Give the deployed app a build-time environment variable that actually reaches visitors,
 on this redeploy and every future one. This is the agent-facing side of the
 **build-time env & redeploy** standard.

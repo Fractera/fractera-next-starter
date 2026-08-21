@@ -13,6 +13,10 @@ metadata:
 
 # audit-broken-characters
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 The project's universal **encoding-integrity** check. A lossy step — voice dictation, copy-paste, a bad
 transform — can drop an accented letter and leave a **control byte** (0x13…), **U+FFFD** (the replacement
 char), or **mojibake** in its place. The file still parses, so it ships **silently**, and the live page

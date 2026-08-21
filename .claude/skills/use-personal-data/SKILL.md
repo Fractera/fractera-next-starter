@@ -12,6 +12,10 @@ description: >
 
 # use-personal-data
 
+> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
+> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
+> your judgement.
+
 The starter puts a real database on the owner's own machine, and the moment a table starts holding
 people rather than products, one question outranks every other design question:
 

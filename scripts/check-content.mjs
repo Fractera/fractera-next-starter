@@ -513,5 +513,5 @@ if (problems.length === 0) {
 
 console.error(`===CONTENT_FAILED=== нарушений: ${problems.length}\n`)
 for (const p of problems) console.error(`  ${p.rule.padEnd(18)} ${p.file}\n${" ".repeat(21)}${p.detail}`)
-console.error("\nПравила — development-docs/CODING-STANDARDS.md, раздел о ко-локации и ссылках.")
+console.error("\nПравила — навыки use-static-pages (ко-локация) и use-links (ссылки).")
 process.exit(1)

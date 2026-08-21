@@ -52,7 +52,7 @@ that search engines cannot read.
 | Routing | **a folder per item**, prerendered | **a dynamic segment**: `/[slug]`, `/[id]`, `/[userId]` |
 | Rendering | SSG / ISR | static shell + data fetched behind an authenticated `/api/*` |
 | Indexed by search engines | yes — that is the point | never; it must not be |
-| This document applies | ✅ | ❌ — see `CODING-STANDARDS.md` |
+| This document applies | ✅ | ❌ — see the skill `use-code-shape` |
 
 ### Why a folder per item is right here
 
@@ -78,7 +78,7 @@ So the user-scoped surface inverts three things and keeps one:
    only the rows are dynamic, and they load into a container the visitor opens. A dynamic route does not
    license a dynamic page.
 
-That is the subject of `CODING-STANDARDS.md`, not of this file. **Do not carry the rules below into a
+That is the subject of the skill `use-code-shape`, not of this file. **Do not carry the rules below into a
 dashboard**, and do not "fix" a dashboard route because this document says a route may not be dynamic:
 that sentence is scoped to public content, where the alternative exists.
 
@@ -160,7 +160,7 @@ settings; fill it in only for a genuine guest author.
 ### 4a. 🔒 The post must also exist for machines — and one file makes that automatic
 
 A post is read by two audiences: people, through the page, and models, through its **markdown twin**
-and the site's `llms.txt` map. The second audience is why `AIO.md` exists, and the rule here is short:
+and the site's `llms.txt` map. The second audience is why the skill `use-aio` exists, and the rule here is short:
 
 ```
 app/[lang]/blog/<new-slug>/index.md/route.ts     ← 5 lines, copied from a neighbour

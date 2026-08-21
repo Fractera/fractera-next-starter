@@ -75,6 +75,6 @@ EYES".
 ## Where the rest is written
 
 - `CLAUDE.md` — how you work: what to read at session entry, the pipeline, what closing a step requires.
-- `CODING-STANDARDS.md` — the limits code must respect.
+- skill `use-code-shape` — the limits code must respect, and the validators that enforce them.
 - `ARCHITECTURE.md` — how this particular application is arranged, as it grows.
 - `ANTI-PATTERNS.md` — approaches that already cost time here.

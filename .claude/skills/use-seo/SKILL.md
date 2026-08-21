@@ -141,7 +141,7 @@ never a letter of text. That address exists because five pages pointed at a file
 |---|---|
 | `check:seo` | a page with no `generateMetadata`; no `alternates`; `openGraph` without `url`; an address glued by hand inside a sitemap; a layout claiming a canonical; a first-level section present in no map |
 | `check:aio` | a public page with no markdown twin — see `use-aio` |
-| `check:content` | the link and asset rules of the body — see `use-static-pages` |
+| `check:content` | the link and asset rules of the body — **`use-links`** owns them, and they are part of this surface: an outgoing link spends the weight this page earned |
 | `npm run build` | the honest answer to "is it still static": `●`, never `ƒ` |
 
 All of them were green before your change too. Green proves the tree is well-formed, never that the

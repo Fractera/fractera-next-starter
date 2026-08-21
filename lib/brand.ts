@@ -4,7 +4,7 @@
 // site URL, logo) lives in `APP-CONFIG/app-config.json` on the server, OUTSIDE
 // the repository, and the owner edits it in the control panel. A module-level
 // constant would be frozen at import time and, worse, would tempt someone to
-// hardcode a name here — the one thing §4 of `CODING-STANDARDS.md` forbids: the
+// hardcode a name here — the one thing the skill `use-code-shape` forbids: the
 // app must read its identity, never carry it.
 //
 // This module was ported from the platform's marketing site, where the same

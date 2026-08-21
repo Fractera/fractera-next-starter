@@ -73,6 +73,10 @@ model quoting a price you changed last month.
 
 ## 5. What goes in the map, and what never does
 
+**What the format is FOR, in the words of its own specification: inference, not training.** A model
+reading the site to answer a question now — not a corpus somebody trains on. Say that when asked, and
+do not stretch it: the specification makes no promise either way about training.
+
 `llms.txt` follows llmstxt.org literally: `# Title`, a `> quote` carrying everything needed to
 understand the rest, optional prose **without headings**, then `## Section` lists of
 `- [name](url): note`. The section named `## Optional` is from the specification — it marks links an

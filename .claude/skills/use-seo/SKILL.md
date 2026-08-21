@@ -72,6 +72,13 @@ through `configValueForLang`. Without `lang` a Spanish page introduces itself in
 a second `BreadcrumbList`; two declarations of one path drift apart at the first edit, and silently,
 because nobody opens the second one in a browser.
 
+🔒 **A switch can hide markup you correctly wrote.** `breadcrumbs` in `PLATFORM-CONFIG` gates the
+trail AND its `BreadcrumbList` together; `faq` does the same for the questions and `FAQPage`. Both
+default to on, but an owner who turned one off has a site where your structured data is simply
+absent — and it looks exactly like a page you built wrong. Before hunting your own mistake, read the
+switch: `npm run read:app-config` and the platform config beside it. A requested feature that is
+switched off is a sentence to the owner, not a bug to fix.
+
 🔒 **A switch is honoured at the SOURCE, not at each consumer.** `featureOn("faq")` blanks the array
 once, so the visible block and the `FAQPage` node cannot disagree. Gating only the visible half
 promises a machine something the page does not contain.
@@ -112,7 +119,18 @@ must exist. Nothing checks the second half: `check:content` verifies assets name
 the preview card of every one of them was empty. Request the URL before you believe it.
 
 Keep the page's own illustration and its card picture the same value; two different ones mean the human
-and the machine are looking at different pages.
+and the machine are looking at different pages. **One file, three roles** — `heroImage` under the
+title, `og:image` + `twitter:image`, and `Article.image` — declared once in `_data/meta.ts`.
+
+**Where that file lives:** `public/page-media/<slug>.jpg`, 1200×630. Posts keep theirs in
+`public/blog-media/`, and `public/placeholders/` belongs to the settings slots — do not park a page
+picture in either. No text inside the picture: a word baked into pixels is not translated, and the
+site has more than one language.
+
+**When the owner has no picture at all**, `/og-default.png` answers — it is a ROUTE
+(`app/og-default.png/route.ts`), not a file: a card drawn at build from the project's own identity,
+shapes seeded by the site name, the owner's logo composited when he uploaded one. Never our mark,
+never a letter of text. That address exists because five pages pointed at a file nobody had created.
 
 ## 7. What the gates say, and what they cannot
 

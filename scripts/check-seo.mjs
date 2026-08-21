@@ -105,6 +105,53 @@ for (const page of pages) {
   }
 }
 
+// 2а — КАРТИНКА КАРТОЧКИ ОБЯЗАНА СУЩЕСТВОВАТЬ (добавлено 2026-08-21).
+//
+// Дефект, который это ловит, прожил незамеченным месяц и был доказан живьём:
+// пять страниц подвала объявляли `ogImage: '/og-default.png'`, файла не было ни
+// в репозитории, ни на сервере, и `https://aifa.dev/og-default.png` отвечал 404.
+// Карточка каждой из них в поиске и в мессенджере оставалась пустой.
+//
+// Почему не поймал никто: `check:content` проверяет файлы, названные в БЛОКАХ
+// (правило `asset-missing`), и в `meta` не заглядывает вовсе. А глазами это не
+// видно по построению — картинку соцсети не показывает ни одна страница сайта,
+// её видит только тот, кому ссылку прислали.
+//
+// Проверяется наличие ЛОКАЛЬНОГО файла: значение из хранилища (`http…`) или из
+// медиатеки (`media:…`) живёт вне репозитория, и о нём эта проверка не судит.
+{
+  const dataDirs = [];
+  const walkDirs = dir => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const full = path.join(dir, e.name);
+      if (e.name === "_data") dataDirs.push(full);
+      else walkDirs(full);
+    }
+  };
+  if (fs.existsSync(LANG_DIR)) walkDirs(LANG_DIR);
+
+  for (const dir of dataDirs) {
+    const metaFile = path.join(dir, "meta.ts");
+    if (!fs.existsSync(metaFile)) continue;
+    const text = codeOnly(fs.readFileSync(metaFile, "utf8"));
+    for (const m of text.matchAll(/\b(ogImage|heroImage|heroPoster)\s*:\s*["'`]([^"'`]+)["'`]/g)) {
+      const [, field, value] = m;
+      if (/^https?:\/\//.test(value) || value.startsWith("media:")) continue;
+      // Адрес может обслуживать не файл, а МАРШРУТ: `/og-default.png` рисуется
+      // на сборке из личности владельца (`app/og-default.png/route.ts`). Приём
+      // «папка с точкой в имени» тот же, что у `llms.txt/` и `index.md/`.
+      const served = path.join(ROOT, "app", value.replace(/^\//, ""), "route.ts");
+      if (fs.existsSync(served)) continue;
+      if (!fs.existsSync(path.join(ROOT, "public", value.replace(/^\//, "")))) {
+        errors.push(
+          `${rel(metaFile)}: ${field} = ${value}, а файла нет в public/ — карточка страницы в поиске и в мессенджере будет пустой`,
+        );
+      }
+    }
+  }
+}
+
 // 3 — адреса строятся одним механизмом. Ручная склейка `${…}/${lang}` в карте сайта
 // или в метаданных — второй источник правды, расходящийся в одноязычном режиме.
 const URL_BUILDERS = [

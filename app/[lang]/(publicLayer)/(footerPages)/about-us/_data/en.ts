@@ -1,4 +1,4 @@
-import type { AboutCell } from '../_lib/types'
+import type { FooterPageCell } from '@/lib/pages/footer-page'
 
 // Английская основа страницы «О нас».
 //
@@ -17,7 +17,7 @@ import type { AboutCell } from '../_lib/types'
 // `quote` — голос основателя, `statement` — вывод. Второй раздел того же вида
 // читался бы как повтор ещё до того, как прочитаны слова.
 
-export const en: AboutCell = {
+export const en: FooterPageCell = {
   title: 'About us',
   eyebrow: 'About us',
   description:

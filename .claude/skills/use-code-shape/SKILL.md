@@ -1,7 +1,7 @@
 ---
 name: use-code-shape
 description: >
-  The SHAPE the code of this project must keep, and the fifteen build-time validators that enforce it
+  The SHAPE the code of this project must keep, and the seventeen build-time validators that enforce it
   instead of trusting anyone's memory. Load it before writing a route, an API door, a component that
   is growing, a database table, or anything that moves on screen — and whenever a gate refuses your
   work and you are about to "work around" it. The rules here are not style: each one is a limit that,
@@ -50,7 +50,7 @@ checked by hand: read the served HTML for the content itself, and open the page 
 
 ## 2. The validators, and what each one is actually for
 
-Fifteen run inside `prebuild`, so a violation never reaches a deployment. Two do not run by themselves
+Seventeen run inside `prebuild`, so a violation never reaches a deployment. Two do not run by themselves
 and are the only thing standing between your edit and a failed build on the server, because you do not
 build locally: **`npm run check:types` and `npm run check:i18n`**.
 
@@ -64,7 +64,13 @@ build locally: **`npm run check:types` and `npm run check:i18n`**.
 | `check:i18n` | a missing interface string in an enabled language |
 | `check:config-schemas` | a config key that exists in the type but not in the generated schema |
 | `check:typography` · `check:layout` · `check:contrast` · `check:dialogs` | text through primitives, layout rules, contrast, one modal |
+| `check:menu` | a menu entry pointing at a route the walk cannot reach |
+| `check:encoding` | a control byte left where an accented letter was — the file still parses |
 | `check:types` | what a local `npm run dev` will not tell you |
+
+**Read `package.json` rather than trusting this table.** It is the authority: `prebuild` plus the
+`check:*` scripts beside it. Two gates sat outside `prebuild` for weeks and were found only by
+reading that file — a gate that has to be remembered is a gate that does not run.
 
 🔒 **A red gate everybody has learned to ignore is worse than no gate.** `check:content` was red for six
 routes and unnoticed because it was not in `prebuild`. If a gate is wrong, fix the gate in the same

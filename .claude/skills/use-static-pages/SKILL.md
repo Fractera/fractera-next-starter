@@ -33,12 +33,20 @@ sections      sections/blocks/<kind>.server.tsx   ONE kind, ONE file — the ren
               sections/index.ts                   the full set · sections/contract.ts the contract
 ```
 
+🔒 **A page folder sits TWO levels below the layer: `<tab>/<slug>/`, never directly under the group.**
+`(publicLayer)/about/` looks natural and is wrong: the co-location gate derives the "tab" as
+`_data/../..`, so a page one level down turns the WHOLE public layer into a tab of posts and applies
+post rules to every neighbour — 27 failures on code you never touched, and nothing in the message
+points at your folder. The tabs are `blog/`, `products/`, `(footerPages)/`; a page that belongs to
+none of them needs a tab of its own, not a shortcut. This cost a rebuild during the skill's own trial
+run.
+
 🔒 **Localized UI strings are DATA** → `_data`, never `_lib`. Type contracts are CODE → `_lib/types.ts`.
 🔒 **`lib/content/blocks/types.ts` has zero imports on purpose** — a leaf of the graph. Engine types are
 imported, never extended.
 
-**How many kinds exist: 28 today.** The authoritative list is `sections/index.ts` (the `SECTIONS` object)
-and it always equals the number of files in `sections/blocks/`. You cannot get this wrong silently:
+**How many kinds exist — ask `sections/index.ts`, never this file.** The authoritative list is `sections/index.ts` (the `SECTIONS` object)
+and it always equals the number of files in `sections/blocks/`; `npm run check:sections` prints the count. A number written into a skill is stale the week after it is written — this one said 28 while the gate answered 29. You cannot get this wrong silently:
 `SectionSet` is a mapped type over every `Block["kind"]`, so a kind without a renderer does not compile.
 Count them before you invent a new one — `p`, `h2`, `list`, `table`, `card`, `cards`, `callout`, `note`,
 `quote`, `code`, `figure`, `columns`, `metrics`, `flow`, `panel`, `cta`, `badges`, `docref` and more are
@@ -71,8 +79,17 @@ folder — this is where the engine stops being self-contained:
 | `lib/aio/surfaces.ts` | without the entry `/index.md` answers 404 and `llms.txt` never learns the page |
 | `app/sitemap.ts` | groups in brackets are invisible to `check:seo`, so nothing will notice the miss |
 | `lib/menu/nav-config.ts` → `DEFAULT_FOOTER` | the footer links of a FRESH project; the owner's own list lives in the panel |
+| `_data/group.ts` — only for the TOP menu | the menu scanner finds a group by that file alone; without it the page is reachable by direct address only. Its label comes from `eyebrow` in each language cell, so it is translated — `DEFAULT_FOOTER` labels are not. Recipe and the two-sources trap: `place-page-in-menu` |
 
 Posts need none of the three: `parser-fs` finds them, and the blog list feeds the sitemap.
+
+🔒 **The page is not finished when it renders.** A static page has three more surfaces, each with its
+own skill and its own gate, and each invisible from the page itself: **`use-seo`** (canonical,
+hreflang, structured data, the sitemap row, the card picture), **`use-aio`** (the markdown twin and
+the map for models), **`use-links`** (the one form of an internal link, and why an outgoing one is the
+owner's decision). `use-pwa` matters only when you touched the manifest or the worker. Skipping them
+produces the two defects named at the top: a page nobody finds, and a page that carries another
+project's identity.
 
 ## 3. Language cells
 

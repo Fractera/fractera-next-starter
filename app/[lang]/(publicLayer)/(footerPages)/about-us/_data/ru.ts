@@ -1,4 +1,4 @@
-import type { AboutCell } from '../_lib/types'
+import type { FooterPageCell } from '@/lib/pages/footer-page'
 
 // Русская языковая ячейка. Переводится только то, что нужно; непереведённое
 // поле возьмётся из английской основы тем же резолвером, что и у постов блога.
@@ -6,7 +6,7 @@ import type { AboutCell } from '../_lib/types'
 // Здесь переведено всё, включая тело: страница о компании, прочитанная
 // наполовину по-английски, читается как чужая.
 
-export const ru: Partial<AboutCell> = {
+export const ru: Partial<FooterPageCell> = {
   title: 'О нас',
   eyebrow: 'О нас',
   description:

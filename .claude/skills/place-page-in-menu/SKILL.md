@@ -58,6 +58,42 @@ outside the repository, and the panel owns that file. When the branch exists, fi
 tell him plainly: it is ready at such an address, drag it into place in the panel. Five seconds for
 him, impossible for you.
 
+## The repo default for the TOP menu is one file, and its shape is exact
+
+The scanner finds a group **only** by `<route>/_data/group.ts`. There is no other way in, and a page
+without it is reachable by direct address alone.
+
+```ts
+export const group = {
+  slug: 'about-us',          // MUST equal the folder name — the address is built from it
+  roles: "public",
+  childrenAsDropdown: false, // true ⇒ subfolders holding a page.tsx become the dropdown
+  menus: {
+    top: { enabled: true, order: 30 },
+    footer: { enabled: false, order: 10 },
+    left: { enabled: false, order: 10 },
+    right: { enabled: false, order: 10 },
+  },
+}
+```
+
+🔒 **It is parsed as TEXT, by regular expressions** — the scanner runs at build and must not import
+the content engine. So the shape is not free: single quotes around `slug`, double quotes around
+`roles`, the four slots present. A prettier rewrite of this file silently produces a group that no
+longer exists. Bracket groups on the path are transparent to the walk, so the file works the same at
+any depth.
+
+🔒 **The button's label comes from `eyebrow` in the page's language cell** (`_data/<lang>.ts`), read
+by the same text scan. No field, and the label falls back to the folder name — Latin text in a
+Russian menu, which is the one thing the translation rule forbids. Twelve characters is the cap for a
+top-level button.
+
+**Footer labels are a different story, and it is a real limitation to name out loud.** `DEFAULT_FOOTER`
+carries English strings, and `labelFor` can only translate them through `APP-CONFIG.i18n`, which is
+empty on a fresh project — so a repo-default footer entry shows English in every language until the
+owner edits it in the panel. When a page needs a translated label from the repository, the group
+manifest is the honest route; say which one you used and why.
+
 **The two defaults live in different shapes, and asking the wrong one returns emptiness that looks
 like an answer.** The footer keeps a single list; the top menu is assembled from group manifests
 scattered through the layers — `(publicLayer)/products/_data/group.ts` and its neighbours. Fixed-

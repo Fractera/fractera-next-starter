@@ -4,7 +4,7 @@
   "cookieBanner": false,
   "offlineCache": true,
   "auth": true,
-  "breadcrumbs": false,
+  "breadcrumbs": true,
   "faq": true,
   "themeToggle": true,
   "widthToggle": true,

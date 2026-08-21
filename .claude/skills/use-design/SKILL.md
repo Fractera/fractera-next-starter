@@ -43,6 +43,40 @@ specimen, its translations, its gates, and its mirror on the other side.
 **The direction that is always wrong is the silent one** — foreign code sliding into `sections/` or
 `components/` because it happened to be pasted there. Nobody decided, and nobody knows it is foreign.
 
+## The owner points at somebody else's site — what you may take from it
+
+He will. During the case interview, "make it like X" is how people describe taste, and it is a
+legitimate brief. You have a real instrument for it, installed in this project:
+
+**`extract-design-system`** (`npx extract-design-system <url>`) drives a headless browser over a
+public page and writes `design-system/tokens.json` and `tokens.css` — the colour palette, type
+scale, spacing, radii, shadows. Not components, not layout: **primitives**.
+
+That output maps onto this project exactly, and that is why it is worth using: our own
+`DESIGN-CONFIG` holds colours by role, fonts, the type scale and shape. Extracted numbers become a
+PROPOSAL for those fields, the owner approves them in the panel, and from that moment they are his
+tokens — no foreign file is left behind anywhere.
+
+🔒 **Take the SYSTEM, never the identity.** The line is not subtle and it is not ours to blur:
+
+| Take | Never take |
+|---|---|
+| the palette as numbers, the type scale, spacing rhythm, radii, shadow depth | the logo, the wordmark, the icon set |
+| the structural idea — what sits above what, how dense the page is | photographs, illustrations, video |
+| the interaction pattern — what expands, what follows the cursor | the copy: headlines, slogans, product names |
+| — | a typeface bought under a licence that is theirs, not his |
+
+A palette and a spacing scale are craft, and craft travels. A wordmark and a photograph are somebody's
+property, and a customer's site carrying them is a problem the customer inherits — from us.
+
+🔒 **The tool itself carries no such warning**, so this paragraph is the warning. It also says openly
+that a single page is not proof of a design system and that a dynamic site yields a partial answer —
+believe it: treat the output as a first draft to show the owner, never as a finished palette.
+
+**Where the extracted result may land:** in `DESIGN-CONFIG`, through the owner's approval. Not in
+`sections/`, not in `components/` — a token file is not permission to import foreign markup, and the
+rules above about widgets and promotion apply unchanged.
+
 ## 🔒 The tension nobody should discover the hard way
 
 An external service returns compiled-shaped code: a React file with its own markup and styles. But a

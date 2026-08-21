@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "extract-design-system": {
+      "source": "arvindrk/extract-design-system",
+      "sourceType": "github",
+      "skillPath": "skills/extract-design-system/SKILL.md",
+      "computedHash": "c66852c6bc6e0267dbcc9651fa698701387fc11c5058104bc33e67f495936f7e"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",

@@ -1,0 +1,100 @@
+---
+name: use-routes
+description: >
+  WHERE a route goes on disk and who may open it — the two layers, the four permission groups, and
+  the folder shape a page must have. Load it before creating any folder under `app/`, when the owner
+  asks for "a page for managers / for buyers / for me only", when a gate refuses a folder you just
+  made, or when you are about to import something from a neighbouring group. The mistakes here are
+  not stylistic: a page in the wrong layer has to be moved rather than configured, a folder one level
+  too high turns the whole public layer into a tab and fails gates on code you never touched, and a
+  borrowed import across permission groups breaks nothing today and everything later.
+---
+
+# use-routes
+
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
+
+## 1. Two layers, and a route in neither is an unasked question
+
+```
+app/[lang]/(publicLayer)/      everyone sees the same thing
+app/[lang]/(protectedLayer)/   what you see depends on who you are
+```
+
+There is no third place. `check:content` refuses a route outside both (`route-unclassified`) — and the
+reason is not tidiness: a folder in neither layer means **nobody said whether the page is the same for
+everyone**, so no set of rules applies to it and no gate audits it. The gates used to walk `[lang]`
+and subtract known names, which is a blocklist: a folder added tomorrow was checked by nobody.
+
+Bracket groups do not appear in the URL — `(publicLayer)/blog` opens at `/blog`. **Transparent for the
+address is not transparent for everything else:** the sitemap walk and `check:seo` count only
+first-level folders of `app/[lang]`, so a page inside a group is guarded by nobody there and must be
+named by hand (`use-seo`).
+
+## 2. 🔒 A page folder sits TWO levels below the layer
+
+`<tab>/<slug>/`, never directly under the group. `(publicLayer)/about/` looks natural and is wrong:
+the co-location gate derives the tab as `_data/../..`, so a page one level down turns the WHOLE public
+layer into a tab of posts and applies post rules to every neighbour — 27 failures on code you never
+touched, and nothing in the message points at your folder. Today's tabs: `blog/`, `products/`,
+`(footerPages)/`. A page belonging to none of them needs a tab of its own.
+
+Inside the folder, underscore names are not routes and never become addresses: `_components/` (the
+view), `_data/` (words and non-translatable meta), `_lib/` (types and functions), `_widgets/` (the
+live parts). A folder with a **dot** in its name is a machine route — `index.md/`, `llms.txt/`,
+`manifest.webmanifest/` — and `proxy.ts` deliberately ignores dotted paths.
+
+## 3. Four permission groups, and each carries its own door
+
+| Group | Who gets in (`PROTECTED_GROUP_ROLES`, `lib/roles.ts`) |
+|---|---|
+| `(account)` | the customer: `user`, `buyer`, `vip_user`, the three `subscriber_*` — plus `architect` |
+| `(staff)` | the operators: `manager`, `senior_manager`, `support_manager`, `delivery_manager`, `content_editor` |
+| `(finance)` | `finance` |
+| `(admin)` | `admin` |
+
+`architect` is in every one of them by construction — that is the role that sees everything, and it is
+also why a screen that works for you may refuse everybody else. Say which role you tested as.
+
+Each group **must** have its own `layout.tsx` mounting `AccessGate`; `check:protected` refuses a group
+without a layout (`group-without-layout`) or without the gate (`group-without-gate`). The layer's own
+layout declares `robots: { index: false }` — a crawler that reached a protected page would be handed
+the login form.
+
+🔒 **And the gate on the page is a SIGN, not a lock.** The lock lives in the door: `requireRoles` as
+the first line of every `/api/*` handler that serves protected data. `proxy.ts` only proves a session
+exists — any logged-in person passes it. See `use-dynamic-pages`.
+
+## 4. 🔒 A group never imports from a sibling
+
+Shared code rises to the lowest common ancestor — `components/`, `lib/` — it does not travel sideways.
+`check:protected` refuses it (`cross-group-import`).
+
+This one is worth understanding rather than obeying, because breaking it costs nothing on the day:
+`localizeProduct` was born inside `(staff)`, and the public storefront imported it from there. Nothing
+failed. What it means is that the storefront now depends on a folder built for a different audience,
+so deleting or reshaping the staff area breaks a page nobody connected to it — and the connection is
+invisible from either end.
+
+The same reflex applies inside a route: a widget's parts stay in the widget (`use-widgets`); a
+neighbouring route's table is not a library.
+
+## 5. Which model of page you are building — decide before the first file
+
+| Model | Route shape | Rendering | Skill |
+|---|---|---|---|
+| public, authored, finite | a folder per item | SSG | `use-static-pages` |
+| public, from data, unbounded | `[slug]` | prerender a slice, `dynamicParams`, ISR | `use-static-pages` + the catalogue example |
+| a person's own screen | inside a permission group | static shell, data through `/api/*` | `use-dynamic-pages` |
+
+Getting this wrong is not cosmetic: a folder per item for a catalogue is a million folders, and a
+dynamic page for an authored text is a page search never sees.
+
+## 6. Before you call it done
+
+- `check:content` (`route-unclassified`), `check:protected`, `check:static`, `check:seo` — each covers
+  a different way a route can be misplaced.
+- `page.tsx` stays thin: declare the segment, re-export `./_components`. `check:protected` measures it.
+- Open the page as somebody who should NOT see it. A protected page that opens for a guest in `dev` or
+  on a bare IP is the bypass, not a fault — but say which mode you tested in.

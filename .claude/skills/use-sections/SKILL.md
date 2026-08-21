@@ -103,7 +103,45 @@ No gate catches this. It is a question you ask yourself before reaching for a re
 drawing already on the page?* If it is, the honest answer is a different kind — that is normal work,
 not extra work. `problemSolution` exists because of exactly this.
 
-## 7. Before you call it done
+## 7. 🔒 Every kind has a card, and the card is where the owner's taste is remembered
+
+`sections/blocks/<kind>.md`, beside the renderer. Free form, written for a model to read: the family
+it belongs to (`proof`, `breakdown`, `action`, `story`, …), how many elements it holds and **what
+exactly breaks** past that, when to reach for it, when not to.
+
+Read the card before using a kind. The catalogue tells you a kind EXISTS; only the card tells you what
+it can carry — and that difference has already cost real work: `metrics` is `grid-cols-3` in the
+renderer while its type accepts an unbounded array, so a fourth number compiles, ships, and lands
+alone against the left edge.
+
+**Cards are not written in advance for all 29.** A card is born the moment somebody learns something
+about that kind — usually the owner, usually because something looked wrong. An empty card written to
+fill a checklist teaches nobody.
+
+### The rule is caught in the dialogue, not applied silently
+
+**Trigger:** the owner corrects the LOOK rather than the text — "drop the fourth one", "this is ugly",
+"it doesn't sit right", "put it back the way it was".
+
+**What you do — and this is the whole mechanism:** fix it, and then ask.
+
+> What exactly is wrong with it? If this section is built wrong, we can change its instruction so it
+> works better next time — want to tell me more?
+
+**Then write his answer into the card**, in his words, with the date. Not "the agent decided three" —
+his rule, his reason.
+
+🔒 **Silently fixing and moving on is forbidden.** The same correction reaches the next agent, who has
+no way to know it was ever made, and the owner pays for the same work twice. A rule spoken once must
+survive the session that heard it — that is the same discipline as skill evolution in `CLAUDE.md`,
+one level down.
+
+**What counts, goes in the TYPE instead.** "Exactly three" is countable: a tuple in
+`lib/content/blocks/types.ts` makes the fourth element fail to compile, and prose only teaches while a
+type refuses. "Looks wrong right after `flow`" is not countable — that stays in the card. Change the
+type only when the owner has confirmed the number is hard, never on your own reading of the CSS.
+
+## 8. Before you call it done
 
 - `check:sections` — every kind has a specimen, colours are tokens, fills carry their pairs.
 - `check:typography`, `check:layout`, `check:contrast` — text through the primitives, no size that

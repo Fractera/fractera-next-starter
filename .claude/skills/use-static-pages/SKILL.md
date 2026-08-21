@@ -149,6 +149,28 @@ island from `components/`. Pattern to copy: `project-type-marquee.server.tsx`.
 A page of its own is for something that needs its OWN ADDRESS — searched for, linked to, in the sitemap.
 Its body is still blocks.
 
+## 6a. 🔒 The page ships without the part you could not make
+
+Same law as everywhere: a missing piece is a branch with an exit, not a failed step. Finish the page,
+say what is missing, open a step for it in `new-steps/`, close this one as a success.
+
+**But the trap here is the opposite one.** On a page behind a role the temptation is to stall waiting
+for data; on a page of prose the temptation is to **invent the content** — and that failure ships
+looking finished, which is why it survives.
+
+| Missing | Do NOT | Do |
+|---|---|---|
+| a fact, a number, a date about the owner's business | write a plausible one | leave the block out, or mark the text a sample in its own words, and ask |
+| a source for a claim you are making | attach a link that looks authoritative | name the source in words and let the architect approve the link — `use-links` |
+| a section kind the catalogue does not have | invent one for this page alone | ship without that block; a new kind is its own step, and a one-page thing is a widget |
+| a widget or tool the page wanted | fake it with static markup pretending to work | ship the page, defer the widget — `use-dynamic-pages` §3c |
+| a picture | ship a broken path | ship without it (every hero field is optional) or draw a placeholder that says so |
+| a translation | machine-fill languages you cannot check | write the enabled set, record the debt — `use-multi-lang` |
+
+🔒 **A sample page must say it is a sample, in the text a visitor reads.** The starter's own "About
+us" carries that line about its invented team and history — remove it and the shipped example becomes
+a claim about a real company, in every project that copies it.
+
 ## 7. What the gate checks — `npm run check:content`
 
 | Rule | Rejects |

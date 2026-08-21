@@ -760,7 +760,8 @@ Sonner — других нет.
 | `use-links` | ссылки: две внутренние формы с гейтом, исходящая — решение архитектора | ✅ |
 | `use-design-config` · `use-products-config` | остальные конфиги (`use-app-config` и `use-platform-config` написаны) | — |
 | `use-passport` | твоё приложение `3000` | — |
-| `use-auth` · `use-auth-providers` · `use-roles` | вход, провайдеры, роли | — |
+| `use-auth` | авторизация: четыре таблицы, их удалять нельзя; где вход живёт физически; правила смены ролей | 🔶 |
+| `use-auth-providers` · `use-roles` | провайдеры входа, роли | — |
 | `use-panel` | панель управления | — |
 | `use-data` · `use-database` · `use-object-storage` · `use-vector-memory` | слой данных и три склада | — |
 | `use-map` · `use-channels` · `use-agentic-rag` | карта · каналы · агентный RAG | — |

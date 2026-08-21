@@ -1,4 +1,4 @@
-import type { Block } from '@/lib/content/blocks/types'
+import type { Block, FaqPair } from '@/lib/content/blocks/types'
 import { resolveFields, resolveLocalizedBody } from '@/lib/content/resolve'
 import { adminUrlFromSite } from '@/lib/site-urls'
 import { getAppConfig } from '@/config/app-config'
@@ -34,6 +34,13 @@ export type HomeCell = {
   /** Ключевые слова страницы — того же вида, что у правовых страниц. */
   keywords: string
   blocks: Block[]
+  /**
+   * Вопросы и ответы — ТОТ ЖЕ механизм, что у постов и правовых страниц
+   * (владелец 2026-08-22). Рисует их шаблон страницы последней секцией и он же
+   * строит разметку `FAQPage` для поисковика; заводить ради этого вид блока
+   * значило бы завести второй способ делать то же самое.
+   */
+  faq?: FaqPair[]
 }
 
 export type HomeData = {
@@ -83,6 +90,34 @@ function fillBlocks(blocks: Block[], admin: string, lang: string): Block[] {
   })
 }
 
+// 🔒 ЧТО СТОИТ СРАЗУ ПОД ПЕРВЫМ ЭКРАНОМ — РЕШАЕТ ЭТОТ ФАЙЛ, А НЕ ПЛАТФОРМА
+// (владелец 2026-08-22: «эту группу поднять и поставить сразу под героем, над
+// новым виджетом»).
+//
+// Ряд мер и ряд ярлыков — это ОДНА группа: три числа и подписи к ним, которые
+// человек читает за один такт, прежде чем спускаться в текст. Стоять она обязана
+// выше виджета, а виджет рисуется вне ленты страницы — значит и группа обязана
+// выйти из ленты вместе с ним.
+//
+// 🔒 ПОЧЕМУ ОТБОР ПО ВИДУ ЖИВЁТ ЗДЕСЬ, А НЕ В ШАБЛОНЕ СТРАНИЦЫ. Шаблон один на
+// семь страниц; научи его поднимать наверх всякий `metrics`, и ряд мер посреди
+// поста однажды молча уедет под заголовок. Здесь же это решение ГЛАВНОЙ о своих
+// собственных блоках, и дальше её оно не идёт.
+const LEAD_KINDS = new Set(['metrics', 'badges'])
+
+/** Блоки, которые главная показывает ВЫШЕ ленты — сразу под первым экраном. */
+export function homeLead(lang: string): Block[] {
+  return homeBlocksOf(lang).filter(b => LEAD_KINDS.has(b.kind))
+}
+
+/** Общая часть: разобранные и подставленные блоки языка. */
+function homeBlocksOf(lang: string): Block[] {
+  const override = data.overrides[lang]
+  const body = resolveLocalizedBody({ blocks: data.en.blocks }, override ? { blocks: override.blocks } : undefined)
+  const admin = adminUrlFromSite(getAppConfig().url) ?? ''
+  return fillBlocks(body.blocks, admin, lang)
+}
+
 /** Содержимое главной на языке: перевод, иначе английская основа. */
 export function homePage(lang: string): HomeCell {
   const override = data.overrides[lang]
@@ -120,7 +155,11 @@ export function homePage(lang: string): HomeCell {
   // места, сколько нужно. Подставь сюда настройку — и одно поле стало бы
   // отвечать за два несовместимых требования: либо сниппет обрывается на
   // полуслове, либо на первом экране остаётся одна строка.
-  const blocks = filled.map(b => (b.kind === 'heroSplit' ? { ...b, title } : b))
+  // Поднятые блоки убраны из ленты: они уже нарисованы выше, и второй раз
+  // означал бы два одинаковых ряда мер на одной странице.
+  const blocks = filled
+    .filter(b => !LEAD_KINDS.has(b.kind))
+    .map(b => (b.kind === 'heroSplit' ? { ...b, title } : b))
 
-  return { ...fields, title, description, blocks }
+  return { ...fields, title, description, blocks, faq: override?.faq ?? data.en.faq }
 }

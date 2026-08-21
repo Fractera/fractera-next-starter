@@ -27,12 +27,26 @@ export function SecuritySwap({ ui, children }: { ui: SecurityOrbitUi; children: 
   const [live, setLive] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
+  // 🔒 ДВА СЛУШАТЕЛЯ, А НЕ ОДИН (владелец 2026-08-22). Нажатие требовало
+  // намерения — человек, который просто читает страницу, движения не увидел бы
+  // никогда. Указатель, вошедший в область секции, — то же самое согласие, только
+  // без требования что-то нажать.
+  //
+  // `pointerenter`, а не `mouseenter`: на пере и на тачпаде событие то же, а на
+  // пальце его не бывает вовсе — и это правильно, на телефоне «наведения» нет, там
+  // остаётся нажатие.
+  //
+  // Оба слушателя `once` и оба снимаются вместе: разбудить можно только раз.
   useEffect(() => {
     const el = ref.current
     if (!el || live) return
     const wake = () => setLive(true)
     el.addEventListener("click", wake, { once: true })
-    return () => el.removeEventListener("click", wake)
+    el.addEventListener("pointerenter", wake, { once: true })
+    return () => {
+      el.removeEventListener("click", wake)
+      el.removeEventListener("pointerenter", wake)
+    }
   }, [live])
 
   return (

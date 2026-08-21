@@ -537,3 +537,67 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
     background-color: color-mix(in oklch, var(--color-primary) 45%, transparent);
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Разбор в две половины (вид `problemSolution`) — переключение БЕЗ JavaScript.
+
+   🔒 ЗАЧЕМ ЭТО ЗДЕСЬ, А НЕ УТИЛИТАМИ В СЕКЦИИ. Правило смотрит от переключателя
+   к его ярлыку и к его карточке через соседей (`:checked ~ …`), а такую связь
+   утилитой на элементе не выразить: она принадлежит не элементу, а отношению
+   между двумя. Тот же случай, что у `.flow` выше.
+
+   Порядковый номер связывает тройку «переключатель → ярлык → карточка». Правил
+   написано шесть — столько случаев вид выдержит; седьмой просто не покажется, и
+   это лучше молчаливого показа не того.
+   ───────────────────────────────────────────────────────────────────────────── */
+.ps-tab {
+  border-color: transparent;
+  color: var(--color-muted-foreground);
+}
+.ps-tab:hover { color: var(--color-foreground); }
+
+/* Карточки сложены в одну ячейку сетки: невыбранные не занимают места и не
+   ловят курсор, но высоту секции задаёт самая длинная — при переключении
+   страница не дёргается. */
+.ps-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.ps-r:nth-of-type(1):checked ~ .ps-body li:nth-child(1) .ps-tab,
+.ps-r:nth-of-type(2):checked ~ .ps-body li:nth-child(2) .ps-tab,
+.ps-r:nth-of-type(3):checked ~ .ps-body li:nth-child(3) .ps-tab,
+.ps-r:nth-of-type(4):checked ~ .ps-body li:nth-child(4) .ps-tab,
+.ps-r:nth-of-type(5):checked ~ .ps-body li:nth-child(5) .ps-tab,
+.ps-r:nth-of-type(6):checked ~ .ps-body li:nth-child(6) .ps-tab {
+  border-color: var(--color-primary);
+  color: var(--color-foreground);
+  cursor: default;
+}
+
+.ps-r:nth-of-type(1):checked ~ .ps-body .ps-panel:nth-child(1),
+.ps-r:nth-of-type(2):checked ~ .ps-body .ps-panel:nth-child(2),
+.ps-r:nth-of-type(3):checked ~ .ps-body .ps-panel:nth-child(3),
+.ps-r:nth-of-type(4):checked ~ .ps-body .ps-panel:nth-child(4),
+.ps-r:nth-of-type(5):checked ~ .ps-body .ps-panel:nth-child(5),
+.ps-r:nth-of-type(6):checked ~ .ps-body .ps-panel:nth-child(6) {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* Клавиатура: переключатель скрыт от глаза, поэтому рамку фокуса рисуем вокруг
+   перечня — иначе человек, идущий по странице табуляцией, теряет место. */
+.ps-r:focus-visible ~ .ps-body ul {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 6px;
+  border-radius: 0.5rem;
+}
+
+/* Появление половины — это движение. Запретили движение — карточка просто
+   встаёт на место, а не исчезает вместе с переходом. */
+@media (prefers-reduced-motion: reduce) {
+  .ps-panel { transition: none; transform: none; }
+}

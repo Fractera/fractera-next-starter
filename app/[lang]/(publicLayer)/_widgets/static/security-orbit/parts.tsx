@@ -16,9 +16,10 @@
 // `border-border`. Смысл замены не в чистоте: владелец меняет палитру в панели, и
 // виджет обязан перекраситься вместе с сайтом, не будучи тронут кодом.
 
-import type { ElementType, ReactNode } from "react"
+import type { CSSProperties, ElementType, ReactNode } from "react"
 import { Scale, Wallet, DatabaseBackup, Lock, ShieldCheck } from "lucide-react"
 import { H2, H3, Lead, Small } from "@/components/ui/typography"
+import { badgeClass } from "@/sections/tone"
 import type { SecurityCard, SecurityOrbitUi } from "./ui.i18n"
 
 /** Значки карточек по порядку 01–04 — тот же порядок, что у слов. */
@@ -39,8 +40,14 @@ export const CLS = {
   orbit: "relative mx-auto aspect-square w-full max-w-[440px] xl:max-w-[480px]",
   shield:
     "relative flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-br from-primary to-primary/60",
+  // 🔒 ПОДСВЕТКА — ТА ЖЕ, ЧТО У РАЗДЕЛА «ПРОЕКТ УЖЕ ЕСТЬ» (владелец 2026-08-22):
+  // класс `flow-card` из `styles/globals.css`. Он зажигает рамку акцентом, кладёт
+  // мягкое свечение и приподнимает карточку в её такт — и делает это ЧИСТЫМ CSS,
+  // без JavaScript, а при «уменьшить движение» замирает сам. Свой набор классов
+  // здесь означал бы вторую подсветку в проекте, которая разойдётся с первой на
+  // первой же правке палитры.
   card:
-    "group relative flex items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40 sm:gap-5 sm:p-6",
+    "flow-card group relative flex items-start gap-4 overflow-hidden rounded-2xl border bg-card p-5 sm:gap-5 sm:p-6",
   cardIcon:
     "relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/20",
   chip:
@@ -98,7 +105,9 @@ export function Card(
 ) {
   const Icon = CARD_ICONS[index]
   return (
-    <Wrapper className={CLS.card} {...wrapperProps}>
+    // `--flow-i` — очередь карточки в такте: та же переменная, что у шагов
+    // раздела о переносе, поэтому и зажигаются они по очереди одинаково.
+    <Wrapper className={CLS.card} style={{ "--flow-i": index } as CSSProperties} {...wrapperProps}>
       {/* Подсветка угла при наведении — тот же приём, что у донора, но токеном. */}
       <span
         aria-hidden
@@ -140,8 +149,19 @@ export function Frame(
 ) {
   return (
     <section className="relative py-20 md:py-28">
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mx-auto max-w-3xl text-center">
+      {/* `flow` здесь ради ПЕРЕМЕННЫХ ритма (`--flow-beat`, `--flow-cycle`): без
+          них `flow-card` не знает длительности и не зажигается вовсе. Класс
+          ничего не рисует сам — он только объявляет такт, и потому годится
+          обёртке. */}
+      <div className="flow relative mx-auto max-w-6xl px-4 sm:px-6" style={{ "--flow-n": 4 } as CSSProperties}>
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          {/* 🔒 ЯРЛЫК РАЗДЕЛА — ТОТ ЖЕ, ЧТО У ВСЕХ СЕКЦИЙ СТРАНИЦЫ (владелец
+              2026-08-22: «все секции имеют свой бейдж, а ты забыл»). Класс берётся
+              у платформы (`sections/tone`), а не пишется здесь: тон ярлыка один на
+              страницу, и написанный своими классами он разошёлся бы с соседями на
+              первой же смене палитры. Это ровно тот случай, когда наружу выходит
+              «как проект вообще делает X». */}
+          <span className={`mb-4 ${badgeClass("data")}`}>{ui.badge}</span>
           <H2>
             {ui.headingLead}{" "}
             <span className="bg-gradient-to-br from-primary to-primary/50 bg-clip-text text-transparent">

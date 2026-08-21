@@ -64,6 +64,9 @@ const FILES = [
   ["app/[lang]/(protectedLayer)/(admin)/administration/products/_widgets/dynamic/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
   ["app/[lang]/(protectedLayer)/(account)/shopping/products/_widgets/dynamic/shop-table/ui.i18n.ts", "ShopTableUi", 10],
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/dynamic/product-card/ui.i18n.ts", "ProductCardUi", 10],
+  // Счётчик пользователей главной — временная проверка (2026-08-21). Тот же
+  // страничный набор, что у остальных виджетов: принадлежит одному маршруту.
+  ["app/[lang]/(publicLayer)/_widgets/static/user-counter/ui.i18n.ts", "UserCounterUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

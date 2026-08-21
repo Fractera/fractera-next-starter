@@ -298,6 +298,37 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'problemSolution',
+    when: 'A set of independent cases, read ONE at a time: the list on the left, the opened case on the right — what is required on top, why it works here underneath. Different from flow: flow has ORDER and shows every step at once; here there is no order, and each case has two sides that must sit one under the other so the lower one reads as the answer to the upper. Switching is pure CSS (radio + :checked in styles/globals.css) — every case ships in the server markup, so the crawler and a visitor without JavaScript get all of it, and no separate copy "for robots" is needed. Panels are stacked in ONE grid cell, so the height equals the longest case and the page never jumps while switching. Six cases maximum — that is how many rules the stylesheet carries.',
+    blocks: [
+      {
+        kind: 'problemSolution',
+        badge: 'Why it matters',
+        title: 'Two sides of the same case',
+        note: 'Pick a case on the left; the card shows what it demands and how this project answers it.',
+        demandLabel: 'What is required',
+        answerLabel: 'Why it works here',
+        items: [
+          {
+            title: 'A case with a demand',
+            demand: 'The upper half states what the situation asks of you — plainly, in the words of somebody living through it rather than of somebody selling a cure.',
+            answer: 'The lower half answers. It reads as a reply because it stands underneath: put the two side by side and the connection turns into a comparison.',
+          },
+          {
+            title: 'A second, unrelated case',
+            demand: 'Cases are independent — there is no first and no last. That is precisely why this is not a numbered list: numbering would promise an order that does not exist.',
+            answer: 'The list on the left is a group of radio buttons, so a keyboard walks the cases with arrow keys and a screen reader announces them without any help from us.',
+          },
+          {
+            title: 'The longest one sets the height',
+            demand: 'Cases differ in length, and a card that resizes on every switch makes the page jump under the cursor — the reader loses the place they were holding.',
+            answer: 'All panels live in one grid cell, so the section is as tall as the longest case and stays that way. Nothing moves except the text fading in.',
+          },
+        ],
+      },
+    ],
+  },
+  {
     kind: 'flow',
     when: 'How something works, as steps that light up in turn with a spark running along the link between them. Order is the CONTENT here, not decoration — that is what separates it from an olist in a box. Movement is pure CSS (styles/globals.css): it works with JavaScript off and stands still for prefers-reduced-motion. The wording never dims — only the frame, the glow and the numbered node do, because text faded with opacity drops below the contrast threshold.',
     blocks: [

@@ -1,7 +1,9 @@
 import { createContentPage } from '@/lib/content/create-content-page'
-import { homePage } from '../_data'
+import { homePage, homeLead } from '../_data'
 import { meta } from '../_data/meta'
+import { PostBody } from '@/components/content-page/post-body'
 import { SecurityOrbit } from '../_widgets/static/security-orbit'
+import { UserCounter } from '../_widgets/static/user-counter'
 
 // Вход главной страницы — ТА ЖЕ ФАБРИКА, ЧТО У ПОСТА И ПРАВОВЫХ СТРАНИЦ.
 //
@@ -29,15 +31,29 @@ const page = createContentPage({
   // выдаче они спорят между собой. Метаданные и разметку по-прежнему строит
   // фабрика из того же `title`.
   titleInBody: true,
-  // 🔒 ВИДЖЕТ СРАЗУ ЗА ПЕРВЫМ ЭКРАНОМ — образец статической разновидности
-  // (шаг 521). Он живёт в папке этого маршрута (`_widgets/static/security-orbit`),
-  // а сюда приходит одной строкой: маршрут решает, что показать, платформа — где.
+  // 🔒 ВИДЖЕТЫ СРАЗУ ЗА ПЕРВЫМ ЭКРАНОМ — слот один, виджетов в нём два (стоят
+  // друг под другом, каждый в своей папке этого маршрута:
+  // `_widgets/static/user-counter` и `_widgets/static/security-orbit`). Сюда
+  // они приходят одной строкой каждый: маршрут решает, что показать, платформа
+  // — где.
   //
   // 🔒 АНИМАЦИЯ ВНУТРИ ОСТРОВКА, А НЕ НА СТРАНИЦЕ. Страница обязана остаться
-  // предрендеренной: разметку виджета печатает сервер, движение приходит после
-  // первого нажатия отдельным куском. Анимация, поднятая на уровень страницы,
-  // увела бы главную в динамику и вместе с ней — поисковую выдачу.
-  afterHero: (lang: string) => <SecurityOrbit lang={lang} />,
+  // предрендеренной: разметку виджетов печатает сервер, движение приходит
+  // после первого триггера (нажатие у одного, попадание в поле зрения у
+  // другого — см. `swap.client.tsx` каждого) отдельным куском. Анимация,
+  // поднятая на уровень страницы, увела бы главную в динамику и вместе с ней —
+  // поисковую выдачу.
+  afterHero: (lang: string) => (
+    <>
+      {/* Ряд мер и ярлыки — ВЫШЕ виджетов и вне ленты, но по её ширине: метка
+          data-app-column подчиняет их переключателю ширины, как и текст ниже. */}
+      <div data-app-column className="px-6">
+        <PostBody blocks={homeLead(lang)} lang={lang} />
+      </div>
+      <UserCounter lang={lang} />
+      <SecurityOrbit lang={lang} />
+    </>
+  ),
 })
 
 export const generateMetadata = page.generateMetadata

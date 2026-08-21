@@ -94,7 +94,23 @@ export const heroSplit: SectionRenderer<'heroSplit'> = (b, { key: k }) => {
             {/* Размер и шрифт — из примитива типографики: заголовок первого
                 экрана обязан совпадать с заголовком любой другой страницы.
                 Здесь остаётся только свечение. */}
-            <H1 scale="hero" className="h1-glow">{b.title}</H1>
+            {/* 🔒 ПОДЧЁРКИВАНИЕ ОТНОСИТСЯ К КОНТЕЙНЕРУ ЗАГОЛОВКА, А НЕ К СЛОВУ
+                (владелец 2026-08-22, по образцу с его сайта). У образца градиент
+                залит в буквы (`bg-clip-text`) и потому шириной со слово; здесь он
+                идёт полосой во всю ширину блока заголовка — от бледного к акценту
+                и обратно к плотному. Три остановки и диагональный ход образца
+                сохранены, цвета взяты токенами: полоса обязана идти за палитрой
+                владельца, а не за неоном чужого сайта.
+
+                Полоса декоративна и скрыта от чтения с экрана: смысл несёт сам
+                заголовок, а диктору незачем объявлять черту. */}
+            <div className="flex w-full flex-col">
+              <H1 scale="hero" className="h1-glow">{b.title}</H1>
+              <span
+                aria-hidden
+                className="mt-4 block h-1 w-full rounded-full bg-gradient-to-br from-primary/15 via-primary to-primary/45"
+              />
+            </div>
             <p className="text-base leading-relaxed text-muted-foreground">
               {inline(b.description, `${k}-d`)}
             </p>

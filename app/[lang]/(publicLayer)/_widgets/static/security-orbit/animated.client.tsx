@@ -58,14 +58,11 @@ export default function SecurityAnimated({ ui }: { ui: SecurityOrbitUi }) {
           card={ui.cards[i]}
           index={i}
           Wrapper={motion.div}
-          wrapperProps={
-            still
-              ? {}
-              : {
-                  whileHover: { y: -4 },
-                  transition: { type: "spring", stiffness: 260, damping: 22 },
-                }
-          }
+          // 🔒 ПОДЪЁМА ПРИ НАВЕДЕНИИ ЗДЕСЬ НЕТ — И ЭТО НЕ ЗАБЫВЧИВОСТЬ. Карточка
+          // уже приподнимается в свой такт классом `flow-card`, а тот двигает
+          // `transform` ключевыми кадрами; кадры сильнее инлайнового стиля, и
+          // `whileHover` был бы проглочен молча. Одно движение — один хозяин.
+          wrapperProps={{}}
         />
       )}
     />

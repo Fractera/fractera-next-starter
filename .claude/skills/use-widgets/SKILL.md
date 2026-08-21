@@ -54,13 +54,30 @@ shape: while it is one for four, none of them can look different even while load
 live — the shared one drew five columns for a table that has three, and the layout jumped when the
 answer arrived.
 
+## Ask first whether an island is needed at all
+
+Tabs, highlighting, reveal-on-select, a lit step — plain CSS does most of this, and then there is no
+island: the page works without JavaScript *fully*, not tolerably, and no second copy of the text "for
+crawlers" is required. The specimen is the section kind `problemSolution`: the list of cases is a
+group of radio inputs, and showing the selected one is a `:checked` rule in `styles/globals.css`.
+
+Reach for an island only when browser state is unavoidable — a database call, an input, a timer. An
+island bought for something CSS already does costs the no-JS visitor the whole element.
+
+## One page, no repeated section kinds
+
+A section kind appears once per page. The eye recognises a layout before it reads a word, so a second
+section of the same kind reads as a repeat however different the text. Caught by asking "is this shape
+already on the page?" before reusing a kind — no gate enforces it.
+
 ## Movement: the island rule, and why it is about search, not taste
 
 Classic use of a motion library kills SEO. The page goes dynamic, the markup ships with `opacity: 0`,
 and the crawler — like anyone with JavaScript off — sees empty space. So:
 
 1. **The server prints stillness.** A static twin, fully visible, zero `opacity: 0`.
-2. **An island holds the twin** and swaps in the animated version **after the first click**.
+2. **An island holds the twin** and swaps in the animated version on the **first click — or when the
+   pointer enters the area** (`pointerenter`; a finger never fires it, so touch keeps the click).
 3. **The animated version loads lazily** (`lazy` + `Suspense`), and the fallback of the swap is the
    twin itself — so nothing blinks while the chunk flies.
 4. **Both versions share one markup file.** Geometry must match 1:1 at any width; measure the

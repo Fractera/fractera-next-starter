@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { useUsersList } from "./use-list"
 import { UsersRow } from "./row.client"
 import { UsersTableSkeleton } from "./skeleton"
+import { UsersPager } from "./pager.client"
 import type { UsersTableUi } from "./ui.i18n"
 
 export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
@@ -88,9 +89,16 @@ export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {total} {ui.total}{pages > 1 ? ` · ${page}/${pages}` : ""}
-          </p>
+          {/* Подвал таблицы — как у соседних списков: счёт слева, переходы
+              справа. Стоит ПОД таблицей, потому что человек листает после того,
+              как дочитал строки, а не до. */}
+          <UsersPager
+            ui={ui}
+            total={total}
+            page={page}
+            pages={pages}
+            onPage={p => load({ page: p, q: query })}
+          />
         </>
       )}
     </div>

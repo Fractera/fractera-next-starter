@@ -36,6 +36,12 @@ export type UsersTableUi = {
   unreachable: string
   rolesRequired: string
   total: string
+  prev: string
+  next: string
+  first: string
+  last: string
+  /** «страница {page} из {pages}» — подстановки обязательны обе. */
+  pageOf: string
 }
 
 const DICT: Record<string, UsersTableUi> = {
@@ -61,6 +67,11 @@ const DICT: Record<string, UsersTableUi> = {
     unreachable: "The authentication service did not answer.",
     rolesRequired: "An account keeps at least one role.",
     total: "accounts",
+    prev: "Previous page",
+    next: "Next page",
+    first: "First page",
+    last: "Last page",
+    pageOf: "page {page} of {pages}",
   },
   ru: {
     reveal: "Показать записи",
@@ -84,6 +95,11 @@ const DICT: Record<string, UsersTableUi> = {
     unreachable: "Служба авторизации не ответила.",
     rolesRequired: "У записи остаётся хотя бы одна роль.",
     total: "записей",
+    prev: "Предыдущая страница",
+    next: "Следующая страница",
+    first: "Первая страница",
+    last: "Последняя страница",
+    pageOf: "страница {page} из {pages}",
   },
 }
 

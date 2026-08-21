@@ -18,7 +18,6 @@ export const es: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'Plantilla inicial de SaaS',
   },
-  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [
@@ -61,18 +60,6 @@ export const es: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'flow',
-    badge: 'Migración',
-    title: 'Ya tiene un proyecto — por ejemplo, en Vercel',
-    note: 'Traerlo aquí no es copiar archivos. Primero se lee el proyecto y solo después se reconstruye, así que a su servidor llega código que se puede seguir desarrollando, no una copia congelada.',
-    steps: [
-      { title: 'Usted entrega el repositorio', text: 'Su repositorio de GitHub tal cual. No hace falta prepararlo, renombrarlo ni limpiarlo antes.' },
-      { title: 'Recibe una descomposición', text: 'El código se lee y se describe: qué páginas hay, qué datos necesitan, qué hace realmente el proyecto. Esa descripción es lo que usted confirma: una suposición sin leer no vale nada.' },
-      { title: 'La descomposición se vuelve pasos', text: 'De ella nacen pasos de desarrollo numerados y desde ahí se ejecutan uno tras otro: los mismos pasos que usted escribiría a mano para una función nueva.' },
-    ],
-  },
-  { kind: 'statement', text: 'La migración es el cuarto tipo de trabajo de este proyecto, junto al desarrollo corriente, los pasos de desarrollo y los casos de uso. Aquí está descrita como intención, no como un botón terminado: los pasos que la componen aún se están construyendo.' },
   {
     kind: 'cards',
     badge: 'Primeros pasos',
@@ -130,6 +117,11 @@ export const es: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Y esto no es un consejo, sino una regla del producto: mientras quede un solo caso sin confirmar, el panel mantiene la alarma encendida y el agente programador se niega a construir. Construir sobre una conjetura sin leer cuesta más que no construir nada.' },
+  // 🔒 ЛЕНТА НАПРАВЛЕНИЙ СТОИТ ПОД QUIZ, А НЕ ПОД ПЕРВЫМ ЭКРАНОМ (владелец
+  // 2026-08-22). Наверху она была украшением: человек ещё не знает, зачем ему
+  // список направлений. Здесь она довод — Quiz объясняет, КАК выбрать, а лента
+  // показывает, ИЗ ЧЕГО. Две связанные вещи стоят рядом.
+  { kind: 'projectTypeMarquee' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Llévatelo gratis y escala' },
   {
     kind: 'cards',
@@ -164,9 +156,68 @@ export const es: Partial<HomeCell> = {
     cta: { page: 'architecture' },
   },
   {
+    kind: 'problemSolution',
+    badge: 'Mudarse es fácil',
+    title: 'Cómo trasladar su proyecto a la arquitectura Fractera',
+    note: 'Su proyecto ya funciona — en Vercel o en cualquier otro sitio. Y usted paga: por el alojamiento, por la base de datos, por guardar las imágenes, por la autorización, por el correo. Cada servicio le factura por separado, y cada factura crece con usted. El traslado parece imposible, y no lo es: Fractera desmonta su proyecto y lo vuelve a montar sobre su propia arquitectura, en el servidor de usted, donde todo eso ya está y no cuesta nada aparte.',
+    demandLabel: 'Qué hace usted',
+    answerLabel: 'Por qué funciona en Fractera',
+    items: [
+      {
+        title: 'Instalar Fractera',
+        demand: 'Compre un servidor — desde tres euros al mes. Compre un dominio — desde un dólar al año. Ponga en marcha el robot instalador y siga sus indicaciones: lo demás lo hace él solo.',
+        answer: 'Tres euros son toda su factura de alojamiento. No la del primer mes, ni «hasta que supere el límite», sino toda. La base de datos, el almacén de imágenes, el acceso con contraseña y el correo ya están en su servidor e incluidos en esos tres euros. No queda nada por pagar aparte.',
+      },
+      {
+        title: 'Elegir el modo traslado',
+        demand: 'En el panel abra la pestaña «Traslado a Fractera» e indique la dirección de su repositorio. Durante la mudanza conviene que sea público — el suyo y el de Fractera; puede cerrarlos de nuevo cuando quiera. Guarde el modo.',
+        answer: 'Es el único ajuste que usted toca a mano. A partir de aquí el proyecto sabe que se está mudando y actúa en consecuencia: no construye desde una página en blanco, desmonta lo que usted ya tiene escrito.',
+      },
+      {
+        title: 'Avisar al agente',
+        demand: 'Abra el proyecto en su editor, en su propia máquina, donde trabaja habitualmente. Arránquelo y dígale al agente que empieza la mudanza. Con palabras normales, como se lo diría a un compañero.',
+        answer: 'A partir de ahí él lee su proyecto antiguo por su cuenta: qué arquitectura tiene, qué bibliotecas usa, qué depende de qué. Usted no tiene que explicar ni recordar nada: él mira el código, no su memoria.',
+      },
+      {
+        title: 'Recibir el plan por pasos',
+        demand: 'Nada. Mire lo que ha salido: la tarea enorme «trasladar el proyecto» está desplegada en pasos, cada uno con su número y su objetivo.',
+        answer: 'La mudanza deja de dar miedo porque deja de ser un bloque único. Usted ve la lista: qué está hecho, qué se está haciendo, qué viene después. No hay dónde atascarse a mitad y perder el hilo.',
+      },
+      {
+        title: 'Levantar el esqueleto',
+        demand: 'Responda a las preguntas sobre permisos: quién podrá ver y cambiar qué en su aplicación. Son pocas y todas hablan de su producto, no de tecnología.',
+        answer: 'Primero se levanta el armazón: direcciones de páginas, tablas, acceso, repositorios — público para el código y cerrado para lo que no debe verse. El armazón se levanta una vez, y el proyecto crece dentro de él en lugar de rehacerse con cada función nueva.',
+      },
+      {
+        title: 'Añadir las funciones',
+        demand: 'Recorra los pasos. Un paso, una función: una página, un formulario, un cobro, los correos. Marque lo hecho y añada lo nuevo cuando se le ocurra.',
+        answer: 'Cada paso se comprueba y a usted le enseñan que funciona: no «la compilación pasó», sino una página viva con su propio texto. Por eso siempre sabe dónde está y nunca se queda con un proyecto que «más o menos está listo».',
+      },
+      {
+        title: 'Trasladar los datos',
+        demand: 'Dé al agente acceso a sus bases. Trasladará lo que ya se ha acumulado: usuarios, pedidos, textos, imágenes.',
+        answer: 'Es el último paso. Después tiene en su propio servidor una copia completa y funcionando del proyecto — con sus datos, su gente y su dominio. Las facturas antiguas pueden cancelarse: a partir de ahora paga el servidor y el dominio, nada más.',
+      },
+    ],
+  },
+  {
     kind: 'languageMarquee',
     title: 'Ochenta y dos idiomas, listos antes de que los necesites',
     note: 'Todos vienen con el producto: activas los que habla tu mercado. La generación estática, la optimización para buscadores y para IA, el caché de datos y la preparación para carga alta mantienen la eficiencia en lo más alto del sector — y la mantienen igual tanto si trabajas con un idioma, con varios o con los ochenta y dos.',
   },
 ],
+  faq: [
+    {
+      q: '¿Cuánto cuesta y hay cargos ocultos?',
+      a: 'No hay cargos ocultos porque no hay a quién pagar: la plataforma es código abierto, y todo lo que instale y use le pertenece al cien por cien. Sus gastos son su servidor, su dominio y la IA en la nube si la usa; eso lo calcula usted y lo paga directamente al proveedor. Nosotros no cobramos suscripción, ni porcentaje, ni tarifa por usuario.',
+    },
+    {
+      q: '¿Cuál es la ventaja principal?',
+      a: 'La fiabilidad: ahí está puesta la apuesta. Hoy hay muchas formas de montar una aplicación deprisa, y conviene no hacerse ilusiones: casi todas están hechas para que usted pague ante todo sus propios errores. Una aplicación eficiente le interesa solo a usted; a quien le vende servicios le interesa que compre y pague cuantos más servicios sueltos mejor. Lo caro llega después: incumplir la ley y ser multado por dónde están los datos, cortes imprevistos, sanciones y sencillamente la pérdida de sus datos. Fractera cierra eso manteniéndolo todo en su propio servidor.',
+    },
+    {
+      q: '¿Y si necesito más?',
+      a: 'Su herramienta principal es la suya — Claude Code, Codex u otra — y funciona en su propia máquina. El proyecto escala mucho: el esqueleto está pensado para millones de líneas y sigue siendo eficiente. Y si necesita un cambio conceptual de arquitectura al nivel del panel de control, o construir la aplicación todavía le resulta difícil, envíe una solicitud a admin@fractera.ai y un desarrollador se pondrá en contacto y le propondrá una solución.',
+    },
+  ],
 }

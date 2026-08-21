@@ -18,7 +18,6 @@ export const nl: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'SaaS-startsjabloon',
   },
-  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [
@@ -61,18 +60,6 @@ export const nl: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'flow',
-    badge: 'Verhuizing',
-    title: 'Er is al een project — bijvoorbeeld op Vercel',
-    note: 'Het hierheen halen is geen bestanden kopiëren. Het project wordt eerst gelezen en pas daarna opnieuw gebouwd: op uw server komt code die verder ontwikkeld kan worden, geen bevroren momentopname.',
-    steps: [
-      { title: 'U geeft de repository', text: 'Uw GitHub-repository zoals hij is. Er hoeft vooraf niets voorbereid, hernoemd of opgeruimd te worden.' },
-      { title: 'U krijgt een ontleding', text: 'De code wordt gelezen en beschreven: welke pagina\'s er zijn, welke gegevens ze nodig hebben, wat het project werkelijk doet. Die beschrijving bevestigt u — een ongelezen gok is niets waard.' },
-      { title: 'De ontleding wordt stappen', text: 'Daaruit groeien genummerde ontwikkelstappen, en van daaraf lopen ze een voor een — dezelfde stappen die u met de hand zou schrijven voor een nieuwe functie.' },
-    ],
-  },
-  { kind: 'statement', text: 'Verhuizen is het vierde soort werk in dit project, naast gewone ontwikkeling, ontwikkelstappen en gebruiksscenario\'s. Het staat hier als voornemen, niet als afgeronde knop: de stappen waaruit het bestaat worden nog gebouwd.' },
   {
     kind: 'cards',
     badge: 'Aan de slag',
@@ -130,6 +117,11 @@ export const nl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'En dit is geen advies maar een productregel: zolang er één case onbevestigd blijft, houdt het paneel het alarm aan en weigert de codeeragent te bouwen. Bouwen op een ongelezen gok kost meer dan helemaal niet bouwen.' },
+  // 🔒 ЛЕНТА НАПРАВЛЕНИЙ СТОИТ ПОД QUIZ, А НЕ ПОД ПЕРВЫМ ЭКРАНОМ (владелец
+  // 2026-08-22). Наверху она была украшением: человек ещё не знает, зачем ему
+  // список направлений. Здесь она довод — Quiz объясняет, КАК выбрать, а лента
+  // показывает, ИЗ ЧЕГО. Две связанные вещи стоят рядом.
+  { kind: 'projectTypeMarquee' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Neem het gratis en schaal op' },
   {
     kind: 'cards',
@@ -164,9 +156,68 @@ export const nl: Partial<HomeCell> = {
     cta: { page: 'architecture' },
   },
   {
+    kind: 'problemSolution',
+    badge: 'Verhuizen is makkelijk',
+    title: 'Hoe u uw project naar de Fractera-architectuur verhuist',
+    note: 'Uw project draait al — op Vercel of ergens anders. En u betaalt: voor hosting, voor de database, voor de opslag van afbeeldingen, voor autorisatie, voor e-mail. Elke dienst factureert apart, en elke rekening groeit met u mee. De verhuizing lijkt onmogelijk — dat is ze niet: Fractera haalt uw project uit elkaar en bouwt het opnieuw op de eigen architectuur, op uw server, waar dat alles al staat en niets extra kost.',
+    demandLabel: 'Wat u doet',
+    answerLabel: 'Waarom het bij Fractera werkt',
+    items: [
+      {
+        title: 'Fractera neerzetten',
+        demand: 'Koop een server — vanaf drie euro per maand. Koop een domein — vanaf een dollar per jaar. Start de installatierobot en volg hem: de rest doet hij zelf.',
+        answer: 'Drie euro is uw hele hostingrekening. Niet die van de eerste maand en niet «tot u over de limiet gaat» — helemaal. Database, opslag voor afbeeldingen, inloggen met wachtwoord en e-mail staan al op uw server en zitten in diezelfde drie euro. Er blijft niets over om apart te betalen.',
+      },
+      {
+        title: 'De verhuismodus kiezen',
+        demand: 'Open in het paneel het tabblad «Verhuizen naar Fractera» en geef het adres van uw repository op. Houd hem tijdens de verhuizing openbaar — de uwe en die van Fractera; sluiten kan altijd weer. Sla de modus op.',
+        answer: 'Dit is de enige instelling die u met de hand aanraakt. Vanaf hier weet het project dat het verhuist en gedraagt het zich daarnaar: het bouwt niet vanaf een leeg blad, het haalt uit elkaar wat u al geschreven hebt.',
+      },
+      {
+        title: 'De agent inseinen',
+        demand: 'Open het project in uw eigen editor, op uw eigen machine, waar u gewoonlijk werkt. Start het en zeg de agent dat de verhuizing begint. In gewone woorden, zoals u het een collega zou zeggen.',
+        answer: 'Daarna leest hij uw oude project zelf: welke architectuur, welke bibliotheken, wat van wat afhangt. U hoeft niets uit te leggen en niets te herinneren — hij kijkt in de code, niet in uw geheugen.',
+      },
+      {
+        title: 'Het plan in stappen krijgen',
+        demand: 'Niets. Kijk wat eruit kwam: de enorme taak «het project verhuizen» ligt uitgevouwen in stappen, elk met zijn nummer en zijn doel.',
+        answer: 'De verhuizing houdt op eng te zijn omdat ze ophoudt één brok te zijn. U ziet de lijst: wat af is, wat nu loopt, wat hierna komt. Er is nergens om halverwege vast te lopen en de draad kwijt te raken.',
+      },
+      {
+        title: 'Het skelet neerzetten',
+        demand: 'Beantwoord vragen over rechten: wie wat mag zien en veranderen in uw toepassing. Het zijn er weinig en ze gaan allemaal over uw product, niet over techniek.',
+        answer: 'Eerst staat het geraamte: paginaadressen, tabellen, inloggen, repositories — openbaar voor de code en gesloten voor wat niet getoond mag worden. Een geraamte zet je één keer neer, en het project groeit erbinnen in plaats van bij elke nieuwe functie opnieuw gebouwd te worden.',
+      },
+      {
+        title: 'De functies toevoegen',
+        demand: 'Loop de stappen af. Eén stap, één functie: een pagina, een formulier, een betaling, brieven. Vink af wat klaar is en voeg nieuws toe wanneer het u invalt.',
+        answer: 'Elke stap wordt gecontroleerd en u krijgt te zien dat hij werkt: niet «de build is geslaagd», maar een levende pagina met uw eigen tekst. Daarom weet u altijd waar u staat en blijft u nooit zitten met een project dat «zo ongeveer af» is.',
+      },
+      {
+        title: 'De gegevens meenemen',
+        demand: 'Geef de agent toegang tot uw databases. Hij haalt over wat zich al heeft opgehoopt: gebruikers, bestellingen, teksten, afbeeldingen.',
+        answer: 'Dit is de laatste stap. Daarna hebt u op uw eigen server een volledige, werkende kopie van het project — met uw gegevens, uw mensen en uw domein. De oude facturen kunnen worden opgezegd: vanaf nu betaalt u de server en het domein, en verder niets.',
+      },
+    ],
+  },
+  {
     kind: 'languageMarquee',
     title: 'Tweeëntachtig talen, klaar voordat u ze nodig hebt',
     note: 'Ze zitten allemaal in het product — u schakelt die in die uw markt spreekt. Statische generatie, optimalisatie voor zoekmachines en AI, datacaching en gereedheid voor zware belasting houden de efficiëntie op het hoogste niveau van de sector — en houden die even hoog, of u nu met één taal werkt, met enkele of met alle tweeëntachtig.',
   },
 ],
+  faq: [
+    {
+      q: 'Wat kost het, en zijn er verborgen kosten?',
+      a: 'Verborgen kosten zijn er niet, want er is niemand om te betalen: het platform is open code, en alles wat u installeert en gebruikt is voor honderd procent van u. Uw uitgaven zijn uw eigen server, uw domein en cloud-AI als u die gebruikt; die rekent u zelf uit en betaalt u rechtstreeks aan de leverancier. Wij nemen geen abonnement, geen percentage en geen bedrag per gebruiker.',
+    },
+    {
+      q: 'Wat is het belangrijkste voordeel?',
+      a: 'Betrouwbaarheid — daar is op ingezet. Er zijn tegenwoordig veel manieren om snel een toepassing in elkaar te zetten, en men moet zich geen illusies maken: bijna alle zijn zo gebouwd dat u vooral voor uw eigen fouten betaalt. Een efficiënte toepassing is alleen in uw belang; wie u diensten verkoopt heeft er belang bij dat u er zo veel mogelijk los koopt en betaalt. Het dure begint later — de wet overtreden en beboet worden om waar de gegevens staan, onvoorziene afsluitingen, sancties en simpelweg verlies van uw gegevens. Fractera sluit dat af doordat dit alles op uw eigen server staat.',
+    },
+    {
+      q: 'En als ik meer nodig heb?',
+      a: 'Uw belangrijkste gereedschap is uw eigen — Claude Code, Codex of een ander — en het draait op uw eigen machine. Het project schaalt ver: het skelet is gesneden op miljoenen regels en blijft efficiënt. En hebt u een conceptuele wijziging van de architectuur op het niveau van het bedieningspaneel nodig, of valt het bouwen van de toepassing nog zwaar — stuur dan een verzoek naar admin@fractera.ai; een ontwikkelaar neemt contact op en stelt een oplossing voor.',
+    },
+  ],
 }

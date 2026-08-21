@@ -18,7 +18,6 @@ export const tr: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'SaaS başlangıç şablonu',
   },
-  { kind: 'projectTypeMarquee' },
   {
     kind: 'metrics',
     items: [
@@ -61,18 +60,6 @@ export const tr: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'flow',
-    badge: 'Taşıma',
-    title: 'Projeniz zaten var — örneğin Vercel\'de',
-    note: 'Buraya getirmek dosya kopyalamak değildir. Proje önce okunur, sonra yeniden kurulur: sunucunuza donmuş bir kopya değil, geliştirmeye devam edebileceğiniz kod gelir.',
-    steps: [
-      { title: 'Depoyu teslim edersiniz', text: 'GitHub deponuz olduğu gibi. Önceden hazırlamak, yeniden adlandırmak ya da temizlemek gerekmez.' },
-      { title: 'Bir ayrıştırma alırsınız', text: 'Kod okunur ve anlatılır: hangi sayfalar var, hangi verilere ihtiyaç duyuyorlar, proje gerçekte ne yapıyor. Onayladığınız şey bu anlatımdır — okunmamış tahminin değeri yoktur.' },
-      { title: 'Ayrıştırma adımlara dönüşür', text: 'Ondan numaralı geliştirme adımları doğar ve oradan birbiri ardına çalışır — yeni bir özellik için elle yazacağınız adımların aynısı.' },
-    ],
-  },
-  { kind: 'statement', text: 'Taşıma, bu projedeki dördüncü iş türüdür: sıradan geliştirme, geliştirme adımları ve kullanım senaryolarının yanında. Burada bitmiş bir düğme olarak değil, niyet olarak anlatılıyor: onu oluşturan adımlar hâlâ yapılıyor.' },
   {
     kind: 'cards',
     badge: 'Başlangıç',
@@ -130,6 +117,11 @@ export const tr: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'Ve bu bir öneri değil, bir ürün kuralıdır: tek bir vaka bile onaylanmamışken panel alarmını yanık tutar ve kodlama ajanı inşa etmeyi reddeder. Okunmamış bir tahmin üzerine inşa etmek, hiç inşa etmemekten daha pahalıya mal olur.' },
+  // 🔒 ЛЕНТА НАПРАВЛЕНИЙ СТОИТ ПОД QUIZ, А НЕ ПОД ПЕРВЫМ ЭКРАНОМ (владелец
+  // 2026-08-22). Наверху она была украшением: человек ещё не знает, зачем ему
+  // список направлений. Здесь она довод — Quiz объясняет, КАК выбрать, а лента
+  // показывает, ИЗ ЧЕГО. Две связанные вещи стоят рядом.
+  { kind: 'projectTypeMarquee' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Ücretsiz al, ölçekle' },
   {
     kind: 'cards',
@@ -164,9 +156,68 @@ export const tr: Partial<HomeCell> = {
     cta: { page: 'architecture' },
   },
   {
+    kind: 'problemSolution',
+    badge: 'Taşınmak kolay',
+    title: 'Projenizi Fractera mimarisine nasıl taşırsınız',
+    note: 'Projeniz zaten çalışıyor — Vercel’de ya da başka bir yerde. Ve ödüyorsunuz: barındırma, veritabanı, görsel deposu, yetkilendirme, e-posta. Her servis ayrı fatura kesiyor ve her fatura sizinle birlikte büyüyor. Taşınmak imkânsız görünüyor; değil: Fractera projenizi söker ve kendi mimarisi üzerinde yeniden kurar — sizin sunucunuzda, saydığımız her şeyin zaten hazır olduğu ve üste hiçbir bedel istemediği yerde.',
+    demandLabel: 'Sizin yapacağınız',
+    answerLabel: 'Fractera’da bu neden işe yarıyor',
+    items: [
+      {
+        title: 'Fractera’yı kurmak',
+        demand: 'Bir sunucu alın — ayda üç avrodan başlıyor. Bir alan adı alın — yılda bir dolardan. Kurulum robotunu çalıştırın ve onu izleyin: gerisini kendisi yapar.',
+        answer: 'Üç avro, barındırma faturanızın tamamıdır. İlk ayın değil, «limiti aşana kadar» değil — hepsi bu. Veritabanı, görsel deposu, parolayla giriş ve e-posta zaten sunucunuzda duruyor ve aynı üç avroya dahil. Ayrıca ödenecek bir şey kalmıyor.',
+      },
+      {
+        title: 'Taşınma kipini seçmek',
+        demand: 'Panelde «Fractera’ya taşınma» sekmesini açın ve deponuzun adresini yazın. Taşınma süresince onu açık tutmak daha iyi — hem sizinkini hem Fractera’nınkini; istediğiniz an yeniden kapatabilirsiniz. Kipi kaydedin.',
+        answer: 'Elinizle dokunduğunuz tek ayar bu. Buradan sonra proje taşındığını bilir ve ona göre davranır: boş sayfadan kurmaz, sizin çoktan yazdığınızı söker.',
+      },
+      {
+        title: 'Ajana söylemek',
+        demand: 'Projeyi kendi makinenizdeki editörünüzde — her zaman çalıştığınız yerde — açın. Çalıştırın ve ajana taşınmaya başladığınızı söyleyin. Sıradan sözcüklerle, bir meslektaşınıza söyler gibi.',
+        answer: 'Ondan sonrasını kendisi okur: eski projenin mimarisi ne, hangi kitaplıklar bağlı, ne neye dayanıyor. Hiçbir şey açıklamanız ve hatırlamanız gerekmez — koda bakar, sizin belleğinize değil.',
+      },
+      {
+        title: 'Planı adımlar hâlinde almak',
+        demand: 'Hiçbir şey. Çıkana bakın: «projeyi taşı» diye kocaman iş, her biri kendi numarası ve amacı olan adımlara serilmiş durumda.',
+        answer: 'Taşınma korkutmayı bırakır, çünkü tek bir yığın olmayı bırakır. Listeyi görürsünüz: ne bitti, şu an ne yürüyor, sırada ne var. Yarı yolda takılıp ipin ucunu kaçıracak yer yok.',
+      },
+      {
+        title: 'İskeleti kurmak',
+        demand: 'Yetkiler hakkındaki sorulara yanıt verin: uygulamanızda kim neyi görebilecek ve değiştirebilecek. Soru azdır ve hepsi ürününüzle ilgilidir, teknikle değil.',
+        answer: 'Önce iskelet dikilir: sayfa adresleri, tablolar, giriş, depolar — kod için açık, gösterilmemesi gereken için kapalı. İskelet bir kez dikilir ve proje onun içinde büyür; her yeni özellikte baştan kurulmaz.',
+      },
+      {
+        title: 'Özellikleri eklemek',
+        demand: 'Adımları yürüyün. Bir adım, bir özellik: bir sayfa, bir form, bir ödeme, e-postalar. Biteni işaretleyin, aklınıza geldikçe yenisini ekleyin.',
+        answer: 'Her adım denenir ve size çalıştığı gösterilir: «derleme geçti» değil, kendi metninizin olduğu canlı bir sayfa. Bu yüzden nerede olduğunuzu hep bilirsiniz ve «aşağı yukarı hazır» bir projeyle baş başa kalmazsınız.',
+      },
+      {
+        title: 'Verileri taşımak',
+        demand: 'Ajana veritabanlarınıza erişim verin. Birikmiş olanı taşır: kullanıcılar, siparişler, metinler, görseller.',
+        answer: 'Bu son adım. Ardından kendi sunucunuzda projenin tam ve çalışan bir kopyası olur — kendi verilerinizle, kendi insanlarınızla, kendi alan adınızla. Eski faturalar iptal edilebilir: bundan böyle sunucu ve alan adı için ödersiniz, başka hiçbir şey için değil.',
+      },
+    ],
+  },
+  {
     kind: 'languageMarquee',
     title: 'Seksen iki dil — ihtiyaç duymadan önce hazır',
     note: 'Hepsi ürünle birlikte gelir; pazarınızın konuştuklarını siz açarsınız. Statik üretim, arama ve yapay zekâ optimizasyonu, veri önbelleği ve yüksek yüke hazırlık, verimliliği sektörün en üst sınırında tutar — tek dille, birkaç dille ya da seksen iki dilin tamamıyla çalışmanız fark etmez.',
   },
 ],
+  faq: [
+    {
+      q: 'Maliyeti ne, gizli ücret var mı?',
+      a: 'Gizli ücret yok, çünkü ödeyecek kimse yok: platform açık koddur ve kurduğunuz, kullandığınız her şey yüzde yüz size aittir. Gideriniz kendi sunucunuz, alan adınız ve kullanıyorsanız bulut yapay zekâsıdır; onları kendiniz hesaplar, doğrudan sağlayıcıya ödersiniz. Bizden ne abonelik, ne yüzde, ne de kullanıcı başına ücret çıkar.',
+    },
+    {
+      q: 'Temel üstünlük nedir?',
+      a: 'Güvenilirlik — bahis oraya konmuş durumda. Bugün bir uygulamayı çabucak derleyip toplamanın pek çok yolu var ve hayale kapılmamak gerek: neredeyse hepsi, siz her şeyden önce kendi hatalarınızı ödeyin diye kurulmuş. Verimli bir uygulama yalnız sizin işinize yarar; size hizmet satanın işine, olabildiğince çok ayrı hizmeti satın alıp ödemeniz yarar. Pahalısı sonra başlar: verinin nerede durduğu yüzünden yasayı çiğnemek ve ceza yemek, beklenmedik kapanmalar, yaptırımlar ve düpedüz verinizin kaybı. Fractera bunu, sayılanların tümünü sizin sunucunuzda tutarak kapatır.',
+    },
+    {
+      q: 'Daha fazlası gerekirse ne yaparım?',
+      a: 'Ana araç sizin kendinizinki — Claude Code, Codex ya da başkası — ve kendi makinenizde çalışır. Proje epey ölçeklenir: iskelet milyonlarca satır için biçilmiştir ve verimli kalır. Kontrol paneli düzeyinde kavramsal bir mimari değişiklik gerekiyorsa ya da uygulamayı kurmak hâlâ zor geliyorsa admin@fractera.ai adresine bir istek gönderin; bir geliştirici sizinle iletişime geçip çözüm önerecek.',
+    },
+  ],
 }

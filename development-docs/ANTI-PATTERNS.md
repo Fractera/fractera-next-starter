@@ -176,3 +176,76 @@ _No tasks._
 <!-- fractera:pattern
 {"kind":"anti","category":"","number":6,"name":"headers() or cookies() on a public page","status":"stable","description":"Calling headers(), cookies() or draftMode() inside a page or layout opts that route out of static generation - Next must then render it on every request. Nothing fails and no gate complains: the page still works, it simply stopped being prerendered, and if the call sits in a LAYOUT the whole subtree under it goes dynamic with it. Do not reach for them to read a language, a theme or a session on a public page: the language is already in the [lang] segment, and identity belongs to a client island asking /api/me. A page that truly cannot be static is an architect decision, not a convenience.","code":"// dynamic — do not\nimport { cookies } from \"next/headers\"\nconst theme = (await cookies()).get(\"theme\")\n\n// language from the address, identity from an island\nexport default async function Page({ params }) {\n  const { lang } = await params\n  return <Body lang={lang} />\n}","tasks":[]}
 -->
+
+
+---
+
+# Motion on the page instead of inside an island
+
+> Anti-pattern · stable
+
+**Motion renders its `initial` state on the server.** `initial={{opacity: 0}}` ships **`opacity:0`
+inside the prerendered HTML** — the markup is there, the content is invisible until hydration. Google
+crawls, queues, then renders, and its rule is blunt: *"If the content isn't visible in the rendered
+HTML, Google won't be able to index it."* Readers that never run JavaScript see nothing, and no
+crawler's documentation promises that they do.
+
+**Name the mechanism precisely.** A client component does NOT make a route dynamic — `cookies()`,
+`headers()` and `searchParams` do (entry above). What motion breaks is not the route, it is the
+CONTENT of the HTML. Both end the same way in search; the cure is different.
+
+**Instead:** the server prints a visible static twin; an island swaps in the animated version after the
+first click, `motion` loaded lazily, both versions sharing one markup file so the swap is 1:1.
+Specimen — `app/[lang]/(publicLayer)/_widgets/static/security-orbit/`.
+
+## Source code example
+
+```tsx
+// ❌ ships opacity:0 to the crawler and to everyone without JS
+<motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}>…</motion.div>
+
+// ✅ twin first, movement after the first click (widgets/static/security-orbit)
+<SecuritySwap ui={ui}><SecurityStatic ui={ui} /></SecuritySwap>
+```
+
+## Steps
+_No tasks._
+
+<!-- fractera:pattern
+{"kind":"anti","category":"","number":7,"name":"Motion on the page instead of inside an island","status":"stable","description":"Motion renders its initial state on the SERVER: initial={{opacity: 0}} ships opacity:0 inside the prerendered HTML, and the text exists only after hydration. Google crawls, queues, then renders, and its own rule is blunt - if the content isn't visible in the rendered HTML, Google won't be able to index it; readers that never run JavaScript see nothing at all, and no crawler's docs promise that they do. Note the mechanism precisely: a client component does NOT make the route dynamic - cookies(), headers() and searchParams do, see the entry above. What motion breaks is not the route, it is the CONTENT of the HTML. Instead: the server prints a visible static twin, and an island swaps in the animated version after the first click, with motion loaded lazily and both versions sharing one markup file so the swap is 1:1.","code":"// ❌ ships opacity:0 to the crawler and to everyone without JS\n<motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}>…</motion.div>\n\n// ✅ twin first, movement after the first click (widgets/static/security-orbit)\n<SecuritySwap ui={ui}><SecurityStatic ui={ui} /></SecuritySwap>","tasks":[]}
+-->
+
+
+---
+
+# Measuring the page through a service worker
+
+> Anti-pattern · stable
+
+**The app registers a service worker (PWA) that serves `pages-v1` / `assets-v1` from a PREVIOUS
+build, and an ordinary reload does not bypass it.** The build is fresh, the rule is in the CSS on disk,
+and the browser still shows the old layout — the measurement describes a build that no longer exists,
+and code gets "fixed" for a defect it does not have. Cost here: half an hour spent proving a widget's
+breakpoints were broken when only the cache was.
+
+**Recognise it by the stylesheet, not by the page:** far fewer rules than the built chunk, or a media
+query missing in the browser that you can grep in `.next/static/chunks/*.css`.
+
+**Before measuring anything in a browser** — unregister the workers, delete the caches, reload with a
+fresh query string.
+
+## Source code example
+
+```js
+// paste in the console BEFORE trusting any measurement
+for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister()
+for (const n of await caches.keys()) await caches.delete(n)
+location.href = location.pathname + "?fresh=" + Date.now()
+```
+
+## Steps
+_No tasks._
+
+<!-- fractera:pattern
+{"kind":"anti","category":"","number":8,"name":"Measuring the page through a service worker","status":"stable","description":"The app registers a service worker (PWA) that serves pages-v1 / assets-v1 from a PREVIOUS build, and an ordinary reload does not bypass it. Symptom: the build is fresh, the rule is in the CSS on disk, and the browser still shows the old layout - so the measurement describes a build that no longer exists, and the code gets 'fixed' for a defect it does not have. Cost here: half an hour spent proving a widget's breakpoints were broken when only the cache was. Recognise it by the stylesheet rather than by the page: far fewer rules than the built chunk, or a media query missing that you can grep in .next/static/chunks/*.css. Before measuring anything in a browser - unregister the workers, delete the caches, reload with a fresh query string.","code":"// paste in the console BEFORE trusting any measurement\nfor (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister()\nfor (const n of await caches.keys()) await caches.delete(n)\nlocation.href = location.pathname + \"?fresh=\" + Date.now()","tasks":[]}
+-->

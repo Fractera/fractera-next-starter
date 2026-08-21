@@ -27,7 +27,19 @@ import { readFile, readdir, stat } from "node:fs/promises"
 import { join, relative, basename, sep } from "node:path"
 
 const SCAN_EXT = /\.(ts|tsx|js|jsx|mjs|cjs|md|json)$/
-const SKIP_DIR = new Set(["node_modules", ".next", ".git", ".turbo", "dist", "build", ".vercel"])
+// 🔒 ПРОПУСКАЮТСЯ ВСЕ ВЫХОДЫ СБОРКИ, А НЕ ТОЛЬКО `.next` (исправлено 2026-08-21).
+//
+// Проверка искала битые символы В ИСХОДНИКАХ, но список исключений знал ровно
+// одно имя папки сборки. На сервере рядом лежит `.next.last-good` — копия
+// прошлой удачной сборки для отката, — и первый же прогон гейта в `prebuild`
+// упал на минифицированном чанке: `U+0085` и `U+FFFD` внутри чужого
+// сжатого JavaScript. Симптом читается как «в проекте битый текст», хотя в
+// исходниках его нет вовсе, а «починить по букве» там нечего.
+//
+// Отсюда правило: имя папки сборки проверяется ПРЕФИКСОМ. Завтра рядом появится
+// `.next.tmp` или `.next.rollback`, и гейт снова начнёт судить машинный вывод.
+const SKIP_DIR = new Set(["node_modules", ".git", ".turbo", "dist", "build", ".vercel"])
+const SKIP_PREFIX = [".next"]
 const SKIP_FILE = /\.generated\.|package-lock\.json$|\.tsbuildinfo$/
 
 // The single detection rule (mirrors hasBrokenChar in the content emitters). Returns the codepoint
@@ -66,7 +78,10 @@ async function* walk(dir) {
   for (const e of entries) {
     if (e.name.startsWith(".") && e.name !== ".env.local" && SKIP_DIR.has(e.name)) continue
     const full = join(dir, e.name)
-    if (e.isDirectory()) { if (!SKIP_DIR.has(e.name)) yield* walk(full) }
+    if (e.isDirectory()) {
+      const skipped = SKIP_DIR.has(e.name) || SKIP_PREFIX.some(p => e.name.startsWith(p))
+      if (!skipped) yield* walk(full)
+    }
     else if (SCAN_EXT.test(e.name) && !SKIP_FILE.test(e.name)) yield full
   }
 }

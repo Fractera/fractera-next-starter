@@ -27,4 +27,9 @@ belongs to every group — the owner of a deployment is never locked out of thei
 The rows here are deliberately **not links**: the product card belongs to the staff layer, and a link
 into a refusal is a promise the interface cannot keep.
 
-**Still planned:** the project-users page.
+**Built 2026-08-21:** `administration/users` — the account list and the role editor, data from the
+auth service through `/api/users`. See `use-dynamic-pages`.
+
+🪦 Here stood "**Still planned:** the project-users page." — stale from the day the page shipped. A
+fresh agent read it as "this does not exist yet" and went looking through the tree for what the line
+said was missing.

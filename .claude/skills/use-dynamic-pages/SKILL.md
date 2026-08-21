@@ -123,6 +123,10 @@ service never fills, a right nobody granted. Not: your code does not compile. Th
 
 ## 4. The widget owns the behaviour
 
+🔒 **Read a neighbouring widget before writing yours** — `use-widgets` opens with that rule now, and
+it was written after this very page shipped looking like a different site. Take its structure, its
+rhythm and its set of states; leave its behaviour and its words alone.
+
 Everything about how this table looks and behaves lives in its folder: the fetch, the skeleton, the
 row, the editor, its words. Delete the route folder and it is gone without a trace — that is the
 acceptance test (`use-widgets`).

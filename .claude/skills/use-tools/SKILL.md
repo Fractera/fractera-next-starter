@@ -18,6 +18,17 @@ A tool here is a small reusable piece with a home: one folder, one entry in the 
 on the panel's showcase that says what it does and what it needs. Not a helper hidden in a feature
 folder — those are invisible, and invisible is the same as absent.
 
+## 🔒 Прочитай соседний инструмент прежде, чем писать свой
+
+Пять готовых лежат рядом (`_tools/`), и первый шаг всегда один: **открой ближайший по смыслу и
+прочитай целиком.** Берётся устройство — из каких частей собран, где договор, как объявлены слова,
+как он сообщает об отказе; берётся вид — ритм, размеры, состояния. Не берётся его логика: она про
+другой предмет.
+
+Причина та же, по которой это записано у виджетов: набор, собранный каждым по-своему, перестаёт быть
+набором. Инструмент, чей отказ выглядит иначе, чем у соседа, читается как чужой, даже когда работает
+безупречно.
+
 ## Look before you build — the failure this prevents is real, not theoretical
 
 The translations dialog existed for months. Its own header said "connects to any entity with

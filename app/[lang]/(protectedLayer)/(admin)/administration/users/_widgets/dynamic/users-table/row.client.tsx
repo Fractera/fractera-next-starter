@@ -21,10 +21,12 @@ import { lastSeen, DORMANT_AFTER_DAYS } from "./last-seen"
 import type { UsersTableUi } from "./ui.i18n"
 
 export function UsersRow(
-  { row, ui, lang, onSaved }: {
+  { row, ui, lang, striped, onSaved }: {
     row: AccountRow
     ui: UsersTableUi
     lang: string
+    /** Чередование фона строк — тот же приём, что у соседних таблиц продукта. */
+    striped?: boolean
     onSaved: () => void
   },
 ) {
@@ -63,12 +65,12 @@ export function UsersRow(
   }
 
   return (
-    <tr className="border-b border-border/60 last:border-0 align-top">
-      <td className="px-3 py-2">
+    <tr className={`border-b border-border last:border-0 align-top ${striped ? "bg-muted/20" : ""}`}>
+      <td className="px-4 py-2.5">
         <div className="font-medium text-foreground">{row.email}</div>
         {row.nickname && <div className="text-muted-foreground">{row.nickname}</div>}
       </td>
-      <td className="px-3 py-2">
+      <td className="px-4 py-2.5">
         {editing ? (
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-x-3 gap-y-1">
@@ -99,10 +101,10 @@ export function UsersRow(
           </div>
         )}
       </td>
-      <td className="px-3 py-2 text-muted-foreground">{row.provider}</td>
+      <td className="px-4 py-2 text-muted-foreground">{row.provider}</td>
       {/* Дата — по языку страницы. Американский порядок на русской странице
           читается как другая дата, а не как непривычная запись. */}
-      <td className="px-3 py-2 text-muted-foreground">
+      <td className="px-4 py-2 text-muted-foreground">
         {new Date(row.created_at).toLocaleDateString(lang)}
       </td>
       {/* Последний вход — СЛОВАМИ, а не значением из базы: владелец смотрит
@@ -140,7 +142,7 @@ function LastSeenCell({
   // Два молчания — две разные строки. Склеить их в одно «—» значит выдать
   // молчание службы за поведение человека.
   return (
-    <td className="px-3 py-2 text-muted-foreground">
+    <td className="px-4 py-2 text-muted-foreground">
       {seen.kind === "never" ? ui.lastSeenNever : ui.lastSeenUnknown}
     </td>
   )

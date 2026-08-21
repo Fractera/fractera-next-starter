@@ -32,21 +32,21 @@ export function UsersTableSkeleton(
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-border bg-muted/40">
-            <th className="px-3 py-2 text-left font-medium">{labels.colAccount}</th>
-            <th className="px-3 py-2 text-left font-medium">{labels.colRoles}</th>
-            <th className="px-3 py-2 text-left font-medium">{labels.colProvider}</th>
-            <th className="px-3 py-2 text-left font-medium">{labels.colCreated}</th>
-            <th className="px-3 py-2 text-left font-medium">{labels.colLastSeen}</th>
+            <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colAccount}</th>
+            <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colRoles}</th>
+            <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colProvider}</th>
+            <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colCreated}</th>
+            <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{labels.colLastSeen}</th>
           </tr>
         </thead>
         <tbody>
           {Array.from({ length: ROWS }, (_, i) => (
-            <tr key={i} className="border-b border-border/60 last:border-0">
-              <td className="px-3 py-2"><Skeleton className="h-4 w-48" /></td>
-              <td className="px-3 py-2"><Skeleton className="h-4 w-24" /></td>
-              <td className="px-3 py-2"><Skeleton className="h-4 w-16" /></td>
-              <td className="px-3 py-2"><Skeleton className="h-4 w-20" /></td>
-              <td className="px-3 py-2"><Skeleton className="h-4 w-28" /></td>
+            <tr key={i} className={`border-b border-border last:border-0 ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+              <td className="px-4 py-2.5"><Skeleton className="h-4 w-48" /></td>
+              <td className="px-4 py-2.5"><Skeleton className="h-4 w-24" /></td>
+              <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
+              <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
+              <td className="px-4 py-2.5"><Skeleton className="h-4 w-28" /></td>
             </tr>
           ))}
         </tbody>

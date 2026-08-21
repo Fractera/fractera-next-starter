@@ -42,6 +42,10 @@ export type UsersTableUi = {
   last: string
   /** «страница {page} из {pages}» — подстановки обязательны обе. */
   pageOf: string
+  /** Заголовок над таблицей — как у соседних списков продукта. */
+  tableTitle: string
+  /** Подсказка под скелетоном: почему данных пока нет. */
+  revealHint: string
 }
 
 const DICT: Record<string, UsersTableUi> = {
@@ -72,6 +76,8 @@ const DICT: Record<string, UsersTableUi> = {
     first: "First page",
     last: "Last page",
     pageOf: "page {page} of {pages}",
+    tableTitle: "Accounts",
+    revealHint: "Nothing is requested until you ask — the page opens instantly and costs the service nothing.",
   },
   ru: {
     reveal: "Показать записи",
@@ -100,6 +106,8 @@ const DICT: Record<string, UsersTableUi> = {
     first: "Первая страница",
     last: "Последняя страница",
     pageOf: "страница {page} из {pages}",
+    tableTitle: "Записи",
+    revealHint: "Пока не попросите, ничего не запрашивается — страница открывается мгновенно и не стоит службе ничего.",
   },
 }
 

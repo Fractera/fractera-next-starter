@@ -13,9 +13,8 @@ description: >
 
 # use-app-config
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 The file is `APP-CONFIG/app-config.json` in the project root. **The panel (`:3002`) writes it,
 this application (`:3000`) reads it — per request.** A saved change shows on the next page load:

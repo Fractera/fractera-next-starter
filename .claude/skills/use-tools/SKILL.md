@@ -11,9 +11,8 @@ description: >
 
 # use-tools
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 A tool here is a small reusable piece with a home: one folder, one entry in the registry, one page
 on the panel's showcase that says what it does and what it needs. Not a helper hidden in a feature

@@ -12,9 +12,8 @@ description: >
 
 # use-code-shape
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 **A limit is not advice.** When one is reached you stop and restructure — not later, not after this
 feature. And a limit nobody can measure is a wish, so nearly every rule below has a validator that

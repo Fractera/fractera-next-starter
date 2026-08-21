@@ -11,8 +11,8 @@ description: >
 
 # use-multi-lang
 
-> A hint from experience, not a rulebook. If the case in front of you is better served another way,
-> do that and say so.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 ## 1. The set is the owner's, and it lives in one place
 

@@ -13,9 +13,8 @@ metadata:
 
 # audit-broken-characters
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 The project's universal **encoding-integrity** check. A lossy step — voice dictation, copy-paste, a bad
 transform — can drop an accented letter and leave a **control byte** (0x13…), **U+FFFD** (the replacement

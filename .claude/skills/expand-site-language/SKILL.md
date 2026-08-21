@@ -17,9 +17,8 @@ metadata:
 
 # expand-site-language
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 The ONE way to take a site that already has content in one or two languages and **safely scale it
 to another language**. Deterministic file operations, **NO code generation, NO external translation

@@ -12,9 +12,8 @@ description: >
 
 # manage-app-settings
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 Change what the deployed app shows about itself. This is the agent-facing side of the
 Admin → **App Settings** panel: the same settings, editable by you on the owner's behalf.

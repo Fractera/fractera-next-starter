@@ -11,9 +11,8 @@ description: >
 
 # create-multilingual-content-entry
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 Add a piece of multilingual content so it scales to many languages **by construction** —
 a new language is a new file, a partial translation is fine, and no page ever says

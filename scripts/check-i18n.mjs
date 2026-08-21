@@ -69,6 +69,14 @@ const FILES = [
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(admin)/administration/products/_data/ui.i18n.ts", "AdministrationProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(account)/shopping/products/_data/ui.i18n.ts", "ShoppingProductsUi", 82],
+  // 🔒 СТРАНИЦА УЧЁТНЫХ ЗАПИСЕЙ — ДВА ЯЗЫКА, И ЭТО ЗАПИСАННЫЙ ДОЛГ, А НЕ НОРМА
+  // (шаг 531, решение владельца 2026-08-21: в разработке пишем на включённом
+  // наборе, недостающее заносим в `development-docs/TRANSLATION-DEBT.md`).
+  // Класс словаря тот же, что у четырёх соседей выше, — 82: страница едет с
+  // продуктом. Число здесь говорит ПРАВДУ о сегодняшнем дереве; обещание живёт
+  // в реестре долга, и оба меняются одним заходом, когда придёт перевод.
+  ["app/[lang]/(protectedLayer)/(admin)/administration/users/_data/ui.i18n.ts", "AdministrationUsersUi", 2],
+  ["app/[lang]/(protectedLayer)/(admin)/administration/users/_widgets/dynamic/users-table/ui.i18n.ts", "UsersTableUi", 2],
 ]
 
 /**

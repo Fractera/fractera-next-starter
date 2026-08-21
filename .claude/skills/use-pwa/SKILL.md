@@ -12,9 +12,8 @@ description: >
 
 # use-pwa
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 **It is the same site, installed.** No store, no separate build, no second codebase — a manifest, a
 worker and a browser that agrees the site is installable.

@@ -33,7 +33,18 @@ Strike a line out by deleting it, in the same change that adds the translation.
 
 ## Open debts
 
-*(empty — no debt has been recorded yet)*
+- `app/[lang]/(protectedLayer)/(admin)/administration/users/_data/ui.i18n.ts` — page chrome (title,
+  subtitle, the note about who may open this page) · **owes 82** · the page ships with the product, so
+  it must speak any language the owner switches on. Written in `en, ru` while step 531 is open; the
+  remaining 80 arrive through `i18n:export` → external model → `i18n:import`.
+- `app/[lang]/(protectedLayer)/(admin)/administration/users/_widgets/dynamic/users-table/ui.i18n.ts` —
+  the widget's own words (columns, the role editor, the four refusals) · **owes 10** — the page set
+  for a widget, by the owner's decision of 2026-08-21, not 82: a widget belongs to one route and never
+  appears in a language on its own. Written in `en, ru`.
+
+Both are registered in `scripts/check-i18n.mjs` with the count the tree actually has, so the gate
+tells the truth today; the promise lives here. When the translations land, the number and these two
+lines change in one go.
 
 ## How a debt is closed
 

@@ -12,9 +12,8 @@ description: >
 
 # use-widgets
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 A widget is **a unit of ownership inside one route**. Everything that answers *"how does THIS thing
 look and behave"* lives in its folder: markup, skeleton, behaviour, words. Delete the route folder and

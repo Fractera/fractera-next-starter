@@ -13,9 +13,8 @@ description: >
 
 # use-static-pages
 
-> A hint from experience, not a rulebook. If you know a better way for the case in front of you,
-> take it and say so — this file exists to save you a defect somebody already paid for, not to replace
-> your judgement.
+> Informational, not binding. **Know a better way for the case in front of you — do it your way and
+> say so.** You are trusted with the creative work on this project.
 
 **A page is a LIST OF BLOCKS in a language cell, not a laid-out file.** Everything below follows from
 that. The engine's rule: everything a page needs lives in its own folder, everything shared lives once

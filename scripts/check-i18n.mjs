@@ -28,7 +28,6 @@ const FILES = [
   // бесполезно — это не «непереведённая строка», а несостоявшееся согласие.
   ["app/[lang]/_components/cookie-banner/cookie-banner.i18n.ts", "BannerStrings", 82],
   ["components/menu/footer/cookie-settings-button.i18n.ts", "CookieButtonUi", 82],
-  ["app/[lang]/(protectedLayer)/_data/products.i18n.ts", "ProductListUi", 82],
   // 🔒 СЛОВАРИ МОДАЛЬНЫХ ОКОН (внесены 2026-08-17 вместе с единым примитивом).
   // Два из трёх УЖЕ несли 82 языка и всё это время стояли вне охраны: сторож
   // проверяет только то, что ему назвали, а назвать их забыли. Дыра тихая —
@@ -51,6 +50,20 @@ const FILES = [
   ["lib/i18n/architecture-link.i18n.ts", "ArchitectureLinkUi", 10],
   // Каталог секций — страница архитектора, но слова у неё такие же страничные.
   ["app/[lang]/(protectedLayer)/(admin)/blocks/_data/ui.i18n.ts", "BlocksCatalogueUi", 10],
+  // 🔒 СЛОВАРИ ВИДЖЕТОВ — ДЕСЯТЬ ЯЗЫКОВ, А НЕ 82 (шаг 521, решение владельца
+  // 2026-08-21). Здесь стоял ОДИН словарь `_data/products.i18n.ts` на 82 языка,
+  // общий для четырёх таблиц; он и заставлял их говорить одинаково. Таблицы
+  // разобраны по маршрутам, и каждая получила свои слова.
+  //
+  // Почему десять, а не восемьдесят два: набор страничный (правило 4д) —
+  // виджет принадлежит ОДНОМУ маршруту и не переиспользуется, а 82 обязаны
+  // нести переиспользуемые части продукта, которые являются в любом включённом
+  // языке сами. Цена размена названа в шапке каждого словаря.
+  ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_widgets/price-table/ui.i18n.ts", "PriceTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(staff)/manage/products/_widgets/manage-table/ui.i18n.ts", "ManageTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(admin)/administration/products/_widgets/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(account)/shopping/products/_widgets/shop-table/ui.i18n.ts", "ShopTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/product-card/ui.i18n.ts", "ProductCardUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

@@ -21,5 +21,7 @@ manages, but the only editable field is the price, and that limit is enforced by
 hides a field is not a restriction: the route is visible in any developer tab.
 
 The list is read through the same endpoint the staff page uses — reading is shared, writing is not.
-The table, toolbar, pager and skeleton come from `(protectedLayer)/_components/products/`; this group
-owns only its own composition and its own words.
+The table is a **widget of this route** (step 521): `accounting/products/_widgets/price-table/` owns its
+behaviour, toolbar, pager, skeleton, row and words. Nothing of it lives above the route — deleting the
+route folder deletes the widget whole. What stays outside is only what answers "how does the project do
+X at all": `lib/architecture/project-api`, the toast, `components/ui/*`, `lib/products/*`.

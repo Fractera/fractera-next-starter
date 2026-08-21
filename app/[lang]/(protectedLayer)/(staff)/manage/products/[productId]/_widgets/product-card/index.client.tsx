@@ -1,6 +1,17 @@
 "use client"
 
-// Динамический контейнер карточки товара.
+// ВИДЖЕТ «карточка товара» — динамический островок персонала (шаг 521).
+//
+// 🔒 ЭТО ЕДИНИЦА ВЛАДЕНИЯ. Поведение (`use-product`), поле правки на месте
+// (`field.client`) и два собственных слова (`ui.i18n`) лежат здесь же: снеси
+// папку маршрута — виджет исчезнет целиком. Прежде поведение жило в `_lib/`,
+// поле — в `_components/products/` среди частей таблицы, а два слова карточка
+// брала из словаря СПИСКА, которого на этой странице нет.
+//
+// 🔒 ЧТО ОСТАЛОСЬ СНАРУЖИ. `projectApi` и `toast` (сквозные соглашения),
+// `components/ui/*` (кольцо примитивов), `lib/products/*` (модель предмета) и
+// `_tools/translations-dialog` — инструмент: он нужен второму проекту и требует
+// сборки, а значит по различителю шага это инструмент, а не фрагмент виджета.
 //
 // 🔒 КАРТОЧКА ГОВОРИТ НА ЯЗЫКЕ СВОЕЙ СТРАНИЦЫ. Перечня языков здесь нет: на
 // `/ru` человек видит русское и правит русское. Пары «базовое / перевод» на
@@ -32,31 +43,35 @@ import { TranslationsDialog, type Drafts } from "@/_tools/translations-dialog/cl
 import type { PlatformErrors } from "@/lib/i18n/platform-errors"
 import type { TranslationsUi } from "@/_tools/translations-dialog/types/translations-dialog.i18n"
 import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
-import { useProduct } from "@/app/[lang]/(protectedLayer)/_lib/use-product"
-import { EditableField } from "@/app/[lang]/(protectedLayer)/_components/products/editable-field.client"
+import { useProduct } from "./use-product"
+import { EditableField } from "./field.client"
+import type { ProductCardUi } from "./ui.i18n"
 import { H2 } from "@/components/ui/typography";
 import { EmptyState } from "@/components/ui/empty-state"
 
+// Слова СТРАНИЦЫ, которые показывает карточка: заголовки полей, кнопки правки,
+// тосты. Они принадлежат разделу «Товары», а не этому виджету, и приезжают
+// пропсом — как и всюду, резолвятся на сервере.
 export type CardLabels = {
-  name: string; price: string; colId: string
+  name: string; price: string
   notFoundTitle: string; notFoundBody: string
-  failed: string; back: string
+  back: string
   edit: string; saveField: string; cancelEdit: string; fieldSaved: string
   descriptionField: string; translations: string
 }
 
 export function ProductCard(
-  { productId, lang, labels, errors, translationsUi, dialogUi, billingUrl, backHref }:
-  { productId: string; lang: string; labels: CardLabels; errors: PlatformErrors; translationsUi: TranslationsUi; dialogUi: AppDialogUi; billingUrl: string; backHref: string },
+  { productId, lang, ui, labels, errors, translationsUi, dialogUi, billingUrl, backHref }:
+  { productId: string; lang: string; ui: ProductCardUi; labels: CardLabels; errors: PlatformErrors; translationsUi: TranslationsUi; dialogUi: AppDialogUi; billingUrl: string; backHref: string },
 ) {
   const { state, saveField, saveDrafts } = useProduct(productId, lang, {
     savedLabel: labels.fieldSaved,
-    failedLabel: labels.failed,
+    failedLabel: ui.failed,
   })
   const [translating, setTranslating] = useState(false)
   const editLabels = {
     edit: labels.edit, save: labels.saveField,
-    cancel: labels.cancelEdit, saved: labels.fieldSaved, failed: labels.failed,
+    cancel: labels.cancelEdit, saved: labels.fieldSaved, failed: ui.failed,
   }
 
   if (state.kind === "loading") {
@@ -74,7 +89,7 @@ export function ProductCard(
     const failed = state.kind === "failed"
     return (
       <EmptyState
-        title={failed ? labels.failed : labels.notFoundTitle}
+        title={failed ? ui.failed : labels.notFoundTitle}
         hint={!failed ? labels.notFoundBody : undefined}
         action={
           <Link href={backHref} className="text-sm text-muted-foreground underline hover:text-foreground">
@@ -137,7 +152,7 @@ export function ProductCard(
           onSave={v => saveField("description", v)}
         />
         <div className="flex gap-2 border-t border-border pt-3 text-xs">
-          <span className="w-16 shrink-0 text-muted-foreground">{labels.colId}</span>
+          <span className="w-16 shrink-0 text-muted-foreground">{ui.colId}</span>
           <span className="truncate font-mono text-muted-foreground">{p.id}</span>
         </div>
       </div>

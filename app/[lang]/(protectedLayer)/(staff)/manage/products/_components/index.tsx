@@ -3,55 +3,50 @@ import { translationsUi } from "@/_tools/translations-dialog/types/translations-
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { imageCropperUi } from "@/services/upload/image-cropper.i18n"
 import { getAppConfig } from "@/config/app-config"
-import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { productsUi } from "../_data/ui.i18n"
-import { ProductsPanel } from "./products-panel.client"
-import { H1 } from '@/components/ui/typography'
+import { manageTableUi } from "../_widgets/manage-table/ui.i18n"
+import { ManageTable } from "../_widgets/manage-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 import { Small } from "@/components/ui/typography"
 
-// Route entry — SERVER component, and everything it renders is the STATIC SHELL:
-// heading, description, the note about where the data lives. None of it needs a
-// query, so the page is prerendered per language and addressable instantly.
+// Вход страницы товаров ПЕРСОНАЛА — СЕРВЕРНЫЙ компонент, и всё, что он рисует,
+// статический каркас: крошки, заголовок, объяснение, подпись о хранилище. Ни
+// одного запроса к базе, поэтому страница предрендерена на каждый язык и
+// открывается мгновенно.
 //
-// 🔒 THE ONE DIVISION THIS FILE EXISTS TO SHOW. What you can render without
-// asking anybody anything belongs here, in the prerender. What requires the
-// database belongs inside the island below, behind a button the visitor presses.
-// A protected page is a static page with dynamic holes — never a dynamic page.
+// Защищённая страница — это статическая страница с динамическими дырами, а не
+// динамическая страница. Дыру открывает ВИДЖЕТ ниже, по кнопке.
 //
-// The island receives its words as PROPS. A client component that imports the
-// dictionary itself would ship all ten languages to every browser.
-
-// Каркас списка тоже статический: строки грузит островок по кнопке.
+// 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Всё, что относится к самой
+// таблице — её поведение, скелетон, управление, форма заведения, подвал, строка
+// и слова, — уехало в `_widgets/manage-table/`. Граница простая: страница
+// отвечает за место и заголовок, виджет — за то, что внутри.
+//
+// Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,
+// импортирующий словарь, увёз бы в браузер все его языки.
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = productsUi(lang)
-  // Общие слова списка — один словарь на все четыре слоя.
-  const common = productListUi(lang)
-  // 82 языка резолвятся ЗДЕСЬ, на сервере: в браузер уезжают только строки
-  // текущего языка (/code/CLAUDE.md §4д).
-  const errors = platformErrors(lang)
-  const tUi = translationsUi(lang)
+  const ui = manageTableUi(lang)
 
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
-        <ProductsPanel
+        <ManageTable
           lang={lang}
-          common={common}
           currency={getAppConfig().commerce.currency}
-          errors={errors}
-          translationsUi={tUi}
-          dialogUi={appDialogUi(lang)}
-          cropperUi={imageCropperUi(lang)}
-          billingUrl={OPENAI_BILLING_URL}
+          ui={ui}
           labels={{
             add: t.add, cancelAdd: t.cancelAdd, newProduct: t.newProduct,
             name: t.name, price: t.price, uploadPhoto: t.uploadPhoto, save: t.save,
-            created: t.created, deleted: t.deleted, nothingFound: t.nothingFound,
-            descriptionField: t.descriptionField,
+            created: t.created, nothingFound: t.nothingFound,
           }}
+          errors={platformErrors(lang)}
+          translationsUi={translationsUi(lang)}
+          dialogUi={appDialogUi(lang)}
+          cropperUi={imageCropperUi(lang)}
+          billingUrl={OPENAI_BILLING_URL}
         />
 
         <Small className="mt-6 text-center font-mono">{t.storageNote}</Small>

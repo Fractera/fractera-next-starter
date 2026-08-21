@@ -1,8 +1,7 @@
 import { getAppConfig } from "@/config/app-config"
-import { productListUi } from "@/app/[lang]/(protectedLayer)/_data/products.i18n"
 import { administrationProductsUi } from "../_data/ui.i18n"
-import { ProductsPanel } from "./products-panel.client"
-import { H1 } from '@/components/ui/typography'
+import { catalogueTableUi } from "../_widgets/catalogue-table/ui.i18n"
+import { CatalogueTable } from "../_widgets/catalogue-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Вход страницы товаров АДМИНИСТРИРОВАНИЯ — серверный компонент, статический
@@ -11,10 +10,17 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 //
 // Форма пути та же, что у соседних слоёв: `<раздел>/products`. Сущность одна,
 // различает страницы роль — и это видно в адресе до открытия файлов.
+//
+// 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Таблица со всей начинкой —
+// поведением, скелетоном, управлением, подвалом, строкой и словами — живёт в
+// `_widgets/catalogue-table/`. Страница отвечает за место и заголовок, виджет —
+// за то, что внутри.
+//
+// Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,
+// импортирующий словарь, увёз бы в браузер все его языки.
 export default function ProductsEntry({ lang }: { lang: string }) {
   const t = administrationProductsUi(lang)
-  // Общие слова списка — один словарь на все четыре слоя.
-  const common = productListUi(lang)
+  const ui = catalogueTableUi(lang)
   const currency = getAppConfig().commerce.currency
 
   return (
@@ -22,7 +28,12 @@ export default function ProductsEntry({ lang }: { lang: string }) {
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
-        <ProductsPanel lang={lang} currency={currency} labels={t} common={common} />
+        <CatalogueTable
+          lang={lang}
+          currency={currency}
+          ui={ui}
+          labels={{ deleteOnly: t.deleteOnly, confirm: t.confirm, deleted: t.deleted }}
+        />
       </div>
     </main>
   )

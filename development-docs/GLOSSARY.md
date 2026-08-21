@@ -91,9 +91,10 @@ every new language would need a schema migration, and a project may enable ten. 
 as the content engine's: **no translation → the base value**. An empty string where a name should be looks
 like a breakage; the English name looks like an honest edge of translation.
 
-**Naming, so the two mechanisms never get confused again:** interface strings live in `_data/*.i18n.ts`;
-object translations are resolved by `_lib/localize-<entity>.ts`. They were once called
-`products.i18n.ts` and `product-i18n.ts` — one letter apart, doing different things.
+**Naming, so the two mechanisms never get confused again:** interface strings live in `_data/*.i18n.ts`
+(page words) or `_widgets/<name>/ui.i18n.ts` (the widget's own words, step 521); object translations are
+resolved by `lib/products/localize.ts`. They were once called `products.i18n.ts` and `product-i18n.ts` —
+one letter apart, doing different things.
 
 | Term | Meaning |
 |---|---|

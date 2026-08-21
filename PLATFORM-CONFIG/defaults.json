@@ -5,7 +5,7 @@
   "offlineCache": true,
   "auth": true,
   "breadcrumbs": false,
-  "faq": false,
+  "faq": true,
   "themeToggle": true,
   "widthToggle": true,
   "languageSwitcher": true,

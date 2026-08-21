@@ -25,7 +25,7 @@ export type ProductRowLabels = {
   saved: string; failed: string; invalidPrice: string
 }
 
-export function ProductRow(
+export function PriceRow(
   { product, lang, currency, labels, onSaved }: {
     product: LocalizedProduct
     lang: string

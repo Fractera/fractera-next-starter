@@ -37,7 +37,7 @@ const FILES = [
   // что и само окно.
   ["components/dialog/app-dialog.i18n.ts", "AppDialogUi", 82],
   ["components/auth/access-gate.i18n.ts", "AccessGateUi", 82],
-  ["components/i18n/translations-dialog.i18n.ts", "TranslationsUi", 82],
+  ["_tools/translations-dialog/types/translations-dialog.i18n.ts", "TranslationsUi", 82],
   // Слова публичного каталога и подписи движка материалов — тот же страничный
   // слой, тот же набор из десяти готовых переводов (шаг 507). До этого шага их
   // не проверял никто: словарь каталога отсутствовал в списке, а два словаря

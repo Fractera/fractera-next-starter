@@ -57,6 +57,22 @@ export const nl: Partial<HomeCell> = {
       { title: 'Push, en het rolt zichzelf uit', text: 'Rond af op de lokale machine en stuur het project naar GitHub. Dat start meteen een nieuwe uitrol op je eigen server — en de bezoeker ziet het nieuwe project.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Verhuizing',
+    title: 'Er is al een project — bijvoorbeeld op Vercel',
+    note: 'Het hierheen halen is geen bestanden kopiëren. Het project wordt eerst gelezen en pas daarna opnieuw gebouwd: op uw server komt code die verder ontwikkeld kan worden, geen bevroren momentopname.',
+    steps: [
+      { title: 'U geeft de repository', text: 'Uw GitHub-repository zoals hij is. Er hoeft vooraf niets voorbereid, hernoemd of opgeruimd te worden.' },
+      { title: 'U krijgt een ontleding', text: 'De code wordt gelezen en beschreven: welke pagina\'s er zijn, welke gegevens ze nodig hebben, wat het project werkelijk doet. Die beschrijving bevestigt u — een ongelezen gok is niets waard.' },
+      { title: 'De ontleding wordt stappen', text: 'Daaruit groeien genummerde ontwikkelstappen, en van daaraf lopen ze een voor een — dezelfde stappen die u met de hand zou schrijven voor een nieuwe functie.' },
+    ],
+  },
+  { kind: 'statement', text: 'Verhuizen is het vierde soort werk in dit project, naast gewone ontwikkeling, ontwikkelstappen en gebruiksscenario\'s. Het staat hier als voornemen, niet als afgeronde knop: de stappen waaruit het bestaat worden nog gebouwd.' },
   {
     kind: 'cards',
     badge: 'Aan de slag',

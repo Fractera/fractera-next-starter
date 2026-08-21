@@ -81,3 +81,18 @@ twenty folders. That file is **generated**: anything typed into it by hand disap
 
 *This list grows. When a limit is agreed with the owner, it belongs here — one section, with the reason,
 so a later session can judge whether it still holds.*
+
+
+## Статика — это архитектурное требование, а не настройка
+
+Публичная страница остаётся предрендеренной (`●`). Три строки превращают её в динамику (`ƒ`) вместе
+со всем поддеревом: `cookies()`, `headers()`, `export const dynamic = 'force-dynamic'`. Сессию
+спрашивает островок после гидратации, право проверяет `/api/*`, стареющие данные обновляет
+`revalidate`.
+
+Отдельно про движение: библиотека анимации, поднятая на уровень страницы, отдаёт краулеру разметку с
+`opacity: 0` — то есть пустую страницу. Движение допускается только внутри островка и только поверх
+статического близнеца (см. `DESIGN.md` и навык `use-widgets`).
+
+Проверяется это не рассуждением, а таблицей маршрутов после сборки: `●` — верно, `ƒ` — ищи одну из
+трёх строк выше.

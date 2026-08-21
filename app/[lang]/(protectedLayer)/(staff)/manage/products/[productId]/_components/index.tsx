@@ -3,8 +3,8 @@ import { platformErrors, OPENAI_BILLING_URL } from "@/lib/i18n/platform-errors"
 import { translationsUi } from "@/_tools/translations-dialog/types/translations-dialog.i18n"
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { productsUi } from "../../_data/ui.i18n"
-import { productCardUi } from "../_widgets/product-card/ui.i18n"
-import { ProductCard } from "../_widgets/product-card/index.client"
+import { productCardUi } from "../_widgets/dynamic/product-card/ui.i18n"
+import { ProductCard } from "../_widgets/dynamic/product-card/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 
 // СТАТИЧЕСКИЙ КАРКАС карточки — серверный компонент.
@@ -25,7 +25,7 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 //
 // 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Карточка со своим
 // поведением, полем правки на месте и собственными словами живёт в
-// `_widgets/product-card/`.
+// `_widgets/dynamic/product-card/`.
 //
 // Товар вне среза родится при первом обращении и дальше будет отдаваться
 // статикой (ISR, по умолчанию).

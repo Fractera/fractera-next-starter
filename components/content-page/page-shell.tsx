@@ -61,6 +61,16 @@ export type PageShellProps = {
    * лежит внутри колонки, шире неё она не станет.
    */
   hero?: ReactNode
+  /**
+   * Сразу ЗА первым экраном, тоже во всю ширину и вне ленты (шаг 521).
+   *
+   * 🔒 ЗАЧЕМ ОТДЕЛЬНЫЙ СЛОТ, А НЕ НОВЫЙ ВИД БЛОКА. Сюда встаёт ВИДЖЕТ — вещь,
+   * принадлежащая одному маршруту. Видом блока он быть не может: каталог видов
+   * закрыт, и у каждого вида обязан быть образец на служебной странице, то есть
+   * платформа начала бы импортировать код маршрута. Слот оставляет виджет
+   * собственностью маршрута: маршрут его строит, маршрут же и передаёт.
+   */
+  afterHero?: ReactNode
   /** Завершающая секция — тоже во всю ширину, ниже ленты. */
   outro?: ReactNode
   children: ReactNode
@@ -72,6 +82,7 @@ export function PageShell({
   className,
   jsonLd,
   hero,
+  afterHero,
   outro,
   children,
 }: PageShellProps) {
@@ -79,6 +90,7 @@ export function PageShell({
     <main className="min-h-screen bg-background text-foreground">
       {jsonLd}
       {hero}
+      {afterHero}
       <Column
         data-app-column
         className={cn("px-6 pb-[var(--page-py-content)]", TOP_AIR[top], className)}

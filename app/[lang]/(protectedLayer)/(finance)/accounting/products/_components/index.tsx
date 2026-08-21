@@ -1,7 +1,7 @@
 import { getAppConfig } from "@/config/app-config"
 import { accountingProductsUi } from "../_data/ui.i18n"
-import { priceTableUi } from "../_widgets/price-table/ui.i18n"
-import { PriceTable } from "../_widgets/price-table/index.client"
+import { priceTableUi } from "../_widgets/dynamic/price-table/ui.i18n"
+import { PriceTable } from "../_widgets/dynamic/price-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Вход страницы цен — СЕРВЕРНЫЙ компонент, и всё, что он рисует, статический
@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 //
 // 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Всё, что относится к самой
 // таблице — её поведение, скелетон, управление, подвал, строка и слова, — уехало
-// в `_widgets/price-table/`. Граница простая: страница отвечает за место и
+// в `_widgets/dynamic/price-table/`. Граница простая: страница отвечает за место и
 // заголовок, виджет — за то, что внутри.
 //
 // Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,

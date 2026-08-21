@@ -57,6 +57,22 @@ export const it: Partial<HomeCell> = {
       { title: 'Fai push e si distribuisce da solo', text: 'Finisci sulla macchina locale e invia il progetto su GitHub. Questo avvia subito un nuovo rilascio sul tuo server — e il visitatore vede il nuovo progetto.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Migrazione',
+    title: 'Il progetto esiste già — per esempio su Vercel',
+    note: 'Portarlo qui non è copiare file. Il progetto viene prima letto e solo dopo ricostruito: sul suo server arriva codice che si può continuare a sviluppare, non un\'istantanea congelata.',
+    steps: [
+      { title: 'Lei consegna il repository', text: 'Il suo repository GitHub così com\'è. Non serve prepararlo, rinominarlo o ripulirlo prima.' },
+      { title: 'Riceve una scomposizione', text: 'Il codice viene letto e descritto: quali pagine esistono, quali dati servono, cosa fa davvero il progetto. È questa descrizione che lei conferma: un\'ipotesi non letta non vale nulla.' },
+      { title: 'La scomposizione diventa passi', text: 'Da essa nascono passi di sviluppo numerati, e da lì si eseguono uno dopo l\'altro: gli stessi passi che scriverebbe a mano per una nuova funzione.' },
+    ],
+  },
+  { kind: 'statement', text: 'La migrazione è il quarto tipo di lavoro di questo progetto, accanto allo sviluppo ordinario, ai passi di sviluppo e ai casi d\'uso. Qui è descritta come intenzione, non come un pulsante finito: i passi che la compongono sono ancora in costruzione.' },
   {
     kind: 'cards',
     badge: 'Per iniziare',

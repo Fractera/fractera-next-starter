@@ -82,6 +82,15 @@ export type ContentPageConfig<C extends ContentPageContent> = {
    */
   sections?: (lang: string) => ReactNode
   /**
+   * Виджет маршрута, встающий сразу ЗА первым экраном — во всю ширину, вне ленты
+   * (шаг 521, статический виджет главной).
+   *
+   * Отличие от `hero` ниже: тот заменяет картинку ВНУТРИ ленты, этот рисуется
+   * снаружи, между первым экраном и текстом. Фабрика сюда ничего не запекает —
+   * что показать, решает вход маршрута.
+   */
+  afterHero?: (lang: string) => ReactNode
+  /**
    * Optional hero override, rendered directly under the H1 in place of the default
    * `meta.heroImage` figure (e.g. the MCP step-by-step carousel at the top of
    * /deployments/mcp). When provided, `meta.heroImage` is ignored.
@@ -94,7 +103,7 @@ function abs(path: string): string {
 }
 
 export function createContentPage<C extends ContentPageContent>(config: ContentPageConfig<C>) {
-  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero, titleInBody = false } = config
+  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero, afterHero, titleInBody = false } = config
 
   async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
     const { lang } = await params
@@ -208,6 +217,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
           heroImage={meta.heroImage}
           heroAlt={c.title}
           hero={hero?.(lang)}
+          afterHero={afterHero?.(lang)}
           blocks={c.blocks}
           faq={faq}
           backHref={backHref}

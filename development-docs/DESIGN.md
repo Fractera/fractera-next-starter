@@ -88,3 +88,18 @@ is out of date. Do not silently pick one.
 **And never derive a visual rule from a folder name.** `(protectedLayer)` says who may enter. It has
 never said anything about how the page looks, and reading that into it is exactly the mistake this
 file now exists to prevent.
+
+
+## Движение — только в островке, поверх статического близнеца
+
+Анимация в этом проекте ограничена не вкусом, а поиском: страница, которую двигают целиком, уезжает в
+динамику и отдаёт краулеру разметку с `opacity: 0`. Поэтому:
+
+- анимация живёт ВНУТРИ виджета-островка и включается после первого нажатия;
+- под ней всегда лежит статический близнец — то, что видит человек без JavaScript и краулер;
+- разметка у близнеца и у движения общая, подмена 1:1 на любой ширине, без прыжка;
+- `prefers-reduced-motion` выключает движение, не выключая содержимое;
+- цвет движущегося элемента — токены темы, иначе палитра владельца его не перекрасит.
+
+Образец — `app/[lang]/(publicLayer)/_widgets/static/security-orbit/`; полный разбор — навык
+`use-widgets`.

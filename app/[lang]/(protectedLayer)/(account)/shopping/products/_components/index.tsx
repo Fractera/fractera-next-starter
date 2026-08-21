@@ -2,8 +2,8 @@ import { getAppConfig } from "@/config/app-config"
 import { cartUi } from "@/components/cart/cart.i18n"
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { shoppingProductsUi } from "../_data/ui.i18n"
-import { shopTableUi } from "../_widgets/shop-table/ui.i18n"
-import { ShopTable } from "../_widgets/shop-table/index.client"
+import { shopTableUi } from "../_widgets/dynamic/shop-table/ui.i18n"
+import { ShopTable } from "../_widgets/dynamic/shop-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Вход страницы товаров ПОКУПАТЕЛЯ — серверный компонент, статический каркас.
@@ -15,7 +15,7 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 //
 // 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Таблица со всей начинкой —
 // поведением, скелетоном, управлением, подвалом, строкой, покупкой и словами —
-// живёт в `_widgets/shop-table/`.
+// живёт в `_widgets/dynamic/shop-table/`.
 //
 // Слова корзины и словарь виджета читаются СЮДА, на сервере, и уезжают в островок
 // пропсами: клиентский компонент, импортирующий словарь, увёз бы в браузер все

@@ -1,6 +1,7 @@
 import { createContentPage } from '@/lib/content/create-content-page'
 import { homePage } from '../_data'
 import { meta } from '../_data/meta'
+import { SecurityOrbit } from '../_widgets/static/security-orbit'
 
 // Вход главной страницы — ТА ЖЕ ФАБРИКА, ЧТО У ПОСТА И ПРАВОВЫХ СТРАНИЦ.
 //
@@ -28,6 +29,15 @@ const page = createContentPage({
   // выдаче они спорят между собой. Метаданные и разметку по-прежнему строит
   // фабрика из того же `title`.
   titleInBody: true,
+  // 🔒 ВИДЖЕТ СРАЗУ ЗА ПЕРВЫМ ЭКРАНОМ — образец статической разновидности
+  // (шаг 521). Он живёт в папке этого маршрута (`_widgets/static/security-orbit`),
+  // а сюда приходит одной строкой: маршрут решает, что показать, платформа — где.
+  //
+  // 🔒 АНИМАЦИЯ ВНУТРИ ОСТРОВКА, А НЕ НА СТРАНИЦЕ. Страница обязана остаться
+  // предрендеренной: разметку виджета печатает сервер, движение приходит после
+  // первого нажатия отдельным куском. Анимация, поднятая на уровень страницы,
+  // увела бы главную в динамику и вместе с ней — поисковую выдачу.
+  afterHero: (lang: string) => <SecurityOrbit lang={lang} />,
 })
 
 export const generateMetadata = page.generateMetadata

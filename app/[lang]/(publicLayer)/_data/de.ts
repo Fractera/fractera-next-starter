@@ -57,6 +57,22 @@ export const de: Partial<HomeCell> = {
       { title: 'Pushen — und es rollt sich selbst aus', text: 'Beenden Sie die Arbeit auf dem lokalen Rechner und schicken Sie das Projekt zu GitHub. Das startet sofort eine neue Auslieferung auf Ihrem eigenen Server — und der Besucher sieht das neue Projekt.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Umzug',
+    title: 'Ein Projekt gibt es schon — etwa auf Vercel',
+    note: 'Es herzuholen ist kein Kopieren von Dateien. Das Projekt wird erst gelesen und dann neu gebaut: auf Ihrem Server landet Code, den man weiterentwickeln kann, keine eingefrorene Momentaufnahme.',
+    steps: [
+      { title: 'Sie übergeben das Repository', text: 'Ihr GitHub-Repository, so wie es ist. Nichts muss vorher vorbereitet, umbenannt oder aufgeräumt werden.' },
+      { title: 'Sie erhalten eine Zerlegung', text: 'Der Code wird gelesen und beschrieben: welche Seiten es gibt, welche Daten sie brauchen, was das Projekt wirklich tut. Diese Beschreibung bestätigen Sie — eine ungelesene Vermutung ist nichts wert.' },
+      { title: 'Aus der Zerlegung werden Schritte', text: 'Daraus wachsen nummerierte Entwicklungsschritte, und von dort laufen sie einer nach dem anderen — dieselben Schritte, die Sie für eine neue Funktion von Hand schreiben würden.' },
+    ],
+  },
+  { kind: 'statement', text: 'Der Umzug ist die vierte Art von Arbeit in diesem Projekt, neben gewöhnlicher Entwicklung, Entwicklungsschritten und Anwendungsfällen. Hier steht er als Absicht, nicht als fertige Schaltfläche: die Schritte, aus denen er besteht, werden noch gebaut.' },
   {
     kind: 'cards',
     badge: 'Erste Schritte',

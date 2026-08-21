@@ -64,6 +64,22 @@ export const en: HomeCell = {
       { title: 'Push, and it deploys itself', text: 'Finish on the local machine and push the project to GitHub. That immediately starts a new deployment on your own server — and the visitor sees the new project.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Migration',
+    title: 'Already have a project — on Vercel, say',
+    note: 'Moving it here is not a copy-paste of files. The project is read first, and only then rebuilt — so what arrives on your server is code you can keep developing, not a frozen snapshot.',
+    steps: [
+      { title: 'You hand over the repository', text: 'Your GitHub repository, as it is. Nothing has to be prepared, renamed or cleaned up first.' },
+      { title: 'You get a decomposition', text: 'The code is read and described: what pages exist, what data they need, what the project actually does. That description is the thing you confirm — an unread guess is worth nothing.' },
+      { title: 'The decomposition becomes steps', text: 'Out of it grow numbered development steps, and from there they run one after another — the same steps you would write by hand for a new feature.' },
+    ],
+  },
+  { kind: 'statement', text: 'Migration is the fourth kind of work in this project, next to ordinary development, development steps and use cases. It is described here as intention, not as a finished button: today the steps that make it are still being built.' },
   {
     kind: 'cards',
     badge: 'Getting started',

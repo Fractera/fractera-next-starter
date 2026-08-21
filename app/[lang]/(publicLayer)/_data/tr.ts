@@ -57,6 +57,22 @@ export const tr: Partial<HomeCell> = {
       { title: 'Gönderin, kendi kendine yayınlansın', text: 'Yerel makinede işi bitirin ve projeyi GitHub\'a gönderin. Bu, kendi sunucunuzda hemen yeni bir dağıtım başlatır — ve ziyaretçi yeni projeyi görür.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Taşıma',
+    title: 'Projeniz zaten var — örneğin Vercel\'de',
+    note: 'Buraya getirmek dosya kopyalamak değildir. Proje önce okunur, sonra yeniden kurulur: sunucunuza donmuş bir kopya değil, geliştirmeye devam edebileceğiniz kod gelir.',
+    steps: [
+      { title: 'Depoyu teslim edersiniz', text: 'GitHub deponuz olduğu gibi. Önceden hazırlamak, yeniden adlandırmak ya da temizlemek gerekmez.' },
+      { title: 'Bir ayrıştırma alırsınız', text: 'Kod okunur ve anlatılır: hangi sayfalar var, hangi verilere ihtiyaç duyuyorlar, proje gerçekte ne yapıyor. Onayladığınız şey bu anlatımdır — okunmamış tahminin değeri yoktur.' },
+      { title: 'Ayrıştırma adımlara dönüşür', text: 'Ondan numaralı geliştirme adımları doğar ve oradan birbiri ardına çalışır — yeni bir özellik için elle yazacağınız adımların aynısı.' },
+    ],
+  },
+  { kind: 'statement', text: 'Taşıma, bu projedeki dördüncü iş türüdür: sıradan geliştirme, geliştirme adımları ve kullanım senaryolarının yanında. Burada bitmiş bir düğme olarak değil, niyet olarak anlatılıyor: onu oluşturan adımlar hâlâ yapılıyor.' },
   {
     kind: 'cards',
     badge: 'Başlangıç',

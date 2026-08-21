@@ -1,7 +1,7 @@
 import { getAppConfig } from "@/config/app-config"
 import { administrationProductsUi } from "../_data/ui.i18n"
-import { catalogueTableUi } from "../_widgets/catalogue-table/ui.i18n"
-import { CatalogueTable } from "../_widgets/catalogue-table/index.client"
+import { catalogueTableUi } from "../_widgets/dynamic/catalogue-table/ui.i18n"
+import { CatalogueTable } from "../_widgets/dynamic/catalogue-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 
 // Вход страницы товаров АДМИНИСТРИРОВАНИЯ — серверный компонент, статический
@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 //
 // 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Таблица со всей начинкой —
 // поведением, скелетоном, управлением, подвалом, строкой и словами — живёт в
-// `_widgets/catalogue-table/`. Страница отвечает за место и заголовок, виджет —
+// `_widgets/dynamic/catalogue-table/`. Страница отвечает за место и заголовок, виджет —
 // за то, что внутри.
 //
 // Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,

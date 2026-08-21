@@ -4,8 +4,8 @@ import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { imageCropperUi } from "@/services/upload/image-cropper.i18n"
 import { getAppConfig } from "@/config/app-config"
 import { productsUi } from "../_data/ui.i18n"
-import { manageTableUi } from "../_widgets/manage-table/ui.i18n"
-import { ManageTable } from "../_widgets/manage-table/index.client"
+import { manageTableUi } from "../_widgets/dynamic/manage-table/ui.i18n"
+import { ManageTable } from "../_widgets/dynamic/manage-table/index.client"
 import { PageHeader } from "@/components/content-page/page-header.server"
 import { Small } from "@/components/ui/typography"
 
@@ -19,7 +19,7 @@ import { Small } from "@/components/ui/typography"
 //
 // 🔒 ЗДЕСЬ ОСТАЛСЯ ТОЛЬКО КАРКАС СТРАНИЦЫ (шаг 521). Всё, что относится к самой
 // таблице — её поведение, скелетон, управление, форма заведения, подвал, строка
-// и слова, — уехало в `_widgets/manage-table/`. Граница простая: страница
+// и слова, — уехало в `_widgets/dynamic/manage-table/`. Граница простая: страница
 // отвечает за место и заголовок, виджет — за то, что внутри.
 //
 // Слова резолвятся ЗДЕСЬ и уезжают в островок пропсами: клиентский компонент,

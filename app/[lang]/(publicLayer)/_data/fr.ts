@@ -57,6 +57,22 @@ export const fr: Partial<HomeCell> = {
       { title: 'Poussez, et le déploiement se fait seul', text: 'Terminez sur la machine locale et envoyez le projet sur GitHub. Cela déclenche immédiatement un nouveau déploiement sur votre propre serveur — et le visiteur voit le nouveau projet.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Migration',
+    title: 'Vous avez déjà un projet — sur Vercel, par exemple',
+    note: 'L\'amener ici, ce n\'est pas copier des fichiers. Le projet est d\'abord lu, puis reconstruit : sur votre serveur arrive du code que l\'on peut continuer à développer, pas un instantané figé.',
+    steps: [
+      { title: 'Vous remettez le dépôt', text: 'Votre dépôt GitHub tel quel. Rien à préparer, à renommer ni à nettoyer d\'avance.' },
+      { title: 'Vous recevez une décomposition', text: 'Le code est lu et décrit : quelles pages existent, quelles données leur faut-il, ce que le projet fait vraiment. C\'est cette description que vous confirmez — une supposition non lue ne vaut rien.' },
+      { title: 'La décomposition devient des étapes', text: 'Il en naît des étapes de développement numérotées, puis elles s\'exécutent l\'une après l\'autre — les mêmes étapes que vous écririez à la main pour une nouvelle fonction.' },
+    ],
+  },
+  { kind: 'statement', text: 'La migration est le quatrième type de travail de ce projet, à côté du développement ordinaire, des étapes de développement et des cas d\'usage. Elle est décrite ici comme une intention, non comme un bouton terminé : les étapes qui la composent sont encore en construction.' },
   {
     kind: 'cards',
     badge: 'Démarrage',

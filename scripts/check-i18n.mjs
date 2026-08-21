@@ -59,11 +59,11 @@ const FILES = [
   // виджет принадлежит ОДНОМУ маршруту и не переиспользуется, а 82 обязаны
   // нести переиспользуемые части продукта, которые являются в любом включённом
   // языке сами. Цена размена названа в шапке каждого словаря.
-  ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_widgets/price-table/ui.i18n.ts", "PriceTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(staff)/manage/products/_widgets/manage-table/ui.i18n.ts", "ManageTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(admin)/administration/products/_widgets/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(account)/shopping/products/_widgets/shop-table/ui.i18n.ts", "ShopTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/product-card/ui.i18n.ts", "ProductCardUi", 10],
+  ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_widgets/dynamic/price-table/ui.i18n.ts", "PriceTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(staff)/manage/products/_widgets/dynamic/manage-table/ui.i18n.ts", "ManageTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(admin)/administration/products/_widgets/dynamic/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(account)/shopping/products/_widgets/dynamic/shop-table/ui.i18n.ts", "ShopTableUi", 10],
+  ["app/[lang]/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/dynamic/product-card/ui.i18n.ts", "ProductCardUi", 10],
   // Страницы четырёх слоёв прав.
   ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
   ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],

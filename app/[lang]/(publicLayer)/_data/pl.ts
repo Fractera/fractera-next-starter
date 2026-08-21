@@ -57,6 +57,22 @@ export const pl: Partial<HomeCell> = {
       { title: 'Wyślij — wdroży się samo', text: 'Skończ pracę na lokalnej maszynie i wyślij projekt na GitHub. To natychmiast uruchamia nowe wdrożenie na twoim własnym serwerze — a odwiedzający widzi nowy projekt.' },
     ],
   },
+  // 🔒 ПЕРЕНОС ЧУЖОГО ПРОЕКТА — ЧЕТВЁРТЫЙ ТИП РАБОТЫ (владелец 2026-08-22).
+  // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
+  // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
+  // стоит дороже отсутствующего — за ним приходят и не находят.
+  {
+    kind: 'flow',
+    badge: 'Przeniesienie',
+    title: 'Projekt już jest — na przykład na Vercel',
+    note: 'Przeniesienie tutaj to nie kopiowanie plików. Projekt najpierw się czyta, a dopiero potem buduje na nowo: na Twój serwer trafia kod, który da się rozwijać dalej, a nie zamrożona migawka.',
+    steps: [
+      { title: 'Oddajesz repozytorium', text: 'Swoje repozytorium GitHub takie, jakie jest. Niczego nie trzeba wcześniej przygotowywać, przemianowywać ani sprzątać.' },
+      { title: 'Dostajesz dekompozycję', text: 'Kod zostaje przeczytany i opisany: jakie są strony, jakich danych potrzebują, co projekt naprawdę robi. To ten opis potwierdzasz — nieprzeczytane przypuszczenie nic nie znaczy.' },
+      { title: 'Dekompozycja staje się krokami', text: 'Wyrastają z niej ponumerowane kroki rozwoju, a dalej uruchamiają się jeden po drugim — te same kroki, które napisałbyś ręcznie dla nowej funkcji.' },
+    ],
+  },
+  { kind: 'statement', text: 'Przeniesienie to czwarty rodzaj pracy w tym projekcie, obok zwykłego rozwoju, kroków rozwoju i przypadków użycia. Jest tu opisane jako zamiar, a nie gotowy przycisk: kroki, z których się składa, dopiero powstają.' },
   {
     kind: 'cards',
     badge: 'Start',

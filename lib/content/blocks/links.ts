@@ -23,6 +23,29 @@ import { brand } from "@/lib/brand"
 /** Внутренняя ссылка на корень сайта на языке ячейки: `/ru`, `/en`. */
 export const ROOT_LINK = /^\/([a-z]{2})$/
 
+/**
+ * ЧЕТВЁРТАЯ ЗАКОННАЯ ФОРМА — ССЫЛКА НА СВОЮ ЖЕ СТРАНИЦУ: `/ru/about-us`
+ * (заведена 2026-08-21, по требованию владельца описать перелинковку).
+ *
+ * 🔒 ЗАЧЕМ ОНА ПОНАДОБИЛАСЬ. До сегодня в материале была законна ровно ОДНА
+ * внутренняя ссылка — на корень. То есть перелинковки, ради которой страницы и
+ * связывают между собой, в движке не существовало вовсе: сослаться из статьи на
+ * «О нас» было нечем. Обнаружено прогоном навыков — агент честно не поставил
+ * ссылку и назвал причину, вместо того чтобы обойти правило.
+ *
+ * 🔒 ПОЧЕМУ ЗАПРЕТ ОТНОСИТЕЛЬНЫХ ССЫЛОК ПРИ ЭТОМ ОСТАЁТСЯ В СИЛЕ. Он написан по
+ * настоящей причине: материал ПУТЕШЕСТВУЕТ между проектами, и `/pricing` в чужом
+ * проекте означает другую страницу либо никакую. Поэтому форма разрешена не
+ * молча: `check:content` проверяет, что маршрут с таким адресом СУЩЕСТВУЕТ в
+ * этом проекте. Приехал материал со ссылкой на страницу, которой здесь нет, —
+ * сборка отказывает и называет и статью, и адрес. Громкий отказ здесь дешевле
+ * тихой ссылки в никуда: вторую находит посетитель, первую — тот, кто её принёс.
+ *
+ * Подпись у такой ссылки ЛЮБАЯ, в отличие от корневой: `%SITE%` подставляет имя
+ * сайта, а имя страницы — это её название, и оно принадлежит материалу.
+ */
+export const PAGE_LINK = /^\/([a-z]{2})(\/[a-z0-9][a-z0-9/-]*)$/
+
 /** Подпись, которую заменяет название сайта на языке ссылки. */
 export const SITE_TOKEN = "%SITE%"
 
@@ -57,7 +80,13 @@ export function isOwnDomain(href: string): boolean {
  * возвращается как есть.
  */
 export function resolveRootHref(href: string): string {
-  return SINGLE_LANG_MODE && ROOT_LINK.test(href) ? "/" : href
+  if (!SINGLE_LANG_MODE) return href
+  if (ROOT_LINK.test(href)) return "/"
+  // Ссылка на свою страницу: в одноязычном режиме языкового сегмента в публичных
+  // адресах нет, и `/en/about-us` отвечал бы 301 — тот же дефект, что был у
+  // корневой ссылки, только на каждой странице материала.
+  const page = href.match(PAGE_LINK)
+  return page ? page[2] : href
 }
 
 /** Атрибуты внешней ссылки; для внутренней — ничего (та же вкладка, без rel). */
@@ -95,9 +124,14 @@ export function linkAttrs(href: string): { target?: string; rel?: string } {
  */
 export function resolveMarkdownLinks(text: string, siteName: string): string {
   const origin = brand().siteUrl.replace(/\/$/, "")
-  return text.replace(/\[([^\]]+)\]\((\/[a-z]{2})\)/g, (whole, label: string, href: string) => {
-    if (label.trim() !== SITE_TOKEN) return whole
+  // Обе внутренние формы: корень (`/ru`) и своя страница (`/ru/about-us`).
+  // Машинной версии нужен АБСОЛЮТНЫЙ адрес у обеих — файл скачивают отдельно от
+  // сайта, и относительный путь в нём не разрешается ни во что.
+  return text.replace(/\[([^\]]+)\]\((\/[a-z]{2}(?:\/[a-z0-9][a-z0-9/-]*)?)\)/g, (whole, label: string, href: string) => {
+    const isRoot = ROOT_LINK.test(href)
+    if (isRoot && label.trim() !== SITE_TOKEN) return whole
+    if (!isRoot && !PAGE_LINK.test(href)) return whole
     const target = resolveRootHref(href)
-    return `[${siteName}](${origin ? origin + target : target})`
+    return `[${isRoot ? siteName : label}](${origin ? origin + target : target})`
   })
 }

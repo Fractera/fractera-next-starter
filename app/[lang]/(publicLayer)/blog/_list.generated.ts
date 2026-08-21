@@ -4,5 +4,6 @@
 import type { BlogData } from './_lib/post'
 import { data as p0 } from './the-end-of-prompt-engineering/_data'
 import { data as p1 } from './trillion-dollar-service-opportunity/_data'
+import { data as p2 } from './why-our-pages-are-static/_data'
 
-export const POSTS: BlogData[] = [p0, p1]
+export const POSTS: BlogData[] = [p0, p1, p2]

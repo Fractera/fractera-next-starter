@@ -141,6 +141,51 @@ const ROOT_LINK = /^\/[a-z]{2}$/
 // относительным он не бывает ни при каком исходе.
 const ADMIN_LINK = /^\{admin\}/
 
+// 🔒 ЧЕТВЁРТАЯ ЗАКОННАЯ ФОРМА — ССЫЛКА НА СВОЮ ЖЕ СТРАНИЦУ (2026-08-21).
+//
+// До неё внутренней ссылкой был только корень, то есть ПЕРЕЛИНКОВКИ в движке не
+// существовало: сослаться из статьи на другую страницу сайта было нечем.
+// Запрет относительных ссылок при этом остаётся — он написан по настоящей
+// причине (материал путешествует между проектами), поэтому форма разрешена не
+// молча: адрес обязан вести на СУЩЕСТВУЮЩИЙ здесь маршрут, и это проверяется
+// ниже обходом дерева. Ссылка в никуда должна падать на сборке у того, кто её
+// принёс, а не открываться посетителю.
+const PAGE_LINK = /^\/[a-z]{2}(\/[a-z0-9][a-z0-9/-]*)$/
+
+/**
+ * Публичные адреса проекта без языка: `/about-us`, `/blog`, `/blog/<slug>`.
+ *
+ * 🔒 ОБХОД ИДЁТ ТОЛЬКО ПО ПУБЛИЧНОМУ СЛОЮ. Страницы за ролью адресами для ссылки
+ * не являются: публичная ссылка, ведущая на 403, — обещание, которого сайт не
+ * сдержит. Проверено при заведении правила: первый обход собирал и
+ * `/administration/products`, и `/shopping/products`, то есть разрешал сослаться
+ * из статьи в чужой кабинет.
+ */
+function publicPaths() {
+  const out = new Set()
+  const walk = (dir, prefix) => {
+    let entries = []
+    try { entries = readdirSync(dir, { withFileTypes: true }) } catch { return }
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name.startsWith("_") || e.name.startsWith("[")) continue
+      // Скобочная группа на адрес не влияет — заглядываем внутрь, не удлиняя путь.
+      const grouped = e.name.startsWith("(") && e.name.endsWith(")")
+      // Папки машинных маршрутов (`index.md`, `llms.txt`) страницами не являются.
+      if (!grouped && e.name.includes(".")) continue
+      const next = grouped ? prefix : `${prefix}/${e.name}`
+      if (!grouped && existsSync(join(dir, e.name, "page.tsx"))) out.add(next)
+      walk(join(dir, e.name), next)
+    }
+  }
+  // `APP` УЖЕ равен `app/[lang]` — добавлять сегмент второй раз значит обходить
+  // несуществующую папку и получить пустое множество. Первый прогон правила
+  // отверг ссылку на существующий `/blog` именно поэтому: пустое множество
+  // выглядит как «такой страницы нет».
+  walk(join(APP, PUBLIC_GROUP), "")
+  return out
+}
+const PUBLIC_PATHS = publicPaths()
+
 // ── RULE 2 — every local asset exists ───────────────────────────────────────
 // `heroVideo`, `heroPoster`, `src:` pointing at `/something` must resolve to a
 // file in public/. The hero of a shipped post pointed at a video that was never
@@ -185,8 +230,15 @@ function checkPost(dataDir) {
         continue
       }
       if (ADMIN_LINK.test(href)) continue
+      const page = href.match(PAGE_LINK)
+      if (page) {
+        if (!PUBLIC_PATHS.has(page[1])) {
+          fail(p, "page-link-missing", `[…](${href}) — в этом проекте нет страницы ${page[1]}; ссылка на свою страницу обязана вести на существующий маршрут`)
+        }
+        continue
+      }
       if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
-        fail(p, "link-not-absolute", `[…](${href}) — относительная ссылка; разрешена одна форма: [%SITE%](/${"<язык>"})`)
+        fail(p, "link-not-absolute", `[…](${href}) — относительная ссылка; законны две внутренние формы: [%SITE%](/${"<язык>"}) и [подпись](/${"<язык>/<страница>"})`)
       }
     }
     for (const m of text.matchAll(HREF_FIELD)) {
@@ -199,8 +251,15 @@ function checkPost(dataDir) {
       // а не выбор автора.)
       if (ROOT_LINK.test(href)) continue
       if (ADMIN_LINK.test(href)) continue
+      const hrefPage = href.match(PAGE_LINK)
+      if (hrefPage) {
+        if (!PUBLIC_PATHS.has(hrefPage[1])) {
+          fail(p, "page-link-missing", `href: '${href}' — в этом проекте нет страницы ${hrefPage[1]}`)
+        }
+        continue
+      }
       if (!/^https?:\/\//.test(href) && !href.startsWith("#") && !href.startsWith("mailto:")) {
-        fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка; внутри сайта разрешена одна форма: '/<язык>'`)
+        fail(p, "link-not-absolute", `href: '${href}' — относительная ссылка; внутри сайта законны '/<язык>' и '/<язык>/<страница>'`)
       }
     }
     for (const m of text.matchAll(LOCAL_ASSET)) {

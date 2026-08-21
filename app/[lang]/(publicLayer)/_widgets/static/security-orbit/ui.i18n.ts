@@ -32,7 +32,7 @@ export type SecurityOrbitUi = {
 
 const UI: Record<string, SecurityOrbitUi> = {
   en: {
-    badge: "Security",
+    badge: "Why it matters",
     headingLead: "Security is built into the",
     headingAccent: "foundation",
     subheading: "Four layers of protection — each one works on its own.",
@@ -44,7 +44,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   ru: {
-    badge: "Безопасность",
+    badge: "Почему это важно",
     headingLead: "Безопасность встроена в",
     headingAccent: "основу",
     subheading: "Четыре слоя защиты — каждый работает независимо.",
@@ -56,7 +56,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   es: {
-    badge: "Seguridad",
+    badge: "Por qué importa",
     headingLead: "La seguridad está en la",
     headingAccent: "base",
     subheading: "Cuatro capas de protección: cada una funciona por su cuenta.",
@@ -68,7 +68,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   fr: {
-    badge: "Sécurité",
+    badge: "Pourquoi c’est important",
     headingLead: "La sécurité est dans les",
     headingAccent: "fondations",
     subheading: "Quatre couches de protection — chacune fonctionne seule.",
@@ -80,7 +80,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   it: {
-    badge: "Sicurezza",
+    badge: "Perché conta",
     headingLead: "La sicurezza è nelle",
     headingAccent: "fondamenta",
     subheading: "Quattro livelli di protezione: ciascuno funziona da solo.",
@@ -92,7 +92,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   de: {
-    badge: "Sicherheit",
+    badge: "Warum das zählt",
     headingLead: "Sicherheit steckt im",
     headingAccent: "Fundament",
     subheading: "Vier Schutzschichten — jede arbeitet für sich.",
@@ -104,7 +104,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   pt: {
-    badge: "Segurança",
+    badge: "Por que importa",
     headingLead: "A segurança está na",
     headingAccent: "base",
     subheading: "Quatro camadas de proteção — cada uma funciona sozinha.",
@@ -116,7 +116,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   pl: {
-    badge: "Bezpieczeństwo",
+    badge: "Dlaczego to ważne",
     headingLead: "Bezpieczeństwo tkwi w",
     headingAccent: "fundamencie",
     subheading: "Cztery warstwy ochrony — każda działa osobno.",
@@ -128,7 +128,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   tr: {
-    badge: "Güvenlik",
+    badge: "Neden önemli",
     headingLead: "Güvenlik en",
     headingAccent: "temelde",
     subheading: "Dört koruma katmanı — her biri kendi başına çalışır.",
@@ -140,7 +140,7 @@ const UI: Record<string, SecurityOrbitUi> = {
     ],
   },
   nl: {
-    badge: "Veiligheid",
+    badge: "Waarom dit telt",
     headingLead: "Veiligheid zit in het",
     headingAccent: "fundament",
     subheading: "Vier beschermingslagen — elk werkt op zichzelf.",

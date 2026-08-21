@@ -571,7 +571,11 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
 .ps-r:nth-of-type(3):checked ~ .ps-body li:nth-child(3) .ps-tab,
 .ps-r:nth-of-type(4):checked ~ .ps-body li:nth-child(4) .ps-tab,
 .ps-r:nth-of-type(5):checked ~ .ps-body li:nth-child(5) .ps-tab,
-.ps-r:nth-of-type(6):checked ~ .ps-body li:nth-child(6) .ps-tab {
+.ps-r:nth-of-type(6):checked ~ .ps-body li:nth-child(6) .ps-tab,
+.ps-r:nth-of-type(7):checked ~ .ps-body li:nth-child(7) .ps-tab,
+.ps-r:nth-of-type(8):checked ~ .ps-body li:nth-child(8) .ps-tab,
+.ps-r:nth-of-type(9):checked ~ .ps-body li:nth-child(9) .ps-tab,
+.ps-r:nth-of-type(10):checked ~ .ps-body li:nth-child(10) .ps-tab {
   border-color: var(--color-primary);
   color: var(--color-foreground);
   cursor: default;
@@ -582,7 +586,11 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
 .ps-r:nth-of-type(3):checked ~ .ps-body .ps-panel:nth-child(3),
 .ps-r:nth-of-type(4):checked ~ .ps-body .ps-panel:nth-child(4),
 .ps-r:nth-of-type(5):checked ~ .ps-body .ps-panel:nth-child(5),
-.ps-r:nth-of-type(6):checked ~ .ps-body .ps-panel:nth-child(6) {
+.ps-r:nth-of-type(6):checked ~ .ps-body .ps-panel:nth-child(6),
+.ps-r:nth-of-type(7):checked ~ .ps-body .ps-panel:nth-child(7),
+.ps-r:nth-of-type(8):checked ~ .ps-body .ps-panel:nth-child(8),
+.ps-r:nth-of-type(9):checked ~ .ps-body .ps-panel:nth-child(9),
+.ps-r:nth-of-type(10):checked ~ .ps-body .ps-panel:nth-child(10) {
   opacity: 1;
   visibility: visible;
   transform: none;

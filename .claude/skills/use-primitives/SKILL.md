@@ -4,9 +4,11 @@ description: >
   The UI primitives — one owner per kind of thing, and gates that refuse hand-rolled copies. Load it
   before writing a heading, a modal, a side panel, a button, an empty state, or anything that "just
   needs a div"; also when a gate refuses your markup and the message names a primitive you have not
-  met. What you cannot guess: there is exactly ONE modal in this product and a hand-built one is
-  refused by a gate, headings never carry raw classes, and a size is never allowed to shrink as the
-  screen grows. Each of those rules replaced a real mess, not a preference.
+  met. The point of the layer: shadcn/ui with ONE owner per kind of thing, and every colour taken as a
+  TOKEN — so the owner repaints his whole project from the panel in a single move. An element with a
+  literal colour does not break, it silently leaves that system. There is exactly one modal here, a
+  hand-built one is refused by a gate, headings never carry raw classes, and a size never shrinks as
+  the screen grows. Each rule replaced a real mess, not a preference.
 ---
 
 # use-primitives
@@ -59,15 +61,29 @@ Chrome words are 82 languages; the server calls `appDialogUi(lang)` and passes t
 prop. From a client file only `import type` is legal. Otherwise 82 languages ship to the browser on
 every page that can open a window.
 
-## 4. Colour, spacing and shape come from the theme
+## 4. 🔒 Colour by token — this is what makes the whole thing worth doing
 
-Tokens live in `DESIGN-CONFIG` and reach CSS as variables. A literal colour in a class — and above
-all in an inline style, which outranks classes and does not hear the theme at all — means the element
-stops changing when the owner changes his palette. `check:contrast` and `check:sections` refuse it in
-their own layers; the reflex is the same everywhere.
+Everything above buys one property, and it is the reason the layer exists:
+
+> **The owner changes his palette in the panel, and the entire project changes with it — in one move,
+> without a rebuild.**
+
+The chain: panel → `DESIGN-CONFIG` → CSS variables → every primitive at once. Nothing in between
+knows the colour; each element only knows its ROLE — `primary`, `muted`, `destructive`, `border`.
+
+So a literal colour is not a small sin. An element painted `#7c5cff` keeps that colour when everything
+around it becomes green — it does not break, it silently leaves the system, and it is found by the
+owner on the day he rebrands, not by you today. An inline style is the worst case: it outranks classes
+and does not hear the theme at all.
+
+The same for the rest of the scale — spacing, radii, the type scale, fonts: all of it is
+`DESIGN-CONFIG`. Empty there means "the owner has not spoken", and the theme answers
+(`config/design/design-minimal-001.css`). Never copy theme values into a second place: two palettes
+diverge on the first edit, and silently — the page looks fine, it just no longer matches the CSS.
 
 Fills come in pairs: `bg-primary` with `text-primary-foreground`. Half a pair is unreadable text in
-exactly one theme, which is the half nobody opens while building.
+exactly one theme — the half nobody opens while building. `check:contrast` and `check:sections` refuse
+both mistakes in their own layers; the reflex is the same everywhere.
 
 ## 5. When there is genuinely no primitive for it
 

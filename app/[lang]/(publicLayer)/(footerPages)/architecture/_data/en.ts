@@ -288,11 +288,11 @@ export const en: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Her second product shares nothing with the first except the server. Every morning it reads the pages, job ads and prices of four competitors, stores what it found, and sends her one message: what changed, when, by how much. It is headless — no address, no page, no screen. Its cases are about her mornings, not about visitors.',
+      text: 'Her second product arrives later and shares nothing with the first except the server. At first the requests from the landing page simply dropped into her messenger — that was enough while there were five a week. Then there were thirty, and she needed a place where you can see who wrote in, what they were told and how it ended: her own system for handling requests. It sits behind a sign-in, with its own pages, its own tables and its own roles, and its cases describe working with a client, not a stranger’s first visit.',
     },
     {
       kind: 'p',
-      text: 'Both live on one server, and neither can quietly damage the other: separate pages, separate logic, separate tables, separate cases. When she asks the agent to change the wording of the enquiry form, nothing about the watcher is in scope — not because the agent was careful, but because the boundary was decided before either of them was built.',
+      text: 'Both live on one server, and neither can quietly damage the other: separate pages, separate logic, separate tables, separate cases. When she asks the agent to change the wording of the enquiry form, nothing about the request system is in scope — not because the agent was careful, but because the boundary was decided before either of them was built. Later a third and a fourth will stand beside them — mailings, reports, stock — and the rule will not change: one server, separate products.',
     },
     {
       kind: 'note',

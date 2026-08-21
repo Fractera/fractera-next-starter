@@ -277,11 +277,11 @@ export const pt: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Seu segundo produto não compartilha nada com o primeiro, exceto o servidor. Todas as manhãs ele lê as páginas, anúncios de emprego e preços de quatro concorrentes, armazena o que encontrou e envia a ela uma única mensagem: o que mudou, quando e quanto. É headless — sem endereço, sem página, sem tela. Seus casos são sobre as manhãs dela, não sobre visitantes.',
+      text: 'O segundo produto dela aparece mais tarde e não partilha nada com o primeiro além do servidor. No início os pedidos vindos da página de entrada caíam simplesmente no seu mensageiro — chegava enquanto eram cinco por semana. Depois passaram a trinta, e foi preciso um sítio onde se veja quem escreveu, o que lhe responderam e como acabou: um sistema próprio de tratamento de pedidos. Fica atrás da entrada, com as suas páginas, as suas tabelas e os seus papéis, e os seus casos descrevem o trabalho com um cliente, não a primeira visita de um desconhecido.',
     },
     {
       kind: 'p',
-      text: 'Ambos vivem em um servidor, e nenhum dos dois pode danificar silenciosamente o outro: páginas separadas, lógica separada, tabelas separadas, casos separados. Quando ela pede ao agente para alterar a redação do formulário de contato, nada sobre o monitor está no escopo — não porque o agente foi cuidadoso, mas porque a fronteira foi decidida antes que qualquer um deles fosse construído.',
+      text: 'Ambos vivem em um servidor, e nenhum dos dois pode danificar silenciosamente o outro: páginas separadas, lógica separada, tabelas separadas, casos separados. Quando ela pede ao agente para alterar a redação do formulário de contato, nada sobre o sistema de pedidos está no escopo — não porque o agente foi cuidadoso, mas porque a fronteira foi decidida antes que qualquer um deles fosse construído. Mais tarde estarão ao lado um terceiro e um quarto — envios, relatórios, armazém — e a regra não muda: um servidor, produtos distintos.',
     },
     {
       kind: 'note',

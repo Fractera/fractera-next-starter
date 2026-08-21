@@ -277,11 +277,11 @@ export const de: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Ihr zweites Produkt teilt nichts mit dem ersten außer dem Server. Jeden Morgen liest es die Seiten, Stellenanzeigen und Preise von vier Wettbewerbern, speichert das Gefundene und sendet ihr eine Nachricht: was sich geändert hat, wann und um wie viel. Es ist headless — keine Adresse, keine Seite, kein Bildschirm. Seine Anwendungsfälle betreffen ihre Morgenstunden, nicht die Besucher.',
+      text: 'Ihr zweites Produkt kommt später und teilt nichts mit dem ersten außer dem Server. Anfangs fielen die Anfragen von der Landeseite einfach in ihren Messenger — das reichte, solange es fünf pro Woche waren. Dann wurden es dreißig, und es brauchte einen Ort, an dem zu sehen ist, wer geschrieben hat, was man ihm geantwortet hat und wie es ausging: ein eigenes System für die Bearbeitung von Anfragen. Es liegt hinter der Anmeldung, mit eigenen Seiten, eigenen Tabellen und eigenen Rollen, und seine Anwendungsfälle beschreiben die Arbeit mit einem Kunden, nicht den ersten Besuch eines Fremden.',
     },
     {
       kind: 'p',
-      text: 'Beide leben auf einem Server, und keines kann das andere stillschweigend beschädigen: separate Seiten, separate Logik, separate Tabellen, separate Anwendungsfälle. Wenn sie den Agenten bittet, die Formulierung des Anfrageformulars zu ändern, liegt nichts vom Watcher im Bereich der Änderung — nicht weil der Agent vorsichtig war, sondern weil die Grenze entschieden wurde, bevor eines von beiden gebaut wurde.',
+      text: 'Beide leben auf einem Server, und keines kann das andere stillschweigend beschädigen: separate Seiten, separate Logik, separate Tabellen, separate Anwendungsfälle. Wenn sie den Agenten bittet, die Formulierung des Anfrageformulars zu ändern, liegt nichts vom Anfragensystem im Bereich der Änderung — nicht weil der Agent vorsichtig war, sondern weil die Grenze entschieden wurde, bevor eines von beiden gebaut wurde. Später stehen ein drittes und ein viertes daneben — Versand, Berichte, Lager — und die Regel ändert sich nicht: ein Server, getrennte Produkte.',
     },
     {
       kind: 'note',

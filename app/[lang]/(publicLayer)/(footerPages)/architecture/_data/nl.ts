@@ -277,11 +277,11 @@ export const nl: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Haar tweede product deelt niets met het eerste behalve de server. Elke ochtend leest het de pagina’s, vacatures en prijzen van vier concurrenten, slaat op wat het vond, en stuurt haar één bericht: wat er is veranderd, wanneer, met hoeveel. Het is headless — geen adres, geen pagina, geen scherm. De cases gaan over haar ochtenden, niet over bezoekers.',
+      text: 'Haar tweede product komt later en deelt niets met het eerste behalve de server. Eerst vielen de aanvragen van de landingspagina gewoon in haar messenger — dat volstond zolang het er vijf per week waren. Toen werden het er dertig, en was er een plek nodig waar te zien is wie schreef, wat hem geantwoord werd en hoe het afliep: een eigen systeem voor het afhandelen van aanvragen. Het staat achter het inloggen, met eigen pagina’s, eigen tabellen en eigen rollen, en de cases beschrijven het werk met een klant, niet het eerste bezoek van een vreemde.',
     },
     {
       kind: 'p',
-      text: 'Beide leven op één server, en geen van beide kan de andere stilzwijgend beschadigen: afzonderlijke pagina’s, afzonderlijke logica, afzonderlijke tabellen, afzonderlijke cases. Wanneer ze de agent vraagt om de formulering van het aanvraagformulier te wijzigen, valt niets over de watcher binnen het bereik — niet omdat de agent voorzichtig was, maar omdat de grens werd besloten voordat een van beide werd gebouwd.',
+      text: 'Beide leven op één server, en geen van beide kan de andere stilzwijgend beschadigen: afzonderlijke pagina’s, afzonderlijke logica, afzonderlijke tabellen, afzonderlijke cases. Wanneer ze de agent vraagt om de formulering van het aanvraagformulier te wijzigen, valt niets over het aanvraagsysteem binnen het bereik — niet omdat de agent voorzichtig was, maar omdat de grens werd besloten voordat een van beide werd gebouwd. Later staan er een derde en een vierde naast — mailings, rapporten, voorraad — en de regel verandert niet: één server, aparte producten.',
     },
     {
       kind: 'note',

@@ -277,11 +277,11 @@ export const tr: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'İkinci ürünü, sunucu dışında ilkiyle hiçbir şey paylaşmaz. Her sabah dört rakibin sayfalarını, iş ilanlarını ve fiyatlarını okur, bulduklarını saklar ve ona tek bir mesaj gönderir: Ne değişti, ne zaman, ne kadar. Ekransızdır (headless) — adres yok, sayfa yok, ekran yok. Senaryoları ziyaretçilerle değil, onun sabahlarıyla ilgilidir.',
+      text: 'İkinci ürünü daha sonra gelir ve sunucu dışında ilkiyle hiçbir şey paylaşmaz. Başlangıçta açılış sayfasından gelen talepler doğrudan mesajlaşma uygulamasına düşüyordu — haftada beş tane olduğu sürece bu yetiyordu. Sonra otuz oldu ve kimin yazdığının, ona ne yanıt verildiğinin ve işin nasıl bittiğinin görüldüğü bir yer gerekti: kendi talep işleme sistemi. Girişin arkasında durur; kendi sayfaları, kendi tabloları ve kendi rolleri vardır, senaryoları ise bir yabancının ilk ziyaretini değil, müşteriyle çalışmayı anlatır.',
     },
     {
       kind: 'p',
-      text: 'Her ikisi de tek bir sunucuda yaşar ve hiçbiri diğerine sessizce zarar veremez: Ayrı sayfalar, ayrı mantık, ayrı tablolar, ayrı senaryolar. Ajan bilgi alma formunun ifadesini değiştirmesini istediğinde, izleyiciyle ilgili hiçbir şey kapsamda değildir — ajanın dikkatli olmasından değil, sınır ikisinden biri inşa edilmeden önce kararlaştırıldığı için.',
+      text: 'Her ikisi de tek bir sunucuda yaşar ve hiçbiri diğerine sessizce zarar veremez: Ayrı sayfalar, ayrı mantık, ayrı tablolar, ayrı senaryolar. Ajan bilgi alma formunun ifadesini değiştirmesini istediğinde, talep sisteminden hiçbir şey kapsamda değildir — ajanın dikkatli olmasından değil, sınır ikisinden biri inşa edilmeden önce kararlaştırıldığı için. Daha sonra yanlarına üçüncüsü ve dördüncüsü gelir — gönderiler, raporlar, depo — ve kural değişmez: tek sunucu, ayrı ürünler.',
     },
     {
       kind: 'note',

@@ -277,11 +277,11 @@ export const it: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Il suo secondo prodotto non condivide nulla con il primo tranne il server. Ogni mattina legge le pagine, gli annunci di lavoro e i prezzi di quattro concorrenti, memorizza ciò che ha trovato e le invia un solo messaggio: cosa è cambiato, quando, di quanto. È headless — nessun indirizzo, nessuna pagina, nessuna schermata. I suoi casi riguardano le sue mattinate, non i visitatori.',
+      text: 'Il suo secondo prodotto arriva più tardi e non condivide nulla con il primo tranne il server. All’inizio le richieste dalla pagina di atterraggio cadevano semplicemente nella sua messaggistica — bastava finché erano cinque a settimana. Poi sono diventate trenta, ed è servito un posto dove si vede chi ha scritto, che cosa gli è stato risposto e come è finita: un proprio sistema di gestione delle richieste. Sta dietro l’accesso, con le sue pagine, le sue tabelle e i suoi ruoli, e i suoi casi descrivono il lavoro con un cliente, non la prima visita di uno sconosciuto.',
     },
     {
       kind: 'p',
-      text: 'Entrambi vivono su un solo server e nessuno dei due può danneggiare silenziosamente l’altro: pagine separate, logica separata, tabelle separate, casi separati. Quando chiede all’agente di modificare il testo del modulo di richiesta, nulla del monitor è in ambito — non perché l’agente sia stato attento, ma perché il confine è stato deciso prima che ciascuno di essi venisse costruito.',
+      text: 'Entrambi vivono su un solo server e nessuno dei due può danneggiare silenziosamente l’altro: pagine separate, logica separata, tabelle separate, casi separati. Quando chiede all’agente di modificare il testo del modulo di richiesta, nulla del sistema delle richieste è in ambito — non perché l’agente sia stato attento, ma perché il confine è stato deciso prima che ciascuno di essi venisse costruito. Più avanti accanto a loro ci saranno un terzo e un quarto — invii, rapporti, magazzino — e la regola non cambierà: un server, prodotti distinti.',
     },
     {
       kind: 'note',

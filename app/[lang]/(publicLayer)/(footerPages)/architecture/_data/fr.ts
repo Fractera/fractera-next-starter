@@ -277,11 +277,11 @@ export const fr: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Son second produit ne partage rien avec le premier à part le serveur. Chaque matin, il lit les pages, les offres d’emploi et les prix de quatre concurrents, stocke ce qu’il a trouvé et lui envoie un seul message : ce qui a changé, quand, et de combien. Il est headless — pas d’adresse, pas de page, pas d’écran. Ses cas concernent ses matinées, pas les visiteurs.',
+      text: 'Son second produit arrive plus tard et ne partage rien avec le premier à part le serveur. Au début, les demandes venues de la page d’accueil tombaient simplement dans sa messagerie — cela suffisait tant qu’il y en avait cinq par semaine. Puis il y en a eu trente, et il a fallu un endroit où l’on voit qui a écrit, ce qu’on lui a répondu et comment cela s’est terminé : son propre système de traitement des demandes. Il est derrière une connexion, avec ses pages, ses tables et ses rôles, et ses cas décrivent le travail avec un client, non la première visite d’un inconnu.',
     },
     {
       kind: 'p',
-      text: 'Tous deux vivent sur un même serveur, et aucun ne peut endommager discrètement l’autre : pages séparées, logique séparée, tables séparées, cas séparés. Quand elle demande à l’agent de modifier la formulation du formulaire de contact, rien concernant l’observateur n’est concerné — non pas parce que l’agent a fait attention, mais parce que la frontière a été décidée avant que l’un ou l’autre ne soit construit.',
+      text: 'Tous deux vivent sur un même serveur, et aucun ne peut endommager discrètement l’autre : pages séparées, logique séparée, tables séparées, cas séparés. Quand elle demande à l’agent de modifier la formulation du formulaire de contact, rien concernant le système de demandes n’est concerné — non pas parce que l’agent a fait attention, mais parce que la frontière a été décidée avant que l’un ou l’autre ne soit construit. Plus tard, un troisième et un quatrième les rejoindront — envois, rapports, stock — et la règle ne changera pas : un serveur, des produits distincts.',
     },
     {
       kind: 'note',

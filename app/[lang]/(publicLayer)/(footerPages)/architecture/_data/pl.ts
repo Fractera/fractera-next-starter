@@ -277,11 +277,11 @@ export const pl: FooterPageCell = {
     },
     {
       kind: 'p',
-      text: 'Jej drugi produkt nie dzieli z pierwszym niczego poza serwerem. Każdego ranka czyta strony, ogłoszenia o pracę i ceny czterech konkurentów, zapisuje to, co znalazł, i wysyła jej jedną wiadomość: co się zmieniło, kiedy i o ile. Jest headless — bez adresu, bez strony, bez ekranu. Jego przypadki dotyczą jej poranków, a nie odwiedzających.',
+      text: 'Jej drugi produkt pojawia się później i nie dzieli z pierwszym niczego poza serwerem. Na początku zgłoszenia z landingu po prostu wpadały jej do komunikatora — wystarczało, dopóki było ich pięć na tydzień. Potem zrobiło się trzydzieści i potrzebne stało się miejsce, w którym widać, kto napisał, co mu odpowiedziano i czym się skończyło: własny system obsługi zgłoszeń. Stoi za logowaniem, ma swoje strony, swoje tabele i swoje role, a jego przypadki opisują pracę z klientem, a nie pierwszą wizytę nieznajomego.',
     },
     {
       kind: 'p',
-      text: 'Oba żyją na jednym serwerze i żaden nie może po cichu uszkodzić drugiego: osobne strony, osobna logika, osobne tabele, osobne przypadki. Kiedy prosi agenta o zmianę sformułowania formularza zapytania, nic dotyczącego monitora nie znajduje się w zakreślonym obszarze — nie dlatego, że agent był ostrożny, ale dlatego, że granica została ustalona zanim którykolwiek z nich został zbudowany.',
+      text: 'Oba żyją na jednym serwerze i żaden nie może po cichu uszkodzić drugiego: osobne strony, osobna logika, osobne tabele, osobne przypadki. Kiedy prosi agenta o zmianę sformułowania formularza zapytania, nic dotyczącego systemu zgłoszeń nie znajduje się w zakreślonym obszarze — nie dlatego, że agent był ostrożny, ale dlatego, że granica została ustalona zanim którykolwiek z nich został zbudowany. Później staną obok trzeci i czwarty — wysyłki, raporty, magazyn — a zasada się nie zmieni: jeden serwer, osobne produkty.',
     },
     {
       kind: 'note',

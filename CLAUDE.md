@@ -793,6 +793,7 @@ Sonner — других нет.
 | `use-auth` | авторизация: четыре таблицы, их удалять нельзя; где вход живёт физически; правила смены ролей | 🔶 |
 | `use-auth-providers` · `use-roles` | провайдеры входа, роли | — |
 | `skill-creator` | чужой, Anthropic: писать и править навыки, **измерять их срабатывание** | ✅ |
+| `find-skills` | чужой, Vercel: найти и поставить навык из открытой экосистемы (`npx skills`) | ✅ |
 | `use-panel` | панель управления | — |
 | `use-data` · `use-database` · `use-object-storage` · `use-vector-memory` | слой данных и три склада | — |
 | `use-map` · `use-channels` · `use-agentic-rag` | карта · каналы · агентный RAG | — |

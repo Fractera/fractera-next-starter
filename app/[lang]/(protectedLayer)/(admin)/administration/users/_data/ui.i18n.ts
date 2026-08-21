@@ -26,13 +26,13 @@ const DICT: Record<string, AdministrationUsersUi> = {
     title: "User accounts",
     subtitle: "Who has access to this project, and with which roles.",
     roleNote:
-      "Accounts live in the authentication service, not in this application: there is no second copy of people here. Only an architect may open this page and change a role.",
+      "Accounts live in the authentication service, not in this application: there is no second copy of people here. An administrator or an architect may open this page; only an architect may grant or remove the architect role itself.",
   },
   ru: {
     title: "Учётные записи",
     subtitle: "У кого есть доступ к этому проекту и с какими ролями.",
     roleNote:
-      "Записи живут в службе авторизации, а не в этом приложении: второй копии людей здесь нет. Открыть страницу и изменить роль вправе только архитектор.",
+      "Записи живут в службе авторизации, а не в этом приложении: второй копии людей здесь нет. Открыть страницу и менять роли вправе администратор и архитектор; выдавать и снимать саму роль архитектора — только архитектор.",
   },
 }
 

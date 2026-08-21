@@ -20,7 +20,7 @@ import { ALL_ROLES } from "@/lib/roles"
 export const runtime = "nodejs"
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-  const denied = await requireRoles(req, ["architect"])
+  const denied = await requireRoles(req, ["admin", "architect"])
   if (denied) return denied
 
   const { id } = await ctx.params

@@ -18,6 +18,15 @@ export type UsersTableUi = {
   colRoles: string
   colProvider: string
   colCreated: string
+  colLastSeen: string
+  /** Запись заведена, а вход не состоялся ни разу. */
+  lastSeenNever: string
+  /**
+   * Служба не прислала колонку. Отдельная строка, а не та же, что выше:
+   * «мы не знаем» и «человек не заходил» — разные ответы, и владелец просит
+   * колонку ровно затем, чтобы их различать.
+   */
+  lastSeenUnknown: string
   edit: string
   save: string
   cancel: string
@@ -40,6 +49,9 @@ const DICT: Record<string, UsersTableUi> = {
     colRoles: "Roles",
     colProvider: "Signed in with",
     colCreated: "Created",
+    colLastSeen: "Last seen",
+    lastSeenNever: "Never signed in",
+    lastSeenUnknown: "Not reported",
     edit: "Change roles",
     save: "Save",
     cancel: "Cancel",
@@ -60,6 +72,9 @@ const DICT: Record<string, UsersTableUi> = {
     colRoles: "Роли",
     colProvider: "Вход через",
     colCreated: "Заведена",
+    colLastSeen: "Последний вход",
+    lastSeenNever: "Ни разу не заходил",
+    lastSeenUnknown: "Нет данных",
     edit: "Изменить роли",
     save: "Сохранить",
     cancel: "Отмена",

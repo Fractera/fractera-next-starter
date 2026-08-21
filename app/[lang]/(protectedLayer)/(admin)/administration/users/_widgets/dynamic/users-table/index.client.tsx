@@ -26,7 +26,13 @@ import type { UsersTableUi } from "./ui.i18n"
 
 export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
   const { revealed, loading, rows, total, page, pages, query, setQuery, load } = useUsersList(ui)
-  const cols = { colAccount: ui.colAccount, colRoles: ui.colRoles, colProvider: ui.colProvider, colCreated: ui.colCreated }
+  const cols = {
+    colAccount: ui.colAccount,
+    colRoles: ui.colRoles,
+    colProvider: ui.colProvider,
+    colCreated: ui.colCreated,
+    colLastSeen: ui.colLastSeen,
+  }
 
   if (!revealed) {
     return (
@@ -67,6 +73,9 @@ export function UsersTable({ lang, ui }: { lang: string; ui: UsersTableUi }) {
                   <th className="px-3 py-2 text-left font-medium">{ui.colRoles}</th>
                   <th className="px-3 py-2 text-left font-medium">{ui.colProvider}</th>
                   <th className="px-3 py-2 text-left font-medium">{ui.colCreated}</th>
+                  {/* «Заведена» и «Последний вход» стоят рядом намеренно: вопрос
+                      владельца — «завёл и пропал?» — читается только их парой. */}
+                  <th className="px-3 py-2 text-left font-medium">{ui.colLastSeen}</th>
                 </tr>
               </thead>
               <tbody>

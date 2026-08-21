@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ALL_ROLES } from "@/lib/roles"
 import { rolesOf, type AccountRow } from "./use-list"
+import { lastSeen, DORMANT_AFTER_DAYS } from "./last-seen"
 import type { UsersTableUi } from "./ui.i18n"
 
 export function UsersRow(
@@ -104,6 +105,43 @@ export function UsersRow(
       <td className="px-3 py-2 text-muted-foreground">
         {new Date(row.created_at).toLocaleDateString(lang)}
       </td>
+      {/* Последний вход — СЛОВАМИ, а не значением из базы: владелец смотрит
+          сюда, чтобы отличить живую запись от заброшенной, и «2026-07-14T09:12Z»
+          на этот вопрос не отвечает, пока не посчитаешь в уме.
+
+          Живая запись стоит обычным цветом, а уснувшая — приглушённым: в списке
+          из ста строк глаз читает рисунок раньше слов. Точная дата не потеряна,
+          она в подсказке — «понятно» не должно значить «непроверяемо». */}
+      <LastSeenCell raw={row.last_login_at} lang={lang} ui={ui} />
     </tr>
+  )
+}
+
+function LastSeenCell({
+  raw,
+  lang,
+  ui,
+}: {
+  raw: string | null | undefined
+  lang: string
+  ui: UsersTableUi
+}) {
+  const seen = lastSeen(raw, lang)
+
+  if (seen.kind === "at") {
+    const dormant = seen.days >= DORMANT_AFTER_DAYS
+    return (
+      <td className={`px-3 py-2 ${dormant ? "text-muted-foreground" : "text-foreground"}`}>
+        <span title={seen.exact}>{seen.text}</span>
+      </td>
+    )
+  }
+
+  // Два молчания — две разные строки. Склеить их в одно «—» значит выдать
+  // молчание службы за поведение человека.
+  return (
+    <td className="px-3 py-2 text-muted-foreground">
+      {seen.kind === "never" ? ui.lastSeenNever : ui.lastSeenUnknown}
+    </td>
   )
 }

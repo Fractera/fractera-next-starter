@@ -18,6 +18,18 @@ export const pl: Partial<HomeCell> = {
     image: 'homePage',
     imageAlt: 'Szablon startowy SaaS',
   },
+  // 🔒 ЛЕНТА НАПРАВЛЕНИЙ — ПЕРВОЕ, ЧТО ИДЁТ ЗА ПЕРВЫМ ЭКРАНОМ (владелец
+  // 2026-08-22). Человек, только что прочитавший, ЧТО это, сразу видит, ЧТО этим
+  // строят: двадцать два направления проходят перед ним прежде любых доводов.
+  // Она стоит вне ленты страницы, во всю ширину, вместе с рядом ярлыков.
+  { kind: 'projectTypeMarquee' },
+  // 🔒 РЯД МЕР УШЁЛ ВНИЗ, под виджет безопасности (владелец 2026-08-22). Три
+  // множителя — это довод, а доводу место после того, как названа ценность:
+  // сначала «безопасность встроена в основу», потом «во сколько раз дешевле»,
+  // и только потом «как это работает».
+  //
+  // Механически: ряда мер больше нет среди поднятых видов (`LEAD_KINDS` в
+  // `_data/index.ts`), поэтому он рисуется в ленте страницы — первым её блоком.
   {
     kind: 'metrics',
     items: [
@@ -117,11 +129,6 @@ export const pl: Partial<HomeCell> = {
     ],
   },
   { kind: 'statement', text: 'I to nie jest rada, lecz reguła produktu: dopóki choć jeden przypadek jest niezatwierdzony, panel utrzymuje włączony alarm, a agent programujący odmawia budowy. Budowanie na nieprzeczytanym domyśle kosztuje więcej niż niebudowanie wcale.' },
-  // 🔒 ЛЕНТА НАПРАВЛЕНИЙ СТОИТ ПОД QUIZ, А НЕ ПОД ПЕРВЫМ ЭКРАНОМ (владелец
-  // 2026-08-22). Наверху она была украшением: человек ещё не знает, зачем ему
-  // список направлений. Здесь она довод — Quiz объясняет, КАК выбрать, а лента
-  // показывает, ИЗ ЧЕГО. Две связанные вещи стоят рядом.
-  { kind: 'projectTypeMarquee' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Weź za darmo i skaluj' },
   {
     kind: 'cards',

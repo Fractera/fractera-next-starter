@@ -77,7 +77,13 @@ export default async function Catalogue({ lang }: { lang: string }) {
        шапкой, и воздух у неё обязан быть тот же, что у блога, постов и правовых
        страниц. Своё значение стояло не по решению, а потому что решение
        принималось в этом файле. */
-    <PageShell jsonLd={<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />}>
+    /* 🔒 РИТМ ЛЕНТЫ — НА КОЛОНКЕ, А НЕ ОТСТУПОМ У СЕТКИ (владелец 2026-08-22:
+       карточки касались черты под шапкой). Ровно так это уже сделано у списка
+       блога — `flex flex-col gap-12`, — и повторить его дешевле, чем завести
+       здесь своё число: два похожих списка с разным воздухом читаются как
+       недоделка, а не как решение. Правка одна, а лечит и сетку, и пустое
+       состояние, и кнопку под ними. */
+    <PageShell className="flex flex-col gap-12" jsonLd={<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />}>
       <PageHeader lang={lang} breadcrumbs={[{ label: t.title }]} title={t.title} subtitle={t.subtitle} />
 
       {products.length === 0 ? (

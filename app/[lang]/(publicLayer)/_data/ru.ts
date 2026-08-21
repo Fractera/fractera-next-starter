@@ -30,6 +30,7 @@ export const ru: Partial<HomeCell> = {
   {
     kind: 'badges',
     items: [
+      { label: 'Open Code', tone: 'code' },
       { label: '82 языка', tone: 'reach' },
       { label: 'SEO из коробки', tone: 'reach' },
       { label: 'AIO — агентный обход', tone: 'reach' },

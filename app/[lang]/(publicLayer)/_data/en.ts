@@ -32,6 +32,12 @@ export const en: HomeCell = {
   {
     kind: 'badges',
     items: [
+      // 🔒 ПЕРВЫМ И БЕЗ ПЕРЕВОДА — решение владельца 2026-08-22. «Open Code» это
+      // ИМЯ лицензионной модели (source-available), а не описание свойства: у него
+      // есть точное определение, и перевод его теряет — «открытый код» читается
+      // как open source по OSI, чем эта лицензия не является. Имя остаётся одним
+      // и тем же во всех языках, как остаётся «SEO» и «AIO» строкой ниже.
+      { label: 'Open Code', tone: 'code' },
       { label: '82 languages', tone: 'reach' },
       { label: 'SEO built in', tone: 'reach' },
       { label: 'AIO agentic browsing', tone: 'reach' },

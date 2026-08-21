@@ -60,11 +60,14 @@ right role               → the data
 403 rather than 404: the person is authenticated, there is nobody to hide the route's existence from,
 and naming the required role gives the interface something to say.
 
-🔒 **A proxying door cannot be more permissive than the service behind it.** Built here as
-`['admin','architect']` per the plan, and the auth service turned out to allow **architect only** —
-an `admin` would have passed our lock and collected a 403 from the service, so the interface would
-promise access and then refuse it, with the cause split across two places. Read the upstream handler
-and repeat its right; do not invent your own.
+🔒 **A proxying door cannot be more permissive than the service behind it.** Written here as
+`['admin','architect']`, while the auth service allowed **architect only** — an `admin` would have
+passed our lock and collected a 403 from the service, so the interface would promise access and then
+refuse it, with the cause split across two places.
+
+**The fix ran the other way, and that is the lesson:** the owner wanted administrators on this page,
+so the SERVICE was widened and the door followed. Narrowing the door would have hidden his decision
+in our code. Read the upstream handler, and when its right is wrong, change it there — not here.
 
 ## 3. Where the data lives, and where it must not
 
@@ -79,6 +82,44 @@ moves from an IP to a domain without a rebuild — and translate failure honestl
 is its status; the service not answering at all is **502**, not 500.
 
 Data that belongs to this project goes in `SCHEMA` (`lib/db/index.ts`) as usual — see `use-code-shape`.
+
+## 3b. What the page is MADE OF, and what goes in the hole
+
+A page here is still a list of blocks in a language cell — the shell, the heading, the explanation and
+the chrome are content, exactly as on a static page (`use-static-pages`). The difference is one hole
+in that list where something live stands. Deciding WHAT stands there is the first question of this
+skill, and it is answered before the first file:
+
+| The thing you need | Kind | Where it lives |
+|---|---|---|
+| shows and behaves for THIS route only — a table, a picker, a card of one entity | **widget** | `_widgets/dynamic/<name>/` inside the route |
+| real logic a SECOND project would want, and it needs the build — a calculator, a converter, an editor | **tool** | `_tools/<id>/`, registry, mirror in the panel |
+| the same view a neighbouring route already has | neither — that is the neighbour's widget, and you do NOT reach into it | see below |
+
+The third row is the one that costs money: two routes needing "the same table" is not a reason to
+share one. Four product tables were deliberately split for that reason. Copy the shape, not the file.
+
+## 3c. 🔒 The page is finished even when its widget is not
+
+**A missing widget or tool does not fail the page, and it does not fail the step.** Data that does not
+exist yet, a platform field nobody writes, a service that has no such door — these are ordinary
+branches with a defined exit, not a verdict about the project:
+
+1. **Finish the page.** Shell, words, chrome, gates, deployment. A page with an honest empty state is a
+   finished page — and an empty state that says WHY ("the service does not report this yet") is worth
+   more than a page that was never built.
+2. **Say it out loud to the owner** — what could not be made, what it depends on, and who owns that
+   dependency (the platform, a key, a decision of his).
+3. **Open the next step for it**: a plan in `development-docs/development-steps/new-steps/` named for
+   the missing thing. The widget becomes its own piece of work, sized honestly.
+4. **Close the current step as a success**, naming in its summary what was deferred and where it went.
+
+🔒 **Do not stall the whole page waiting for an answer, and do not invent the data.** Both are worse
+than the honest half: the first delivers nothing, the second delivers a lie that looks like a feature.
+Refusing to build anything at all is the same mistake wearing caution's clothes.
+
+**What "an error from the widget" means here** — the data source is absent or silent, a field the
+service never fills, a right nobody granted. Not: your code does not compile. That one you fix.
 
 ## 4. The widget owns the behaviour
 
@@ -105,12 +146,15 @@ widget's own words are the ten-language page set. Both resolve **on the server**
 a client file importing a dictionary ships every language to the browser. During construction write
 the enabled set and record the rest — `use-multi-lang`.
 
-## 5. The page must not exist for search
+## 5. The page must not exist for search — and that is all the SEO here
 
 The protected layout declares `robots: { index: false }` (`check:protected` enforces it), the route
-is absent from `app/sitemap.ts` and from `lib/aio/surfaces.ts`, and it has no markdown twin. A crawler
-that reached it would be handed a login form, and a map listing closed addresses invites an agent to
-knock where it was not called.
+is absent from `app/sitemap.ts` and from `lib/aio/surfaces.ts`, and it has no markdown twin. A crawler that reached it would be handed a login form, and a map listing closed addresses invites an
+agent to knock where it was not called.
+
+🔒 **Nothing else from the search surface applies here.** No canonical, no hreflang, no structured
+data, no markdown twin, no entry in `robots`. Reaching for `use-seo` on a page behind a role is work
+spent to make invisible things findable — and the two skills disagree on purpose.
 
 ## 6. Before you call it done
 

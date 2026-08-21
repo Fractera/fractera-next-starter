@@ -42,6 +42,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const lang of SUPPORTED_LANGUAGES) {
     out.push({ url: urlFor(lang, ""), changeFrequency: "daily", priority: 1 })
     out.push({ url: urlFor(lang, "/products"), changeFrequency: "daily", priority: 0.8 })
+    // «О нас» лежит в папке `(footerPages)`, но перечислена ЗДЕСЬ, а не в
+    // `FOOTER_PAGES` ниже: она стоит и в верхнем меню, её ищут по имени
+    // компании, и `yearly` с приоритетом 0.3 сказали бы о ней неправду. Папка
+    // выбрана по требованию сторожа ко-локации (данные записи обязаны лежать на
+    // два уровня ниже вкладки), а не по смыслу «правовой документ».
+    out.push({ url: urlFor(lang, "/about-us"), changeFrequency: "monthly", priority: 0.6 })
     // 🔒 БЛОГ И ЕГО ПОСТЫ — ЗДЕСЬ, А НЕ В КАРТЕ ТОВАРОВ (найдено 2026-08-13).
     //
     // Карта перечисляла главную и товары, а блога не знала вовсе: раздел

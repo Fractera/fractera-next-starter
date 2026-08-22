@@ -27,7 +27,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const LANG_DIR = path.join(ROOT, "app", "[lang]", "(designLayer)");
+const LANG_DIR = path.join(ROOT, "app", "[lang]");
 
 const errors = [];
 const warnings = [];

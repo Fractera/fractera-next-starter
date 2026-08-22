@@ -1,8 +1,8 @@
-import { productsUi } from "@/app/[lang]/(designLayer)/(protectedLayer)/(staff)/manage/products/_data/ui.i18n"
-import { accountingProductsUi } from "@/app/[lang]/(designLayer)/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n"
-import { administrationProductsUi } from "@/app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/products/_data/ui.i18n"
-import { shoppingProductsUi } from "@/app/[lang]/(designLayer)/(protectedLayer)/(account)/shopping/products/_data/ui.i18n"
-import { administrationUsersUi } from "@/app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/users/_data/ui.i18n"
+import { productsUi } from "@/app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n"
+import { accountingProductsUi } from "@/app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n"
+import { administrationProductsUi } from "@/app/[lang]/(protectedLayer)/(admin)/administration/products/_data/ui.i18n"
+import { shoppingProductsUi } from "@/app/[lang]/(protectedLayer)/(account)/shopping/products/_data/ui.i18n"
+import { administrationUsersUi } from "@/app/[lang]/(protectedLayer)/(admin)/administration/users/_data/ui.i18n"
 import type { DrawerLink } from "@/components/menu/account/account-drawer.client"
 
 // РАБОЧИЕ РАЗДЕЛЫ, которые ящик аккаунта показывает вошедшему.

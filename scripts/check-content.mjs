@@ -19,7 +19,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs"
 import { join, relative, sep } from "node:path"
 
 const ROOT = process.cwd()
-const APP = join(ROOT, "app", "[lang]", "(designLayer)")
+const APP = join(ROOT, "app", "[lang]")
 const PUBLIC = join(ROOT, "public")
 
 const problems = []

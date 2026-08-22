@@ -1,14 +1,28 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "@/providers/theme-provider.client";
 import { ThemeInit } from "@/components/theme-init";
 import { AppWidthInit } from "@/components/app-width-init";
 import { buildDesignCss } from "@/lib/design-css";
+import { DrawerProvider } from "@/providers/drawer-provider.client";
+import { TopMenu } from "@/components/menu/top/top-menu.server";
+import { FooterMenu } from "@/components/menu/footer/footer-menu.server";
+import { DrawerMenu } from "@/components/menu/drawer/drawer-menu.server";
+import { ViewportBadge } from "@/components/dev/viewport-badge.client";
 import { bodyFontClass } from "@/lib/fonts";
 import { getAppConfig } from "@/config/app-config";
 import { constructMetadata } from "@/lib/construct-metadata";
 import { buildOrganizationSchema, buildWebSiteSchema, buildLocalBusinessSchema } from "@/lib/jsonld";
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config";
+import { readBannerConfig } from "./_components/cookie-banner/banner-config";
+import { CookieBanner } from "./_components/cookie-banner/cookie-banner.client";
+import { bannerUi } from "./_components/cookie-banner/cookie-banner.i18n";
+import { featureOn } from "@/config/platform-config";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw.client";
+import { InstallPrompt } from "@/components/pwa/install-prompt.client";
+import { installUi } from "@/components/pwa/install-prompt.i18n";
 import { IosSplash } from "@/components/pwa/ios-splash";
 
 // Root layout for the localized public surface (step 131). This zone OWNS <html>/
@@ -18,23 +32,7 @@ import { IosSplash } from "@/components/pwa/ios-splash";
 // (22slots rule: always validate the segment, never just trust it). Static-first:
 // generateStaticParams enumerates the languages, the subtree is ISR (revalidate),
 // and NO dynamic function (headers()/cookies()/auth()) is called here — so the whole
-// [lang] tree stays statically prerendered.
-//
-// 🔒 ОФОРМЛЕНИЕ ОТСЮДА УЕХАЛО (шаг 538, решение владельца 2026-08-22). Меню, подвал,
-// выдвижные панели, баннер согласия, тосты и обвязка приложения живут в
-// `(designLayer)/layout.tsx`. Рядом стоит `(freeLayer)` — пустой слой для страниц с
-// кастомным дизайном; он получает голый `<body>` и рисует что угодно.
-//
-// 🔒 ЗДЕСЬ ОСТАЛОСЬ ТО, БЕЗ ЧЕГО СТРАНИЦА ПЕРЕСТАЁТ БЫТЬ ДОКУМЕНТОМ, и то, что
-// обязано стоять в `<head>`:
-//   • `<html lang>`, `<body>`, шрифт, метаданные, манифест — идентичность документа;
-//   • перекрытие темы владельца — каскад считается по ПОРЯДКУ СЛЕДОВАНИЯ, и в теле
-//     страницы оно применилось бы раньше файла темы, то есть пропало бы;
-//   • `ThemeInit` — в теле он сработал бы после первой отрисовки и дал вспышку
-//     светлой темы на тёмной; `AppWidthInit` — по той же причине;
-//   • JSON-LD и счётчик — метаданные сайта целиком, они ничего не рисуют.
-// Ничто из перечисленного не рисует интерфейс: кастомная страница получает словарь
-// и метаданные, а меню, подвал и баннер — не получает.
+// [lang] tree stays statically prerendered. See workspace-standards/static-first.md.
 export const revalidate = 600;
 
 export function generateStaticParams() {
@@ -80,7 +78,17 @@ export default async function LangLayout({
   if (!SUPPORTED_LANGUAGES.includes(lang)) notFound();
 
   const cfg = getAppConfig();
-
+  // Cookie-banner strings for this language (step 305) — merged config over the shipped default.
+  const banner = readBannerConfig();
+  // Слова баннера: СВОИ на 82 языках, поверх них — то, что владелец изменил в
+  // панели. Порядок именно такой: пустая настройка не имеет права оставить
+  // баннер без текста, а он делит сообщение по метке ссылки и упал бы.
+  const bannerOn = featureOn("cookieBanner");
+  // Копия сайта на устройстве посетителя — решение владельца, а не наше
+  // умолчание (2026-08-13). Выключенный режим не просто «не регистрируем»: он
+  // СНИМАЕТ воркер и стирает кеши у тех, кому он уже достался.
+  const offlineOn = featureOn("offlineCache");
+  const bannerStrings = { ...bannerUi(lang), ...(banner.languages[lang] ?? {}) };
   const ld: Record<string, unknown>[] = [];
   if (cfg.jsonLd.website) ld.push(buildWebSiteSchema(cfg));
   if (cfg.jsonLd.organization) ld.push(buildOrganizationSchema(cfg));
@@ -135,7 +143,44 @@ export default async function LangLayout({
           </>
         )}
       </head>
-      <body className={`${bodyFontClass} min-h-screen flex flex-col`}>{children}</body>
+      <body className={`${bodyFontClass} min-h-screen flex flex-col`}>
+        <ThemeProvider>
+          {/* Always-present menu shell (step 160): each menu renders nothing until a
+              group enables its slot. DrawerProvider shares the left/right open state
+              between the header toggle icons and the drawer panels (sub-step 3).
+              Footer is always present (site furniture + theme/language). */}
+          <DrawerProvider>
+            <TopMenu lang={lang} />
+            {children}
+            <FooterMenu lang={lang} />
+            {/* Left & right slide-in drawers (shadcn Sheet), controlled by the same
+                DrawerProvider state as the header toggle icons; each renders nothing
+                until a group enables its side's slot. */}
+            <DrawerMenu side="left" lang={lang} />
+            <DrawerMenu side="right" lang={lang} />
+            {/* Индикатор ширины экрана — только в разработке; в боевой сборке
+                компонент вырезается целиком (см. его файл), а не прячется. */}
+            <ViewportBadge />
+            {/* Cookie-consent banner (step 305) — on every public page via this layout. Strings are
+                server-provided per language (readBannerConfig, ISR) so anonymous visitors get a fully
+                localized banner without hitting the gated /api. */}
+            {/* Выключатель панели решает, есть ли баннер вообще. До 2026-08-12
+                он не проверялся: баннер показывался всегда, а переключатель в
+                панели не значил ничего. */}
+            {bannerOn && <CookieBanner lang={lang} strings={bannerStrings} />}
+            <Toaster position="bottom-right" richColors closeButton />
+            {/* Сервис-воркер: офлайн для уже виденных страниц и мгновенное
+                повторное открытие. Стратегия — сеть первой для страниц, поэтому
+                устаревшая страница невозможна (см. public/sw.js). */}
+            <RegisterServiceWorker enabled={offlineOn} />
+            {/* Предложение установить приложение. Слова резолвятся на СЕРВЕРЕ и
+                едут пропсом: словарь на 82 языка не имеет права оказаться в
+                браузере. Кнопка появляется, только когда браузер сам сообщил,
+                что сайт устанавливаем. */}
+            <InstallPrompt strings={installUi(lang)} />
+          </DrawerProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

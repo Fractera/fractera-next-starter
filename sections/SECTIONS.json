@@ -505,9 +505,9 @@
       "type": "testimonials",
       "shape": "quote",
       "fields": "text: string",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the owner's quote, signed from settings",
+      "description": "**Type:** Testimonials and social proof (8). The only kind in this type today, and it carries ONE voice —\nthe owner's, not a customer's.\n\n## What it actually draws\n\nA pull quote with the signature under it: name, role and photo taken from the project settings, not from\nthe content.\n\n🔒 **The drawing itself moved to `sections/pull-quote.server.tsx`** (2026-08-16). The same look was\nneeded by a second block — a product rule with no author — and a copy of the gradient would have drifted\nfrom the original on the first theme edit. What stayed here is the only thing that belongs to this kind:\nTHE SIGNATURE.\n\n🔒 **Three absolute colours were removed earlier** (step 508, caught by a gate during the move):\n`text-gray-400` / `text-gray-500` in the signature and a violet gradient written straight into `style`.\nAll of them looked identical in both themes by construction — the same defect that left the blog black\nunder the light theme.\n\n## When to take it\n\nOne statement the owner stands behind personally, on a page where a person matters more than an\nargument.\n\n## When NOT to take it\n\n- Several testimonials from different people: no kind does that yet. Say so — do not repeat `founder`\n  three times with different names, the signature comes from settings and would be the same every time.\n- A quote from a document or an article — that is `quote`.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "blog/trillion-dollar-service-opportunity",
@@ -544,9 +544,9 @@
       "type": "hero",
       "shape": "hero",
       "fields": "pill?: string",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the mark and the eyebrow above the title",
+      "description": "**Type:** Hero (1). The quietest of the two hero kinds: it carries no words of its own beyond one short\nlabel.\n\n## What it actually draws\n\nThe project logo, centred, and an optional eyebrow line under it. That is all.\n\n🔒 **It does NOT draw the page title.** The H1 is printed by the page factory — the same one that serves\nposts, legal pages and the home page. Putting a title here would produce a second H1 on the page.\n\n🔒 **The logo comes from settings, not from content.** Every project has its own and it changes in the\npanel without a rebuild. Nothing uploaded — no logo is drawn, and that is honest: somebody else's mark\nis worse than none.\n\n## When to take it\n\nThe first screen of a page whose title is set by the page itself, and where you want the mark and a\nshort label above it. Neither logo nor eyebrow — the section renders nothing at all, so do not use it\nas a spacer.\n\n## When NOT to take it\n\n- You need a real landing first screen with words and a picture side by side — that is `heroSplit`.\n- You want a big statement — that is `statement`.",
+      "hasCard": true,
       "usedOn": []
     },
     {
@@ -555,9 +555,9 @@
       "type": "hero",
       "shape": "hero-split",
       "fields": "",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the landing first screen: words left, picture right",
+      "description": "**Type:** Hero (1). The only kind meant to open a landing page.\n\n## What it actually draws\n\nMark and eyebrow centred; under them two columns — the heading with its text and button on the left, an\nillustration on the right.\n\n🔒 **This is the ONE kind that carries the H1 itself.** Everywhere else the title is printed by the page\nfactory. Here it has to stand inside the left column, and outside the grid it cannot get there. A page\nusing this section declares `titleInBody`, and the factory stops printing its own — otherwise the page\ngets two H1s.\n\n🔒 **The picture names a SETTINGS SLOT, not a file.** Every project has its own image and changes it in\nthe panel without a rebuild. Hard-coding a path here would ship one picture to every customer.\n\n🔒 **Its own width limit: 56rem, and it is a meaning decision** (owner, 2026-08-15). The section spans\nthe full screen and ignores the width toggle, but its CONTENT must not stretch: on a 2500px monitor a\nheading and a picture pushed to opposite edges read as a broken page, not a wide one.\n\n## When to take it\n\nThe first screen of a landing page — the one where the offer has to be readable in three seconds.\n\n## When NOT to take it\n\n- On a post, a legal page or a catalogue: they get their title from the factory, and this section would\n  fight it.\n- More than once on a site. Two different first screens teach the visitor that the site has no front\n  door.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -572,9 +572,9 @@
       "type": "benefits",
       "shape": "badges",
       "fields": "items: BadgeItem[]",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "a row of capability labels",
+      "description": "**Type:** Benefits and value (2). The shortest way to say \"it can do all of this\" without a paragraph.\n\n## What it actually draws\n\nLabels wrapped into a centred row. Each has a `tone`, and the tone is what makes the row work.\n\n🔒 **Colour here WORKS, it does not decorate.** Eleven words split into four groups the eye reads before\nit reads: data, reach, access, code. Give every label the same tone and the row becomes a pile.\n\n🔒 **The tone map lives in `sections/tone.ts`, not in this renderer** (2026-08-16). It used to live\nhere, and a second kind (`noBill`) started showing labels too — a copy would have drifted on the first\nedit, and \"data\" on one row would be a different colour from \"data\" on the row below.\n\n**Label size comes from the type scale (`--fs-eyebrow`), not from a Tailwind step** — otherwise it stops\nmoving when the owner changes `--type-scale` in the panel.\n\n## When to take it\n\nA dense list of capabilities where each item is two or three words. Grouping matters more than detail.\n\n## When NOT to take it\n\n- Items need explaining — that is `cards`.\n- Items are numbers — that is `metrics`.\n- There are two or three of them: a row of three labels looks like something failed to load.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -600,8 +600,8 @@
       "type": "trust",
       "shape": "numbers",
       "fields": "items: { value: string; label: string }[]",
-      "title": "цифры, которые доказывают",
-      "description": "**Семейство:** доказательство (`proof`). Отвечает на вопрос читателя «а правда ли?» — коротким\nчислом, а не абзацем.\n\n## 🔒 Ровно ТРИ элемента\n\nВёрстка рендерера: `sm:grid-cols-3` плюс `divide-x` — три колонки с разделителями между ними,\nначиная с малого экрана. **На телефоне колонка одна**, и там любое число элементов ложится ровно —\nдефект живёт только на широком экране, то есть там, где страницу смотрит владелец.\n\n**Что ломается на четвёртом.** Он падает на второй ряд ОДИН, в левую колонку, а справа от него\nостаётся пустая треть с висящим разделителем. Смотрится не как «ещё одна метрика», а как обрыв.\nВладелец назвал это дословно «жуткое уродство» (2026-08-21) — и был прав: сетка с разделителями\nобещает симметрию, четвёртый элемент её отменяет и ничего не даёт взамен.\n\n**Два элемента** оставляют пустую треть справа. Формально работает, выглядит недосчитанным.\n\nТип этого пока не стережёт: `items` объявлен массивом без ограничения (`lib/content/blocks/types.ts`),\nто есть четвёртый элемент собирается молча. Пока это так — считать глазами.\n\n## Когда брать\n\nЕсть **три** числа, каждое из которых читатель может проверить или хотя бы соотнести с опытом:\nво сколько раз, сколько минут, сколько людей, с какого года.\n\n## Когда НЕ брать\n\n- Число одно — это `statement` или врезка, а не сетка из одной колонки.\n- Чисел много и они однородны — это `table`: таблица не обещает симметрии и потому её не нарушает.\n- «Числа» на самом деле свойства («быстро», «надёжно», «дёшево») — это `badges`.\n- Уже стоит `metrics` на этой странице: вид на странице не повторяется (правило владельца\n  2026-08-22). Второе доказательство даётся другим рисунком — `quote`, `table`, `flow`.\n\n## Правила владельца\n\n- **2026-08-21 — три и только три.** Повод: при переиспользовании секции агент поставил четвёртую\n  колонку, и она легла по левому краю. Правило записано вместо молчаливой правки, чтобы не\n  повторилось у следующего.",
+      "title": "the numbers that prove it",
+      "description": "**Type:** Trust and logos (10). Answers the reader's \"is that actually true?\" with a short number\ninstead of a paragraph.\n\n## 🔒 Exactly THREE items\n\nThe renderer is `sm:grid-cols-3` plus `divide-x` — three columns with dividers between them, from the\nsmall screen up. **On a phone there is one column**, and any number of items falls into place there —\nthe defect lives only on a wide screen, which is exactly where the owner looks at his page.\n\n**What breaks on the fourth.** It drops to a second row ALONE, into the left column, with an empty\nthird beside it and a divider hanging in the air. It reads not as \"one more metric\" but as a page that\ngave up. The owner called it, word for word, \"жуткое уродство\" (2026-08-21) — and he was right: a grid\nwith dividers promises symmetry, and the fourth element cancels that promise without giving anything\nback.\n\n**Two items** leave an empty third on the right. Formally fine, visibly short.\n\nThe type does not guard this yet: `items` is declared as an unbounded array\n(`lib/content/blocks/types.ts`), so a fourth element compiles in silence. Until that changes — count\nwith your eyes.\n\n## When to take it\n\nYou have **three** numbers, each of which the reader can check or at least measure against experience:\nhow many times over, how many minutes, how many people, since which year.\n\n## When NOT to take it\n\n- One number — that is `statement` or a callout, not a grid with one column filled.\n- Many numbers, all alike — that is `table`: a table promises no symmetry and therefore breaks none.\n- The \"numbers\" are really properties (\"fast\", \"reliable\", \"cheap\") — that is `badges`.\n- `metrics` already stands on this page: a kind is not repeated on one page (owner's rule, 2026-08-22).\n  A second proof is given by a different shape — `quote`, `table`, `flow`.\n\n## Owner's rules\n\n- **2026-08-21 — three and only three.** Occasion: reusing the section, the agent added a fourth column\n  and it landed against the left edge. Written down instead of a silent fix, so the next agent does not\n  repeat it.",
       "hasCard": true,
       "usedOn": [
         {
@@ -617,9 +617,9 @@
       "type": "how-it-works",
       "shape": "steps",
       "fields": "badge?: string; title: string; note?: string; steps: { title: string; text: string }[]",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "how it works, step by step",
+      "description": "**Type:** How it works (3). The only kind in this type today.\n\n## What it actually draws\n\nA titled section with steps that light up in order, and light travelling along the link between them.\nEach step has its own title and text.\n\n🔒 **The heading uses the `content` variant, and that is a corrected mistake** (2026-08-16, spotted by\nthe owner at first glance). It stood as `variant=\"ui\"`. The typography primitive splits variants by the\nMEANING of the surface: `content` is the storefront — home page, posts, legal pages, catalogue; `ui` is\nwork screens. The home page is a storefront, so there is nothing to argue about.\n\nThe cost of that mistake was visible to the eye: two standalone sections stood side by side with\nDIFFERENT headings — one sans at 18px, the next serif at 24px. Exactly the mismatch the primitive\nexists to prevent.\n\n## When to take it\n\nA process with an order: first this, then that. Three steps read best; more than five and the section\nturns into a list that happens to be drawn as cards.\n\n## When NOT to take it\n\n- The pieces are equal and have no order — that is `cards`. Cards promise no sequence.\n- It is one process shown in two states, before and after — that is `problemSolution`.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -634,9 +634,9 @@
       "type": "comparison",
       "shape": "two-columns",
       "fields": "",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "cases on the left, the chosen one broken down on the right",
+      "description": "**Type:** Comparison (6). The only kind in this type today.\n\n## What it actually draws\n\nTwo halves: a list of cases on the left, and on the right the one selected — \"what you do\" on top,\n\"why it works here\" below.\n\n🔒 **Not a single line of script, and that is the main decision of this kind.** The example it was taken\nfrom switches tabs with React state: without JavaScript there is not one case on the page, and the\ncrawler gets a separate invisible copy of the text — an admission that the visible version does not\nserve it. Here the switching is done by the browser itself: the list is `radio` inputs, the labels are\ntheir labels, and showing the right half is a `:checked` rule in `styles/globals.css`.\n\nWhat that buys at once: the text of ALL cases sits in the server markup; a person without scripts uses\nthe section fully, not \"tolerably\"; the keyboard works because it is a real form control.\n\n## When to take it\n\nTwo things set against each other — old way versus new, us versus them, before versus after. Or several\ncases where the visitor picks the one that is his.\n\n## When NOT to take it\n\n- The pieces are not opposed, they simply differ — that is `cards`.\n- It is a real table of ticks and crosses — that is `table`.\n- There is only one case: the left column becomes a list of one, and the section looks broken.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -651,8 +651,8 @@
       "type": "benefits",
       "shape": "cards",
       "fields": "badge?: string; title: string; note?: string; cols?: 2 | 3; children: Block[]",
-      "title": "раздел карточками",
-      "description": "**Семейство:** разбор (`breakdown`). Отвечает на «из чего это состоит» или «какие тут варианты» —\nнесколькими равноправными кусками, между которыми читатель выбирает или которые сравнивает.\n\n## Число карточек кратно колонкам\n\n`cols` принимает **2 или 3** (умолчание — 3), и сетка не переносится по ширине: `md:grid-cols-2`\nили `md:grid-cols-3`.\n\n**Что ломается.** Число карточек, не кратное числу колонок, оставляет последний ряд неполным — одна\nкарточка под тремя, прижатая влево. Это тот же дефект, что у `metrics`, и владелец обжёгся на нём\nдважды за один день (2026-08-21): в первый раз с числами, во второй с карточками.\n\nЗначит рабочие пары: **3 колонки — 3, 6, 9 карточек**; **2 колонки — 2, 4, 6**. Четыре карточки при\nтрёх колонках — самая частая ошибка, потому что «четыре» кажется естественным числом.\n\n**Пятая карточка при трёх колонках законна ровно в одном случае:** если ряд из двух внизу читается\nкак отдельная пара по смыслу, а не как остаток. Это суждение, а не правило.\n\n## Когда брать\n\nТри и больше равноправных куска, у каждого свой заголовок и своё содержимое. Внутри карточки может\nжить что угодно — абзац, список, подзаголовок: карточка это контейнер, а не строка.\n\n## Когда НЕ брать\n\n- Куски НЕ равноправны, один главнее — это `panel` или `callout`.\n- Между ними есть порядок, первый предшествует второму — это `flow`: карточки порядка не обещают.\n- Кусков ровно два и они противопоставлены — `problemSolution` или `columns`.\n- Это числа, а не рассказы — `metrics`.\n- `cards` уже стоит на этой странице: вид не повторяется (правило владельца 2026-08-22).\n\n## Правила владельца\n\n- **2026-08-21 — не ставить карточку сверх кратности.** Повод: при переиспользовании секции агент\n  добавил четвёртую карточку к трём, и последний ряд развалился.",
+      "title": "a section made of cards",
+      "description": "**Type:** Benefits and value (2). Answers \"what is this made of\" or \"what are my options\" — with\nseveral equal pieces the reader chooses between or compares.\n\n## The number of cards is a multiple of the columns\n\n`cols` takes **2 or 3** (default 3), and the grid does not reflow by width: it is `md:grid-cols-2` or\n`md:grid-cols-3`.\n\n**What breaks.** A card count that is not a multiple of the column count leaves the last row\nincomplete — one card under three, pushed to the left. It is the same defect `metrics` has, and the\nowner was burned by it twice in one day (2026-08-21): first with numbers, then with cards.\n\nSo the working pairs are: **3 columns — 3, 6, 9 cards**; **2 columns — 2, 4, 6**. Four cards in three\ncolumns is the most common mistake, because \"four\" feels like a natural number.\n\n**A fifth card in three columns is legal in exactly one case:** when the bottom row of two reads as a\npair by meaning, not as a remainder. That is a judgement, not a rule.\n\n## When to take it\n\nThree or more equal pieces, each with its own heading and its own content. Anything can live inside a\ncard — a paragraph, a list, a subheading: a card is a container, not a line.\n\n## When NOT to take it\n\n- The pieces are NOT equal, one matters more — that is `panel` or `callout`.\n- There is an order between them, the first precedes the second — that is `flow`: cards promise no\n  sequence.\n- There are exactly two and they are opposed — `problemSolution` or `columns`.\n- They are numbers, not stories — that is `metrics`.\n- `cards` already stands on this page: a kind is not repeated (owner's rule, 2026-08-22).\n\n## Owner's rules\n\n- **2026-08-21 — never add a card beyond the multiple.** Occasion: reusing the section, the agent added\n  a fourth card to three, and the last row fell apart.",
       "hasCard": true,
       "usedOn": [
         {
@@ -702,9 +702,9 @@
       "type": "pricing",
       "shape": "statement",
       "fields": "",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the invoices that will not come",
+      "description": "**Type:** Pricing and plans (7). The only kind in this type today, and it argues about price from the\nother side: not what you pay, but what you stop paying.\n\n## What it actually draws\n\nA named section: an H2 above, a list of other companies' names struck through with what you no longer\nbuy from them, and an H3 conclusion below.\n\n🔒 **Two headings of different levels, and it is not a repetition.** The H2 on top NAMES the section:\nwithout it the section stood in the middle of the page nameless — there were arguments, but the page did\nnot say whose. The H3 below is the CONCLUSION, and it has to come after the list: three struck-through\nnames are the evidence, the conclusion follows from them. Put the conclusion on top and the reader gets\na verdict before its grounds — that is asking him to take your word.\n\n🔒 **The NAME is struck through, not the whole phrase.** A struck-through line \"you do not pay Vercel\"\nreads as a cancelled statement — the exact opposite of what is meant.\n\n## When to take it\n\nThe pricing part of a landing page where the argument is savings, not a price list.\n\n## When NOT to take it\n\n- You need plans with prices and a \"popular\" one: no kind does that yet — say so instead of bending\n  this one.\n- The list is your own features, not somebody else's invoices — that is `cards` or `badges`.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -719,9 +719,9 @@
       "type": "trust",
       "shape": "marquee",
       "fields": "title: string; note?: string",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the language ribbon, closing the page",
+      "description": "**Type:** Trust and logos (10). An outro section: it ends a page, it does not open one.\n\n## What it actually draws\n\nA ribbon of languages crawling left to right — flag and the language name written in that language,\nlonger than the screen can hold.\n\n🔒 **What it proves.** Eighty-two languages is a claim that means nothing as a list in a sentence. The\nribbon shows them in the face, one after another. That is also what makes it an example of a section\nthat needs the full screen width.\n\n🔒 **ALL 82, not the enabled set.** Two languages are on today, ten tomorrow — the ribbon is about what\nthe product can do, not about the current setting. Hence `ALL_LANGUAGE_METADATA`, not\n`SUPPORTED_LANGUAGES`.\n\n🔒 **The movement is CSS, without a line of JS.** The page must work with scripts off, and a ribbon that\nonly exists after hydration is a ribbon the crawler never sees.\n\n## When to take it\n\nThe very bottom of a page where breadth of reach is the argument.\n\n## When NOT to take it\n\n- In the middle of a page: it takes the full width and cuts the reading in half.\n- Twice on one site. It is a closing gesture; a second one turns it into wallpaper.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",
@@ -736,9 +736,9 @@
       "type": "trust",
       "shape": "marquee",
       "fields": "title?: string; note?: string",
-      "title": null,
-      "description": null,
-      "hasCard": false,
+      "title": "the ribbon of directions",
+      "description": "**Type:** Trust and logos (10). Deliberately the same breed of section as the language ribbon.\n\n## What it actually draws\n\nA ribbon of twenty-two cards naming what can be built on this product — from a landing page to a company\nbrain — each with one line saying how it differs from its neighbour.\n\n🔒 **What it proves.** \"Build anything\" is a claim that means nothing. The ribbon shows the specifics in\nthe face.\n\n🔒 **The directions come from the CATALOGUE, not from page content.** The list lives in\n`config/project-types.ts` and is the same one the owner picks his project structure from in the panel. A\nsecond copy inside a language cell would drift from the panel on the first direction added.\n\n## When to take it\n\nA page that has to answer \"what is this even for\" with breadth rather than depth.\n\n## When NOT to take it\n\n- Right next to `languageMarquee`: two ribbons in a row read as one long ribbon, and both stop proving\n  anything.\n- When the visitor already knows what he is building — then breadth is noise.",
+      "hasCard": true,
       "usedOn": [
         {
           "page": "(home)",

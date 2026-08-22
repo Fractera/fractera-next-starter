@@ -8,7 +8,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **29** · рендереров: **29** · карточек: **2**
+Видов: **29** · рендереров: **29** · карточек: **11**
 
 | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|
@@ -25,22 +25,22 @@
 | `callout` | — | — | title: string; text: string | — |
 | `table` | — | — | headers: string[]; rows: string[][]; caption?: string | — |
 | `docref` | — | — | title: string; summary: string; href: string; label?: string; kicker?: string | — |
-| `founder` | — | — | text: string | — |
+| `founder` | — | the owner's quote, signed from settings | text: string | [карточка](blocks/founder.md) |
 | `columns` | — | — | children: Block[]; cols?: 2 \| 3 | — |
 | `group` | — | — | children: Block[] | — |
-| `hero` | — | — | pill?: string | — |
-| `heroSplit` | — | — | — | — |
-| `badges` | — | — | items: BadgeItem[] | — |
+| `hero` | — | the mark and the eyebrow above the title | pill?: string | [карточка](blocks/hero.md) |
+| `heroSplit` | — | the landing first screen: words left, picture right | — | [карточка](blocks/heroSplit.md) |
+| `badges` | — | a row of capability labels | items: BadgeItem[] | [карточка](blocks/badges.md) |
 | `panel` | — | — | tone?: 'plain' \| 'warn' \| 'accent'; eyebrow?: string; title: string; children: Block[] | — |
-| `metrics` | доказательство (`proof`) | цифры, которые доказывают | items: { value: string; label: string }[] | [карточка](blocks/metrics.md) |
-| `flow` | — | — | badge?: string; title: string; note?: string; steps: { title: string; text: string }[] | — |
-| `problemSolution` | — | — | — | — |
-| `cards` | разбор (`breakdown`) | раздел карточками | badge?: string; title: string; note?: string; cols?: 2 \| 3; children: Block[] | [карточка](blocks/cards.md) |
+| `metrics` | — | the numbers that prove it | items: { value: string; label: string }[] | [карточка](blocks/metrics.md) |
+| `flow` | — | how it works, step by step | badge?: string; title: string; note?: string; steps: { title: string; text: string }[] | [карточка](blocks/flow.md) |
+| `problemSolution` | — | cases on the left, the chosen one broken down on the right | — | [карточка](blocks/problemSolution.md) |
+| `cards` | — | a section made of cards | badge?: string; title: string; note?: string; cols?: 2 \| 3; children: Block[] | [карточка](blocks/cards.md) |
 | `card` | — | — | tone?: Tone; children: Block[] | — |
 | `statement` | — | — | text: string | — |
-| `noBill` | — | — | — | — |
-| `languageMarquee` | — | — | title: string; note?: string | — |
-| `projectTypeMarquee` | — | — | title?: string; note?: string | — |
+| `noBill` | — | the invoices that will not come | — | [карточка](blocks/noBill.md) |
+| `languageMarquee` | — | the language ribbon, closing the page | title: string; note?: string | [карточка](blocks/languageMarquee.md) |
+| `projectTypeMarquee` | — | the ribbon of directions | title?: string; note?: string | [карточка](blocks/projectTypeMarquee.md) |
 
 ## Чего в этой таблице нет
 

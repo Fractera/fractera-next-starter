@@ -1,37 +1,38 @@
-# cards — раздел карточками
+# cards — a section made of cards
 
-**Семейство:** разбор (`breakdown`). Отвечает на «из чего это состоит» или «какие тут варианты» —
-несколькими равноправными кусками, между которыми читатель выбирает или которые сравнивает.
+**Type:** Benefits and value (2). Answers "what is this made of" or "what are my options" — with
+several equal pieces the reader chooses between or compares.
 
-## Число карточек кратно колонкам
+## The number of cards is a multiple of the columns
 
-`cols` принимает **2 или 3** (умолчание — 3), и сетка не переносится по ширине: `md:grid-cols-2`
-или `md:grid-cols-3`.
+`cols` takes **2 or 3** (default 3), and the grid does not reflow by width: it is `md:grid-cols-2` or
+`md:grid-cols-3`.
 
-**Что ломается.** Число карточек, не кратное числу колонок, оставляет последний ряд неполным — одна
-карточка под тремя, прижатая влево. Это тот же дефект, что у `metrics`, и владелец обжёгся на нём
-дважды за один день (2026-08-21): в первый раз с числами, во второй с карточками.
+**What breaks.** A card count that is not a multiple of the column count leaves the last row
+incomplete — one card under three, pushed to the left. It is the same defect `metrics` has, and the
+owner was burned by it twice in one day (2026-08-21): first with numbers, then with cards.
 
-Значит рабочие пары: **3 колонки — 3, 6, 9 карточек**; **2 колонки — 2, 4, 6**. Четыре карточки при
-трёх колонках — самая частая ошибка, потому что «четыре» кажется естественным числом.
+So the working pairs are: **3 columns — 3, 6, 9 cards**; **2 columns — 2, 4, 6**. Four cards in three
+columns is the most common mistake, because "four" feels like a natural number.
 
-**Пятая карточка при трёх колонках законна ровно в одном случае:** если ряд из двух внизу читается
-как отдельная пара по смыслу, а не как остаток. Это суждение, а не правило.
+**A fifth card in three columns is legal in exactly one case:** when the bottom row of two reads as a
+pair by meaning, not as a remainder. That is a judgement, not a rule.
 
-## Когда брать
+## When to take it
 
-Три и больше равноправных куска, у каждого свой заголовок и своё содержимое. Внутри карточки может
-жить что угодно — абзац, список, подзаголовок: карточка это контейнер, а не строка.
+Three or more equal pieces, each with its own heading and its own content. Anything can live inside a
+card — a paragraph, a list, a subheading: a card is a container, not a line.
 
-## Когда НЕ брать
+## When NOT to take it
 
-- Куски НЕ равноправны, один главнее — это `panel` или `callout`.
-- Между ними есть порядок, первый предшествует второму — это `flow`: карточки порядка не обещают.
-- Кусков ровно два и они противопоставлены — `problemSolution` или `columns`.
-- Это числа, а не рассказы — `metrics`.
-- `cards` уже стоит на этой странице: вид не повторяется (правило владельца 2026-08-22).
+- The pieces are NOT equal, one matters more — that is `panel` or `callout`.
+- There is an order between them, the first precedes the second — that is `flow`: cards promise no
+  sequence.
+- There are exactly two and they are opposed — `problemSolution` or `columns`.
+- They are numbers, not stories — that is `metrics`.
+- `cards` already stands on this page: a kind is not repeated (owner's rule, 2026-08-22).
 
-## Правила владельца
+## Owner's rules
 
-- **2026-08-21 — не ставить карточку сверх кратности.** Повод: при переиспользовании секции агент
-  добавил четвёртую карточку к трём, и последний ряд развалился.
+- **2026-08-21 — never add a card beyond the multiple.** Occasion: reusing the section, the agent added
+  a fourth card to three, and the last row fell apart.

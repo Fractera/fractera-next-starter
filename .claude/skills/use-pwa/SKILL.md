@@ -113,4 +113,11 @@ on the SERVER and travels as a prop; 82 languages have no right to reach the bro
 - `curl /ru/manifest.webmanifest` — `lang`, `name`, `start_url` and shortcuts in that language.
 - In a browser, on HTTPS: install it, launch it from the home screen, and look at the launch screen
   and the label. Clear the worker and caches FIRST, or you are grading the previous build.
+- 🔒 **Proving network-first WITHOUT a phone — plant a stale copy** (done live 2026-08-22). Comparing
+  the cached page with the network one proves nothing: a successful fetch has just rewritten the
+  cache, so both agree whichever strategy is in force. Instead put a KNOWN-FALSE document into
+  `pages-v1` under a real page address, then request that address with an `accept: text/html` header
+  (the worker treats it as a document — see its `isDocument`). The planted copy must NOT come back.
+  The test cleans up after itself: the successful network response overwrites what you planted.
+  A check that cannot fail proves nothing — this one can, and that is the whole point of it.
 - Say plainly which half you proved. "Built and served" is honest; "PWA works" requires a phone.

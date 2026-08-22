@@ -173,8 +173,8 @@ export const en: HomeCell = {
   {
     kind: 'problemSolution',
     badge: 'Moving is easy',
-    title: 'How to move your project to the Fractera architecture',
-    note: 'Your project already runs — on Vercel or somewhere else. And you pay: for hosting, for the database, for image storage, for authorization, for email. Every service bills you separately, and every bill grows as you do. Moving looks impossible — it is not: Fractera takes your project apart and rebuilds it on its own architecture, on your server, where all of that is already there and costs nothing extra.',
+    title: 'How to move your project to the Fractera architecture — from any framework',
+    note: 'Your project already runs — on Vercel or somewhere else. And you pay: for hosting, for the database, for image storage, for authorization, for email. Every service bills you separately, and every bill grows as you do. Moving looks impossible — it is not: Fractera takes your project apart and rebuilds it on its own architecture, on your server, where all of that is already there and costs nothing extra. It does not matter what your project is written in — Next, React, Vue, Laravel, WordPress, plain PHP: the agent reads your code as a description of what your project does, and builds that meaning here. What moves across is your features, not your files.',
     demandLabel: 'What you do',
     answerLabel: 'Why it works on Fractera',
     items: [

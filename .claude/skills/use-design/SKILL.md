@@ -1,87 +1,155 @@
 ---
 name: use-design
 description: >
-  Where design comes from, and WHICH KIND of site you are building. Load it before proposing how a
-  page will look, when the owner says "my own design" or "like nothing else", when he points at a
-  site he likes, and whenever design arrives from outside as real source code — a design skill, an
-  MCP service, extracted tokens. The decision it exists for: a FUNCTIONAL site is assembled from the
-  block catalogue, an AUTHORED one is built whole by external design skills, and offering standard
-  blocks to somebody escaping the templated look is the wrong product rather than caution. Also
-  covers what the owner changes himself in the panel and what he actually sees when he does.
+  Where design comes from, WHICH KIND of site this is, and the fixed look every page inherits. Load it
+  before proposing how a page will look, before writing a heading or spacing by hand, when the owner
+  says "my own design" or points at a site he likes, when design arrives from outside as real source
+  code, and when anything moves on screen. The decision it exists for: a FUNCTIONAL site is assembled
+  from the block catalogue, an AUTHORED one is built whole by external design skills — and offering
+  standard blocks to somebody escaping the templated look is the wrong product, not caution. Also: the
+  type scale, spacing, the page primitives, what the owner changes himself, and what he sees when he does.
 ---
 
 # use-design
 
-> Informational, not binding. **Know a better way for the case in front of you — do it your way and
-> say so.** You are trusted with the creative work on this project.
+> Подсказка, а не закон. **Знаешь способ лучше для случая перед тобой — сделай по-своему и скажи
+> об этом.** Творческая работа в этом проекте доверена тебе.
 
-## 🔒 First decide WHICH KIND OF SITE this is — the answer changes everything below
+---
 
-A modern site is one of two things, and the project serves both. Read the owner's intent before
-reaching for anything:
+## 1. 🔒 Сначала реши, КАКОЙ это сайт — от ответа зависит всё остальное
 
-| | **Functional** — a shop, a panel, a service, documentation | **Authored** — a portfolio, a studio, a personal brand |
+Современный сайт бывает двух родов, и проект служит обоим. Прочитай намерение владельца прежде, чем
+браться за что-либо:
+
+| | **Функциональный** — магазин, панель, сервис, документация | **Авторский** — портфолио, студия, личный бренд |
 |---|---|---|
-| What wins | consistency: the same table, the same card, everywhere | a look nobody else has |
-| Build it from | **the block catalogue** — this is what it is for | **external design skills, MCP services, extracted design** (`use-widgets` ring) |
-| Standard sections | the right answer | **do not offer them** — they are exactly the templated feel he is escaping |
+| Что выигрывает | единообразие: одна и та же таблица, та же карточка, везде | вид, которого нет ни у кого |
+| Из чего строим | **каталог блоков** — он ровно для этого | **внешние дизайн-навыки, MCP-сервисы, снятый дизайн** |
+| Стандартные секции | верный ответ | **не предлагать** — это ровно та шаблонность, от которой он уходит |
 
-**The catalogue of sections is a STARTING EXAMPLE, not a boundary.** It exists so a fresh project is
-not naked on day one, and it is genuinely good for functional surfaces. It has never been a rule that
-pages must be assembled from it.
+**Каталог секций — стартовый ПРИМЕР, а не граница.** Он существует, чтобы свежий проект не был голым
+в первый день, и для функциональных поверхностей действительно хорош. Правилом «страницы собираются
+только из него» он не был никогда.
 
-🔒 **The owner signals a personal style — stop proposing blocks.** "I want my own design", "make it
-like nothing else", "here is the site I like", a reference to a designer or a look: from that moment
-the page is built whole, through the design skills and services available to him — including
-`extract-design-system` for the primitives of a page he points at. Offering him a page assembled from
-standard cards after that is not caution, it is the wrong product.
+🔒 **Владелец обозначил личный стиль — перестань предлагать блоки.** «Хочу свой дизайн», «чтобы не как
+у всех», «вот сайт, который мне нравится», ссылка на дизайнера или на образ: с этой минуты страница
+строится целиком, через доступные ему дизайн-навыки и сервисы — включая `extract-design-system` для
+примитивов страницы, на которую он показал. Предлагать после этого страницу из стандартных карточек —
+не осторожность, а не тот продукт.
 
-**Exceptions that stay standard even then**, because there structure IS the value: the blog and
-articles (a reader wants to read, not to be impressed), legal and footer pages, everything behind a
-role. Say this out loud rather than assuming he meant "everything".
+**Исключения, которые остаются стандартными и тогда**, потому что там ценность и есть структура: блог
+и статьи (читателя хотят читать, а не впечатлять), правовые страницы и подвал, всё, что за ролью.
+Скажи это вслух, а не считай, что он имел в виду «вообще всё».
 
-**Where it is written down:** the owner's choice lives in his project's settings, not in your memory
-of this conversation. If he has stated a personal style, that fact belongs where the next session
-finds it — the step summary in `completed-steps/`, and the product dossier when there is one.
+**Где это записано:** решение владельца живёт в памяти проекта, а не в твоей памяти о разговоре. Заявил
+личный стиль — факт уходит в итог шага (`completed-steps/`), а при наличии продукта — в его досье.
 
-## The default is one brand, and that is the product, not a limitation
+---
 
-For the functional case the project is standardised into a single visual identity on purpose.
-Headings, lists, tables, cards and callouts are taken ready-made and look the same everywhere; nobody
-re-styles anything, and the design cannot drift page by page. The exceptions below are exceptions,
-not an escape hatch to reach for whenever a page feels plain.
+## 2. По умолчанию — один бренд, и это продукт, а не ограничение
 
-## Design now arrives from outside, and it arrives as CODE
+Для функционального случая проект намеренно сведён к единой визуальной личности. Заголовки, списки,
+таблицы, карточки и врезки берутся готовыми и выглядят везде одинаково; никто ничего не перекрашивает,
+и дизайн не расползается от страницы к странице. Исключения ниже — исключения, а не лазейка, за которой
+тянутся всякий раз, когда страница показалась простоватой.
 
-Modern models produce genuinely beautiful design. It reaches this project through design skills and
-MCP servers — some of them paid — and the good ones do not return advice. They return **real source
-code** for a block or a section, sometimes derived from an example the owner pointed at.
+---
 
-🔒 **By default that code does NOT become ours.** It becomes a **widget** — the ring where writing by
-external design skills and third-party libraries is allowed (the ring table lives in the widgets
-step). Letting foreign markup into the platform's own catalogue would end the single brand: the
-catalogue is closed by construction, every kind is the platform's responsibility forever, and a
-kind that entered by accident is maintained by everyone thereafter.
+## 3. 🔒 Закон: вид не зависит от того, кто имеет право открыть
 
-🔒 **But the owner may promote it, and that must not be forbidden.** If he wants a particular widget
-to become the project's design standard, that is a legitimate decision — his project, his identity.
-Promotion is a deliberate act named in a step, and its price is stated plainly rather than
-discovered later: from that moment the thing belongs to the platform. It needs its renderer, its
-specimen, its translations, its gates, and its mirror on the other side.
+**Ничто во внешности страницы не следует из прав доступа.** Публичная или закрытая, индексируемая или
+за ролью, витрина или таблица администратора — заголовок, шкала, отступы и цвета одни и те же. Доступ
+решает, ЧТО человек видит, и никогда — КАК это набрано.
 
-**The direction that is always wrong is the silent one** — foreign code sliding into `sections/` or
-`components/` because it happened to be pasted there. Nobody decided, and nobody knows it is foreign.
+🔒 **И никогда не выводи визуальное правило из имени папки.** `(protectedLayer)` говорит, кто входит.
+Про внешность он не говорил никогда, и прочитать её оттуда — ровно та ошибка, ради которой этот закон
+записан: однажды агент изобрёл вторую шкалу заголовков «для рабочих экранов», и две приватные страницы
+разошлись вдвое по размеру и разными семействами шрифтов.
 
-## Что владелец меняет сам, и что он при этом увидит
+Одно визуальное исключение существует, оно названо ниже, и оно про место на сайте, а не про права.
+
+---
+
+## 4. Типографика
+
+Вся шкала живёт в `components/ui/typography.tsx` и больше нигде. Заголовок, набранный руками, не
+проходит `npm run check:typography`.
+
+| Роль | Размер | Семейство |
+|---|---|---|
+| `H1` — заголовок страницы, один на страницу | 30 → 36 → 48 px | serif |
+| `H1 scale="hero"` — **единственное исключение**: первый экран главной, +30% | 39 → 47 → 62 px | serif |
+| `H2` | 24 → 30 px (`ui`: 18 → 20) | serif (`ui`: sans) |
+| `H3` / `H4` | 18 → 20 / 16 → 18 px | sans |
+| `P` | 16 → 17 px | sans |
+| `Lead` · `Small` · `Eyebrow` | 18 → 20 / 14 / 12 px | sans |
+
+**Размер никогда не уменьшается с ростом экрана.** На мониторе места больше, а не меньше; то же правило
+у отступов.
+
+**Свечение (`.h1-glow`) — только первый экран главной.** Это метка парадной двери; на странице документа
+оно спорит с текстом.
+
+---
+
+## 5. Отступы и плотность
+
+Воздушно на содержании, плотно на рабочих экранах — и это ЕДИНСТВЕННОЕ место, где они различаются.
+
+| | Отступ страницы |
+|---|---|
+| Страницы содержания (главная, посты, страницы подвала, галерея блоков) | `py-16` |
+| Рабочие экраны (панели продукта, таблицы каталога) | `py-10` |
+
+Ширина одна на весь сайт — `max-w-7xl` (1280px), держит `--app-w`. У первого экрана свой предел
+`--hero-w`; у закрывающей бегущей строки предела нет по замыслу.
+
+---
+
+## 6. Выравнивание
+
+Слева, всегда — кроме четырёх случаев, которые заслужили центр ролью: подпись под изображением, цитата
+основателя, знак с подписью на первом экране и заголовок закрывающей секции во всю ширину.
+
+---
+
+## 7. Шапка страницы, пустые состояния, подписи
+
+Три вещи, которые тоже примитивы, а не решения отдельной страницы:
+
+- **`PageHeader`** — вся верхушка страницы в неизменном порядке: хлебные крошки → надзаголовок (или
+  теги) → `H1` → подзаголовок → строка метаданных. Любую часть можно опустить, менять порядок нельзя.
+  До него на восьми страницах было пять разных сборок, подзаголовок приходил в четырёх размерах, а
+  разделитель появлялся на двух страницах из пяти.
+- **`EmptyState`** — «здесь пока ничего нет». Одна коробка, одна высота, один радиус. Рисовался в пяти
+  местах с тремя высотами (`py-8` / `py-12` / `py-24`), двумя радиусами и тремя размерами текста.
+- **`Small`** — сноски и подписи под блоком. Один размер, 14px.
+
+**Текст внутри элемента управления — не подпись.** Цифры пагинации, чипы, бейджи и ячейки таблиц плотны
+намеренно и остаются как есть: приведение их к 14px сломает элементы, а не унифицирует. Граница такая:
+отдельная проза под блоком — это `Small`, текст внутри контрола принадлежит контролу.
+
+---
+
+## 8. Элементы, на которых настаиваем
+
+Интерактивный интерфейс — только shadcn/ui, иконки — только `lucide-react`, всплывающие сообщения —
+Sonner, текст — `components/ui/typography.tsx`. Самодельная кнопка, выпадающий список или заголовок —
+дефект, а не вариация.
+
+---
+
+## 9. Что владелец меняет сам, и что он при этом увидит
 
 `DESIGN-CONFIG` — цвета по ролям (`primary`, `accent`, `background`, `foreground`, `muted`, `border`,
-`destructive`), шрифты, шкала текста, скругления и плотность. Правит он это **конструктором в
-панели**, а не файлом, и применяется без пересборки.
+`destructive`), шрифты, шкала текста, скругления и плотность. Правит он это **конструктором в панели**,
+а не файлом, и применяется без пересборки.
 
 **Что происходит физически.** Значение уходит в CSS-переменную, а все примитивы и секции знают только
 свою РОЛЬ. Поменял `primary` с жёлтого на тёмно-зелёный — и разом позеленели: кнопки, ссылки в тексте,
 активный пункт меню, цифры в `metrics`, рамка выделенной карточки, полоса прогресса, фокус на поле
-ввода. Ничего перечислять и искать не надо: они не хранят цвет, они спрашивают роль.
+ввода. Перечислять и искать ничего не надо: они не хранят цвет, они спрашивают роль.
 
 🔒 **`light` и `dark` — РАЗНЫЕ значения одной роли.** Цвет, заданный один раз, на второй теме почти
 всегда неверен: тёмный текст на тёмном фоне исчезает целиком. Это первое, что стоит проверить после
@@ -93,61 +161,110 @@ specimen, its translations, its gates, and its mirror on the other side.
 совпадает с CSS.
 
 **Чего он НЕ увидит от смены палитры:** картинки, скриншоты, логотип, чужой блок с вписанным цветом.
-Первые три — данные, последнее — дефект (см. правило токенов в `use-primitives`).
+Первые три — данные, последнее — дефект (правило токенов — в `use-primitives`).
 
-## The owner points at somebody else's site — what you may take from it
+---
 
-He will. During the case interview, "make it like X" is how people describe taste, and it is a
-legitimate brief. You have a real instrument for it, installed in this project:
+## 10. Движение — только в островке, поверх статического близнеца
 
-**`extract-design-system`** (`npx extract-design-system <url>`) drives a headless browser over a
-public page and writes `design-system/tokens.json` and `tokens.css` — the colour palette, type
-scale, spacing, radii, shadows. Not components, not layout: **primitives**.
+Анимация здесь ограничена не вкусом, а поиском: страница, которую двигают целиком, уезжает в динамику и
+отдаёт краулеру разметку с `opacity: 0`. Поэтому:
 
-That output maps onto this project exactly, and that is why it is worth using: our own
-`DESIGN-CONFIG` holds colours by role, fonts, the type scale and shape. Extracted numbers become a
-PROPOSAL for those fields, the owner approves them in the panel, and from that moment they are his
-tokens — no foreign file is left behind anywhere.
+- анимация живёт ВНУТРИ виджета-островка и включается после первого нажатия;
+- под ней всегда лежит статический близнец — то, что видит человек без JavaScript и краулер;
+- разметка у близнеца и у движения общая, подмена 1:1 на любой ширине, без прыжка;
+- `prefers-reduced-motion` выключает движение, не выключая содержимое;
+- цвет движущегося элемента — токены темы, иначе палитра владельца его не перекрасит.
 
-🔒 **Take the SYSTEM, never the identity.** The line is not subtle and it is not ours to blur:
+Образец — `app/[lang]/(publicLayer)/_widgets/static/security-orbit/`; полный разбор — `use-widgets`.
 
-| Take | Never take |
+---
+
+## 11. Дизайн приходит извне, и приходит КОДОМ
+
+Современные модели делают по-настоящему красивый дизайн. В проект он попадает через дизайн-навыки и
+MCP-серверы — часть из них платные, — и хорошие возвращают не советы, а **настоящий исходный код**
+блока или секции, иногда выведенный из примера, на который показал владелец.
+
+🔒 **По умолчанию этот код НЕ становится нашим.** Он становится **виджетом** — тем кольцом, где писать
+внешним дизайн-навыкам и сторонним библиотекам разрешено. Пустить чужую разметку в собственный каталог
+платформы значит покончить с единым брендом: каталог закрыт по построению, каждый вид — вечная
+ответственность платформы, и вид, попавший туда случайно, дальше поддерживают все.
+
+🔒 **Но владелец вправе его повысить, и запрещать это нельзя.** Хочет, чтобы конкретный виджет стал
+стандартом дизайна проекта, — это законное решение: его проект, его личность. Повышение — намеренный
+акт, названный в шаге, и цена называется сразу, а не обнаруживается потом: с этой минуты вещь
+принадлежит платформе. Ей нужен свой отрисовщик, образец, переводы, проверки и зеркало на другой
+стороне.
+
+**Всегда неверное направление — молчаливое:** чужой код, оказавшийся в `sections/` или `components/`
+просто потому, что его туда вставили. Никто не решал, и никто не знает, что он чужой.
+
+---
+
+## 12. Владелец показывает на чужой сайт — что оттуда можно взять
+
+Он покажет. «Сделай как у X» — это то, как люди описывают вкус, и это законное задание. Инструмент для
+него есть, он в проекте установлен:
+
+**`extract-design-system`** (`npx extract-design-system <url>`) прогоняет безголовый браузер по
+публичной странице и пишет `design-system/tokens.json` и `tokens.css` — палитру, шкалу текста, отступы,
+скругления, тени. Не компоненты, не раскладку: **примитивы**.
+
+Его вывод ложится на наш проект точь-в-точь, потому и стоит его использовать: наш `DESIGN-CONFIG`
+держит цвета по ролям, шрифты, шкалу и форму. Снятые числа становятся ПРЕДЛОЖЕНИЕМ для этих полей,
+владелец утверждает их в панели, и с этой минуты это его токены — чужого файла нигде не остаётся.
+
+🔒 **Берём СИСТЕМУ, никогда — личность.** Черта не тонкая, и размывать её не нам:
+
+| Можно взять | Нельзя никогда |
 |---|---|
-| the palette as numbers, the type scale, spacing rhythm, radii, shadow depth | the logo, the wordmark, the icon set |
-| the structural idea — what sits above what, how dense the page is | photographs, illustrations, video |
-| the interaction pattern — what expands, what follows the cursor | the copy: headlines, slogans, product names |
-| — | a typeface bought under a licence that is theirs, not his |
+| палитру числами, шкалу текста, ритм отступов, скругления, глубину теней | логотип, начертание названия, набор иконок |
+| структурную идею — что над чем стоит, насколько плотна страница | фотографии, иллюстрации, видео |
+| приём взаимодействия — что раскрывается, что следует за курсором | тексты: заголовки, слоганы, названия продуктов |
+| — | шрифт, купленный по лицензии, которая принадлежит им, а не ему |
 
-A palette and a spacing scale are craft, and craft travels. A wordmark and a photograph are somebody's
-property, and a customer's site carrying them is a problem the customer inherits — from us.
+Палитра и шкала отступов — ремесло, а ремесло переносится. Начертание названия и фотография — чья-то
+собственность, и сайт клиента, несущий их, — проблема, которую клиент унаследует от нас.
 
-🔒 **The tool itself carries no such warning**, so this paragraph is the warning. It also says openly
-that a single page is not proof of a design system and that a dynamic site yields a partial answer —
-believe it: treat the output as a first draft to show the owner, never as a finished palette.
+🔒 **Сам инструмент такого предупреждения не несёт**, поэтому предупреждение — этот абзац. Он же честно
+говорит: одна страница не доказательство дизайн-системы, а динамический сайт даёт частичный ответ.
+Верь этому: вывод — первый черновик для показа владельцу, а не готовая палитра.
 
-**Where the extracted result may land:** in `DESIGN-CONFIG`, through the owner's approval. Not in
-`sections/`, not in `components/` — a token file is not permission to import foreign markup, and the
-rules above about widgets and promotion apply unchanged.
+**Куда снятое может лечь:** в `DESIGN-CONFIG`, через утверждение владельца. Не в `sections/`, не в
+`components/`: файл токенов не разрешение импортировать чужую разметку, и правила о виджетах и
+повышении выше действуют без изменений.
 
-## 🔒 The tension nobody should discover the hard way
+---
 
-An external service returns compiled-shaped code: a React file with its own markup and styles. But a
-widget, by the owner's own rule, arrives **without a build** — like content. Compiled code cannot.
+## 13. 🔒 Напряжение, которое лучше не обнаруживать в бою
 
-So the artifact has to land in one of three places, and choosing is the work:
+Внешний сервис возвращает код в собранной форме: файл React со своей разметкой и стилями. А виджет, по
+правилу самого владельца, приезжает **без сборки** — как содержимое. Собранный код так не умеет.
 
-- **Expressible in the widget vocabulary** → it becomes a widget, arrives as a description, no build.
-  This is the default and the cheapest.
-- **Genuinely a reusable capability** → it is a **tool**: it goes through the build, gets a home in
-  `_tools/`, a registry entry and a mirror. See `use-tools`.
-- **Becomes the project's identity** → the promotion above: a section, with everything that entails.
+Значит артефакт ложится в одно из трёх мест, и выбрать — это и есть работа:
 
-Answering "which of the three" before writing anything is what this skill exists for. Getting it
-wrong is not a style question: a wow element pasted as a section quietly makes the brand
-un-maintainable, and a capability buried in one route is a tool nobody will ever find again.
+- **выразим словарём виджета** → становится виджетом, приезжает описанием, сборки нет. Умолчание и
+  самое дешёвое;
+- **настоящая переиспользуемая способность** → это **инструмент**: проходит сборку, получает дом в
+  `_tools/`, запись в реестре и зеркало. См. `use-tools`;
+- **становится личностью проекта** → повышение выше: секция со всем, что к ней прилагается.
 
-## What still has to be written here
+Ответить «какое из трёх» до первой строки кода — то, ради чего этот навык существует. Ошибка здесь не
+вопрос вкуса: эффектный элемент, вставленный секцией, тихо делает бренд неподдерживаемым, а
+способность, закопанная в один маршрут, больше никогда никем не будет найдена.
 
-The vocabulary question is open and belongs to the widgets step: how rich the widget description
-must be for the owner to feel no ceiling, and where the honest boundary runs beyond which the answer
-is "this needs a build". Do not invent that boundary in passing — it is a decision, not a detail.
+---
+
+## 14. Если просьба спорит с этим документом
+
+Скажи об этом одной фразой ДО кода: либо просьба — исключение, которое стоит сюда записать, либо
+документ устарел. Молча выбрать одно из двух нельзя.
+
+---
+
+## 15. Чего здесь ещё нет
+
+Вопрос словаря открыт и принадлежит шагу о виджетах: насколько богатым должно быть описание виджета,
+чтобы владелец не упирался в потолок, и где проходит честная граница, за которой ответ — «это требует
+сборки». Не придумывай эту границу мимоходом — это решение, а не деталь.

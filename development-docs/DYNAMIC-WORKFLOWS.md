@@ -3,7 +3,7 @@
 **This document is OFF by default, and that is the correct state for most projects.**
 
 It describes *dynamic workflows* — the capability that lets one request orchestrate waves of agents
-instead of one. It is the counterpart of `SINGLE-AGENT.md`: that document locks multi-agent work, this
+instead of one. It is the counterpart of the law in `CLAUDE.md` ("Как строим"): that law locks multi-agent work, this
 one is the only sanctioned door out, and the door has two locks on it for good reasons.
 
 ## What it actually is
@@ -126,7 +126,7 @@ you can.
 ## Once it is on
 
 - Say **"use a workflow"** on the task itself. Nothing about a task authorises one by itself — not its
-  size, not "independent parts", not "faster in parallel". That sentence stays true from `SINGLE-AGENT.md`.
+  size, not "independent parts", not "faster in parallel". That sentence stays true from the law in `CLAUDE.md`.
 - **Name the guard before the wave.** If you cannot say which command judges the output, you do not have
   a workflow — you have a fan-out with a hope attached.
 - **You approve the plan before it runs.** The prompt lists the planned phases; `View raw script` shows

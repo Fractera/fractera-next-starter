@@ -91,7 +91,12 @@ const sw = read(path.join(ROOT, "public", "sw.js"));
 if (!sw) errors.push("нет public/sw.js — офлайна и быстрого повторного открытия не будет");
 const reg = read(path.join(ROOT, "components", "pwa", "register-sw.client.tsx"));
 if (!reg) errors.push("нет островка регистрации воркера — файл есть, а включить его некому");
-if (layout && !/RegisterServiceWorker/.test(layout)) errors.push("макет не подключает регистрацию воркера");
+// 🔒 Регистрация воркера уехала в СЛОЙ ОФОРМЛЕНИЯ (шаг 538): корневой макет держит
+// только идентичность документа, а обвязка приложения живёт в (designLayer).
+// Страницы свободного слоя воркера намеренно не получают.
+const designLayout = read(path.join(ROOT, "app", "[lang]", "(designLayer)", "layout.tsx"));
+if (!designLayout) errors.push("нет app/[lang]/(designLayer)/layout.tsx — слой оформления не собран");
+if (designLayout && !/RegisterServiceWorker/.test(designLayout)) errors.push("слой оформления не подключает регистрацию воркера");
 
 // 5 — СТРАТЕГИЯ. Правило написано не про стиль, а про класс дефекта: страница из
 // кеша расходится с настоящей в ту же минуту, когда владелец что-то поменял в

@@ -36,6 +36,21 @@ export const platformConfigSchema = z.looseObject({
   parallelRouting: z.boolean().optional(),
   /** Режим разработки: классический · шаги · кейсы · переезд. */
   developmentMode: z.enum(["classic", "steps", "cases", "migration"]).optional(),
+  /**
+   * Откуда берётся чужой проект в режиме `migration` (шаг 533).
+   *
+   * Здесь лежит РЕШЕНИЕ владельца, а не сам чужой код: адрес репозитория либо
+   * отметка «проект у меня на машине». Токена тут нет и не будет — на время
+   * переезда репозиторий держат открытым, и это сказано на публичной странице.
+   * Секрет в конфиге, который читает приложение, был бы секретом только на вид.
+   */
+  migration: z
+    .looseObject({
+      source: z.enum(["repository", "local"]).optional(),
+      repositoryUrl: z.string().optional(),
+      declaredAt: z.string().optional(),
+    })
+    .optional(),
   /** Выключатели документов корпуса: пишет панель, читает агент, приложение — нет. */
   instructions: z.record(z.string(), z.boolean()).optional(),
   instructionsSnapshot: z.record(z.string(), z.boolean()).nullable().optional(),

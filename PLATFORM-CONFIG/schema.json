@@ -56,6 +56,25 @@
         "migration"
       ]
     },
+    "migration": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "repository",
+            "local"
+          ]
+        },
+        "repositoryUrl": {
+          "type": "string"
+        },
+        "declaredAt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
     "instructions": {
       "type": "object",
       "propertyNames": {

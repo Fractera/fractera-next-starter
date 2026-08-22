@@ -1,8 +1,11 @@
 # Glossary
 
-> Workspace term map — approved abbreviations and preferred phrasings so every
-> agent in this project reads them the same way (e.g. aws -> ai-workspace).
-> Edited via the Admin /service/glossary page (:3002); this file is the source of truth.
+> The term map of this project: one place where a word means one thing, so two documents cannot define
+> it differently. Edited as a file — **there is no glossary page in the panel**; the line that used to
+> promise one (/service/glossary) described a page deleted together with the old admin.
+>
+> A term belongs here when more than one document or more than one part of the code uses it.
+> Everything else is explained where it lives.
 
 ## Product — the unit of work inside one server
 
@@ -106,6 +109,52 @@ one letter apart, doing different things.
 | Dynamic container | The data-bearing part of a protected page: skeleton until loaded, data from an authenticated `/api/*` |
 | Access tier | The three roles the auth substrate itself enforces: `guest` → `user` → `architect` (`lib/roles.ts`) |
 | Business role | The rest of the role vocabulary the app assigns and gates on: `buyer`, `subscriber_*`, `manager`, `finance`, `content_editor`, `admin`, … |
+
+## Project memory — the words for how work is planned, carried and closed
+
+Added 2026-08-22 (steps 533–536). These terms name the four addresses of memory and the three modes of
+work. Nothing here is re-defined anywhere else.
+
+| Term | What it means |
+|---|---|
+| **step** | one unit of planned work — a plan in `new-steps/<number>-<6-8-words>.md`, an outcome in `completed-steps/`. Planning ANY action means opening a step; a five-line edit is a step too, just a short one |
+| **substep** | a step inside a step (`12-1` … `12-10`): its own plan, its own acceptance, its own outcome |
+| **group of steps** | the real unit of work, because a feature rarely fits one step. Held by `current-steps.md`: which steps are active, when they started, **under what condition each closes** |
+| **incidental step** | a step nobody planned but had to do — the proxy that needed changing, the library that had to be installed. Written down the moment it appears, with its reason: forgotten, it makes the feature look cheaper than it was, and the next estimate lies |
+| **`current-steps.md`** | **state of the project between sessions** — not a list of steps. Read FIRST in every session, rewritten over itself, emptied when the group closes. Plural on purpose: it carries a group and the links between them |
+| **handover** | what a session leaves behind so the next one starts working from one file: where work stopped, what is proven, the owner's decisions verbatim, the dead ends already paid for, the next action in one line |
+| **feature report** (`reports/feature-…`) | written when the LAST step of a group closes: what the feature does today and how it is proven, which steps went into it including the incidental ones, what it cannot do, where it physically lives. Answers what twenty step outcomes cannot: **what do we have and in what state** |
+| **incident report** (`reports/errors-…`) | the detailed account of ONE failure and its mechanism. Same flat folder, different category, different occasion — neither replaces the other |
+| **anti-pattern** (`ANTI-PATTERNS.md`) | the short law that came out of an incident: one paragraph of mechanism, ~700 characters, loaded whole. Points at the report; never duplicates it |
+
+🔒 **This project does not compact.** `/compact` squeezes context with the model: what was lost is
+invisible to both agent and owner, and the loss surfaces an hour later as a forgotten decision. State is
+written in words into `current-steps.md`, the session is restarted clean (`/clear`), and the new one
+reads that file first. See `CLAUDE.md` → "Что строим", and the skill `use-development-steps`.
+
+## Development modes — how work is run in this project
+
+The owner picks one in the panel ("Приложение" → "Режим разработки"); the value is `developmentMode` in
+`PLATFORM-CONFIG`, read by the agent at the start of a session.
+
+| Mode | Where the task comes from |
+|---|---|
+| `classic` | the owner's request. No case, no step, no queue |
+| `steps` | a queue of numbered steps; what is planned is written down BEFORE it is executed |
+| `cases` | confirmed use cases → products → a queue of steps; every step names the case it serves |
+| `migration` | **an existing project of the owner's**: its code is read as a DESCRIPTION, and the queue of steps is born from that reading |
+
+Terms that belong to `migration` only:
+
+| Term | What it means |
+|---|---|
+| **source** (`PLATFORM-CONFIG.migration`) | where the foreign project is read from: the address of a repository, or the folder on the owner's machine. No token is stored — the repository is kept open while the move lasts |
+| **intent tree** | the FIRST artefact of a migration: the file tree the foreign project becomes on this architecture. Built before the capability table and before the first step |
+| **capability table** | the list of capabilities drawn from the reading, each ticked off with a proof. It is the GROUND for acceptance; the owner's word is the acceptance |
+
+🔒 **Foreign code is read, never run.** The move carries capabilities, not files: a broken or hostile
+dependency has no way to ride across.
+
 
 ## 🪦 Removed 2026-08-16 — terms that described a subsystem that no longer exists
 

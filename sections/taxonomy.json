@@ -15,79 +15,178 @@
     {
       "id": "hero",
       "order": 1,
-      "title": "Hero",
-      "purpose": "First impression, clear positioning and the main offer above the fold.",
-      "variants": "Classic (heading + text + button + visual), hero with a signup form, minimal with video background, hero slider."
+      "title": {
+        "en": "Hero",
+        "ru": "Герой"
+      },
+      "purpose": {
+        "en": "First impression, clear positioning and the main offer above the fold.",
+        "ru": "Первое впечатление, чёткое позиционирование и главный оффер над «линией сгиба»."
+      },
+      "variants": {
+        "en": "Classic (heading + text + button + visual), hero with a signup form, minimal with video background, hero slider.",
+        "ru": "Классический (заголовок + текст + кнопка + визуал), с формой записи, минималистичный с видео-фоном, слайдер."
+      }
     },
     {
       "id": "benefits",
       "order": 2,
-      "title": "Benefits and value",
-      "purpose": "The key benefit for the user, told as claims with icons.",
-      "variants": "A 2x2 or 3x2 grid of cards, blocks with large icons, alternating rows (Z-pattern)."
+      "title": {
+        "en": "Benefits and value",
+        "ru": "Преимущества и ценности"
+      },
+      "purpose": {
+        "en": "The key benefit for the user, told as claims with icons.",
+        "ru": "Раскрытие ключевой пользы продукта через тезисы и иконки."
+      },
+      "variants": {
+        "en": "A 2x2 or 3x2 grid of cards, blocks with large icons, alternating rows (Z-pattern).",
+        "ru": "Сетка карточек 2×2 или 3×2, блоки с крупными иконками, чередующиеся строки (Z-паттерн)."
+      }
     },
     {
       "id": "how-it-works",
       "order": 3,
-      "title": "How it works",
-      "purpose": "A step-by-step explanation of the purchase, the interaction or the service.",
-      "variants": "Horizontal step cards (1-2-3), a vertical timeline, an animated demo with stage switching."
+      "title": {
+        "en": "How it works",
+        "ru": "Как это работает"
+      },
+      "purpose": {
+        "en": "A step-by-step explanation of the purchase, the interaction or the service.",
+        "ru": "Пошаговое объяснение процесса покупки, взаимодействия или работы сервиса."
+      },
+      "variants": {
+        "en": "Horizontal step cards (1-2-3), a vertical timeline, an animated demo with stage switching.",
+        "ru": "Горизонтальные карточки шагов (1-2-3), вертикальный таймлайн, демонстрация с переключением этапов."
+      }
     },
     {
       "id": "product-demo",
       "order": 4,
-      "title": "Product in action",
-      "purpose": "Showing the interface, the physical product or a key feature.",
-      "variants": "Interactive tabs, a video walkthrough, cards with hover effects, a clickable mock-up."
+      "title": {
+        "en": "Product in action",
+        "ru": "Продукт в действии"
+      },
+      "purpose": {
+        "en": "Showing the interface, the physical product or a key feature.",
+        "ru": "Наглядный показ интерфейса, физического товара или ключевой функции."
+      },
+      "variants": {
+        "en": "Interactive tabs, a video walkthrough, cards with hover effects, a clickable mock-up.",
+        "ru": "Интерактивные вкладки, видео-демонстрация, карточки с эффектами наведения, кликабельный макет."
+      }
     },
     {
       "id": "use-cases",
       "order": 5,
-      "title": "Use cases",
-      "purpose": "Segmenting the audience: how the product solves the tasks of a role or an industry.",
-      "variants": "Tabs by role (\"for marketers\", \"for developers\"), problem-and-solution cards."
+      "title": {
+        "en": "Use cases",
+        "ru": "Сценарии использования"
+      },
+      "purpose": {
+        "en": "Segmenting the audience: how the product solves the tasks of a role or an industry.",
+        "ru": "Сегментация аудитории — как продукт решает задачи конкретных ролей или отраслей."
+      },
+      "variants": {
+        "en": "Tabs by role (\"for marketers\", \"for developers\"), problem-and-solution cards.",
+        "ru": "Вкладки по ролям («для маркетологов», «для разработчиков»), карточки проблем и решений."
+      }
     },
     {
       "id": "comparison",
       "order": 6,
-      "title": "Comparison",
-      "purpose": "Setting the product apart from competitors or from the old way of solving the problem.",
-      "variants": "A tick-and-cross table, \"before / after\" plates, a vertical head-to-head block."
+      "title": {
+        "en": "Comparison",
+        "ru": "Сравнение"
+      },
+      "purpose": {
+        "en": "Setting the product apart from competitors or from the old way of solving the problem.",
+        "ru": "Отстройка от конкурентов или от старых способов решения задачи."
+      },
+      "variants": {
+        "en": "A tick-and-cross table, \"before / after\" plates, a vertical head-to-head block.",
+        "ru": "Сравнительная таблица галочек и крестиков, плашки «было / стало», вертикальный баттл-блок."
+      }
     },
     {
       "id": "pricing",
       "order": 7,
-      "title": "Pricing and plans",
-      "purpose": "An honest view of prices, what each package holds and how payment works.",
-      "variants": "Plan cards with one marked \"popular\", a monthly/yearly switch, a price calculator."
+      "title": {
+        "en": "Pricing and plans",
+        "ru": "Прайс и тарифы"
+      },
+      "purpose": {
+        "en": "An honest view of prices, what each package holds and how payment works.",
+        "ru": "Прозрачная демонстрация цен, состава пакетов и условий оплаты."
+      },
+      "variants": {
+        "en": "Plan cards with one marked \"popular\", a monthly/yearly switch, a price calculator.",
+        "ru": "Карточки тарифов с выделенным «популярным», переключатель помесячной и годовой оплаты, калькулятор."
+      }
     },
     {
       "id": "testimonials",
       "order": 8,
-      "title": "Testimonials and social proof",
-      "purpose": "Confirming quality through the real experience of other people.",
-      "variants": "A slider of quotes with photos, a grid of social screenshots, video testimonials, rating cards."
+      "title": {
+        "en": "Testimonials and social proof",
+        "ru": "Отзывы и социальное доказательство"
+      },
+      "purpose": {
+        "en": "Confirming quality through the real experience of other people.",
+        "ru": "Подтверждение качества через реальный опыт других пользователей."
+      },
+      "variants": {
+        "en": "A slider of quotes with photos, a grid of social screenshots, video testimonials, rating cards.",
+        "ru": "Слайдер с цитатами и фото, сетка скриншотов из соцсетей, видео-отзывы, карточки с рейтингом."
+      }
     },
     {
       "id": "showcase",
       "order": 9,
-      "title": "Cases and portfolio",
-      "purpose": "Measurable results of the work, or the look of what was made.",
-      "variants": "A filterable grid, \"task — solution — result in %\" cards, before/after sliders."
+      "title": {
+        "en": "Cases and portfolio",
+        "ru": "Кейсы и портфолио"
+      },
+      "purpose": {
+        "en": "Measurable results of the work, or the look of what was made.",
+        "ru": "Демонстрация измеримых результатов работы или эстетики выполненных проектов."
+      },
+      "variants": {
+        "en": "A filterable grid, \"task — solution — result in %\" cards, before/after sliders.",
+        "ru": "Сетка с фильтрацией по категориям, карточки «задача — решение — результат в %», слайдеры «до и после»."
+      }
     },
     {
       "id": "trust",
       "order": 10,
-      "title": "Trust and logos",
-      "purpose": "Reading the scale and reliability of the brand at a glance.",
-      "variants": "A marquee or grid of client and press logos, plates with key metrics, certificates."
+      "title": {
+        "en": "Trust and logos",
+        "ru": "Доверие и логотипы"
+      },
+      "purpose": {
+        "en": "Reading the scale and reliability of the brand at a glance.",
+        "ru": "Быстрое считывание масштаба и надёжности бренда."
+      },
+      "variants": {
+        "en": "A marquee or grid of client and press logos, plates with key metrics, certificates.",
+        "ru": "Бегущая строка или сетка логотипов клиентов и СМИ, плашки с ключевыми метриками, сертификаты."
+      }
     },
     {
       "id": "page-material",
       "order": 11,
-      "title": "Page material",
-      "purpose": "What a page is written FROM: paragraphs, lists, quotes, tables, code, callouts.",
-      "variants": "Not a landing section at all — building material that lives inside any of the ten above."
+      "title": {
+        "en": "Page material",
+        "ru": "Материал страницы"
+      },
+      "purpose": {
+        "en": "What a page is written FROM: paragraphs, lists, quotes, tables, code, callouts.",
+        "ru": "То, ИЗ ЧЕГО написана страница: абзацы, списки, цитаты, таблицы, код, врезки."
+      },
+      "variants": {
+        "en": "Not a landing section at all — building material that lives inside any of the ten above.",
+        "ru": "Не лендинговая секция вовсе — материал, который живёт внутри любого из десяти типов выше."
+      }
     }
   ],
   "kinds": {

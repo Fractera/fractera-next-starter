@@ -26,6 +26,16 @@ sections/index.ts              the SECTIONS map — the authoritative list
 sections/contract.ts           what a renderer receives
 ```
 
+**Перед выбором вида читай `sections/BLOCKS.md`** — порождаемую сводку по всем видам: имя, семейство,
+поля, и есть ли у вида карточка с правилами владельца. Она отвечает на вопрос момента выбора и избавляет
+от чтения двадцати девяти рендереров.
+
+🔒 **Сводка не заменяет карточку.** Каталог говорит, что вид СУЩЕСТВУЕТ; только карточка говорит, что он
+ВЫДЕРЖИТ — сколько элементов, что ломается за пределом, когда его не брать. Есть карточка — открой её.
+
+Сводка порождается (`npm run build:blocks-map`), свежесть стережёт `check:blocks-map` в `prebuild`.
+Правки руками теряются: источник — реестр `SECTIONS` и типы.
+
 **How many kinds exist: ask `sections/index.ts`, never a document.** `npm run check:sections` prints
 the count. A number written into prose is stale the week after — this project's own instruction said
 28 while the gate answered 29.

@@ -989,7 +989,8 @@ Fractera»: `source` (`repository` — владелец назвал адрес,
 | `use-data` · `use-database` · `use-object-storage` · `use-vector-memory` | слой данных и три склада | — |
 | `use-map` · `use-channels` · `use-agentic-rag` | карта · каналы · агентный RAG | — |
 | `use-multi-lang` | набор языков — владельца проекта; в разработке один язык, остальное — записанный долг | ✅ |
-| `use-development-steps` · `use-use-cases` | режимы `steps` и `cases` | — |
+| `use-development-steps` | передача сессии вместо сжатия, группа шагов, закрытие с репортом фичи | 🔶 |
+| `use-use-cases` | режим `cases` | — |
 | `use-migration` | режим `migration`: разбор чужого проекта, дерево замысла, очередь шагов, перенос данных | — |
 | `use-deploy` | доставка на сервер, сборка, доказательство | — |
 

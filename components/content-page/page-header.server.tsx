@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { Fragment, type ReactNode } from "react"
 import { Breadcrumbs, type Crumb } from "@/components/nav/breadcrumbs.server"
 import { featureOn } from "@/config/platform-config"
 import { H1, Lead, Eyebrow } from "@/components/ui/typography"
@@ -41,10 +41,28 @@ export type PageHeaderProps = {
   title: string
   subtitle?: string
   /**
-   * Строка сведений под заголовком: автор, дата, время чтения.
-   * Готовый узел — состав у поста и у страницы разный, а место одно.
+   * Сведения под заголовком — ЧАСТЯМИ, а не готовой строкой: автор, дата,
+   * время чтения. Разделители и раскладку рисует шапка.
+   *
+   * 🔒 ЗДЕСЬ БЫЛ ГОТОВЫЙ УЗЕЛ (`meta?: ReactNode`), И ЕГО РАЗМЕТКА ЖИЛА В ДВУХ
+   * МЕСТАХ (найдено 2026-08-22). Одну и ту же строку `flex flex-wrap
+   * items-center gap-x-3 gap-y-1 text-sm text-muted-foreground` писали и
+   * шаблон материала, и фабрика поста — то есть ровно тот случай, ради
+   * которого этот примитив и заведён: место, где принимается решение о
+   * ритме, оставалось в каждом файле своё. Теперь решение здесь, а
+   * вызывающий приносит только части.
    */
-  meta?: ReactNode
+  metaItems?: ReactNode[]
+  /**
+   * Автор страницы. Из него шапка строит строку сведений САМА, когда
+   * `metaItems` не заданы.
+   *
+   * 🔒 ПОЧЕМУ ЗДЕСЬ, А НЕ У ВЫЗЫВАЮЩЕГО (шаг 542). Имя со ссылкой и роль — это
+   * материал ШАПКИ, и собирать его снаружи значит держать в чужом файле кусок
+   * её разметки: `rel="author"`, подсветку при наведении, порядок «имя, потом
+   * роль». Ровно так эта строка и разъехалась однажды на два файла.
+   */
+  author?: { name: string; role?: string; url?: string }
   /**
    * Черта под шапкой. По умолчанию есть: она отделяет заголовок от материала.
    * Убирать её стоит там, где ниже сразу идёт своя рамка или сетка.
@@ -59,9 +77,25 @@ export function PageHeader({
   tags,
   title,
   subtitle,
-  meta,
+  metaItems,
+  author,
   divider = true,
 }: PageHeaderProps) {
+  // Части строки сведений: либо их дали, либо шапка строит их из автора.
+  // Роль без имени не бывает, поэтому проверяется имя.
+  const items =
+    metaItems ??
+    (author?.name
+      ? [
+          author.url ? (
+            <a href={author.url} rel="author" className="hover:text-foreground">{author.name}</a>
+          ) : (
+            <span>{author.name}</span>
+          ),
+          ...(author.role ? [<span>{author.role}</span>] : []),
+        ]
+      : undefined)
+
   return (
     <div className="flex flex-col gap-4">
       {/* 🔒 ВЫКЛЮЧАТЕЛЬ КРОШЕК БЫЛ МЁРТВЫМ (шаг 522, 2026-08-20): при `breadcrumbs: false`
@@ -94,7 +128,19 @@ export function PageHeader({
             страницах, различались не смыслом, а тем, кто их писал. */}
         {subtitle && <Lead className="max-w-3xl">{subtitle}</Lead>}
 
-        {meta}
+        {/* Строка сведений: части через среднюю точку. Точка декоративна и
+            скрыта от чтения с экрана — вслух она читается как мусор между
+            именем и датой. */}
+        {items && items.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            {items.map((item, i) => (
+              <Fragment key={i}>
+                {i > 0 && <span aria-hidden>·</span>}
+                {item}
+              </Fragment>
+            ))}
+          </div>
+        )}
       </header>
     </div>
   )

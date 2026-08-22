@@ -1,5 +1,4 @@
 import { type ReactNode } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import type { Block, FaqPair } from '@/lib/content/blocks/types'
 // Импортируется под другим именем НАМЕРЕННО: у компонента есть проп `author`,
 // и одноимённая функция была бы перекрыта им внутри тела — значение по умолчанию
@@ -8,8 +7,9 @@ import { author as projectAuthor } from '@/lib/author'
 import { getPostBodyUi } from '@/lib/content/post-body-ui'
 import { renderBlocks } from '@/lib/content/blocks/registry'
 import { PostBody, headingId } from './post-body'
-import { StaticImage } from '@/components/media/static-image.server'
 import { PageHeader } from './page-header.server'
+import { PageCover } from './page-cover.server'
+import { BackLink } from './back-link.server'
 import { PageShell } from './page-shell'
 
 // PORTED FROM THE PLATFORM'S MARKETING SITE (2026-08-11). Three couplings were
@@ -74,10 +74,14 @@ export type StandardContentPageProps = {
   /** Роль необязательна: в `APP-CONFIG` её нет, и выдумывать её нельзя. */
   author?: { name: string; role?: string; url?: string }
   /**
-   * Byline override. When provided, replaces the default author line (used by
-   * createContentPost to render a post byline: author · date · reading time).
+   * Сведения под заголовком ЧАСТЯМИ — они заменяют строку автора по умолчанию.
+   * Ими пользуется фабрика поста: автор · дата · время чтения.
+   *
+   * 🔒 ЧАСТИ, А НЕ ГОТОВАЯ СТРОКА (шаг 542). Раньше сюда приезжал собранный узел,
+   * и разметка этой строки жила в двух файлах разом — здесь и в фабрике поста.
+   * Раскладку рисует `PageHeader`; вызывающий приносит только содержимое.
    */
-  metaLine?: ReactNode
+  metaItems?: ReactNode[]
   heroImage?: string
   heroAlt?: string
   /**
@@ -112,7 +116,7 @@ export function StandardContentPage({
   subtitle,
   titleInBody = false,
   author = { name: projectAuthor().name, role: projectAuthor().role, url: projectAuthor().url },
-  metaLine,
+  metaItems,
   heroImage,
   heroAlt,
   hero,
@@ -127,6 +131,7 @@ export function StandardContentPage({
   // заголовок оглавления, заголовок раздела вопросов. Своих слов у фабрики не
   // осталось вовсе — всё, что печатается на странице, печатают виды каталога.
   const blockUi = getPostBodyUi(lang)
+
 
   // Table of contents — built from the H2 sections, so labels AND anchors match
   // exactly what PostBody emits (same headingId).
@@ -199,40 +204,14 @@ export function StandardContentPage({
             tags={tags}
             title={title}
             subtitle={subtitle}
-            meta={metaLine ?? (author.name ? (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                {author.url ? (
-                  <a href={author.url} rel="author" className="hover:text-foreground">{author.name}</a>
-                ) : (
-                  <span>{author.name}</span>
-                )}
-                {author.role && (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span>{author.role}</span>
-                  </>
-                )}
-              </div>
-            ) : null)}
+            metaItems={metaItems}
+            author={author}
           />
         )}
 
-        {/* Hero — custom node (post video / responsive picture) overrides the
-            default image hero. */}
-        {hero ?? (heroImage && (
-          <figure className="my-8">
-            {/* Герой стоит на первом экране — `priority`, а не ленивая загрузка:
-                это, как правило, самый крупный элемент страницы, и именно по нему
-                поисковик меряет скорость её появления. */}
-            <StaticImage
-              src={heroImage}
-              alt={heroAlt ?? title}
-              priority
-              sizes="(max-width: 768px) 100vw, 48rem"
-              className="w-full h-auto rounded-2xl border border-border"
-            />
-          </figure>
-        ))}
+        {/* Обложка — ПРИМИТИВ `PageCover` (шаг 542). Свой узел (видео поста,
+            отзывчивая картинка) по-прежнему заменяет её целиком. */}
+        {hero ?? (heroImage && <PageCover src={heroImage} alt={heroAlt ?? title} />)}
 
         {/* 3. Оглавление — ВИД КАТАЛОГА `toc`, а не своя разметка (шаг 542).
             Фабрика считает заголовки и передаёт их блоку; рисует его каталог.
@@ -263,21 +242,10 @@ export function StandardContentPage({
             и та же ячейка кормит разметку `FAQPage` для поисковика. */}
         {faq && faq.length > 0 && renderBlocks([{ kind: 'faq', items: faq }], lang, blockUi, 'faq')}
 
-        {/* Ссылка «назад» — последний элемент страницы, ниже вопросов. Ведёт на
-            уровень выше; у корня сайта такого уровня нет, поэтому её может не
-            быть вовсе (шаг 508). */}
-        {backHref && (
-          <div className="mt-12 border-t border-border pt-8">
-            <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary">
-              {/* Иконка — из `lucide-react`, а не контуром в разметке (шаг 542):
-                  библиотека уже стоит, и своя стрелка была бы ещё одной копией
-                  того же знака, живущей мимо неё. Размер и толщина сохранены
-                  прежними, чтобы ссылка выглядела ровно как выглядела. */}
-              <ArrowLeft size={14} strokeWidth={2.5} aria-hidden />
-              {backLabel}
-            </a>
-          </div>
-        )}
+        {/* Ссылка «назад» — ПРИМИТИВ `BackLink`, последний элемент страницы.
+            Ведёт на уровень выше; у корня сайта такого уровня нет, поэтому её
+            может не быть вовсе (шаг 508). */}
+        {backHref && <BackLink href={backHref} label={backLabel} />}
 
     </PageShell>
   )

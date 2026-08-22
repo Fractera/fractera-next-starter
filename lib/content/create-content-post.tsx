@@ -209,19 +209,16 @@ export function createContentPost(config: ContentPostConfig) {
         : []),
     ]
 
-    const metaLine = (
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-        {post.authorName && (
-          <>
-            <span className="font-medium text-muted-foreground">{post.authorName}</span>
-            <span aria-hidden>·</span>
-          </>
-        )}
-        <time dateTime={post.date}>{formatDate(post.date, lang)}</time>
-        <span aria-hidden>·</span>
-        <span>{post.readingMinutes} {minLabel(lang)}</span>
-      </div>
-    )
+    // Сведения поста ЧАСТЯМИ: раскладку и разделители рисует `PageHeader`
+    // (шаг 542). До этого здесь стояла своя копия той же строки, что и в
+    // шаблоне материала, — два места, где решался один ритм.
+    const metaItems = [
+      ...(post.authorName
+        ? [<span className="font-medium text-muted-foreground">{post.authorName}</span>]
+        : []),
+      <time dateTime={post.date}>{formatDate(post.date, lang)}</time>,
+      <span>{post.readingMinutes} {minLabel(lang)}</span>,
+    ]
 
     return (
       <>
@@ -232,7 +229,7 @@ export function createContentPost(config: ContentPostConfig) {
           tags={post.tags}
           title={post.title}
           subtitle={post.subtitle}
-          metaLine={metaLine}
+          metaItems={metaItems}
           heroImage={post.heroImage}
           hero={post.hero}
           blocks={post.blocks}

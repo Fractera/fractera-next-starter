@@ -1,13 +1,14 @@
 import { type ReactNode } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import type { Block, FaqPair } from '@/lib/content/blocks/types'
 // Импортируется под другим именем НАМЕРЕННО: у компонента есть проп `author`,
 // и одноимённая функция была бы перекрыта им внутри тела — значение по умолчанию
 // ссылалось бы само на себя.
 import { author as projectAuthor } from '@/lib/author'
-import { getPageUi } from '@/lib/content/page-ui'
+import { getPostBodyUi } from '@/lib/content/post-body-ui'
+import { renderBlocks } from '@/lib/content/blocks/registry'
 import { PostBody, headingId } from './post-body'
 import { StaticImage } from '@/components/media/static-image.server'
-import { H2 } from '@/components/ui/typography'
 import { PageHeader } from './page-header.server'
 import { PageShell } from './page-shell'
 
@@ -122,7 +123,10 @@ export function StandardContentPage({
   backLabel,
   sections,
 }: StandardContentPageProps) {
-  const ui = getPageUi(lang)
+  // Словарь подписей МЕХАНИЗМА — им пользуются рендереры видов: кнопка `docref`,
+  // заголовок оглавления, заголовок раздела вопросов. Своих слов у фабрики не
+  // осталось вовсе — всё, что печатается на странице, печатают виды каталога.
+  const blockUi = getPostBodyUi(lang)
 
   // Table of contents — built from the H2 sections, so labels AND anchors match
   // exactly what PostBody emits (same headingId).
@@ -230,30 +234,16 @@ export function StandardContentPage({
           </figure>
         ))}
 
-        {/* 3. Table of contents */}
-        {toc.length > 0 && (
-          <nav aria-label="Contents" className="mt-8 rounded-2xl border border-border bg-muted/40 p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-              {ui.tocHeading} · {toc.length}
-            </p>
-            <ol className="mt-3 flex flex-col gap-2">
-              {toc.map((item, i) => (
-                <li key={item.id} className="flex gap-3 text-[15px] leading-snug">
-                  {/* Контраст поднят до полного `muted-foreground` (проверка доступности
-                      2026-08-13): при /70 отношение падало ниже порога. Значок
-                      декоративный и скрыт от чтения с экрана, но глазами его читают
-                      все, и слабовидящим он не должен исчезать. */}
-                  <span aria-hidden className="select-none font-mono text-sm text-muted-foreground">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <a href={`#${item.id}`} className="text-muted-foreground transition-colors hover:text-primary">
-                    {item.text}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        )}
+        {/* 3. Оглавление — ВИД КАТАЛОГА `toc`, а не своя разметка (шаг 542).
+            Фабрика считает заголовки и передаёт их блоку; рисует его каталог.
+            Владелец решил 2026-08-22 оставить оглавление автоматическим, поэтому
+            блок появляется сам, а страницы о нём по-прежнему не знают.
+
+            🔒 РИСУЕТСЯ ЧЕРЕЗ `renderBlocks`, А НЕ ЧЕРЕЗ `PostBody`. Тот заворачивает
+            блоки в `flex flex-col gap-6`; здесь обёртка изменила бы отступы —
+            лента страницы обычный блочный поток, и воздух ей задают margin'ы
+            самих секций. */}
+        {renderBlocks([{ kind: 'toc', items: toc }], lang, blockUi, 'toc')}
 
         {/* 4–7, 9. Body blocks (callout, H2/H3, quote, CTA, docref download, …).
             Без первого экрана и завершающей секции: они нарисованы снаружи этой
@@ -267,21 +257,11 @@ export function StandardContentPage({
             Sponsorship is NOT injected here — it is baked in below. */}
         {sections}
 
-        {/* FAQ — the last CONTENT section by contract; only the back link (and the
-            global footer) sit below it. */}
-        {faq && faq.length > 0 && (
-          <section aria-labelledby="faq-heading" className="mt-12 border-t border-border pt-10">
-            <H2 id="faq-heading">{ui.faqHeading}</H2>
-            <dl className="mt-6 flex flex-col gap-4">
-              {faq.map((f, i) => (
-                <div key={i} className="rounded-2xl border border-border bg-muted/40 p-5">
-                  <dt className="text-base font-semibold text-foreground">{f.q}</dt>
-                  <dd className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{f.a}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        )}
+        {/* Вопросы — ВИД КАТАЛОГА `faq` (шаг 542). Раздел по-прежнему последний
+            содержательный на странице: ниже только ссылка «назад» и подвал сайта.
+            Материал не изменился — вопросы приходят полем `faq` языковой ячейки,
+            и та же ячейка кормит разметку `FAQPage` для поисковика. */}
+        {faq && faq.length > 0 && renderBlocks([{ kind: 'faq', items: faq }], lang, blockUi, 'faq')}
 
         {/* Ссылка «назад» — последний элемент страницы, ниже вопросов. Ведёт на
             уровень выше; у корня сайта такого уровня нет, поэтому её может не
@@ -289,9 +269,11 @@ export function StandardContentPage({
         {backHref && (
           <div className="mt-12 border-t border-border pt-8">
             <a href={backHref} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
+              {/* Иконка — из `lucide-react`, а не контуром в разметке (шаг 542):
+                  библиотека уже стоит, и своя стрелка была бы ещё одной копией
+                  того же знака, живущей мимо неё. Размер и толщина сохранены
+                  прежними, чтобы ссылка выглядела ровно как выглядела. */}
+              <ArrowLeft size={14} strokeWidth={2.5} aria-hidden />
               {backLabel}
             </a>
           </div>

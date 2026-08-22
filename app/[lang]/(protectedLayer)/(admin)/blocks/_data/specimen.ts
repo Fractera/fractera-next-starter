@@ -450,4 +450,18 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'toc',
+    when: 'The table of contents of a page. You never write it: the page factory builds `items` from the `h2` blocks of the body, using the SAME `headingId` the headings themselves print — two ways of turning a heading into an address drift apart on the first text with punctuation, and then the contents lead nowhere. Its own heading ("On this page") is a word of the mechanism and lives in `lib/content/page-ui.ts`. Written by hand, the list becomes a second copy of the headings that goes stale silently: the link keeps working while the word in it no longer matches.',
+    blocks: [
+      {
+        kind: 'toc',
+        items: [
+          { id: 'a-section-heading', text: 'A section heading' },
+          { id: 'what-a-page-is-written-from', text: 'What a page is written from' },
+          { id: 'when-not-to-take-it', text: 'When not to take it' },
+        ],
+      },
+    ],
+  },
 ]

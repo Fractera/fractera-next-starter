@@ -339,6 +339,11 @@
       "id": "0030",
       "type": "page-material",
       "shape": "faq"
+    },
+    "toc": {
+      "id": "0031",
+      "type": "page-material",
+      "shape": "toc"
     }
   }
 }

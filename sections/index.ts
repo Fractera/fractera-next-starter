@@ -29,6 +29,7 @@ import { cards } from './blocks/cards.server'
 import { card } from './blocks/card.server'
 import { statement } from './blocks/statement.server'
 import { faq } from './blocks/faq.server'
+import { toc } from './blocks/toc.server'
 
 // НАБОР СЕКЦИЙ ПРОЕКТА — единственный, и это осознанное решение (2026-08-14).
 //
@@ -45,5 +46,5 @@ import { faq } from './blocks/faq.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, languageMarquee, projectTypeMarquee,
+  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, hero, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, toc, languageMarquee, projectTypeMarquee,
 }

@@ -22,6 +22,8 @@ const TYPES = join(ROOT, "lib", "content", "blocks", "types.ts")
 const INDEX = join(ROOT, "sections", "index.ts")
 const BLOCKS = join(ROOT, "sections", "blocks")
 export const TARGET = join(ROOT, "sections", "BLOCKS.md")
+export const CATALOGUE = join(ROOT, "sections", "SECTIONS.json")
+const TAXONOMY = join(ROOT, "sections", "taxonomy.json")
 
 // 🔒 ИСТОЧНИК ВИДОВ — РЕЕСТР `SECTIONS`, А НЕ РАЗБОР ТИПОВ. Первая редакция читала
 // объединение `Block` регулярным выражением и нашла 24 вида из 29: определения с
@@ -111,7 +113,62 @@ export function render() {
   ].join("\n")
 }
 
+// КАТАЛОГ ДЛЯ ПАНЕЛИ — `sections/SECTIONS.json`.
+//
+// 🔒 ПАНЕЛЬ И ПРИЛОЖЕНИЕ — РАЗНЫЕ ПРИЛОЖЕНИЯ, и код рендереров панель импортировать
+// не может. Поэтому источник остаётся здесь, а панель читает готовые ДАННЫЕ из
+// слота (`APP_DIR`). Дублирования каталога не возникает: этот файл порождается из
+// реестра, таксономии и карточек — трёх мест, которые и так существуют.
+//
+// 🔒 ВИДА НЕТ В ТАКСОНОМИИ — ОН НЕ ПРОПАДАЕТ, а падает в «материал страницы» с
+// формой `text`. Новый вид виден на странице секций в тот же день, пусть и в
+// последнем типе; молча исчезнуть он не может.
+export function renderCatalogue() {
+  const taxonomy = JSON.parse(readFileSync(TAXONOMY, "utf8"))
+  const kinds = readKinds().map(({ kind, fields }) => {
+    const t = taxonomy.kinds[kind] ?? { type: "page-material", shape: "text" }
+    const card = cardSummary(kind)
+    return {
+      kind,
+      type: t.type,
+      shape: t.shape ?? "text",
+      // Труба экранировалась для разметки таблицы — в данных она не нужна.
+      fields: fields.replace(/\\\|/g, "|"),
+      title: card ? card.title.replace(/^[a-zA-Z0-9]+\s*—\s*/, "") : null,
+      description: cardDescription(kind),
+      hasCard: Boolean(card),
+    }
+  })
+
+  return JSON.stringify(
+    {
+      _: "Порождается npm run build:blocks-map. Правки руками теряются.",
+      generatedFrom: ["sections/index.ts", "sections/taxonomy.json", "sections/blocks/<вид>.md"],
+      types: taxonomy.types,
+      kinds,
+    },
+    null,
+    2,
+  ) + "\n"
+}
+
+/**
+ * Описание архитектора — проза карточки без заголовка и без служебных строк.
+ *
+ * 🔒 БЕРЁТСЯ ЦЕЛИКОМ, А НЕ ПЕРВЫМ АБЗАЦЕМ. В карточке живут и правила владельца,
+ * сказанные по конкретному поводу, — обрезать их значит показать в панели половину
+ * того, что уже оплачено разговором.
+ */
+function cardDescription(kind) {
+  const file = join(BLOCKS, `${kind}.md`)
+  if (!existsSync(file)) return null
+  const lines = readFileSync(file, "utf8").split("\n")
+  const body = lines.slice(1).join("\n").trim()
+  return body || null
+}
+
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("build-blocks-map.mjs")) {
   writeFileSync(TARGET, render(), "utf8")
-  console.log(`✓ sections/BLOCKS.md — видов: ${readKinds().length}`)
+  writeFileSync(CATALOGUE, renderCatalogue(), "utf8")
+  console.log(`✓ sections/BLOCKS.md и sections/SECTIONS.json — видов: ${readKinds().length}`)
 }

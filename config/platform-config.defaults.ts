@@ -118,6 +118,8 @@ export type PlatformConfigFile = {
   migration?: {
     source?: "repository" | "local";
     repositoryUrl?: string;
+    /** Путь к папке на машине владельца. Сервер туда не ходит — это адрес для агента, который работает у владельца. */
+    localPath?: string;
     declaredAt?: string;
   };
   /** Набор документов, которые читает агент; ключи задаёт панель. */

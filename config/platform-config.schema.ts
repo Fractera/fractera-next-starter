@@ -48,6 +48,7 @@ export const platformConfigSchema = z.looseObject({
     .looseObject({
       source: z.enum(["repository", "local"]).optional(),
       repositoryUrl: z.string().optional(),
+      localPath: z.string().optional(),
       declaredAt: z.string().optional(),
     })
     .optional(),

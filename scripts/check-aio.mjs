@@ -23,7 +23,10 @@ import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const APP = path.join(ROOT, "app");
-const LANG_DIR = path.join(APP, "[lang]");
+// Страницы контента живут в слое оформления, а карты для ИИ — уровнем выше, на
+// языковом корне: они не оформление, а маршруты документа (шаг 538).
+const LANG_ROOT = path.join(APP, "[lang]");
+const LANG_DIR = path.join(LANG_ROOT, "(designLayer)");
 
 const errors = [];
 const warnings = [];
@@ -83,15 +86,15 @@ for (const dir of mdRoutes) {
 for (const f of [
   path.join(APP, "llms.txt", "route.ts"),
   path.join(APP, "llms-full.txt", "route.ts"),
-  path.join(LANG_DIR, "llms.txt", "route.ts"),
-  path.join(LANG_DIR, "llms-full.txt", "route.ts"),
+  path.join(LANG_ROOT, "llms.txt", "route.ts"),
+  path.join(LANG_ROOT, "llms-full.txt", "route.ts"),
 ]) {
   if (!fs.existsSync(f)) errors.push(`нет ${rel(f)} — карта для ИИ не отдаётся по этому адресу`);
 }
 
 // Карта обязана строиться из перечня, а не из заготовки. Признак заготовки —
 // собственный текст в маршруте вместо вызова сборщика.
-for (const f of [path.join(APP, "llms.txt", "route.ts"), path.join(LANG_DIR, "llms.txt", "route.ts")]) {
+for (const f of [path.join(APP, "llms.txt", "route.ts"), path.join(LANG_ROOT, "llms.txt", "route.ts")]) {
   const text = read(f);
   if (text && !/buildLlmsTxt\s*\(/.test(text)) {
     errors.push(`${rel(f)}: карта не собирается из перечня поверхностей — это снова заготовка`);

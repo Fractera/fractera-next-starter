@@ -14,7 +14,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from "node:fs"
 import { join, relative, sep } from "node:path"
 
 const ROOT = process.cwd()
-const LAYER = join(ROOT, "app", "[lang]", "(protectedLayer)")
+const LAYER = join(ROOT, "app", "[lang]", "(designLayer)", "(protectedLayer)")
 const GROUPS = ["(account)", "(admin)", "(finance)", "(staff)"]
 
 const problems = []

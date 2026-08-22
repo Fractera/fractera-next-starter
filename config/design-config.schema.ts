@@ -40,6 +40,8 @@ export const designConfigSchema = z.looseObject({
     scale: z.number().optional(),
     leading: z.number().optional(),
   }),
+  /** Разрешение на кастомный дизайн; выдаёт владелец в панели, умолчание — запрещено. */
+  customDesign: z.boolean().optional(),
   shape: z.looseObject({
     radius: z.string().optional(),
     borderWidth: z.string().optional(),

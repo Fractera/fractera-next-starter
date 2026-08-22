@@ -76,7 +76,7 @@ for (const file of files) {
 // сторож сравнивает не количество, а ДОСТИЖИМОСТЬ: путь от `app/[lang]` до
 // раздела с манифестом обязан состоять только из скобочных групп `(…)`, которые
 // обход проходит насквозь. Обычная папка на этом пути = манифест невидим.
-const LANG_DIR = path.join(ROOT, "app", "[lang]")
+const LANG_DIR = path.join(ROOT, "app", "[lang]", "(designLayer)")
 const manifests = []
 function walkGroups(dir) {
   let entries

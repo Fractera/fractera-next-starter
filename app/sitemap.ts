@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next"
 import { brand } from "@/lib/brand"
 import { SUPPORTED_LANGUAGES } from "@/config/translations/translations.config"
 import { urlFor } from "@/lib/seo/alternates"
-import { POSTS } from "./[lang]/(publicLayer)/blog/_list.generated"
+import { POSTS } from "./[lang]/(designLayer)/(publicLayer)/blog/_list.generated"
 
 // ГЛАВНАЯ КАРТА САЙТА — страницы, множество которых конечно и авторское.
 //

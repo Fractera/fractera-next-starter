@@ -49,7 +49,7 @@ const FILES = [
   // площадки, поэтому не 82.
   ["lib/i18n/architecture-link.i18n.ts", "ArchitectureLinkUi", 10],
   // Каталог секций — страница архитектора, но слова у неё такие же страничные.
-  ["app/[lang]/(protectedLayer)/(admin)/blocks/_data/ui.i18n.ts", "BlocksCatalogueUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(admin)/blocks/_data/ui.i18n.ts", "BlocksCatalogueUi", 10],
   // 🔒 СЛОВАРИ ВИДЖЕТОВ — ДЕСЯТЬ ЯЗЫКОВ, А НЕ 82 (шаг 521, решение владельца
   // 2026-08-21). Здесь стоял ОДИН словарь `_data/products.i18n.ts` на 82 языка,
   // общий для четырёх таблиц; он и заставлял их говорить одинаково. Таблицы
@@ -59,24 +59,24 @@ const FILES = [
   // виджет принадлежит ОДНОМУ маршруту и не переиспользуется, а 82 обязаны
   // нести переиспользуемые части продукта, которые являются в любом включённом
   // языке сами. Цена размена названа в шапке каждого словаря.
-  ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_widgets/dynamic/price-table/ui.i18n.ts", "PriceTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(staff)/manage/products/_widgets/dynamic/manage-table/ui.i18n.ts", "ManageTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(admin)/administration/products/_widgets/dynamic/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(account)/shopping/products/_widgets/dynamic/shop-table/ui.i18n.ts", "ShopTableUi", 10],
-  ["app/[lang]/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/dynamic/product-card/ui.i18n.ts", "ProductCardUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(finance)/accounting/products/_widgets/dynamic/price-table/ui.i18n.ts", "PriceTableUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(staff)/manage/products/_widgets/dynamic/manage-table/ui.i18n.ts", "ManageTableUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/products/_widgets/dynamic/catalogue-table/ui.i18n.ts", "CatalogueTableUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(account)/shopping/products/_widgets/dynamic/shop-table/ui.i18n.ts", "ShopTableUi", 10],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(staff)/manage/products/[productId]/_widgets/dynamic/product-card/ui.i18n.ts", "ProductCardUi", 10],
   // Страницы четырёх слоёв прав.
-  ["app/[lang]/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
-  ["app/[lang]/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],
-  ["app/[lang]/(protectedLayer)/(admin)/administration/products/_data/ui.i18n.ts", "AdministrationProductsUi", 82],
-  ["app/[lang]/(protectedLayer)/(account)/shopping/products/_data/ui.i18n.ts", "ShoppingProductsUi", 82],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(staff)/manage/products/_data/ui.i18n.ts", "ProductsUi", 82],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(finance)/accounting/products/_data/ui.i18n.ts", "AccountingProductsUi", 82],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/products/_data/ui.i18n.ts", "AdministrationProductsUi", 82],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(account)/shopping/products/_data/ui.i18n.ts", "ShoppingProductsUi", 82],
   // 🔒 СТРАНИЦА УЧЁТНЫХ ЗАПИСЕЙ — ДВА ЯЗЫКА, И ЭТО ЗАПИСАННЫЙ ДОЛГ, А НЕ НОРМА
   // (шаг 531, решение владельца 2026-08-21: в разработке пишем на включённом
   // наборе, недостающее заносим в `development-docs/TRANSLATION-DEBT.md`).
   // Класс словаря тот же, что у четырёх соседей выше, — 82: страница едет с
   // продуктом. Число здесь говорит ПРАВДУ о сегодняшнем дереве; обещание живёт
   // в реестре долга, и оба меняются одним заходом, когда придёт перевод.
-  ["app/[lang]/(protectedLayer)/(admin)/administration/users/_data/ui.i18n.ts", "AdministrationUsersUi", 2],
-  ["app/[lang]/(protectedLayer)/(admin)/administration/users/_widgets/dynamic/users-table/ui.i18n.ts", "UsersTableUi", 2],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/users/_data/ui.i18n.ts", "AdministrationUsersUi", 2],
+  ["app/[lang]/(designLayer)/(protectedLayer)/(admin)/administration/users/_widgets/dynamic/users-table/ui.i18n.ts", "UsersTableUi", 2],
 ]
 
 /**
@@ -91,8 +91,8 @@ const FILES = [
  * [папка, файл типа, имя типа, сколько языков]
  */
 const CELLS = [
-  ["app/[lang]/(publicLayer)/blog/_data", "app/[lang]/(publicLayer)/blog/_lib/types.ts", "BlogUi", 10],
-  ["app/[lang]/(publicLayer)/products/_data", "app/[lang]/(publicLayer)/products/_lib/types.ts", "CatalogueUi", 10],
+  ["app/[lang]/(designLayer)/(publicLayer)/blog/_data", "app/[lang]/(designLayer)/(publicLayer)/blog/_lib/types.ts", "BlogUi", 10],
+  ["app/[lang]/(designLayer)/(publicLayer)/products/_data", "app/[lang]/(designLayer)/(publicLayer)/products/_lib/types.ts", "CatalogueUi", 10],
 ]
 
 // 🔒 ЦИФРЫ В ИМЕНИ КЛЮЧА ОБЯЗАТЕЛЬНЫ В ШАБЛОНЕ. `step1`, `step2` — обычные

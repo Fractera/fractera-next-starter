@@ -30,7 +30,7 @@ import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const APP = path.join(ROOT, "app");
-const LANG_DIR = path.join(APP, "[lang]");
+const LANG_DIR = path.join(APP, "[lang]", "(designLayer)");
 const PUBLIC_GROUP = "(publicLayer)";
 
 const errors = [];

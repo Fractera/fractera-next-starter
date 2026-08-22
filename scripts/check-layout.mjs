@@ -25,7 +25,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 const ROOT = process.cwd()
-const LANG_DIR = path.join(ROOT, "app", "[lang]")
+const LANG_DIR = path.join(ROOT, "app", "[lang]", "(designLayer)")
 const MARKER = "data-app-column"
 
 // Страницы, у которых ленты нет и быть не должно: содержимое центрируется по

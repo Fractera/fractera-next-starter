@@ -135,6 +135,9 @@
       },
       "additionalProperties": {}
     },
+    "customDesign": {
+      "type": "boolean"
+    },
     "shape": {
       "type": "object",
       "properties": {

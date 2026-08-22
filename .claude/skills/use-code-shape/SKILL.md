@@ -1,7 +1,7 @@
 ---
 name: use-code-shape
 description: >
-  The SHAPE the code of this project must keep, and the seventeen build-time validators that enforce it
+  The SHAPE the code of this project must keep, and the eighteen build-time validators that enforce it
   instead of trusting anyone's memory. Load it before writing a route, an API door, a component that
   is growing, a database table, or anything that moves on screen — and whenever a gate refuses your
   work and you are about to "work around" it. The rules here are not style: each one is a limit that,
@@ -25,14 +25,16 @@ Not "public pages are static and the rest is free". A page whose DATA is dynamic
 **static shell**; the dynamic part wakes up inside it — an island, a fetch to `/api/*`, a widget under
 `_widgets/dynamic/`. The shell is prerendered, the movement happens afterwards.
 
-Three lines take a page — and with a layout, the whole subtree — out of the prerender, and all three
-are one line long:
+**Five** lines take a page — and with a layout, the whole subtree — out of the prerender, and each
+is one line long:
 
 | Line | Effect | Instead |
 |---|---|---|
 | `cookies()` in a page or layout | the entire subtree recomputes per request | an island asks after hydration; `/api/*` decides the right |
 | `headers()` there | the same | the same |
 | `export const dynamic = 'force-dynamic'` | the same, but out loud | `export const revalidate = N` when data ages |
+| `export const revalidate = 0` | the same, written as a number | any `revalidate` **greater than zero** |
+| `auth()` in a public page or layout | reading the session makes the route dynamic | the island asks `/api/me` after hydration |
 
 Two more kill something worse than the route — they kill the CONTENT:
 
@@ -43,7 +45,10 @@ Two more kill something worse than the route — they kill the CONTENT:
   hydration. Movement lives in a `*.client.tsx` island that swaps in over a printed static twin — see
   `ANTI-PATTERNS.md` №7 and `use-widgets`.
 
-`npm run check:static` refuses all five, in `prebuild`. The second proof comes from another plane: the
+Under `sections/` both of the last two are refused outright: the section layer is server-side WHOLE, so
+`"use client"` or `motion` anywhere in it fails the gate immediately.
+
+`npm run check:static` refuses all seven, in `prebuild`. The second proof comes from another plane: the
 route table after a build shows `●` for a static route and `ƒ` for a dynamic one. A gate reads causes;
 the table reads the result — you want both.
 
@@ -53,17 +58,19 @@ checked by hand: read the served HTML for the content itself, and open the page 
 
 ## 2. The validators, and what each one is actually for
 
-Seventeen run inside `prebuild`, so a violation never reaches a deployment. Two do not run by themselves
+Eighteen run inside `prebuild`, so a violation never reaches a deployment. Two do not run by themselves
 and are the only thing standing between your edit and a failed build on the server, because you do not
 build locally: **`npm run check:types` and `npm run check:i18n`**.
 
 | Gate | Refuses |
 |---|---|
-| `check:static` | the five killers above, plus a direct `@/lib/db` import from a public route folder |
+| `check:static` | the seven above, plus a direct `@/lib/db` import from a public route folder — a subject has ONE reader in `lib/<subject>/`, shared by the page, the sitemap and the machine twin |
 | `check:protected` | a protected layer that forgets `robots: { index: false }`; a session read in a layout; a permission group with no gate; an import from a sibling group; a `page.tsx` fatter than a thin entry; a widget outside `_widgets/{static,dynamic}/` |
 | `check:api` | a route with no `// @api` name, or a name outside 6–12 words |
 | `check:seo` · `check:aio` · `check:pwa` | the search, machine and installable surfaces — their own skills |
 | `check:content` · `check:sections` · `check:links` | body rules, one specimen per section kind, dead links |
+| `check:blocks-map` | a stale `BLOCKS.md` / `SECTIONS.json` — they are GENERATED (`npm run build:blocks-map`) and the panel reads the second one out of the slot |
+| `check:project-types` | a project direction missing its words in a language of the corpus — `check:i18n` cannot read that shape, so it has its own guard |
 | `check:i18n` | a missing interface string in an enabled language |
 | `check:config-schemas` | a config key that exists in the type but not in the generated schema |
 | `check:typography` · `check:layout` · `check:contrast` · `check:dialogs` | text through primitives, layout rules, contrast, one modal |
@@ -95,6 +102,10 @@ change — never route around it.
 - **250 lines** for a component or a function, then decomposition is mandatory — not "after this
   feature". Past that size state, rendering and side effects blur, and every later change touches what
   it did not mean to. Data does not count: a translation table or a country list is data.
+  🔒 **This is the one limit with NO gate behind it** (checked 2026-08-22): nothing measures it, so it
+  holds only while you stop and count. Everything longer than 250 lines in the project today is DATA —
+  the specimen file, `SCHEMA`, the block catalogue, a page language cell — and data is exempt by the
+  line above, not by an exception somebody granted it.
 - `page.tsx` is a **thin entry**: declare the segment, re-export the entry from `./_components`.
 - `.client.tsx` / `.server.tsx` suffixes say which side a file runs on, in its name.
 - **Every `app/api/**/route.ts` opens with `// @api <verb first, 6–12 English words>`.** The address is
@@ -109,7 +120,7 @@ change — never route around it.
 1. `npm run check:types` and `npm run check:i18n` — nobody runs them for you.
 2. `npm run check:static` plus whichever gate covers the surface you touched.
 3. On the server, after the build: your public routes are `●`. If one turned `ƒ`, look for one of the
-   three lines in §1 — there is almost never another cause.
+   five lines in §1 — there is almost never another cause.
 4. Open the page with JavaScript disabled and read it. Anything that must work without scripts, works;
    anything that degrades, degrades visibly rather than silently blanking.
 5. 🔒 **Do not build locally on Windows.** The build belongs to the server; `npm run dev` is your

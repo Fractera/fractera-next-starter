@@ -52,7 +52,8 @@
       "enum": [
         "classic",
         "steps",
-        "cases"
+        "cases",
+        "migration"
       ]
     },
     "instructions": {

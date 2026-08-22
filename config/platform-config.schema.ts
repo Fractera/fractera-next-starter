@@ -34,8 +34,8 @@ export const platformConfigSchema = z.looseObject({
   /** Два исторических имени одного решения — читаются оба. */
   routingMode: z.string().optional(),
   parallelRouting: z.boolean().optional(),
-  /** Режим разработки: классический · шаги · кейсы. */
-  developmentMode: z.enum(["classic", "steps", "cases"]).optional(),
+  /** Режим разработки: классический · шаги · кейсы · переезд. */
+  developmentMode: z.enum(["classic", "steps", "cases", "migration"]).optional(),
   /** Выключатели документов корпуса: пишет панель, читает агент, приложение — нет. */
   instructions: z.record(z.string(), z.boolean()).optional(),
   instructionsSnapshot: z.record(z.string(), z.boolean()).nullable().optional(),

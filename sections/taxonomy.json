@@ -334,6 +334,11 @@
       "id": "0029",
       "type": "page-material",
       "shape": "cta"
+    },
+    "faq": {
+      "id": "0030",
+      "type": "page-material",
+      "shape": "faq"
     }
   }
 }

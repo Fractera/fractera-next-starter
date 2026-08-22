@@ -64,11 +64,31 @@ function cardSummary(kind) {
   if (!existsSync(file)) return null
   const lines = readFileSync(file, "utf8").split("\n")
   const head = lines.find(l => l.startsWith("# "))
-  const family = lines.find(l => l.startsWith("**Семейство:**"))
   return {
     title: head ? head.replace(/^#\s*/, "").trim() : kind,
-    family: family ? family.replace(/\*\*Семейство:\*\*/, "").split(".")[0].trim() : null,
   }
+}
+
+/** Таксономия читается один раз: её спрашивают и сводка, и каталог. */
+const TAXONOMY_DATA = JSON.parse(readFileSync(TAXONOMY, "utf8"))
+
+/**
+ * Тип вида — из таксономии, а не из прозы карточки.
+ *
+ * 🔒 ЗДЕСЬ СТОЯЛ РАЗБОР СТРОКИ «**Семейство:**», И КОЛОНКА БЫЛА ПУСТА ЦЕЛИКОМ
+ * (найдено 2026-08-22). Карточки давно пишутся по-английски и говорят
+ * «**Type:**» — совпадений не находилось ни разу, и в порождённой сводке во всех
+ * двадцати девяти строках стоял прочерк. Дефект ровно того сорта, что этот файл
+ * заводился ловить: сводка выглядит целой, а одна её колонка не значит ничего.
+ *
+ * Источник теперь тот же, что у панели, — `taxonomy.json`. Он знает тип КАЖДОГО
+ * вида, а не только тех одиннадцати, у которых есть карточка, и не зависит от
+ * языка, на котором карточка написана.
+ */
+function familyOf(kind) {
+  const t = TAXONOMY_DATA.kinds[kind]
+  const type = TAXONOMY_DATA.types.find(x => x.id === (t?.type ?? "page-material"))
+  return type?.title?.en ?? null
 }
 
 export function render() {
@@ -78,7 +98,7 @@ export function render() {
   const rows = kinds.map(({ kind, fields }) => {
     const card = cardSummary(kind)
     const what = card ? card.title.replace(/^[a-zA-Z]+\s*—\s*/, "") : "—"
-    const family = card?.family ?? "—"
+    const family = familyOf(kind) ?? "—"
     const mark = card ? `[карточка](blocks/${kind}.md)` : "—"
     return `| \`${kind}\` | ${family} | ${what} | ${fields || "—"} | ${mark} |`
   })
@@ -129,7 +149,7 @@ export function render() {
 // формой `text`. Новый вид виден на странице секций в тот же день, пусть и в
 // последнем типе; молча исчезнуть он не может.
 export function renderCatalogue() {
-  const taxonomy = JSON.parse(readFileSync(TAXONOMY, "utf8"))
+  const taxonomy = TAXONOMY_DATA
   const usage = scanUsage()
   const kinds = readKinds().map(({ kind, fields }) => {
     const t = taxonomy.kinds[kind] ?? { id: null, type: "page-material", shape: "text" }

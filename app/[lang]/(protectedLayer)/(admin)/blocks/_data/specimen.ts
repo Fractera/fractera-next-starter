@@ -427,4 +427,27 @@ export const SPECIMEN: SpecimenSection[] = [
       { kind: 'panel', tone: 'accent', eyebrow: 'The one place', title: 'Where the model works', children: [{ kind: 'p', text: 'The only glow on the page: highlighting everything highlights nothing.' }] },
     ],
   },
+  {
+    kind: 'faq',
+    when: 'Questions and answers — the last content section of a page, and the only one search engines read as a pair of "term and definition". The heading is printed by the MECHANISM, not by the material: "Frequently asked questions" is already translated into ten languages in `lib/content/page-ui.ts`, so `title` is only for a page whose questions are about one thing rather than frequent. Inline markup is deliberately absent: the very same strings go into the `FAQPage` structured data, where asterisks and brackets would be printed to the search engine verbatim.',
+    blocks: [
+      {
+        kind: 'faq',
+        items: [
+          {
+            q: 'Why is this a catalogue kind rather than layout inside the page template?',
+            a: 'Because a page must have ONE source of markup. While the template drew this section itself, the catalogue promised to show what a page is made of and knew nothing about it — and a rule added to the kind never reached the page.',
+          },
+          {
+            q: 'Does the page now declare its questions differently?',
+            a: 'No. They still live in the `faq` field of the language cell, and the same field feeds the FAQPage markup for search. Only the drawing moved.',
+          },
+          {
+            q: 'Can two of these stand on one page?',
+            a: 'No. The anchor is fixed so that it can be linked to from outside, and two sections would produce the same id twice.',
+          },
+        ],
+      },
+    ],
+  },
 ]

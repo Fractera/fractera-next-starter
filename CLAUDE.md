@@ -818,6 +818,7 @@ say so and work without it rather than inventing its content.
 | `use-agentic-rag` | the knowledge graph: loading is expensive, a question is cheap; the graph builds in the BACKGROUND; "unavailable" is a legal state | ✅ |
 | `use-map` | addresses, routes, visiting order; `route` keeps your order, `optimize` chooses it; **neighbouring routes answer in DIFFERENT units** | ✅ |
 | `use-channels` | channels (Telegram): an update reaches exactly ONE reader, so a second poller silently eats half the messages | ✅ |
+| `use-telegram` | продукт Telegram Desk: четыре таблицы и пять складов, ветвление намерения, правила связности, конверт графа, ответ-расписка, часовой пояс | ✅ |
 | `use-multi-lang` | the language set is the owner's; one language during development, the rest is a recorded debt | ✅ |
 | `use-development-steps` | session handover instead of compression, the group of steps, closing with a feature report | ✅ |
 | `use-use-cases` | mode `cases`: a confirmed case is what gives the right to start; where cases and steps live, two entrances to the decomposition step | ✅ |

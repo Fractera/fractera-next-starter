@@ -66,6 +66,42 @@ export async function pending(chatId: string): Promise<{ id: number; title: stri
   return row?.id ? { id: row.id, title: String(row.title), due: Number(row.due_unix) } : null
 }
 
+// 🔒 ЖДАТЬ МОГУТ ОБА: и напоминание, и чек. «Да» обязано попасть в то, о чём
+// спрашивали ПОСЛЕДНИМ, — решает время, а не порядок проверок в коде.
+// ✗ иначе согласие с суммой молча подтвердило бы вчерашнее напоминание.
+export type Waiting =
+  | { what: "calendar"; id: number; title: string; at: string }
+  | { what: "entry"; id: number; title: string; at: string }
+
+export async function waitingNow(chatId: string): Promise<Waiting | null> {
+  const cal = (await db
+    .prepare(
+      `SELECT id, title, created_at FROM tgdesk_calendar
+        WHERE chat_id = ? AND status = 'pending' ORDER BY id DESC LIMIT 1`,
+    )
+    .get(chatId)) as { id?: number; title?: string; created_at?: string } | undefined
+
+  const ent = (await db
+    .prepare(
+      `SELECT id, title, created_at FROM tgdesk_entries
+        WHERE status = 'pending' ORDER BY id DESC LIMIT 1`,
+    )
+    .get()) as { id?: number; title?: string; created_at?: string } | undefined
+
+  const a = cal?.id ? { what: "calendar" as const, id: cal.id, title: String(cal.title), at: String(cal.created_at ?? "") } : null
+  const b = ent?.id ? { what: "entry" as const, id: ent.id, title: String(ent.title), at: String(ent.created_at ?? "") } : null
+  if (a && b) return a.at >= b.at ? a : b
+  return a ?? b
+}
+
+export async function confirmEntry(id: number): Promise<void> {
+  await db.prepare("UPDATE tgdesk_entries SET status = 'confirmed' WHERE id = ?").run(id)
+}
+
+export async function cancelEntry(id: number): Promise<void> {
+  await db.prepare("UPDATE tgdesk_entries SET status = 'cancelled' WHERE id = ?").run(id)
+}
+
 export async function confirm(id: number): Promise<void> {
   await db.prepare("UPDATE tgdesk_calendar SET status = 'active' WHERE id = ?").run(id)
 }

@@ -166,6 +166,14 @@ const SCHEMA = `
     kind       TEXT    NOT NULL,          -- note | task | receipt | place | idea
     title      TEXT    NOT NULL DEFAULT '',
     payload    TEXT,
+    -- 🔒 ЗАПИСЬ ЖИВЁТ С ПЕРВОЙ СЕКУНДЫ, ДАЖЕ НЕПОДТВЕРЖДЁННАЯ. Ждать согласия,
+    -- ничего не записав, значит терять чек, если человек не ответил, — а он не
+    -- отвечает в половине случаев. pending | confirmed | cancelled.
+    status     TEXT    NOT NULL DEFAULT 'confirmed',
+    -- Валюта чека. Пусто — на чеке её не видно, и тогда её берут из APP-CONFIG;
+    -- откуда она взялась, продукт говорит вслух: подставленная молча цифра —
+    -- это цифра, которой поверят, названная — это цифра, которую поправят.
+    currency   TEXT,
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS tgdesk_entries_message ON tgdesk_entries (message_id);
@@ -514,6 +522,8 @@ const LATE_COLUMNS = [
   `ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`,
   `ALTER TABLE tgdesk_messages ADD COLUMN happened_unix INTEGER`,
   `ALTER TABLE tgdesk_messages ADD COLUMN notes TEXT`,
+  `ALTER TABLE tgdesk_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'`,
+  `ALTER TABLE tgdesk_entries ADD COLUMN currency TEXT`,
 ]
 
 async function initRemoteSchema() {

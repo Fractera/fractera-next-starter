@@ -3,6 +3,7 @@ import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
 import { understand, type Understanding } from "./understand"
 import { takeFile } from "./branches/files"
+import { getAppConfig } from "@/config/app-config"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -81,6 +82,18 @@ export type IngestResult = {
   messageId: number
   duplicate: boolean
   artifacts: { kind: string; ref: string }[]
+  /** Сводка, которая ЛЕГЛА В БАЗУ. Её же показывает карточка — это одно и то же. */
+  summary: string
+  kind: string | null
+  payload: Record<string, unknown> | null
+  happenedAt: string | null
+  /** Валюта записи и признак того, что она подставлена из настроек. */
+  currency: string
+  currencyFromConfig: boolean
+  /** Что стало с вложением, человеческими словами. Пусто — вложения не было. */
+  fileRead: string
+  /** Денежная запись ждёт согласия. */
+  needsConfirm: boolean
   understood: boolean
   /** Ветвь, по которой пошло сообщение: дверь строит ответ по ней. */
   intent: Understanding["intent"]
@@ -111,6 +124,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     return {
       messageId: seen.id,
       duplicate: true,
+      summary: "",
+      kind: null,
+      payload: null,
+      happenedAt: null,
+      currency: "",
+      currencyFromConfig: false,
+      fileRead: "",
+      needsConfirm: false,
       artifacts: [],
       understood: false,
       intent: "capture",
@@ -146,13 +167,22 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // подпись, а картинку приложить потом значит понять половину: «вот чек»
   // без суммы это не запись о трате, а бессмысленная строка.
   const files: { kind: string; text: string }[] = []
+  let fileRead = ""
   if (msg.fileId) {
     const f = await takeFile(msg.fileId, messageId, msg.objectType)
     if (f?.name) {
       artifacts.push({ kind: "media", ref: f.name })
-      if (f.text) files.push({ kind: f.kind, text: f.text })
-      else notes.push(`file:${f.kind}:${f.failed || "not-read"}`)
+      if (f.text) {
+        files.push({ kind: f.kind, text: f.text })
+        fileRead = f.kind === "image" ? "фотография прочитана" : f.kind === "audio" ? "звук расшифрован" : "документ прочитан"
+      } else {
+        // Файл сохранён, но не прочитан — это ПОЛОВИНА успеха, и человеку
+        // говорят именно половину: «сохранил» без «прочитал» звучит иначе.
+        fileRead = "сохранено, прочитать не удалось"
+        notes.push(`file:${f.kind}:${f.failed || "not-read"}`)
+      }
     } else {
+      fileRead = "вложение не удалось забрать"
       notes.push(`file:${msg.objectType ?? "unknown"}:not-fetched`)
     }
   }
@@ -160,6 +190,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // Разбор моделью видит и подпись, и прочитанное из вложения.
   const spoken = [msg.text, ...files.map((f) => f.text)].filter(Boolean).join(String.fromCharCode(10))
   const u = await understand(spoken)
+  let currency = ""
+  let currencyFromConfig = false
+  let needsConfirm = false
   if (u.failed) notes.push(`understand:${u.failed}`)
   if (!u.failed) {
     await db
@@ -177,9 +210,31 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     // дело живёт в двух местах: строкой в списке задач и строкой в календаре, и
     // выполнить его придётся дважды, чтобы оба списка стали пустыми.
     if (u.kind && !u.schedule) {
+      // 🔒 ВАЛЮТА: с чека, а не видно — из настроек проекта, и об этом
+      // говорится вслух. Молча подставленная валюта превращает чужие доллары
+      // в свои евро, и заметно это станет на годовом подсчёте.
+      const onReceipt = String((u.payload?.currency as string) ?? "").trim().toUpperCase()
+      const hasMoney = u.payload?.amount !== undefined && u.payload?.amount !== null
+      if (hasMoney && !onReceipt) {
+        currency = String(getAppConfig().commerce?.currency ?? "").toUpperCase()
+        currencyFromConfig = Boolean(currency)
+      } else {
+        currency = onReceipt
+      }
+      // Деньги ждут согласия — та же дисциплина, что у времени в календаре.
+      needsConfirm = Boolean(hasMoney)
       await db
-        .prepare("INSERT INTO tgdesk_entries (message_id, kind, title, payload) VALUES (?, ?, ?, ?)")
-        .run(messageId, u.kind, u.title, u.payload ? JSON.stringify(u.payload) : null)
+        .prepare(
+          "INSERT INTO tgdesk_entries (message_id, kind, title, payload, status, currency) VALUES (?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          messageId,
+          u.kind,
+          u.title,
+          u.payload ? JSON.stringify(u.payload) : null,
+          needsConfirm ? "pending" : "confirmed",
+          currency || null,
+        )
     }
   }
 
@@ -235,6 +290,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     messageId,
     duplicate: false,
     artifacts,
+    summary: u.summary,
+    kind: u.kind,
+    payload: u.payload,
+    happenedAt: u.happenedAt,
+    currency,
+    currencyFromConfig,
+    fileRead,
+    needsConfirm,
     understood: !u.failed,
     intent: u.intent,
     schedule: u.schedule,

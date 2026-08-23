@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { ingest, recordOutgoing } from "@/lib/products/telegram-desk/ingest"
 import { answer } from "@/lib/products/telegram-desk/answer"
 import { dataFetch } from "@/lib/fractera/data-service"
-import { propose, speak, pending, confirm, cancel } from "@/lib/products/telegram-desk/calendar"
+import {
+  propose, speak, confirm, cancel,
+  waitingNow, confirmEntry, cancelEntry,
+} from "@/lib/products/telegram-desk/calendar"
+import { card } from "@/lib/products/telegram-desk/card"
 import { GREETING } from "@/lib/products/telegram-desk/persona"
 import { meta } from "@/lib/products/telegram-desk/branches/meta"
 
@@ -19,13 +23,6 @@ import { meta } from "@/lib/products/telegram-desk/branches/meta"
 // её в бесплатный вход в чужую базу и в чужой ключ модели.
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-
-/** Короткое подтверждение: что записано и как понято. Модель здесь не нужна. */
-function confirmText(r: { understood: boolean; artifacts: { kind: string }[] }): string {
-  if (!r.understood) return "Записал. Разобрать не смог — сохранил как есть."
-  const searchable = r.artifacts.some((a) => a.kind === "vector")
-  return searchable ? "Записал — найдётся по смыслу." : "Записал."
-}
 
 // ЧТО ОТВЕТИТЬ — четыре разных случая, и путать их дорого.
 //
@@ -45,16 +42,24 @@ async function compose(
       return await meta(text)
 
     case "confirm": {
-      const waiting = await pending(chatId)
+      const waiting = await waitingNow(chatId)
       // Подтверждать нечего — человек согласился с воздухом. Сказать это
       // честно дешевле, чем промолчать: иначе он ждёт напоминания, которого нет.
       if (!waiting) return "Сейчас нечего подтверждать."
       if (r.confirmation === "no") {
-        await cancel(waiting.id)
-        return "Отменил. Назовите другое время, если нужно."
+        if (waiting.what === "calendar") {
+          await cancel(waiting.id)
+          return "Отменил. Назовите другое время, если нужно."
+        }
+        await cancelEntry(waiting.id)
+        return "Отменил. Напишите, как правильно."
       }
-      await confirm(waiting.id)
-      return `Поставил: ${waiting.title}.`
+      if (waiting.what === "calendar") {
+        await confirm(waiting.id)
+        return `Поставил: ${waiting.title}.`
+      }
+      await confirmEntry(waiting.id)
+      return `Подтвердил: ${waiting.title}.`
     }
 
     case "schedule": {
@@ -73,7 +78,9 @@ async function compose(
       return await answer(text)
 
     default:
-      return confirmText(r)
+      // 🔒 Один ответ на любой род: карточка показывает ТУ САМУЮ сводку,
+      // что легла в базу. Ответ — расписка в понимании, а не вежливость.
+      return card(r)
   }
 }
 export async function POST(req: NextRequest) {

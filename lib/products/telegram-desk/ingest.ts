@@ -223,6 +223,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       .run(messageId, a.kind, a.ref)
   }
 
+  // Заметки ложатся в строку сообщения: иначе отказ виден ровно один раз,
+  // в ответе, который никто не читает.
+  if (notes.length) {
+    await db
+      .prepare("UPDATE tgdesk_messages SET notes = ? WHERE id = ?")
+      .run(notes.join("; "), messageId)
+  }
+
   return {
     messageId,
     duplicate: false,

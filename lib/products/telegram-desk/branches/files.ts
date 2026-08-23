@@ -40,11 +40,24 @@ function kindOf(name: string, declared?: string): FileKind | null {
 }
 
 /** Байты у службы каналов: она единственная, у кого есть токен бота. */
-async function fetchFromChannel(fileId: string): Promise<{ bytes: Buffer; name: string } | null> {
+// 🔒 ИМЯ НЕ ЗАВИСИТ ОТ ЗАГОЛОВКА. ✗ 2026-08-23: служба честно слала
+// X-File-Name, но до приложения он не дошёл — по дороге стоит сквозной
+// прокси слоя данных, и свои заголовки он не обязан переносить. Файл лёг в
+// медиатеку как «.file», и по расширению его больше не прочитать.
+// Род объекта служба присылает В ТЕЛЕ, и он переживает любой прокси.
+const EXT_BY_KIND: Record<string, string> = { image: "jpg", audio: "ogg", document: "txt" }
+
+async function fetchFromChannel(
+  fileId: string,
+  declaredKind?: string,
+): Promise<{ bytes: Buffer; name: string } | null> {
   try {
     const r = await dataFetch(`/service/channels/telegram/file?id=${encodeURIComponent(fileId)}`)
     if (!r.ok) return null
-    const name = r.headers.get("x-file-name") || "file"
+    const header = r.headers.get("x-file-name") || ""
+    const name = header.includes(".")
+      ? header
+      : `file.${EXT_BY_KIND[declaredKind ?? ""] ?? "bin"}`
     return { bytes: Buffer.from(await r.arrayBuffer()), name }
   } catch {
     return null
@@ -72,9 +85,9 @@ async function toMedia(bytes: Buffer, name: string, messageId: number): Promise<
   }
 }
 
-async function describeImage(bytes: Buffer, mime: string): Promise<string> {
+async function describeImage(bytes: Buffer, mime: string): Promise<{ text: string; why: string }> {
   const key = openAiKey()
-  if (!key) return ""
+  if (!key) return { text: "", why: "no-key" }
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -104,11 +117,11 @@ async function describeImage(bytes: Buffer, mime: string): Promise<string> {
       }),
       signal: AbortSignal.timeout(90_000),
     })
-    if (!res.ok) return ""
+    if (!res.ok) return { text: "", why: `vision-${res.status}: ${(await res.text()).slice(0, 200)}` }
     const d = (await res.json()) as { choices?: { message?: { content?: string } }[] }
-    return String(d.choices?.[0]?.message?.content ?? "").trim()
-  } catch {
-    return ""
+    return { text: String(d.choices?.[0]?.message?.content ?? "").trim(), why: "" }
+  } catch (e) {
+    return { text: "", why: `vision-threw: ${String((e as Error).message ?? e).slice(0, 120)}` }
   }
 }
 
@@ -159,7 +172,7 @@ export async function takeFile(
   messageId: number,
   declaredKind?: string,
 ): Promise<StoredFile | null> {
-  const got = await fetchFromChannel(fileId)
+  const got = await fetchFromChannel(fileId, declaredKind)
   if (!got) return null
 
   const kind = kindOf(got.name, declaredKind)
@@ -169,14 +182,17 @@ export async function takeFile(
   if (!name) return { name: "", kind, text: "", failed: "media-upload" }
 
   let text = ""
+  let why = ""
   if (kind === "image") {
     const ext = (got.name.split(".").pop() ?? "jpg").toLowerCase()
-    text = await describeImage(got.bytes, MIME[ext] ?? "image/jpeg")
+    const seen = await describeImage(got.bytes, MIME[ext] ?? "image/jpeg")
+    text = seen.text
+    why = seen.why
   } else if (kind === "audio") {
     text = await transcribe(got.bytes, got.name)
   } else {
     text = readDocument(got.bytes, got.name)
   }
 
-  return { name, kind, text, failed: text ? "" : "not-read" }
+  return { name, kind, text, failed: text ? "" : why || "not-read" }
 }

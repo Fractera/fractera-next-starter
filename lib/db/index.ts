@@ -125,6 +125,11 @@ const SCHEMA = `
     -- датой разговора: неверно, и неверно правдоподобно. Пусто здесь законно —
     -- в большинстве фраз времени события нет вовсе.
     happened_unix INTEGER,
+    -- 🔒 ЧТО НЕ ВЫШЛО — ХРАНИТСЯ РЯДОМ С ТЕМ, С ЧЕМ НЕ ВЫШЛО.
+    -- ✗ 2026-08-23: снимок чека сохранился, но не прочитался, и узнать причину
+    -- было НЕОТКУДА: отказы жили в ответе двери, который служба выбрасывает.
+    -- Диагностика, которую видно только в момент отказа, не существует.
+    notes         TEXT,
     created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE UNIQUE INDEX IF NOT EXISTS tgdesk_messages_external ON tgdesk_messages (channel, external_id);
@@ -508,6 +513,7 @@ const LATE_COLUMNS = [
   `ALTER TABLE products ADD COLUMN i18n         TEXT`,
   `ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`,
   `ALTER TABLE tgdesk_messages ADD COLUMN happened_unix INTEGER`,
+  `ALTER TABLE tgdesk_messages ADD COLUMN notes TEXT`,
 ]
 
 async function initRemoteSchema() {

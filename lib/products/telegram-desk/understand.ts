@@ -71,6 +71,11 @@ const EMPTY: Understanding = {
 // что: модель не знает, какой сегодня день, и либо промолчит, либо угадает год
 // обучения. Оплачено первым же живым сообщением — «вчера купил» легло в базу
 // временем РАЗГОВОРА, и вопрос «в каком месяце я покупал» отвечался бы неверно.
+// 🔒 МОДЕЛИ ПЕРЕДАЁТСЯ ВРЕМЯ С ЧАСАМИ, А НЕ ТОЛЬКО ДАТА.
+// ✗ 2026-08-23: здесь стояла одна дата, и «напомни через одну минуту» дважды
+// подряд превращалось в обычную заметку. Модель не отказывалась — ей нечем
+// было ответить: чтобы назвать час и минуту, надо знать, который час сейчас.
+// Отказ выглядел как «продукт не понял просьбу», хотя не понимал он времени.
 function systemPrompt(todayIso: string): string {
   return [
     "You sort short personal messages a person dictates or types to their own assistant.",
@@ -88,7 +93,8 @@ function systemPrompt(todayIso: string): string {
     "a place has address, a task has due when it was said. Never invent a value that was not said.",
     "",
     '"happened_at" is WHEN THE EVENT HAPPENED, as YYYY-MM-DD.',
-    `Today is ${todayIso}. "yesterday" is the day before that, "last Monday" is a real date,`,
+    `Right now it is ${todayIso} UTC — that is today's date AND the current clock.`,
+    '"yesterday" is the day before that, "last Monday" is a real date,',
     '"in March" is that month of the nearest past year. Nothing was said about time — null.',
     "Never copy today into it just to fill the field: a wrong date is worse than an empty one,",
     "because a wrong one is believable.",
@@ -118,8 +124,13 @@ const REPEATS = ["daily", "weekdays", "weekly", "monthly"] as const
 function readSchedule(v: unknown): Understanding["schedule"] {
   if (!v || typeof v !== "object") return null
   const o = v as Record<string, unknown>
-  const when = String(o.when ?? "")
-  if (!/^d{4}-d{2}-d{2}Td{2}:d{2}$/.test(when)) return null
+  // Модель верна по смыслу и вольна в форме: вернёт секунды, вернёт Z, вернёт
+  // пробел вместо T. Отбрасывать из-за этого целое намерение человека — значит
+  // менять его просьбу на молчание ради красоты регулярного выражения.
+  const raw = String(o.when ?? "").trim().replace(" ", "T")
+  const m = /^(d{4}-d{2}-d{2})T(d{2}:d{2})/.exec(raw)
+  if (!m) return null
+  const when = `${m[1]}T${m[2]}`
   const repeat = REPEATS.includes(o.repeat as (typeof REPEATS)[number])
     ? (o.repeat as (typeof REPEATS)[number])
     : null
@@ -146,7 +157,7 @@ export async function understand(text: string): Promise<Understanding> {
         temperature: 0,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: systemPrompt(new Date().toISOString().slice(0, 10)) },
+          { role: "system", content: systemPrompt(new Date().toISOString().slice(0, 16).replace("T", " ")) },
           { role: "user", content: text.slice(0, 8000) },
         ],
       }),

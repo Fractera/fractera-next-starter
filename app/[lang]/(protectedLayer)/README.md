@@ -14,7 +14,7 @@ If either fails, the page is not rendered with an apology inside it: the visitor
 sign-in form with the address to come back to, and an interactive toast says which roles the page needs.
 
 Everything else — a page anyone may open, with or without an account — belongs to the **public layer**
-(`app/[lang]/<page>`), is prerendered and indexed, and follows `CONTENT-ENGINE.md`.
+(`app/[lang]/<page>`), is prerendered and indexed, and follows the skill `use-static-pages`.
 
 ## The shape of a protected page — static shell, dynamic centre
 

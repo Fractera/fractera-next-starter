@@ -33,7 +33,7 @@ locally.
 **Public layer.** Pages that do not depend on authorization or on a role: the pages of the top menu when
 a top menu exists, plus any page that simply sits in the file system. Everyone sees the same content, so
 it is authored once, prerendered, indexed, and served with no query behind it. One item = one folder;
-the rules are in `CONTENT-ENGINE.md`.
+the rules are in the skill `use-static-pages`.
 
 **Protected layer.** Pages whose access is limited by **two** conditions, both required:
 
@@ -81,7 +81,7 @@ is a mistake this project has already made once.
 
 **2. Content of a public page** — the title and body of an article. It lives in **files**, in the
 per-language cell of that post (`_data/ru.ts`). It belongs to the author, is finite and written in
-advance, and is prerendered. See `CONTENT-ENGINE.md`.
+advance, and is prerendered. See the skill `use-static-pages`.
 
 **3. Content of an object** — a product's name and description, a category, anything a person creates
 while using the app. It lives in **the database, in that object's own row**, in an `i18n` JSON column

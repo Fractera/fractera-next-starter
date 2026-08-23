@@ -7,7 +7,7 @@ subscription, their uploads, their settings. Nobody else's row ever appears here
 
 This is the widest group and the one that scales without limit: a site with a million accounts has a
 million versions of `/dashboard`. That is why routes here use a dynamic segment when they address one
-item (`/[id]`), and never a folder per user — see `CONTENT-ENGINE.md` §2.
+item (`/[id]`), and never a folder per user — see the skill `use-dynamic-pages`.
 
 **Boundary case — the guest with an identity.** On a page that opts into guest registration, an
 unregistered visitor is issued a permanent `user.id`: their work persists and attaches to the account

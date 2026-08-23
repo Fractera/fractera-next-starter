@@ -67,6 +67,10 @@ Each of these looked like success:
   pid, at any depth.
 - **a hidden browser tab reports width 0**, so every "is it narrow" check answers yes. Check
   `document.visibilityState` before believing a measurement taken through automation.
+- **the page opens in your browser**, which is worthless for the one thing you were proving: the
+  browser runs the very JavaScript the page is supposed to work without. Strip the scripts instead —
+  `curl -s <url> | sed 's/<script[^>]*>.*<\/script>//g' | grep "<a phrase from the page>"` — and for
+  "is it prerendered", read the build's route table (`●` against `ƒ`), because only the build knows.
 
 ## 5. What cannot be proven — say it, do not substitute
 

@@ -147,6 +147,20 @@ ships every language to the browser. Pattern to copy: `project-type-marquee.serv
 - **`fill-without-pair`** — `bg-primary` without `text-primary-foreground`. Fills and their text come
   in pairs; half a pair is unreadable text in exactly one theme.
 
+**What to write instead of an absolute colour** — the same tokens the rest of the product uses:
+
+| Instead of | Write |
+|---|---|
+| `bg-black`, `bg-zinc-900` | `bg-background`, `bg-muted` |
+| `text-white` | `text-foreground` |
+| `text-white/50`, `/40` | `text-muted-foreground` |
+| `border-white/10` | `border-border` |
+| a named accent (`violet-600`) | `bg-primary` + `text-primary-foreground` |
+
+🔒 **Sweep the SHARED ENGINE too, not only your section folder.** A section can be perfectly clean and
+still render dark, because posts are drawn by `components/content-page/` and `lib/content/blocks/`.
+The blog was fixed once by sweeping its own folder, and its post pages stayed black for another round.
+
 The contract file carries no colour and no class deliberately: the first look-detail that leaks in
 becomes mandatory for every renderer at once.
 

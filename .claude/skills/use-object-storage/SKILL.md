@@ -47,6 +47,21 @@ files from `public/`.
 Two rules follow: the key is the answer, not the visitor's cookie; and a stored image must be checked
 **as an anonymous visitor**, because signed in it works either way.
 
+🔒 **The file committed under `public/` does not disappear — it changes role.** A picture referenced
+as `media:` still ships in the repository as **seed material**: `npm run seed:media` uploads it to the
+store on first run, and until that has happened the resolver falls back to the file. Without this a
+fresh server would open the article on an empty database and show a hole.
+
+**Two traps this already fell into.** A **link on a picture is not a source of the picture** — the
+figure renderer branched on `href` first and drew the image itself, skipping `media:` resolution, so
+the raw string reached the HTML; the defect was visible only on the one block where both conditions
+met. And a **video's poster is not an image**: `<video poster="…">` takes neither the blurred
+placeholder nor the optimiser, wherever the file lives. That is the element's nature, not a gap here —
+say so plainly instead of promising a placeholder for every picture.
+
+**Resizing needs no machinery of yours.** Media is served from the app's own origin, so the optimiser
+treats it as local: no `remotePatterns`, no second image service, no resizing code of your own.
+
 ## 3. Uploading — multipart, so not through the JSON helper
 
 `dataFetch` sets `Content-Type: application/json`, which destroys a multipart body: `FormData` must

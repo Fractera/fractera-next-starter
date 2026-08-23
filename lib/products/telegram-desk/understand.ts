@@ -31,6 +31,8 @@ export type Understanding = {
   happenedAt: string | null
   /** Вопрос к своей истории или рассказ о жизни: ответ строится по-разному. */
   isQuestion: boolean
+  /** Признаки сообщения одним-двумя словами: продавец, покупка, стоимость, оргтехника. */
+  facets: string[]
   /** Разбор не состоялся — причина названа, а не спрятана за пустотой. */
   failed: string
 }
@@ -43,6 +45,7 @@ const EMPTY: Understanding = {
   hasFinancial: false,
   happenedAt: null,
   isQuestion: false,
+  facets: [],
   failed: "",
 }
 
@@ -55,7 +58,7 @@ function systemPrompt(todayIso: string): string {
     "You sort short personal messages a person dictates or types to their own assistant.",
     "Answer with JSON only, no prose, using exactly these keys:",
     '{"summary":string,"kind":string|null,"title":string,"payload":object|null,',
-    '"has_financial":boolean,"happened_at":string|null,"is_question":boolean}',
+    '"has_financial":boolean,"happened_at":string|null,"is_question":boolean,"facets":string[]}',
     `"kind" is one of: ${ENTRY_KINDS.join(", ")} — or null when nothing fits.`,
     '"summary" is one sentence in the SAME language the person used.',
     '"title" is at most six words.',
@@ -69,6 +72,10 @@ function systemPrompt(todayIso: string): string {
     "Never copy today into it just to fill the field: a wrong date is worse than an empty one,",
     "because a wrong one is believable.",
     "",
+    '"facets" are two to six short tags naming what the message is ABOUT, in the language',
+    'the person used: a vendor, a purchase, a price, a city, office equipment, a promise.',
+    'They are what a knowledge graph links on, so name THINGS and ROLES, not feelings.',
+    '',
     '"is_question" is true when the person ASKS about their own history',
     '("what did I promise", "how much did I spend"), false when they TELL you something happened.',
   ].join("\n")
@@ -120,6 +127,9 @@ export async function understand(text: string): Promise<Understanding> {
       hasFinancial: parsed.has_financial === true,
       happenedAt,
       isQuestion: parsed.is_question === true,
+      facets: Array.isArray(parsed.facets)
+        ? parsed.facets.map((f) => String(f).slice(0, 40)).filter(Boolean).slice(0, 8)
+        : [],
       failed: "",
     }
   } catch (e) {

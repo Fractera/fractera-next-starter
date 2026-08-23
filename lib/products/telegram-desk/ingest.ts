@@ -10,8 +10,33 @@ import { understand } from "./understand"
 // обработчике маршрута не переиспользуется ничем.
 
 export const VECTOR_COLLECTION = "tgdesk"
-/** Короткая реплика в граф знаний не идёт: документ из пяти слов раздувает граф и ничего не объясняет. */
-const RAG_MIN_CHARS = 280
+// 🔒 В ГРАФ ЗНАНИЙ ИДЁТ КАЖДОЕ СООБЩЕНИЕ, И ИДЁТ ОНО КОНВЕРТОМ
+// (решение владельца 2026-08-23, отменяет порог в 280 знаков).
+//
+// Здесь стоял порог: короткая реплика в граф не попадала, потому что документ из
+// пяти слов раздувает граф и ничего не объясняет. Рассуждение было верным ровно
+// до тех пор, пока в граф клали ГОЛЫЙ ТЕКСТ. Владелец предложил другое, и это
+// лучше: сообщение оборачивается в конверт, который называет отправителя, канал,
+// дату и признаки. Граф питается сущностями и связями между ними — конверт даёт
+// ему ровно это, и заодно перестаёт быть коротким.
+//
+// Цена решения названа честно: каждое сообщение теперь стоит построения графа, и
+// на тысяче реплик это заметные деньги. Владелец выбрал полноту.
+function envelope(msg: Incoming, u: { summary: string; facets: string[]; happenedAt: string | null }): string {
+  const when = new Date(msg.at || Date.now())
+  const said = when.toISOString().slice(0, 16).replace("T", " ")
+  const lines = [
+    `От пользователя ${msg.who || msg.chatId} через канал Telegram ${said} UTC поступило сообщение.`,
+  ]
+  if (u.happenedAt) lines.push(`Событие произошло ${u.happenedAt}.`)
+  if (u.facets.length) lines.push(`Признаки: ${u.facets.join(", ")}.`)
+  if (msg.lat != null && msg.lon != null) lines.push(`Место: ${msg.lat}, ${msg.lon}.`)
+  if (u.summary) lines.push(`Суть: ${u.summary}`)
+  lines.push(`Текст сообщения: ${msg.text}`)
+  // Перевод строки кодом, а не escape-последовательностью: этот файл не раз
+  // проезжал через цепочку оболочек, и каждая съедала обратный слэш по-своему.
+  return lines.join(String.fromCharCode(10))
+}
 
 export type Incoming = {
   externalId: string
@@ -126,8 +151,8 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     notes.push("vector:failed")
   }
 
-  if (msg.text.length >= RAG_MIN_CHARS) {
-    const r = await learn(searchable, `tgdesk/${messageId}`)
+  {
+    const r = await learn(envelope(msg, u), `tgdesk/${messageId}`)
     if (r.accepted) {
       // 🔒 Ссылка на граф — ИМЯ источника, а не id документа: движок строит его в
       // фоне и выдаёт свой идентификатор позже. Имя мы задали сами, и по нему

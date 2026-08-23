@@ -130,6 +130,15 @@ const SCHEMA = `
     -- было НЕОТКУДА: отказы жили в ответе двери, который служба выбрасывает.
     -- Диагностика, которую видно только в момент отказа, не существует.
     notes         TEXT,
+    -- 🔒 СВЯЗКА: сообщения одного разговора, идущие подряд.
+    -- ✗ 2026-08-23: человек написал «Сообщение от юлии Ковальчук» и через четыре
+    -- секунды переслал её голосовое. Продукт записал две несвязанные строки, и
+    -- вопрос «что говорила Ковальчук» не находил ничего: имя было в одной,
+    -- слова — в другой.
+    --
+    -- Здесь лежит НОМЕР ПЕРВОГО сообщения связки. Строки не сливаются: слитые,
+    -- они потеряли бы возможность найтись по отдельности. Связка — ссылка.
+    bundle        INTEGER,
     created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE UNIQUE INDEX IF NOT EXISTS tgdesk_messages_external ON tgdesk_messages (channel, external_id);
@@ -524,6 +533,7 @@ const LATE_COLUMNS = [
   `ALTER TABLE tgdesk_messages ADD COLUMN notes TEXT`,
   `ALTER TABLE tgdesk_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'`,
   `ALTER TABLE tgdesk_entries ADD COLUMN currency TEXT`,
+  `ALTER TABLE tgdesk_messages ADD COLUMN bundle INTEGER`,
 ]
 
 async function initRemoteSchema() {

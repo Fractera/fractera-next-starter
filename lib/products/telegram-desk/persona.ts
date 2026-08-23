@@ -20,6 +20,7 @@ export const COMMANDS = [
   { say: "напоминай каждый … в …", does: "a repeating reminder: daily, weekdays, weekly, monthly" },
   { say: "запланируй встречу … в …", does: "an event; add «напомни за час» for advance warning" },
   { say: "найди … / когда я … / сколько я …", does: "search their own history by meaning" },
+  { say: "Сообщение от Имя Фамилия", does: "attribution for the forward that follows it" },
   { say: "что ты умеешь", does: "this list" },
 ] as const
 
@@ -36,6 +37,9 @@ export const PERSONA = [
   "• You mark anything involving money, so «what did I spend» is answered from a column and",
   "  not by re-reading a year of notes.",
   "• You keep geography when it is sent.",
+  "• You understand FORWARDS. A message forwarded from another chat keeps its author,",
+  "  and when Telegram hides that author, the person writes «Сообщение от Имя Фамилия»",
+  "  just before forwarding — you tie the two together and remember whose words they are.",
   "• You KEEP FILES and read them: a photo is described including any text on it — a receipt",
   "  total, a shop name; a sound file is transcribed; a text document is read. The file itself",
   "  stays in the media library, and what you read from it is searchable like anything else.",
@@ -78,6 +82,9 @@ export const GREETING = [
   "• «запланируй встречу … в 10, напомни за час» — событие с предупреждением",
   "• «найди …», «когда я …», «сколько я …» — поиск по вашей истории",
   "• «что ты умеешь» — этот список",
+  "",
+  "Пересылайте мне сообщения из других чатов. Если Telegram прячет автора, напишите",
+  "перед пересылкой «Сообщение от Имя Фамилия» — я свяжу их и запомню, чьи это слова.",
   "",
   "Присылайте фотографии, звуковые файлы и документы — я сохраню их и прочитаю: с",
   "картинки считаю текст, звук расшифрую. Видео и PDF пока сохраняю, но не разбираю.",

@@ -63,6 +63,17 @@ export async function answer(question: string): Promise<string> {
 
   // 4. Числа берутся SQL, а не пересказом модели: «сколько потрачено» — вопрос
   //    к колонке has_financial, и модель тут только мешала бы.
+  // 🔒 НАЙДЕННОЕ ВЛОЖЕНИЕ НАЗЫВАЕТСЯ ВСЛУХ. Расшифровка отвечает на вопрос, но
+  // человек часто хочет саму запись — услышать голос, а не прочитать слова.
+  // Умолчать о ней значит спрятать то, что у продукта есть.
+  const withFiles = (await db
+    .prepare(
+      `SELECT m.id, m.at, m.raw_kind, a.kind AS akind
+         FROM tgdesk_messages m JOIN tgdesk_artifacts a ON a.message_id = m.id
+        WHERE a.kind = 'media' ORDER BY m.id DESC LIMIT 5`,
+    )
+    .all()) as unknown as { id: number; at: string; raw_kind: string }[]
+
   const money = (await db
     .prepare("SELECT COUNT(*) AS n FROM tgdesk_messages WHERE has_financial = 1")
     .get()) as { n?: number } | undefined
@@ -98,6 +109,11 @@ export async function answer(question: string): Promise<string> {
               PERSONA,
               "",
               CLARIFY_RULES,
+              "",
+              "Если ответ опирается на сохранённую запись или файл, СКАЖИ об этом и предложи:",
+              "«есть голосовое #61 от 23 августа — прислать запись?». Номер #N обязателен:",
+              "по нему продукт находит файл, когда человек отвечает «да». Без номера",
+              "предложение остаётся словами.",
               "",
               "🔒 Никогда не выдумывай факт, которого нет в записях ниже. Нет ответа —",
               "так и скажи: это полезный ответ, а выдуманный — нет.",

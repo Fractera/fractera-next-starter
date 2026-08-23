@@ -1,5 +1,7 @@
 import { openAiKey } from "@/lib/openai-key"
 import { dataFetch, dataService } from "@/lib/fractera/data-service"
+import { db } from "@/lib/db"
+import { mediaByName } from "@/lib/media/by-name"
 
 // ВЕТВЬ «ФАЙЛЫ»: забрать вложение, положить в медиатеку, ПРОЧИТАТЬ его.
 //
@@ -219,4 +221,59 @@ export async function takeFile(
   }
 
   return { name, kind, text, failed: text ? "" : why || "not-read" }
+}
+
+/**
+ * Прислать человеку сохранённый файл обратно в чат.
+ *
+ * 🔒 БАЙТЫ ИДУТ ЧЕРЕЗ СЛУЖБУ, А НЕ ССЫЛКОЙ. Ссылка на медиатеку требует ключа,
+ * а ключ в чате — это ключ, оставленный в чужой истории сообщений.
+ */
+export async function sendStoredFile(
+  chatId: string,
+  messageId: number,
+  caption: string,
+): Promise<boolean> {
+  try {
+    const row = (await db
+      .prepare(
+        `SELECT a.ref, m.raw_kind, m.object_type FROM tgdesk_artifacts a
+           JOIN tgdesk_messages m ON m.id = a.message_id
+          WHERE a.message_id = ? AND a.kind = 'media' LIMIT 1`,
+      )
+      .get(messageId)) as { ref?: string; raw_kind?: string; object_type?: string } | undefined
+    if (!row?.ref) return false
+
+    // 🔒 ИМЯ → ЗАПИСЬ → ФАЙЛ, В ТРИ ШАГА, И СРЕДНИЙ ПРОПУСТИТЬ НЕЛЬЗЯ.
+    // ✗ здесь стоял выдуманный маршрут `/media/by-name/…/file`, которого у слоя
+    // данных нет вовсе: он ответил 404, и «прислать запись» тихо не работало бы.
+    // Хранилище адресует файл идентификатором, а содержимое ссылается ИМЕНЕМ —
+    // между ними стоит поиск по списку, `mediaByName`, и он уже написан.
+    const media = await mediaByName(String(row.ref))
+    if (!media) return false
+    const file = await dataFetch(`/media/${encodeURIComponent(media.id)}/file`)
+    if (!file.ok) return false
+    const bytes = Buffer.from(await file.arrayBuffer())
+
+    const kind =
+      row.raw_kind === "voice" || row.object_type === "audio"
+        ? "audio"
+        : row.object_type === "image"
+          ? "image"
+          : "document"
+
+    const r = await dataFetch("/service/channels/telegram/sendFile", {
+      method: "POST",
+      body: JSON.stringify({
+        chatId,
+        kind,
+        name: String(row.ref),
+        caption,
+        base64: bytes.toString("base64"),
+      }),
+    })
+    return r.ok
+  } catch {
+    return false
+  }
 }

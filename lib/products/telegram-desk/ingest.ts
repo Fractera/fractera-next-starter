@@ -41,6 +41,7 @@ function envelope(
   msg: Incoming,
   u: { summary: string; facets: string[]; happenedAt: string | null },
   files: { kind: string; text: string }[],
+  before: string,
 ): string {
   const when = new Date(msg.at || Date.now())
   const said = when.toISOString().slice(0, 16).replace("T", " ")
@@ -51,6 +52,7 @@ function envelope(
   // сказал не владелец; записать его как слова владельца значит потерять
   // человека, о котором потом и спросят: «что мне говорил Ковальчук».
   if (msg.forwardedFrom) lines.push(`Это сообщение ПЕРЕСЛАНО. Автор слов: ${msg.forwardedFrom}.`)
+  if (before) lines.push(`Связано с предыдущим сообщением: ${before}`)
   if (u.happenedAt) lines.push(`Событие произошло ${u.happenedAt}.`)
   if (u.facets.length) lines.push(`Признаки: ${u.facets.join(", ")}.`)
   if (msg.objectType) lines.push(`К сообщению приложен объект рода: ${msg.objectType}.`)
@@ -120,6 +122,36 @@ export type IngestResult = {
   notes: string[]
 }
 
+// 🔒 ТРИ МИНУТЫ — ОКНО СВЯЗКИ, И ЧИСЛО ВЫБРАНО НЕ НАУГАД.
+// Больше — и в одну связку попадёт вся переписка за вечер; меньше — не попадёт
+// пересылка, перед которой человек набирал пояснение руками.
+//
+// Связь по времени, а не по `reply_to`: Telegram умеет точную ссылку, но люди
+// ею не пользуются — они шлют подряд.
+const BUNDLE_WINDOW_SEC = 180
+
+type Neighbour = { id: number; bundle: number | null; summary: string; text: string }
+
+/** Предыдущее сообщение того же чата, если оно пришло только что. */
+async function previousNear(chatId: string, atUnix: number): Promise<Neighbour | null> {
+  const row = (await db
+    .prepare(
+      `SELECT id, bundle, ai_summary, text FROM tgdesk_messages
+        WHERE chat_id = ? AND direction = 'in' AND at_unix >= ?
+        ORDER BY id DESC LIMIT 1`,
+    )
+    .get(chatId, atUnix - BUNDLE_WINDOW_SEC)) as
+    | { id?: number; bundle?: number | null; ai_summary?: string | null; text?: string }
+    | undefined
+  if (!row?.id) return null
+  return {
+    id: row.id,
+    bundle: row.bundle ?? null,
+    summary: String(row.ai_summary ?? ""),
+    text: String(row.text ?? ""),
+  }
+}
+
 /** Метка вопроса о поясе: узнаётся по тексту нашего же последнего ответа. */
 export const WHERE_MARK = "часовой пояс"
 
@@ -179,6 +211,10 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     }
   }
 
+  // 🔒 СОСЕД ИЩЕТСЯ ДО ВСТАВКИ. После неё запрос «последнее сообщение чата»
+  // нашёл бы это же самое сообщение и связал бы его само с собой.
+  const neighbour = await previousNear(msg.chatId, unix(at))
+
   // 🔒 ИДЕНТИФИКАТОР ЧИТАЕТСЯ ОБРАТНО, А НЕ БЕРЁТСЯ ИЗ ОТВЕТА ВСТАВКИ.
   // Локальная база отдаёт lastInsertRowid, слой данных — только { ok, changes }.
   // Код, написанный по локальной, на сервере молча получил бы NaN и связал
@@ -199,6 +235,10 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     .get("telegram", msg.externalId)) as { id?: number } | undefined
   const messageId = Number(born?.id ?? 0)
   if (!messageId) throw new Error("tgdesk: строка записана, но не читается обратно")
+
+  // Своя связка, если соседа нет; иначе наследуем его.
+  const bundle = neighbour ? (neighbour.bundle ?? neighbour.id) : messageId
+  await db.prepare("UPDATE tgdesk_messages SET bundle = ? WHERE id = ?").run(bundle, messageId)
 
   // ── Вложение забирается ДО разбора ─────────────────────────────────────
   // Прочитанное с картинки — часть того, что человек сказал. Разобрать сперва
@@ -230,6 +270,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     // Автор идёт первой строкой: модель обязана понять, ЧЬИ это слова, прежде
     // чем начнёт их пересказывать.
     msg.forwardedFrom ? `[Переслано от: ${msg.forwardedFrom}]` : "",
+    // Предыдущее сообщение связки — контекст, а не содержимое: оно объясняет,
+    // ЧЬИ это слова и о чём речь, но само уже записано своей строкой.
+    neighbour ? `[Предыдущее сообщение, ${BUNDLE_WINDOW_SEC} с назад: ${neighbour.summary || neighbour.text}]` : "",
     msg.text,
     ...files.map((f) => f.text),
   ]
@@ -329,7 +372,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     notes.push("vector:failed")
   }
 
-  const letter = envelope(msg, { ...u, happenedAt }, files)
+  const letter = envelope(msg, { ...u, happenedAt }, files, neighbour?.summary || neighbour?.text || "")
   {
     const r = await learn(letter, ragSource(messageId))
     if (r.accepted) {

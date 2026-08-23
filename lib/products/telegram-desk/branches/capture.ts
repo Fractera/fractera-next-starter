@@ -63,6 +63,12 @@ function systemPrompt(now: string): string {
     'Put NAME into facets and name them in the summary (NAME told me that...).',
     'Otherwise the question about what NAME said finds nothing later — and that is',
     'the whole reason it was forwarded to you.',
+    "",
+    "🔒 A line [Предыдущее сообщение …] is CONTEXT, not content — it is already stored",
+    "on its own. But if it names an author, the words that follow are THAT person's:",
+    "put the name into facets and into the summary. This is how someone marks a",
+    "forward whose author Telegram hides, and it is the only way a question about",
+    "what that person said finds anything later.",
   ].join(String.fromCharCode(10))
 }
 

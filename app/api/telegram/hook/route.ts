@@ -10,6 +10,7 @@ import {
 } from "@/lib/products/telegram-desk/calendar"
 import { extractCorrection } from "@/lib/products/telegram-desk/branches/correct"
 import { cityToZone } from "@/lib/products/telegram-desk/branches/where"
+import { sendStoredFile } from "@/lib/products/telegram-desk/branches/files"
 import { saveTimezone, timezoneOf } from "@/lib/products/telegram-desk/timezone"
 import { WHERE_MARK } from "@/lib/products/telegram-desk/ingest"
 import { card } from "@/lib/products/telegram-desk/card"
@@ -47,6 +48,15 @@ async function compose(
       return await meta(text)
 
     case "confirm": {
+      // 🔒 СНАЧАЛА — ПРЕДЛОЖЕННАЯ ЗАПИСЬ. Мы могли предложить прислать голосовое
+      // последним ответом; «да» отвечает на ПОСЛЕДНЕЕ, о чём спрашивали, и
+      // подтвердить им вчерашнее напоминание значит переставить чужое дело.
+      const offered = await lastOfferedRecording(chatId)
+      if (offered) {
+        const sent = await sendStoredFile(chatId, offered, "Вот эта запись.")
+        return sent ? "" : "Не смог достать запись. Она сохранена, но отдать её не получилось."
+      }
+
       const waiting = await waitingNow(chatId)
       // Подтверждать нечего — человек согласился с воздухом. Сказать это
       // честно дешевле, чем промолчать: иначе он ждёт напоминания, которого нет.
@@ -138,6 +148,23 @@ async function compose(
       return card(r)
   }
 }
+// Метка предложения: узнаётся по нашему же последнему ответу, как и вопрос о
+// поясе. Отдельного поля состояния для этого не заводим — состояние, живущее
+// рядом с перепиской, расходится с ней при первом же сбое.
+const OFFER_MARK = /#(d+)[^#]*прислать запись/i
+
+async function lastOfferedRecording(chatId: string): Promise<number | null> {
+  const { db } = await import("@/lib/db")
+  const row = (await db
+    .prepare(
+      `SELECT text FROM tgdesk_messages
+        WHERE chat_id = ? AND direction = 'out' ORDER BY id DESC LIMIT 1`,
+    )
+    .get(chatId)) as { text?: string } | undefined
+  const m = OFFER_MARK.exec(String(row?.text ?? ""))
+  return m ? Number(m[1]) : null
+}
+
 export async function POST(req: NextRequest) {
   const secret = process.env.TELEGRAM_HOOK_SECRET ?? ""
   if (!secret) {
@@ -189,6 +216,14 @@ export async function POST(req: NextRequest) {
   let replied = false
   try {
     const reply = await compose(text, chatId, result)
+
+    // 🔒 ПУСТОЙ ОТВЕТ — ЭТО «Я УЖЕ ОТВЕТИЛ ИНАЧЕ». Так возвращается ветвь,
+    // приславшая файл: слать вдогонку «вот» было бы вторым сообщением о том же.
+    // Отправить пустую строку Telegram не даст, а молчание тут законно.
+    if (!reply.trim()) {
+      return NextResponse.json({ ok: true, messageId: result.messageId, replied: true, sentFile: true })
+    }
+
     const res = await dataFetch("/service/channels/telegram/send", {
       method: "POST",
       body: JSON.stringify({ chatId, text: reply }),

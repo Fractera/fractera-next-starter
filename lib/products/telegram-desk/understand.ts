@@ -49,8 +49,22 @@ export async function understand(
     // Две ветви не стоят ни одного вызова модели.
     case "command":
       return { ...NOTHING, intent }
-    case "confirm":
-      return { ...NOTHING, intent, confirmation: NO.test(t) ? "no" : YES.test(t) ? "yes" : "yes" }
+    case "confirm": {
+      // 🔒 УМОЛЧАНИЕ — НЕ СОГЛАСИЕ, А ОТСУТСТВИЕ ОТВЕТА.
+      //
+      // ✗ 2026-08-23: здесь стояло «иначе да». Пересланное голосовое, начинавшееся
+      // словами «Привет. Нет, я сегодня не смогу…», попало в эту ветвь при
+      // ожидающем напоминании — и МОЛЧА его подтвердило. Человек узнал бы об этом
+      // только тогда, когда напоминание пришло не вовремя.
+      //
+      // Согласие обязано быть коротким и состоять ТОЛЬКО из согласия. Всё
+      // остальное — новое сообщение, и оно разбирается как рассказ.
+      const short = t.length <= 24
+      if (short && NO.test(t)) return { ...NOTHING, intent, confirmation: "no" }
+      if (short && YES.test(t)) return { ...NOTHING, intent, confirmation: "yes" }
+      const cap = await capture(t)
+      return { ...cap, intent: "capture", schedule: null, confirmation: null }
+    }
 
     // Вопросы моделью здесь не разбираются: на них отвечают answer() и meta(),
     // каждый своим путём. Разбирать вопрос как рассказ значило бы засорять

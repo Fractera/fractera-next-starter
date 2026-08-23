@@ -22,14 +22,27 @@ helper the first time you need it is welcome; writing a second address or a seco
 
 ## 1. Four questions it answers
 
-All through `dataFetch("/service/geo/…", { method: "POST", body })`, server-side.
+🔒 **The address is DOUBLED, and this is the trap that a cold run caught (2026-08-23).** The proxy
+strips exactly `/service/<name>`, and this service carries a `/geo` prefix of its own — so the path
+is `/service/geo/geo/<route>`. Written singly it reaches the service as `/geocode`, which does not
+exist there, and the answer is an HTML `Cannot POST /geocode` — not a JSON error you would recognise.
+
+```ts
+await dataFetch("/service/geo/geo/optimize", { method: "POST", body: JSON.stringify({ coords }) })
+```
+
+The neighbours are not like this: the knowledge base answers at its root (`/service/rag/query`) and
+channels too (`/service/channels/status`). Ask `/capabilities` for the prefixes, then check the
+service's own route once — a 404 in HTML is what a wrong prefix looks like here.
+
+All calls are server-side, through `dataFetch`.
 
 | Route | Ask it | Answers |
 |---|---|---|
-| `/geo/geocode` | `{ q: "улица, дом, город" }` | `{ lat, lon, name }` — 404 when the address is not found |
-| `/geo/route` | `{ coords: [{lat,lon}, …] }` in YOUR order | geometry (GeoJSON) + length and duration |
-| `/geo/matrix` | `{ coords: [...] }`, 2 or more | N×N road distances and durations — the raw material for your own logic |
-| `/geo/optimize` | `{ coords: [...] }` | `{ order, geometry, totalKm, totalMin }` — the visiting ORDER, solved for you |
+| `/service/geo/geo/geocode` | `{ q: "улица, дом, город" }` | `{ lat, lon, name }` — 404 when the address is not found |
+| `/service/geo/geo/route` | `{ coords: [{lat,lon}, …] }` in YOUR order | geometry (GeoJSON) + length and duration |
+| `/service/geo/geo/matrix` | `{ coords: [...] }`, 2 or more | N×N road distances and durations — the raw material for your own logic |
+| `/service/geo/geo/optimize` | `{ coords: [...] }` | `{ order, geometry, totalKm, totalMin }` — the visiting ORDER, solved for you |
 
 🔒 **`route` keeps your order; `optimize` chooses one.** Sending points to `route` and calling the
 result "the optimal delivery route" is the mistake this pair exists to prevent — it is the length of
@@ -51,7 +64,7 @@ The map data covers one region at a time — the one the owner provisioned. Ask 
 country and the answer is an error, not a longer route.
 
 ```
-GET /service/geo/provision-status   → { state: "idle" | "downloading" | "processing" | … , region, step }
+GET /service/geo/geo/provision-status   → { state: "idle" | "downloading" | "processing" | … , region, step }
 ```
 
 **`state` is a normal part of the product, not an exception.** While a region is being prepared, the

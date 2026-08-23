@@ -1,0 +1,142 @@
+import { db } from "@/lib/db"
+import { remember } from "@/lib/fractera/vectors"
+import { learn } from "@/lib/fractera/knowledge"
+import { understand } from "./understand"
+
+// ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
+//
+// Живёт в lib/, а не в маршруте: дверь принимает пуш, страница может позвать то
+// же самое рукой, и завтра это же понадобится добору из ящика. Логика в
+// обработчике маршрута не переиспользуется ничем.
+
+export const VECTOR_COLLECTION = "tgdesk"
+/** Короткая реплика в граф знаний не идёт: документ из пяти слов раздувает граф и ничего не объясняет. */
+const RAG_MIN_CHARS = 280
+
+export type Incoming = {
+  externalId: string
+  at: string
+  chatId: string
+  who: string
+  /** text | voice — чем сообщение БЫЛО до расшифровки. */
+  kind: string
+  text: string
+  lat?: number
+  lon?: number
+  objectType?: string
+}
+
+export type IngestResult = {
+  messageId: number
+  duplicate: boolean
+  artifacts: { kind: string; ref: string }[]
+  understood: boolean
+  notes: string[]
+}
+
+/** Секунды, а не миллисекунды: по этому полю считают периоды и режут выборки. */
+function unix(at: string): number {
+  const ms = Date.parse(at)
+  return Math.floor((Number.isFinite(ms) ? ms : Date.now()) / 1000)
+}
+
+export async function ingest(msg: Incoming): Promise<IngestResult> {
+  const notes: string[] = []
+  const artifacts: { kind: string; ref: string }[] = []
+  const at = msg.at || new Date().toISOString()
+
+  // 🔒 ИДЕМПОТЕНТНОСТЬ ПЕРВОЙ СТРОКОЙ. Служба повторит доставку, если дверь не
+  // ответила вовремя, — а голос, легший в базу дважды, вычищается потом руками.
+  const seen = (await db
+    .prepare("SELECT id FROM tgdesk_messages WHERE channel = ? AND external_id = ?")
+    .get("telegram", msg.externalId)) as { id?: number } | undefined
+  if (seen?.id) {
+    return { messageId: seen.id, duplicate: true, artifacts: [], understood: false, notes: ["duplicate"] }
+  }
+
+  // 🔒 ИДЕНТИФИКАТОР ЧИТАЕТСЯ ОБРАТНО, А НЕ БЕРЁТСЯ ИЗ ОТВЕТА ВСТАВКИ.
+  // Локальная база отдаёт lastInsertRowid, слой данных — только { ok, changes }.
+  // Код, написанный по локальной, на сервере молча получил бы NaN и связал
+  // артефакты с несуществующим сообщением. Проверено чтением remote-client.
+  await db
+    .prepare(
+      `INSERT INTO tgdesk_messages
+         (at_unix, at, direction, channel, chat_id, who, external_id, raw_kind, text, lat, lon, object_type)
+       VALUES (?, ?, 'in', 'telegram', ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      unix(at), at, msg.chatId, msg.who, msg.externalId,
+      msg.kind === "voice" ? "voice" : "text",
+      msg.text, msg.lat ?? null, msg.lon ?? null, msg.objectType ?? null,
+    )
+  const born = (await db
+    .prepare("SELECT id FROM tgdesk_messages WHERE channel = ? AND external_id = ?")
+    .get("telegram", msg.externalId)) as { id?: number } | undefined
+  const messageId = Number(born?.id ?? 0)
+  if (!messageId) throw new Error("tgdesk: строка записана, но не читается обратно")
+
+  // Разбор моделью. Не удался — сообщение уже сохранено, и это главное.
+  const u = await understand(msg.text)
+  if (u.failed) notes.push(`understand:${u.failed}`)
+  if (!u.failed) {
+    await db
+      .prepare("UPDATE tgdesk_messages SET ai_summary = ?, has_financial = ? WHERE id = ?")
+      .run(u.summary, u.hasFinancial ? 1 : 0, messageId)
+    if (u.kind) {
+      await db
+        .prepare("INSERT INTO tgdesk_entries (message_id, kind, title, payload) VALUES (?, ?, ?, ?)")
+        .run(messageId, u.kind, u.title, u.payload ? JSON.stringify(u.payload) : null)
+    }
+  }
+
+  // ── Веер по складам ────────────────────────────────────────────────────────
+  //
+  // 🔒 КАЖДЫЙ СКЛАД — ОТДЕЛЬНАЯ ПОПЫТКА. Векторный склад лежит, граф ещё строится,
+  // ключа нет — это не повод потерять остальное. Отказ становится строкой в
+  // notes, а не исключением: дверь обязана ответить службе, иначе та повторит
+  // доставку и мы будем разбирать одно сообщение вечно.
+  const searchable = [u.summary, msg.text].filter(Boolean).join("\n")
+
+  try {
+    const v = await remember({
+      collection: VECTOR_COLLECTION,
+      text: searchable,
+      refTable: "tgdesk_messages",
+      refId: String(messageId),
+    })
+    artifacts.push({ kind: "vector", ref: v.id })
+  } catch {
+    notes.push("vector:failed")
+  }
+
+  if (msg.text.length >= RAG_MIN_CHARS) {
+    const r = await learn(searchable, `tgdesk/${messageId}`)
+    if (r.accepted) {
+      // 🔒 Ссылка на граф — ИМЯ источника, а не id документа: движок строит его в
+      // фоне и выдаёт свой идентификатор позже. Имя мы задали сами, и по нему
+      // документ находится в списке в любой момент.
+      artifacts.push({ kind: "rag", ref: `tgdesk/${messageId}` })
+    } else {
+      notes.push("rag:refused")
+    }
+  }
+
+  for (const a of artifacts) {
+    await db
+      .prepare("INSERT OR IGNORE INTO tgdesk_artifacts (message_id, kind, ref) VALUES (?, ?, ?)")
+      .run(messageId, a.kind, a.ref)
+  }
+
+  return { messageId, duplicate: false, artifacts, understood: !u.failed, notes }
+}
+
+/** Ответ продукта — такая же строка истории: без неё «последние двадцать» однобоки. */
+export async function recordOutgoing(chatId: string, text: string): Promise<void> {
+  const now = new Date().toISOString()
+  await db
+    .prepare(
+      `INSERT INTO tgdesk_messages (at_unix, at, direction, channel, chat_id, text)
+       VALUES (?, ?, 'out', 'telegram', ?, ?)`,
+    )
+    .run(unix(now), now, chatId, text)
+}

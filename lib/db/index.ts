@@ -76,6 +76,101 @@ const SCHEMA = `
     domain_error  TEXT,
     updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
+
+  -- ── Telegram Desk ─────────────────────────────────────────────────────────
+  --
+  -- ОБРАЗЕЦ ПРОДУКТА, а не платформенная таблица. Он приезжает в стартере как
+  -- приезжает блог: агент клиента копирует УСТРОЙСТВО под своё дело — чеки,
+  -- места, заявки, — а не пользуется этим как готовым сервисом.
+  --
+  -- 🔒 ПРЕФИКС "tgdesk_", А НЕ "<id>_". Закон продуктов велит называть таблицы
+  -- по вечному "id" из досье, но у образца в стартере досье ещё нет: владелец
+  -- заводит продукт в панели уже на своём сервере. Отступление названо вслух и
+  -- живёт ровно до регистрации; зарегистрировал — таблицы переименовываются
+  -- шагом, а не молча.
+  CREATE TABLE IF NOT EXISTS tgdesk_messages (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- Время В СЕКУНДАХ, целым числом: по нему считают «сколько ушло на встречи»
+    -- и режут периоды. Строка ISO рядом — для человека и для сортировки в
+    -- браузере базы; считать по ней нельзя.
+    at_unix       INTEGER NOT NULL,
+    at            TEXT    NOT NULL,
+    -- in | out. Ответ продукта — такая же строка, иначе история однобока и
+    -- «последние двадцать сообщений» показывают только одну сторону разговора.
+    direction     TEXT    NOT NULL,
+    channel       TEXT    NOT NULL DEFAULT 'telegram',
+    chat_id       TEXT,
+    who           TEXT,
+    -- 🔒 Идентификатор сообщения В КАНАЛЕ. Дверь идемпотентна по нему: служба
+    -- повторит доставку, если приложение не ответило вовремя, и без этого
+    -- ключа один голос лёг бы в базу дважды.
+    external_id   TEXT,
+    -- text | voice — чем это БЫЛО. Расшифрованный голос ниже по потоку
+    -- неотличим от печатного текста, и только здесь видно, что человек говорил.
+    raw_kind      TEXT    NOT NULL DEFAULT 'text',
+    text          TEXT    NOT NULL DEFAULT '',
+    -- Пересказ модели. Пусто — разбор ещё не дошёл или не удался; это законное
+    -- состояние, а не признак поломки.
+    ai_summary    TEXT,
+    -- Гео и род вложения живут ЗДЕСЬ, потому что у сообщения они ровно одни.
+    lat           REAL,
+    lon           REAL,
+    object_type   TEXT,
+    -- Флаг, ради которого не нужно перечитывать текст: «покажи траты» становится
+    -- условием SQL, а не прогоном модели по всей истории.
+    has_financial INTEGER NOT NULL DEFAULT 0,
+    created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS tgdesk_messages_external ON tgdesk_messages (channel, external_id);
+  CREATE INDEX IF NOT EXISTS tgdesk_messages_time ON tgdesk_messages (at_unix);
+  CREATE INDEX IF NOT EXISTS tgdesk_messages_money ON tgdesk_messages (has_financial, at_unix);
+
+  -- 🔒 СВЯЗЬ МНОГИЕ-КО-МНОГИМ, А НЕ КОЛОНКИ В ГЛАВНОЙ ТАБЛИЦЕ. Одно сообщение
+  -- несёт три фотографии и голос: три записи медиатеки, один вектор, один
+  -- документ графа. Колонка "media_id" ломается на второй фотографии, а эта
+  -- таблица держит любое их число и остаётся читаемой.
+  --
+  -- "ref" — то, чем склад отвечает, и у каждого оно СВОЁ: медиатека даёт ИМЯ
+  -- файла (id разный на каждом сервере), векторный склад — id записи, граф —
+  -- track_id. Одно поле на три склада законно ровно потому, что ссылку всегда
+  -- читают вместе с "kind".
+  CREATE TABLE IF NOT EXISTS tgdesk_artifacts (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id INTEGER NOT NULL,
+    kind       TEXT    NOT NULL,          -- media | vector | rag
+    ref        TEXT    NOT NULL,
+    note       TEXT,
+    created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS tgdesk_artifacts_message ON tgdesk_artifacts (message_id);
+  CREATE UNIQUE INDEX IF NOT EXISTS tgdesk_artifacts_unique ON tgdesk_artifacts (message_id, kind, ref);
+
+  -- СМЫСЛ, извлечённый из сообщения: заметка, задача, чек, место, идея. Это то,
+  -- что рисуют дашборды, и то, что агент клиента переименует под своё дело.
+  -- "payload" — JSON намеренно: у чека сумма и продавец, у места адрес, и
+  -- заводить колонку под каждое поле значит менять схему на каждый новый род.
+  CREATE TABLE IF NOT EXISTS tgdesk_entries (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id INTEGER NOT NULL,
+    kind       TEXT    NOT NULL,          -- note | task | receipt | place | idea
+    title      TEXT    NOT NULL DEFAULT '',
+    payload    TEXT,
+    created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS tgdesk_entries_message ON tgdesk_entries (message_id);
+  CREATE INDEX IF NOT EXISTS tgdesk_entries_kind ON tgdesk_entries (kind, created_at);
+
+  -- Сводки за период. Существуют, чтобы дорогой проход по месяцу оплачивался
+  -- ОДИН раз: второй такой же вопрос читает готовый текст. "cost_note" хранит,
+  -- во что он обошёлся, — иначе никто никогда не узнает цену.
+  CREATE TABLE IF NOT EXISTS tgdesk_digests (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    from_unix  INTEGER NOT NULL,
+    to_unix    INTEGER NOT NULL,
+    text       TEXT    NOT NULL,
+    cost_note  TEXT,
+    created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

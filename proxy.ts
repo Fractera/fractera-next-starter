@@ -56,6 +56,9 @@ const PUBLIC_API_PREFIXES = [
   "/api/catalogue",   // догрузка витрины: те же товары, что в статическом HTML
   "/api/i18n",        // строки интерфейса — они и так в разметке
   "/api/project-types",
+  // Служба каналов толкает сюда сообщение бота: у неё нет сессии, поэтому дверь
+  // стережёт общий секрет, а не роль. Без этой строки гейт закрыл бы её от самой платформы.
+  "/api/telegram/hook",
 ];
 
 // Non-content root pages that live at the ROOT and never take a language prefix

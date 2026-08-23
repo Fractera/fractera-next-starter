@@ -99,18 +99,42 @@ async function describeImage(bytes: Buffer, mime: string): Promise<{ text: strin
           {
             role: "system",
             content: [
-              "Describe this picture for someone who will search their own notes later.",
-              "Name what is ON it: objects, people, place, and ANY text you can read —",
-              "a receipt total, a shop name, a licence plate, a date. Read the text exactly.",
-              "Two to four sentences, in the language of the text on the image if there is one.",
-              "Never guess what you cannot see.",
+              // 🔒 ТЕКСТ ПЕРЕЧИСЛЯЕТСЯ ПЕРВЫМ, И ЭТО НЕ ПОРЯДОК СЛОВ, А ПОРЯДОК РАБОТЫ.
+              // ✗ 2026-08-23: на скриншоте рекламы YouTube («МОЯ ОСНОВНАЯ РАБОТА»,
+              // «EASY Инвест», 45:05) модель написала «женщина с длинными светлыми
+              // волосами выглядит удивлённой» и не прочитала НИ ОДНОЙ надписи.
+              // Просьба стояла последней, ответ короткий — и он весь ушёл на человека.
+              // Описание вышло красивым и бесполезным: «где я видел рекламу про
+              // инвестиции» не найдёт по нему ничего.
+              "You prepare a picture for SEARCH inside someone's personal notes.",
+              "",
+              "FIRST, transcribe every piece of text you can read on it, verbatim and in its",
+              "own language: headlines, captions, brand and channel names, prices, totals,",
+              "dates, durations, plate numbers, buttons. This part matters most — it is what",
+              "they will search by. Do not paraphrase it and do not translate it.",
+              "",
+              "THEN, in one or two sentences, say what the picture IS: a receipt, a screenshot",
+              "of an ad, a photo of a place, a document. Name the people or objects only if",
+              "they carry meaning.",
+              "",
+              "Never guess what you cannot see. No text on it — say so plainly.",
             ].join(String.fromCharCode(10)),
           },
           {
             role: "user",
             content: [
               { type: "text", text: "Что на этом изображении?" },
-              { type: "image_url", image_url: { url: `data:${mime};base64,${bytes.toString("base64")}` } },
+              {
+                type: "image_url",
+                // 🔒 РАЗРЕШЕНИЕ ЯВНО ВЫСОКОЕ. По умолчанию действует «auto», и для
+                // картинки такого размера модель выбирает низкое: мелкий текст в нём
+                // физически не читается, сколько его ни проси. Это про то, что модель
+                // ВИДИТ, а не про то, как её просят, — и промпт тут бессилен.
+                image_url: {
+                  url: `data:${mime};base64,${bytes.toString("base64")}`,
+                  detail: "high",
+                },
+              },
             ],
           },
         ],

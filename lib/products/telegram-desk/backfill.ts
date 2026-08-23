@@ -23,6 +23,7 @@ type InboxRow = {
   text: string
   objectType?: string | null
   fileId?: string | null
+  forwardedFrom?: string | null
   lat?: number | null
   lon?: number | null
 }
@@ -64,6 +65,7 @@ export async function backfill(limit = 200): Promise<BackfillResult> {
         text: String(m.text ?? ""),
         objectType: m.objectType ?? undefined,
         fileId: m.fileId ?? undefined,
+        forwardedFrom: m.forwardedFrom ?? undefined,
         lat: m.lat ?? undefined,
         lon: m.lon ?? undefined,
       }

@@ -47,6 +47,10 @@ function envelope(
   const lines = [
     `Источник: ${RAG_NAMESPACE}. От пользователя ${msg.who || msg.chatId} через канал Telegram ${said} UTC поступило сообщение.`,
   ]
+  // 🔒 АВТОР СЛОВ И ТОТ, КТО ИХ ПРИСЛАЛ, — РАЗНЫЕ ЛЮДИ. Пересланное голосовое
+  // сказал не владелец; записать его как слова владельца значит потерять
+  // человека, о котором потом и спросят: «что мне говорил Ковальчук».
+  if (msg.forwardedFrom) lines.push(`Это сообщение ПЕРЕСЛАНО. Автор слов: ${msg.forwardedFrom}.`)
   if (u.happenedAt) lines.push(`Событие произошло ${u.happenedAt}.`)
   if (u.facets.length) lines.push(`Признаки: ${u.facets.join(", ")}.`)
   if (msg.objectType) lines.push(`К сообщению приложен объект рода: ${msg.objectType}.`)
@@ -76,8 +80,10 @@ export type Incoming = {
   lat?: number
   lon?: number
   objectType?: string
-  /** Файл у Telegram. Продукт его пока не забирает — долг записан в BACKLOG. */
+  /** Файл у Telegram. */
   fileId?: string
+  /** От кого переслано. Пусто — человек написал это сам. */
+  forwardedFrom?: string
 }
 
 export type IngestResult = {
@@ -98,6 +104,8 @@ export type IngestResult = {
   envelope: string
   /** Что прочитано с вложения, дословно. */
   fileText: string
+  /** От кого переслано — чтобы карточка назвала автора слов. */
+  forwardedFrom: string
   /** Что стало с вложением, человеческими словами. Пусто — вложения не было. */
   fileRead: string
   /** Денежная запись ждёт согласия. */
@@ -159,6 +167,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       dateFromToday: false,
       envelope: "",
       fileText: "",
+      forwardedFrom: "",
       fileRead: "",
       needsConfirm: false,
       artifacts: [],
@@ -217,7 +226,15 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   }
 
   // Разбор моделью видит и подпись, и прочитанное из вложения.
-  const spoken = [msg.text, ...files.map((f) => f.text)].filter(Boolean).join(String.fromCharCode(10))
+  const spoken = [
+    // Автор идёт первой строкой: модель обязана понять, ЧЬИ это слова, прежде
+    // чем начнёт их пересказывать.
+    msg.forwardedFrom ? `[Переслано от: ${msg.forwardedFrom}]` : "",
+    msg.text,
+    ...files.map((f) => f.text),
+  ]
+    .filter(Boolean)
+    .join(String.fromCharCode(10))
   // 🔒 МАРШРУТИЗАТОР ДОЛЖЕН ЗНАТЬ, ЧТО ЧЕГО-ТО ЖДУТ. «20 августа» само по себе —
   // заметка; оно же в ответ на «дату не разобрал» — поправка. Смысл фразы задаёт
   // не фраза, а вопрос, заданный секунду назад.
@@ -351,6 +368,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     dateFromToday,
     envelope: letter,
     fileText: files.map((f) => f.text).join(String.fromCharCode(10)),
+    forwardedFrom: msg.forwardedFrom ?? "",
     currencyFromConfig,
     fileRead,
     needsConfirm,

@@ -58,6 +58,11 @@ function systemPrompt(now: string): string {
     '"facets" are two to six short tags naming what this is ABOUT, in their language:',
     "a vendor, a purchase, a price, a city, a promise. They are what a knowledge graph",
     "links on, so name THINGS and ROLES, not feelings.",
+    "",
+    "🔒 A message starting with [Переслано от: NAME] carries SOMEBODY ELSE'S words.",
+    'Put NAME into facets and name them in the summary (NAME told me that...).',
+    'Otherwise the question about what NAME said finds nothing later — and that is',
+    'the whole reason it was forwarded to you.',
   ].join(String.fromCharCode(10))
 }
 

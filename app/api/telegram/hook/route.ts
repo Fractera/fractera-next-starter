@@ -167,6 +167,7 @@ export async function POST(req: NextRequest) {
     text,
     fileId: fileId || undefined,
     objectType: body.objectType ? String(body.objectType) : undefined,
+    forwardedFrom: body.forwardedFrom ? String(body.forwardedFrom) : undefined,
     lat: typeof body.lat === "number" ? body.lat : undefined,
     lon: typeof body.lon === "number" ? body.lon : undefined,
   })

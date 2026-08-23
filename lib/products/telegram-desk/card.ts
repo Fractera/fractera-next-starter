@@ -62,6 +62,7 @@ export function card(r: IngestResult): string {
 
   // Прочитанное с вложения — дословно, а не пересказом: человек прислал
   // картинку именно затем, чтобы узнать, что на ней увидели.
+  if (r.forwardedFrom) lines.push(`Переслано от: ${r.forwardedFrom}`)
   if (r.fileText) lines.push(`С вложения: ${r.fileText}`)
 
   const kind = r.kind ? KIND_RU[r.kind] ?? r.kind : ""

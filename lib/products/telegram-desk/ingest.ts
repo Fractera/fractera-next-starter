@@ -136,7 +136,10 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
         u.happenedAt ? Math.floor(Date.parse(u.happenedAt + "T12:00:00Z") / 1000) : null,
         messageId,
       )
-    if (u.kind) {
+    // 🔒 ЕСЛИ ЭТО НАПОМИНАНИЕ — ЗАПИСЬ СМЫСЛА НЕ ЗАВОДИТСЯ. Иначе одно и то же
+    // дело живёт в двух местах: строкой в списке задач и строкой в календаре, и
+    // выполнить его придётся дважды, чтобы оба списка стали пустыми.
+    if (u.kind && !u.schedule) {
       await db
         .prepare("INSERT INTO tgdesk_entries (message_id, kind, title, payload) VALUES (?, ?, ?, ?)")
         .run(messageId, u.kind, u.title, u.payload ? JSON.stringify(u.payload) : null)

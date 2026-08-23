@@ -90,7 +90,8 @@ function systemPrompt(todayIso: string): string {
     '"title" is at most six words.',
     '"has_financial" is true when money is mentioned: a price, a payment, a receipt, a salary.',
     '"payload" carries the fields of that kind and nothing else — a receipt has amount and vendor,',
-    "a place has address, a task has due when it was said. Never invent a value that was not said.",
+    'a place has an address. Never invent a value that was not said.',
+    '🔒 A time to act NEVER goes into payload. It belongs to "schedule" and only there.',
     "",
     '"happened_at" is WHEN THE EVENT HAPPENED, as YYYY-MM-DD.',
     `Right now it is ${todayIso} UTC — that is today's date AND the current clock.`,
@@ -103,15 +104,18 @@ function systemPrompt(todayIso: string): string {
     'the person used: a vendor, a purchase, a price, a city, office equipment, a promise.',
     'They are what a knowledge graph links on, so name THINGS and ROLES, not feelings.',
     '',
-    '"schedule" is set ONLY when the person asks to be reminded or to book something:',
+    '"schedule" MUST be filled whenever the person asks to be reminded or to book something —',
+    'even when you also picked a "kind" for the message. The two are not alternatives:',
+    '"kind" says what the message IS, "schedule" says what has to HAPPEN and when.',
     '{"kind":"reminder"|"event","title":string,"when":"YYYY-MM-DDTHH:MM",',
     '"repeat":"daily"|"weekdays"|"weekly"|"monthly"|null,"remind_before":number}.',
     '"when" is your best reading of the words; it will be read back for confirmation,',
     'so read it as precisely as you can — but never leave it empty, guess the likely one.',
     '"remind_before" is minutes of advance warning when asked ("напомни за час" = 60), else 0.',
     '',
-    '"confirmation" is "yes" when the whole message is agreement ("да", "ставь", "верно"),',
-    '"no" when it is refusal ("нет", "отмени"), null otherwise.',
+    '"confirmation" is "yes" ONLY when the entire message is nothing but agreement',
+    '("да", "ставь", "верно", "ok") — a message that also carries a new request is NOT',
+    'a confirmation, it is that request. "no" likewise for bare refusal. Otherwise null.',
     '',
     '"is_question" is true when the person ASKS about their own history',
     '("what did I promise", "how much did I spend"), false when they TELL you something happened.',
@@ -141,6 +145,28 @@ function readSchedule(v: unknown): Understanding["schedule"] {
     repeat,
     remindBefore: Math.max(0, Math.min(1440, Number(o.remind_before ?? 0) || 0)),
   }
+}
+
+// 🔒 ЗАПАСНОЙ ПУТЬ: ВРЕМЯ, ПОПАВШЕЕ НЕ В ТО ПОЛЕ, ВСЁ РАВНО РАБОТАЕТ.
+// ✗ 2026-08-23, три просьбы подряд: модель безошибочно вычислила «через одну
+// минуту» — и положила результат в payload.due, потому что промпт САМ учил
+// её этому строкой «a task has due». Два поля просили один факт, модель
+// ответила в одно, и напоминание тихо стало заметкой.
+//
+// Столкновение убрано выше, но запасной путь остаётся: цена ошибок здесь
+// несимметрична. Лишнее предложение стоит человеку одного «нет», потерянное
+// напоминание — пропущенного дела.
+function scheduleFromPayload(parsed: Record<string, unknown>): Understanding["schedule"] {
+  const payload = parsed.payload as Record<string, unknown> | null | undefined
+  const due = payload && typeof payload === "object" ? String(payload.due ?? "") : ""
+  if (!due) return null
+  return readSchedule({
+    kind: "reminder",
+    title: String(parsed.title ?? "") || String(parsed.summary ?? ""),
+    when: due,
+    repeat: null,
+    remind_before: 0,
+  })
 }
 
 export async function understand(text: string): Promise<Understanding> {
@@ -192,7 +218,7 @@ export async function understand(text: string): Promise<Understanding> {
       facets: Array.isArray(parsed.facets)
         ? parsed.facets.map((f) => String(f).slice(0, 40)).filter(Boolean).slice(0, 8)
         : [],
-      schedule: readSchedule(parsed.schedule),
+      schedule: readSchedule(parsed.schedule) ?? scheduleFromPayload(parsed),
       confirmation:
         parsed.confirmation === "yes" || parsed.confirmation === "no" ? parsed.confirmation : null,
       failed: "",

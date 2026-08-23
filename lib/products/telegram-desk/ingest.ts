@@ -93,6 +93,10 @@ export type IngestResult = {
   currencyFromConfig: boolean
   /** Дату не прочитали и поставили сегодняшнюю — человек обязан это увидеть. */
   dateFromToday: boolean
+  /** ТОТ САМЫЙ конверт, что ушёл в граф знаний. Его же видит человек. */
+  envelope: string
+  /** Что прочитано с вложения, дословно. */
+  fileText: string
   /** Что стало с вложением, человеческими словами. Пусто — вложения не было. */
   fileRead: string
   /** Денежная запись ждёт согласия. */
@@ -134,6 +138,8 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       currency: "",
       currencyFromConfig: false,
       dateFromToday: false,
+      envelope: "",
+      fileText: "",
       fileRead: "",
       needsConfirm: false,
       artifacts: [],
@@ -282,8 +288,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     notes.push("vector:failed")
   }
 
+  const letter = envelope(msg, { ...u, happenedAt }, files)
   {
-    const r = await learn(envelope(msg, u, files), ragSource(messageId))
+    const r = await learn(letter, ragSource(messageId))
     if (r.accepted) {
       // 🔒 Ссылка на граф — ИМЯ источника, а не id документа: движок строит его в
       // фоне и выдаёт свой идентификатор позже. Имя мы задали сами, и по нему
@@ -318,6 +325,8 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     happenedAt,
     currency,
     dateFromToday,
+    envelope: letter,
+    fileText: files.map((f) => f.text).join(String.fromCharCode(10)),
     currencyFromConfig,
     fileRead,
     needsConfirm,

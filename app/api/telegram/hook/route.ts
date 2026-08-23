@@ -5,6 +5,7 @@ import { answer } from "@/lib/products/telegram-desk/answer"
 import { dataFetch } from "@/lib/fractera/data-service"
 import { propose, speak, pending, confirm, cancel } from "@/lib/products/telegram-desk/calendar"
 import { GREETING } from "@/lib/products/telegram-desk/persona"
+import { meta } from "@/lib/products/telegram-desk/branches/meta"
 
 // ДВЕРЬ, В КОТОРУЮ СЛУЖБА КАНАЛОВ ТОЛКАЕТ СООБЩЕНИЕ.
 //
@@ -35,27 +36,46 @@ async function compose(
   chatId: string,
   r: Awaited<ReturnType<typeof ingest>>,
 ): Promise<string> {
-  if (text.startsWith("/start")) return GREETING
+  switch (r.intent) {
+    case "command":
+      return GREETING
 
-  const waiting = await pending(chatId)
-  if (waiting && r.confirmation === "yes") {
-    await confirm(waiting.id)
-    return `Поставил: ${waiting.title}.`
-  }
-  if (waiting && r.confirmation === "no") {
-    await cancel(waiting.id)
-    return "Отменил. Назовите другое время, если нужно."
-  }
+    // О себе отвечает личность, а не поиск по чужим заметкам.
+    case "meta":
+      return await meta(text)
 
-  // Просят напоминание — время ПРОИЗНОСИТСЯ вслух и ждёт согласия.
-  if (r.schedule) {
-    await propose(chatId, r.messageId, r.schedule)
-    return speak(r.schedule)
-  }
+    case "confirm": {
+      const waiting = await pending(chatId)
+      // Подтверждать нечего — человек согласился с воздухом. Сказать это
+      // честно дешевле, чем промолчать: иначе он ждёт напоминания, которого нет.
+      if (!waiting) return "Сейчас нечего подтверждать."
+      if (r.confirmation === "no") {
+        await cancel(waiting.id)
+        return "Отменил. Назовите другое время, если нужно."
+      }
+      await confirm(waiting.id)
+      return `Поставил: ${waiting.title}.`
+    }
 
-  return r.isQuestion ? await answer(text) : confirmText(r)
+    case "schedule": {
+      // Время ПРОИЗНОСИТСЯ вслух и ждёт согласия — модель ошибается в датах,
+      // а цена ошибки здесь не «неточность», а пропущенная встреча.
+      if (r.schedule) {
+        await propose(chatId, r.messageId, r.schedule)
+        return speak(r.schedule)
+      }
+      // Ветвь угадана, время — нет. Просить уточнить честнее, чем молча
+      // превратить просьбу в заметку: так это и терялось четыре раза подряд.
+      return "Записал. Когда напомнить? Назовите дату и время."
+    }
+
+    case "question":
+      return await answer(text)
+
+    default:
+      return confirmText(r)
+  }
 }
-
 export async function POST(req: NextRequest) {
   const secret = process.env.TELEGRAM_HOOK_SECRET ?? ""
   if (!secret) {

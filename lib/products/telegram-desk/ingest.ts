@@ -59,8 +59,8 @@ export type IngestResult = {
   duplicate: boolean
   artifacts: { kind: string; ref: string }[]
   understood: boolean
-  /** Вопрос это был или рассказ — дверь строит ответ по-разному. */
-  isQuestion: boolean
+  /** Ветвь, по которой пошло сообщение: дверь строит ответ по ней. */
+  intent: Understanding["intent"]
   /** Просят поставить напоминание — с временем, прочитанным из слов. */
   schedule: Understanding["schedule"]
   /** Ответ на предыдущий вопрос продукта: «да» или «нет». */
@@ -93,7 +93,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       duplicate: true,
       artifacts: [],
       understood: false,
-      isQuestion: false,
+      intent: "capture",
       schedule: null,
       confirmation: null,
       notes: ["duplicate"],
@@ -189,7 +189,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     duplicate: false,
     artifacts,
     understood: !u.failed,
-    isQuestion: u.isQuestion,
+    intent: u.intent,
     schedule: u.schedule,
     confirmation: u.confirmation,
     notes,

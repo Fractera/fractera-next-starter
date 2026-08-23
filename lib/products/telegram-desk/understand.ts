@@ -16,7 +16,13 @@ import { openAiKey } from "@/lib/openai-key"
 // становится через месяц, когда искать уже нечего.
 
 /** Роды записей образца. Агент клиента меняет этот список под своё дело. */
-export const ENTRY_KINDS = ["note", "task", "receipt", "place", "idea"] as const
+// 🔒 РОД memo СТОИТ ПЕРВЫМ, И ЭТО НЕ АЛФАВИТ. Человек, сказавший «запомни»,
+// просит не заметку, а обещание: он рассчитывает, что это всплывёт само,
+// когда понадобится. В инструкции агента то же слово — команда памяти;
+// в продукте личной эффективности оно обязано значить не меньше.
+// ✗ 2026-08-23: «Запомни что я бы хотел создать свой Harness» пролежало в
+// кольце службы и не попало никуда.
+export const ENTRY_KINDS = ["memo", "note", "task", "receipt", "place", "idea"] as const
 export type EntryKind = (typeof ENTRY_KINDS)[number]
 
 export type Understanding = {
@@ -60,6 +66,8 @@ function systemPrompt(todayIso: string): string {
     '{"summary":string,"kind":string|null,"title":string,"payload":object|null,',
     '"has_financial":boolean,"happened_at":string|null,"is_question":boolean,"facets":string[]}',
     `"kind" is one of: ${ENTRY_KINDS.join(", ")} — or null when nothing fits.`,
+    'Use "memo" when the person explicitly asks to REMEMBER something',
+    '("запомни", "remember this", "не забудь") — that is a promise, not a note.',
     '"summary" is one sentence in the SAME language the person used.',
     '"title" is at most six words.',
     '"has_financial" is true when money is mentioned: a price, a payment, a receipt, a salary.',

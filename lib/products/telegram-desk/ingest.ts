@@ -30,6 +30,7 @@ function envelope(msg: Incoming, u: { summary: string; facets: string[]; happene
   ]
   if (u.happenedAt) lines.push(`Событие произошло ${u.happenedAt}.`)
   if (u.facets.length) lines.push(`Признаки: ${u.facets.join(", ")}.`)
+  if (msg.objectType) lines.push(`К сообщению приложен объект рода: ${msg.objectType}.`)
   if (msg.lat != null && msg.lon != null) lines.push(`Место: ${msg.lat}, ${msg.lon}.`)
   if (u.summary) lines.push(`Суть: ${u.summary}`)
   lines.push(`Текст сообщения: ${msg.text}`)
@@ -49,6 +50,8 @@ export type Incoming = {
   lat?: number
   lon?: number
   objectType?: string
+  /** Файл у Telegram. Продукт его пока не забирает — долг записан в BACKLOG. */
+  fileId?: string
 }
 
 export type IngestResult = {
@@ -70,6 +73,9 @@ function unix(at: string): number {
 export async function ingest(msg: Incoming): Promise<IngestResult> {
   const notes: string[] = []
   const artifacts: { kind: string; ref: string }[] = []
+  // Вложение названо честно даже когда файл не забран: пустая запись о том,
+  // что фотография БЫЛА, дороже молчания — по ней видно, чего не хватает.
+  if (msg.fileId) notes.push(`file:${msg.objectType ?? "unknown"}:not-fetched`)
   const at = msg.at || new Date().toISOString()
 
   // 🔒 ИДЕМПОТЕНТНОСТЬ ПЕРВОЙ СТРОКОЙ. Служба повторит доставку, если дверь не

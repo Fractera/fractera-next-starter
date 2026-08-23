@@ -90,8 +90,10 @@ export async function POST(req: NextRequest) {
 
   const text = String(body.text ?? "").trim()
   const chatId = String(body.chatId ?? "")
-  if (!text || !chatId) {
-    return NextResponse.json({ ok: false, error: "text and chatId are required" }, { status: 400 })
+  const fileId = String(body.fileId ?? "")
+  // Текст ИЛИ файл — одного достаточно. Снимок без подписи несёт смысл на себе.
+  if ((!text && !fileId) || !chatId) {
+    return NextResponse.json({ ok: false, error: "text or fileId, and chatId, are required" }, { status: 400 })
   }
 
   const result = await ingest({
@@ -101,6 +103,10 @@ export async function POST(req: NextRequest) {
     who: String(body.who ?? ""),
     kind: String(body.kind ?? "text"),
     text,
+    fileId: fileId || undefined,
+    objectType: body.objectType ? String(body.objectType) : undefined,
+    lat: typeof body.lat === "number" ? body.lat : undefined,
+    lon: typeof body.lon === "number" ? body.lon : undefined,
   })
 
   // Повтор доставки: строка уже есть, отвечать человеку второй раз не за что.

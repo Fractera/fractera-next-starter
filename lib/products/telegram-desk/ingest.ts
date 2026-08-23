@@ -55,7 +55,8 @@ function envelope(
   }
   if (msg.lat != null && msg.lon != null) lines.push(`Место: ${msg.lat}, ${msg.lon}.`)
   if (u.summary) lines.push(`Суть: ${u.summary}`)
-  lines.push(`Текст сообщения: ${msg.text}`)
+  if (msg.text) lines.push(`Текст сообщения: ${msg.text}`)
+  else lines.push("Своих слов человек не написал — смысл на вложении.")
   // Перевод строки кодом, а не escape-последовательностью: этот файл не раз
   // проезжал через цепочку оболочек, и каждая съедала обратный слэш по-своему.
   return lines.join(String.fromCharCode(10))

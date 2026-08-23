@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { ingest, recordOutgoing } from "@/lib/products/telegram-desk/ingest"
 import { answer } from "@/lib/products/telegram-desk/answer"
 import { dataFetch } from "@/lib/fractera/data-service"
+import { propose, speak, pending, confirm, cancel } from "@/lib/products/telegram-desk/calendar"
+import { GREETING } from "@/lib/products/telegram-desk/persona"
 
 // ДВЕРЬ, В КОТОРУЮ СЛУЖБА КАНАЛОВ ТОЛКАЕТ СООБЩЕНИЕ.
 //
@@ -18,10 +20,40 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 /** Короткое подтверждение: что записано и как понято. Модель здесь не нужна. */
-function confirm(r: { understood: boolean; artifacts: { kind: string }[] }): string {
+function confirmText(r: { understood: boolean; artifacts: { kind: string }[] }): string {
   if (!r.understood) return "Записал. Разобрать не смог — сохранил как есть."
   const searchable = r.artifacts.some((a) => a.kind === "vector")
   return searchable ? "Записал — найдётся по смыслу." : "Записал."
+}
+
+// ЧТО ОТВЕТИТЬ — четыре разных случая, и путать их дорого.
+//
+// 🔒 ПОДТВЕРЖДЕНИЕ ПРОВЕРЯЕТСЯ ПЕРВЫМ. Человек, сказавший «да», отвечает на
+// последний вопрос продукта, а не заводит новую заметку с текстом «да».
+async function compose(
+  text: string,
+  chatId: string,
+  r: Awaited<ReturnType<typeof ingest>>,
+): Promise<string> {
+  if (text.startsWith("/start")) return GREETING
+
+  const waiting = await pending(chatId)
+  if (waiting && r.confirmation === "yes") {
+    await confirm(waiting.id)
+    return `Поставил: ${waiting.title}.`
+  }
+  if (waiting && r.confirmation === "no") {
+    await cancel(waiting.id)
+    return "Отменил. Назовите другое время, если нужно."
+  }
+
+  // Просят напоминание — время ПРОИЗНОСИТСЯ вслух и ждёт согласия.
+  if (r.schedule) {
+    await propose(chatId, r.messageId, r.schedule)
+    return speak(r.schedule)
+  }
+
+  return r.isQuestion ? await answer(text) : confirmText(r)
 }
 
 export async function POST(req: NextRequest) {
@@ -67,7 +99,7 @@ export async function POST(req: NextRequest) {
   // утверждение значит платить за эхо.
   let replied = false
   try {
-    const reply = result.isQuestion ? await answer(text) : confirm(result)
+    const reply = await compose(text, chatId, result)
     const res = await dataFetch("/service/channels/telegram/send", {
       method: "POST",
       body: JSON.stringify({ chatId, text: reply }),

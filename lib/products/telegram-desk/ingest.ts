@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
-import { understand } from "./understand"
+import { understand, type Understanding } from "./understand"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -61,6 +61,10 @@ export type IngestResult = {
   understood: boolean
   /** Вопрос это был или рассказ — дверь строит ответ по-разному. */
   isQuestion: boolean
+  /** Просят поставить напоминание — с временем, прочитанным из слов. */
+  schedule: Understanding["schedule"]
+  /** Ответ на предыдущий вопрос продукта: «да» или «нет». */
+  confirmation: Understanding["confirmation"]
   notes: string[]
 }
 
@@ -90,6 +94,8 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       artifacts: [],
       understood: false,
       isQuestion: false,
+      schedule: null,
+      confirmation: null,
       notes: ["duplicate"],
     }
   }
@@ -181,6 +187,8 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     artifacts,
     understood: !u.failed,
     isQuestion: u.isQuestion,
+    schedule: u.schedule,
+    confirmation: u.confirmation,
     notes,
   }
 }

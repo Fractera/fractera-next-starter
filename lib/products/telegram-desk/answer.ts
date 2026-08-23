@@ -3,6 +3,7 @@ import { openAiKey } from "@/lib/openai-key"
 import { recall } from "@/lib/fractera/vectors"
 import { ask } from "@/lib/fractera/knowledge"
 import { VECTOR_COLLECTION } from "./ingest"
+import { PERSONA, CLARIFY_RULES } from "./persona"
 
 // ОТВЕТ НА ВОПРОС ПО СОБСТВЕННОЙ ИСТОРИИ.
 //
@@ -94,12 +95,14 @@ export async function answer(question: string): Promise<string> {
           {
             role: "system",
             content: [
-              "You are the person's own assistant, answering from THEIR notes below.",
-              "Answer in the language of the question, briefly.",
-              "🔒 Never invent a fact that is not in the notes. If the notes do not contain the",
-              "answer, say plainly that nothing about it was recorded — that is a useful answer,",
-              "an invented one is not.",
-            ].join(" "),
+              PERSONA,
+              "",
+              CLARIFY_RULES,
+              "",
+              "🔒 Никогда не выдумывай факт, которого нет в записях ниже. Нет ответа —",
+              "так и скажи: это полезный ответ, а выдуманный — нет.",
+              "Вопрос о ТЕБЕ САМОМ отвечай из того, что сказано выше о тебе, а не из записей.",
+            ].join(String.fromCharCode(10)),
           },
           { role: "user", content: `${context}\n\nQUESTION: ${question}` },
         ],

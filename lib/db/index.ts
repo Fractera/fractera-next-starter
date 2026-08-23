@@ -177,6 +177,40 @@ const SCHEMA = `
     cost_note  TEXT,
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
+
+  -- КАЛЕНДАРЬ ПРОДУКТА. Своего календаря у платформы нет, и до этой таблицы
+  -- напоминание жить было негде: сказанное «напомни завтра» становилось
+  -- обычной заметкой, которую никто никогда не показывал вовремя.
+  --
+  -- 🔒 СТАТУС pending СУЩЕСТВУЕТ ПОТОМУ, ЧТО ДАТУ НЕЛЬЗЯ УГАДЫВАТЬ. Человек
+  -- говорит «завтра на десять», модель разрешает это в число — и ошибается раз
+  -- в двадцать, а цена ошибки здесь не «неточность», а пропущенная встреча.
+  -- Поэтому предложенное время сначала подтверждается словами, и только
+  -- подтверждённое становится active.
+  CREATE TABLE IF NOT EXISTS tgdesk_calendar (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id    INTEGER,
+    chat_id       TEXT    NOT NULL,
+    -- event — встреча, у неё есть место в дне; reminder — напоминание о деле.
+    kind          TEXT    NOT NULL DEFAULT 'reminder',
+    title         TEXT    NOT NULL,
+    -- Когда сработать. У повторяющегося — время БЛИЖАЙШЕГО срабатывания,
+    -- и оно переписывается после каждого: хранить «расписание отдельно, дату
+    -- отдельно» значит завести два источника правды об одном событии.
+    due_unix      INTEGER NOT NULL,
+    -- Повтор: пусто — одноразовое. daily | weekdays | weekly | monthly.
+    repeat        TEXT,
+    -- За сколько минут предупредить заранее. Отдельная строка календаря для
+    -- этого не заводится: предупреждение принадлежит событию и умирает с ним.
+    remind_before INTEGER NOT NULL DEFAULT 0,
+    pre_sent      INTEGER NOT NULL DEFAULT 0,
+    -- pending — время предложено, человек ещё не подтвердил;
+    -- active — работает; done — отработало; cancelled — снято человеком.
+    status        TEXT    NOT NULL DEFAULT 'pending',
+    last_fired    INTEGER,
+    created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS tgdesk_calendar_due ON tgdesk_calendar (status, due_unix);
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

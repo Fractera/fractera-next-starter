@@ -15,8 +15,8 @@ description: >
 > Informational, not binding. **Know a better way for the case in front of you — do it your way and
 > say so.** You are trusted with the creative work on this project.
 
-**Off by default, and that is the correct state for most projects.** The law in `CLAUDE.md` («Как
-строим») locks multi-agent work; this is the one sanctioned door out of it, and the door has two locks.
+**Off by default, and that is the correct state for most projects.** The law in `CLAUDE.md` (*How we build*)
+locks multi-agent work; this is the one sanctioned door out of it, and the door has two locks.
 
 ---
 

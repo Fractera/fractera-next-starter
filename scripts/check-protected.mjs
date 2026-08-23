@@ -168,5 +168,5 @@ if (problems.length === 0) {
 
 console.error(`===PROTECTED_FAILED=== нарушений: ${problems.length}\n`)
 for (const p of problems) console.error(`  ${p.rule.padEnd(20)} ${p.file}\n${" ".repeat(23)}${p.detail}`)
-console.error("\nЗаконы слоя — CLAUDE.md, раздел о двух моделях страницы.")
+console.error("\nЗаконы слоя — CLAUDE.md, раздел «What goes on a page»: три модели страницы.")
 process.exit(1)

@@ -4,6 +4,7 @@ import { learn } from "@/lib/fractera/knowledge"
 import { understand, type Understanding } from "./understand"
 import { takeFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
+import { waitingNow } from "./calendar"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -90,6 +91,8 @@ export type IngestResult = {
   /** Валюта записи и признак того, что она подставлена из настроек. */
   currency: string
   currencyFromConfig: boolean
+  /** Дату не прочитали и поставили сегодняшнюю — человек обязан это увидеть. */
+  dateFromToday: boolean
   /** Что стало с вложением, человеческими словами. Пусто — вложения не было. */
   fileRead: string
   /** Денежная запись ждёт согласия. */
@@ -130,6 +133,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       happenedAt: null,
       currency: "",
       currencyFromConfig: false,
+      dateFromToday: false,
       fileRead: "",
       needsConfirm: false,
       artifacts: [],
@@ -189,10 +193,16 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
 
   // Разбор моделью видит и подпись, и прочитанное из вложения.
   const spoken = [msg.text, ...files.map((f) => f.text)].filter(Boolean).join(String.fromCharCode(10))
-  const u = await understand(spoken)
+  // 🔒 МАРШРУТИЗАТОР ДОЛЖЕН ЗНАТЬ, ЧТО ЧЕГО-ТО ЖДУТ. «20 августа» само по себе —
+  // заметка; оно же в ответ на «дату не разобрал» — поправка. Смысл фразы задаёт
+  // не фраза, а вопрос, заданный секунду назад.
+  const awaiting = Boolean(await waitingNow(msg.chatId))
+  const u = await understand(spoken, awaiting)
   let currency = ""
   let currencyFromConfig = false
   let needsConfirm = false
+  let dateFromToday = false
+  let happenedAt = u.happenedAt
   if (u.failed) notes.push(`understand:${u.failed}`)
   if (!u.failed) {
     await db
@@ -223,6 +233,18 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       }
       // Деньги ждут согласия — та же дисциплина, что у времени в календаре.
       needsConfirm = Boolean(hasMoney)
+
+      // 🔒 У ЧЕКА ДАТА ОБЯЗАТЕЛЬНА (решение владельца 2026-08-23). Трата без
+      // даты не попадает ни в один подсчёт по периоду — то есть её как бы нет.
+      // Не прочитали — ставим сегодняшнюю и ГОВОРИМ об этом: человек поправит
+      // одной фразой, а молча поставленная дата тихо исказит месяц.
+      if (hasMoney && !happenedAt) {
+        happenedAt = at.slice(0, 10)
+        dateFromToday = true
+        await db
+          .prepare("UPDATE tgdesk_messages SET happened_unix = ? WHERE id = ?")
+          .run(Math.floor(Date.parse(happenedAt + "T12:00:00Z") / 1000), messageId)
+      }
       await db
         .prepare(
           "INSERT INTO tgdesk_entries (message_id, kind, title, payload, status, currency) VALUES (?, ?, ?, ?, ?, ?)",
@@ -293,8 +315,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     summary: u.summary,
     kind: u.kind,
     payload: u.payload,
-    happenedAt: u.happenedAt,
+    happenedAt,
     currency,
+    dateFromToday,
     currencyFromConfig,
     fileRead,
     needsConfirm,

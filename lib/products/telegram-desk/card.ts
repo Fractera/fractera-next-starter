@@ -60,7 +60,13 @@ export function card(r: IngestResult): string {
   if (r.currencyFromConfig && r.currency) {
     lines.push(`Валюта ${r.currency} — из настроек проекта, на чеке её не видно.`)
   }
-  if (r.happenedAt) lines.push(`Событие: ${r.happenedAt}`)
+  if (r.happenedAt) {
+    lines.push(
+      r.dateFromToday
+        ? `Дату на чеке не разобрал — ставлю сегодняшнюю: ${r.happenedAt}. Если была другая, назовите её.`
+        : `Событие: ${r.happenedAt}`,
+    )
+  }
   if (r.fileRead) lines.push(`Вложение: ${r.fileRead}`)
 
   // Куда легло — по факту, а не по намерению.

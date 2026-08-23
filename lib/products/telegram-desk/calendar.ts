@@ -94,12 +94,53 @@ export async function waitingNow(chatId: string): Promise<Waiting | null> {
   return a ?? b
 }
 
+/** Применить поправку к ожидающей записи. Пустые поля не трогаются. */
+export async function applyEntryCorrection(
+  id: number,
+  c: { date: string | null; amount: number | null; currency: string | null; vendor: string | null; title: string | null },
+): Promise<{ payload: Record<string, unknown>; currency: string; title: string; date: string }> {
+  const row = (await db
+    .prepare("SELECT message_id, title, payload, currency FROM tgdesk_entries WHERE id = ?")
+    .get(id)) as { message_id?: number; title?: string; payload?: string; currency?: string } | undefined
+
+  const payload = ((): Record<string, unknown> => {
+    try { return JSON.parse(String(row?.payload ?? "{}")) as Record<string, unknown> } catch { return {} }
+  })()
+  if (c.amount !== null) payload.amount = c.amount
+  if (c.vendor) payload.vendor = c.vendor
+
+  const title = c.title ?? String(row?.title ?? "")
+  const currency = c.currency ?? String(row?.currency ?? "")
+
+  await db
+    .prepare("UPDATE tgdesk_entries SET payload = ?, title = ?, currency = ? WHERE id = ?")
+    .run(JSON.stringify(payload), title, currency || null, id)
+
+  // 🔒 ДАТА ЧЕКА ЖИВЁТ У СООБЩЕНИЯ, А НЕ У ЗАПИСИ. Второе место для одного
+  // факта разошлось бы при первой же правке: поиск по периоду читает сообщение.
+  let date = ""
+  if (c.date && row?.message_id) {
+    const unix = Math.floor(Date.parse(c.date + "T12:00:00Z") / 1000)
+    await db.prepare("UPDATE tgdesk_messages SET happened_unix = ? WHERE id = ?").run(unix, row.message_id)
+    date = c.date
+  }
+  return { payload, currency, title, date }
+}
+
 export async function confirmEntry(id: number): Promise<void> {
   await db.prepare("UPDATE tgdesk_entries SET status = 'confirmed' WHERE id = ?").run(id)
 }
 
 export async function cancelEntry(id: number): Promise<void> {
   await db.prepare("UPDATE tgdesk_entries SET status = 'cancelled' WHERE id = ?").run(id)
+}
+
+/** Поправка времени у ожидающего напоминания. */
+export async function applyCalendarCorrection(id: number, whenIso: string): Promise<string> {
+  const due = Math.floor(Date.parse(whenIso + ":00Z") / 1000)
+  if (!Number.isFinite(due)) return ""
+  await db.prepare("UPDATE tgdesk_calendar SET due_unix = ? WHERE id = ?").run(due, id)
+  return whenIso.replace("T", " ")
 }
 
 export async function confirm(id: number): Promise<void> {

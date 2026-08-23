@@ -6,7 +6,9 @@ import { dataFetch } from "@/lib/fractera/data-service"
 import {
   propose, speak, confirm, cancel,
   waitingNow, confirmEntry, cancelEntry,
+  applyEntryCorrection, applyCalendarCorrection,
 } from "@/lib/products/telegram-desk/calendar"
+import { extractCorrection } from "@/lib/products/telegram-desk/branches/correct"
 import { card } from "@/lib/products/telegram-desk/card"
 import { GREETING } from "@/lib/products/telegram-desk/persona"
 import { meta } from "@/lib/products/telegram-desk/branches/meta"
@@ -72,6 +74,33 @@ async function compose(
       // Ветвь угадана, время — нет. Просить уточнить честнее, чем молча
       // превратить просьбу в заметку: так это и терялось четыре раза подряд.
       return "Записал. Когда напомнить? Назовите дату и время."
+    }
+
+    // Поправка: человек исправляет то, что мы ему прочитали. Меняется ТОЛЬКО
+    // названное — поправив дату, он не перепроверял сумму.
+    case "correct": {
+      const waiting = await waitingNow(chatId)
+      if (!waiting) return "Сейчас нечего исправлять."
+      const c = await extractCorrection(text, waiting.title)
+
+      if (waiting.what === "calendar") {
+        if (!c.when) return `Не понял новое время. Назовите дату и час.`
+        const shown = await applyCalendarCorrection(waiting.id, c.when)
+        await confirm(waiting.id)
+        return `Поправил и поставил: ${waiting.title} — ${shown}.`
+      }
+
+      const changed = Object.values(c).some((v) => v !== null)
+      if (!changed) return "Не понял, что поправить. Назовите дату, сумму или продавца."
+      const after = await applyEntryCorrection(waiting.id, c)
+      await confirmEntry(waiting.id)
+      const bits = [
+        after.title,
+        after.payload.amount !== undefined ? `${after.payload.amount} ${after.currency}`.trim() : "",
+        after.payload.vendor ? String(after.payload.vendor) : "",
+        after.date ? `дата ${after.date}` : "",
+      ].filter(Boolean)
+      return `Поправил: ${bits.join(" · ")}.`
     }
 
     case "question":

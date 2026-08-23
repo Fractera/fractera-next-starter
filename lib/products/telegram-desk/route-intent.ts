@@ -17,13 +17,23 @@ import { COMMANDS } from "./persona"
 // есть та самая болезнь: как только у вызова появляется второе дело, одно из двух
 // начинает пропадать — и пропадает молча.
 
-export const INTENTS = ["capture", "question", "schedule", "confirm", "meta", "command"] as const
+export const INTENTS = ["capture", "question", "schedule", "confirm", "correct", "meta", "command"] as const
 export type Intent = (typeof INTENTS)[number]
 
 // 🔒 КОМАНДЫ ПЕРЕЧИСЛЕНЫ ЗДЕСЬ ИЗ ОДНОГО ИСТОЧНИКА — persona.COMMANDS.
 // Список, повторённый в промпте и в тексте знакомства, разойдётся: человеку
 // пообещают слово, которого маршрутизатор не знает, и оно молча не сработает.
 const COMMAND_HINTS = COMMANDS.map((c) => `«${c.say}» — ${c.does}`).join(String.fromCharCode(10))
+
+// Подсказка приезжает ТОЛЬКО когда что-то ждёт: без неё «correct» никогда не
+// уместен, и предлагать его модели значит звать её ошибиться.
+const AWAITING_HINT = [
+  "",
+  "RIGHT NOW something you proposed is awaiting their answer — a time, an amount, a date.",
+  '"correct" — they are FIXING what you proposed: a different date, another amount,',
+  '"нет, 20 августа", "это было 300, а не 30", "валюта евро". Not a plain yes or no.',
+  'A plain "да"/"нет" is still "confirm". A brand new story is still "capture".',
+].join(String.fromCharCode(10))
 
 const SYSTEM = [
   "Classify ONE message from a person to their personal assistant. Answer JSON only:",
@@ -43,7 +53,11 @@ const SYSTEM = [
  * а неверно угаданная ветвь стоит одного лишнего ответа, тогда как потерянное
  * сообщение стоит доверия.
  */
-export async function routeIntent(text: string): Promise<Intent> {
+// 🔒 ВЕТВЬ «ПОПРАВКА» СУЩЕСТВУЕТ ТОЛЬКО ПОКА ЧЕГО-ТО ЖДУТ. «20 августа» само
+// по себе — это заметка; оно же в ответ на «дату не распознал, ставлю
+// сегодняшнюю» — исправление. Смысл фразы задаёт не фраза, а то, о чём
+// спросили секунду назад, и маршрутизатор обязан это знать.
+export async function routeIntent(text: string, awaiting = false): Promise<Intent> {
   const t = text.trim()
   // Два случая решаются без модели: платить за них незачем.
   if (t.startsWith("/")) return "command"
@@ -61,7 +75,12 @@ export async function routeIntent(text: string): Promise<Intent> {
         temperature: 0,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM },
+          {
+            role: "system",
+            content: awaiting
+              ? SYSTEM + String.fromCharCode(10) + AWAITING_HINT
+              : SYSTEM,
+          },
           { role: "user", content: t.slice(0, 1200) },
         ],
       }),

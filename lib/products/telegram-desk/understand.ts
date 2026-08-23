@@ -82,7 +82,7 @@ function systemPrompt(todayIso: string): string {
     "Answer with JSON only, no prose, using exactly these keys:",
     '{"summary":string,"kind":string|null,"title":string,"payload":object|null,',
     '"has_financial":boolean,"happened_at":string|null,"is_question":boolean,"facets":string[],' +
-      '"schedule":object|null,"confirmation":"yes"|"no"|null}',
+      '"confirmation":"yes"|"no"|null}',
     `"kind" is one of: ${ENTRY_KINDS.join(", ")} — or null when nothing fits.`,
     'Use "memo" when the person explicitly asks to REMEMBER something',
     '("запомни", "remember this", "не забудь") — that is a promise, not a note.',
@@ -103,15 +103,6 @@ function systemPrompt(todayIso: string): string {
     '"facets" are two to six short tags naming what the message is ABOUT, in the language',
     'the person used: a vendor, a purchase, a price, a city, office equipment, a promise.',
     'They are what a knowledge graph links on, so name THINGS and ROLES, not feelings.',
-    '',
-    '"schedule" MUST be filled whenever the person asks to be reminded or to book something —',
-    'even when you also picked a "kind" for the message. The two are not alternatives:',
-    '"kind" says what the message IS, "schedule" says what has to HAPPEN and when.',
-    '{"kind":"reminder"|"event","title":string,"when":"YYYY-MM-DDTHH:MM",',
-    '"repeat":"daily"|"weekdays"|"weekly"|"monthly"|null,"remind_before":number}.',
-    '"when" is your best reading of the words; it will be read back for confirmation,',
-    'so read it as precisely as you can — but never leave it empty, guess the likely one.',
-    '"remind_before" is minutes of advance warning when asked ("напомни за час" = 60), else 0.',
     '',
     '"confirmation" is "yes" ONLY when the entire message is nothing but agreement',
     '("да", "ставь", "верно", "ok") — a message that also carries a new request is NOT',
@@ -169,6 +160,52 @@ function scheduleFromPayload(parsed: Record<string, unknown>): Understanding["sc
   })
 }
 
+// 🔒 РАСПИСАНИЕ ДОБЫВАЕТСЯ ОТДЕЛЬНЫМ ВЫЗОВОМ, И ЭТО НЕ ИЗЛИШЕСТВО.
+// ✗ 2026-08-23, четыре просьбы подряд: в большом промпте модель просто
+// НЕ ЗАПОЛНЯЛА поле schedule — ни ошибки, ни отказа, просто отсутствующий ключ.
+// Тот же вопрос коротким промптом она отвечала безошибочно (проверено прямым
+// вызовом: «через одну минуту» → верное время до минуты).
+//
+// Вывод, который стоит помнить дальше: одна просьба сделать шесть дел разом
+// исполняется на пять. Дело, которое нельзя потерять, спрашивают отдельно.
+// Цена — второй вызов, и только там, где он нужен: род task или event.
+async function extractSchedule(text: string, now: string): Promise<Understanding["schedule"]> {
+  const key = openAiKey()
+  if (!key) return null
+  const sys = [
+    "You read one message and answer with JSON only.",
+    `Right now it is ${now} UTC — that is the date AND the clock.`,
+    'If the person asks to be reminded of something or to put something in the calendar, answer',
+    '{"schedule":{"kind":"reminder"|"event","title":string,"when":"YYYY-MM-DDTHH:MM",',
+    '"repeat":"daily"|"weekdays"|"weekly"|"monthly"|null,"remind_before":number}}.',
+    '"when" is the moment it must fire, computed from the clock above.',
+    '"remind_before" is minutes of advance warning when asked ("за час" = 60), else 0.',
+    'If the message is not such a request, answer {"schedule":null}.',
+  ].join(String.fromCharCode(10))
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: process.env.TGDESK_MODEL ?? "gpt-4o-mini",
+        temperature: 0,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: text.slice(0, 2000) },
+        ],
+      }),
+      signal: AbortSignal.timeout(45_000),
+    })
+    if (!res.ok) return null
+    const d = (await res.json()) as { choices?: { message?: { content?: string } }[] }
+    const parsed = JSON.parse(d.choices?.[0]?.message?.content ?? "{}") as Record<string, unknown>
+    return readSchedule(parsed.schedule)
+  } catch {
+    return null
+  }
+}
+
 export async function understand(text: string): Promise<Understanding> {
   const key = openAiKey()
   if (!key) return { ...EMPTY, failed: "no-key" }
@@ -218,7 +255,14 @@ export async function understand(text: string): Promise<Understanding> {
       facets: Array.isArray(parsed.facets)
         ? parsed.facets.map((f) => String(f).slice(0, 40)).filter(Boolean).slice(0, 8)
         : [],
-      schedule: readSchedule(parsed.schedule) ?? scheduleFromPayload(parsed),
+      // Второй вызов только для родов, которые ВООБЩЕ могут нести время:
+      // заметка о покупке расписания не просит, и платить за неё незачем.
+      schedule:
+        readSchedule(parsed.schedule) ??
+        scheduleFromPayload(parsed) ??
+        (kind === "task" || kind === "idea" || kind === "memo"
+          ? await extractSchedule(text, new Date().toISOString().slice(0, 16).replace("T", " "))
+          : null),
       confirmation:
         parsed.confirmation === "yes" || parsed.confirmation === "no" ? parsed.confirmation : null,
       failed: "",

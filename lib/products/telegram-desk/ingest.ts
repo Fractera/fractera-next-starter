@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
 import { understand, type Understanding } from "./understand"
+import { takeFile } from "./branches/files"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -10,6 +11,17 @@ import { understand, type Understanding } from "./understand"
 // обработчике маршрута не переиспользуется ничем.
 
 export const VECTOR_COLLECTION = "tgdesk"
+
+// 🔒 ИСТОЧНИК ГРАФА НАЧИНАЕТСЯ С ПРОСТРАНСТВА ИМЁН, И ЭТО НЕ УКРАШЕНИЕ.
+// В один граф пишут все: этот продукт, будущие продукты сервера, документы,
+// которые владелец грузит руками в панели. Без приставки они смешиваются, и
+// на вопрос о покупке всплывает абзац из чужой инструкции — похожий по словам
+// и не имеющий отношения к жизни человека.
+//
+// Приставка работает в обе стороны: по ней документы канала находятся списком
+// и удаляются одной операцией, когда человек просит забыть переписку.
+export const RAG_NAMESPACE = "telegram"
+const ragSource = (messageId: number) => `${RAG_NAMESPACE}/msg-${messageId}`
 // 🔒 В ГРАФ ЗНАНИЙ ИДЁТ КАЖДОЕ СООБЩЕНИЕ, И ИДЁТ ОНО КОНВЕРТОМ
 // (решение владельца 2026-08-23, отменяет порог в 280 знаков).
 //
@@ -22,15 +34,25 @@ export const VECTOR_COLLECTION = "tgdesk"
 //
 // Цена решения названа честно: каждое сообщение теперь стоит построения графа, и
 // на тысяче реплик это заметные деньги. Владелец выбрал полноту.
-function envelope(msg: Incoming, u: { summary: string; facets: string[]; happenedAt: string | null }): string {
+function envelope(
+  msg: Incoming,
+  u: { summary: string; facets: string[]; happenedAt: string | null },
+  files: { kind: string; text: string }[],
+): string {
   const when = new Date(msg.at || Date.now())
   const said = when.toISOString().slice(0, 16).replace("T", " ")
   const lines = [
-    `От пользователя ${msg.who || msg.chatId} через канал Telegram ${said} UTC поступило сообщение.`,
+    `Источник: ${RAG_NAMESPACE}. От пользователя ${msg.who || msg.chatId} через канал Telegram ${said} UTC поступило сообщение.`,
   ]
   if (u.happenedAt) lines.push(`Событие произошло ${u.happenedAt}.`)
   if (u.facets.length) lines.push(`Признаки: ${u.facets.join(", ")}.`)
   if (msg.objectType) lines.push(`К сообщению приложен объект рода: ${msg.objectType}.`)
+  // Прочитанное из файла идёт в граф ВМЕСТЕ с сообщением, а не отдельным
+  // документом: снимок чека и слова о нём — одно событие, и разорванные
+  // надвое они перестают находиться друг через друга.
+  for (const f of files) {
+    if (f.text) lines.push(`Содержимое вложения (${f.kind}): ${f.text}`)
+  }
   if (msg.lat != null && msg.lon != null) lines.push(`Место: ${msg.lat}, ${msg.lon}.`)
   if (u.summary) lines.push(`Суть: ${u.summary}`)
   lines.push(`Текст сообщения: ${msg.text}`)
@@ -77,9 +99,6 @@ function unix(at: string): number {
 export async function ingest(msg: Incoming): Promise<IngestResult> {
   const notes: string[] = []
   const artifacts: { kind: string; ref: string }[] = []
-  // Вложение названо честно даже когда файл не забран: пустая запись о том,
-  // что фотография БЫЛА, дороже молчания — по ней видно, чего не хватает.
-  if (msg.fileId) notes.push(`file:${msg.objectType ?? "unknown"}:not-fetched`)
   const at = msg.at || new Date().toISOString()
 
   // 🔒 ИДЕМПОТЕНТНОСТЬ ПЕРВОЙ СТРОКОЙ. Служба повторит доставку, если дверь не
@@ -121,8 +140,25 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   const messageId = Number(born?.id ?? 0)
   if (!messageId) throw new Error("tgdesk: строка записана, но не читается обратно")
 
-  // Разбор моделью. Не удался — сообщение уже сохранено, и это главное.
-  const u = await understand(msg.text)
+  // ── Вложение забирается ДО разбора ─────────────────────────────────────
+  // Прочитанное с картинки — часть того, что человек сказал. Разобрать сперва
+  // подпись, а картинку приложить потом значит понять половину: «вот чек»
+  // без суммы это не запись о трате, а бессмысленная строка.
+  const files: { kind: string; text: string }[] = []
+  if (msg.fileId) {
+    const f = await takeFile(msg.fileId, messageId, msg.objectType)
+    if (f?.name) {
+      artifacts.push({ kind: "media", ref: f.name })
+      if (f.text) files.push({ kind: f.kind, text: f.text })
+      else notes.push(`file:${f.kind}:${f.failed || "not-read"}`)
+    } else {
+      notes.push(`file:${msg.objectType ?? "unknown"}:not-fetched`)
+    }
+  }
+
+  // Разбор моделью видит и подпись, и прочитанное из вложения.
+  const spoken = [msg.text, ...files.map((f) => f.text)].filter(Boolean).join(String.fromCharCode(10))
+  const u = await understand(spoken)
   if (u.failed) notes.push(`understand:${u.failed}`)
   if (!u.failed) {
     await db
@@ -152,7 +188,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // ключа нет — это не повод потерять остальное. Отказ становится строкой в
   // notes, а не исключением: дверь обязана ответить службе, иначе та повторит
   // доставку и мы будем разбирать одно сообщение вечно.
-  const searchable = [u.summary, msg.text].filter(Boolean).join("\n")
+  const searchable = [u.summary, msg.text, ...files.map((f) => f.text)]
+    .filter(Boolean)
+    .join(String.fromCharCode(10))
 
   try {
     const v = await remember({
@@ -167,12 +205,12 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   }
 
   {
-    const r = await learn(envelope(msg, u), `tgdesk/${messageId}`)
+    const r = await learn(envelope(msg, u, files), ragSource(messageId))
     if (r.accepted) {
       // 🔒 Ссылка на граф — ИМЯ источника, а не id документа: движок строит его в
       // фоне и выдаёт свой идентификатор позже. Имя мы задали сами, и по нему
       // документ находится в списке в любой момент.
-      artifacts.push({ kind: "rag", ref: `tgdesk/${messageId}` })
+      artifacts.push({ kind: "rag", ref: ragSource(messageId) })
     } else {
       notes.push("rag:refused")
     }

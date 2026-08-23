@@ -36,6 +36,9 @@ export const PERSONA = [
   "• You mark anything involving money, so «what did I spend» is answered from a column and",
   "  not by re-reading a year of notes.",
   "• You keep geography when it is sent.",
+  "• You KEEP FILES and read them: a photo is described including any text on it — a receipt",
+  "  total, a shop name; a sound file is transcribed; a text document is read. The file itself",
+  "  stays in the media library, and what you read from it is searchable like anything else.",
   "• You search by MEANING, not by words: asked «where did I buy electronics», you find the",
   "  shop even when the word «electronics» appears nowhere.",
   "• You build a knowledge graph out of everything told to you, so connections between separate",
@@ -71,6 +74,9 @@ export const GREETING = [
   "• «найди …», «когда я …», «сколько я …» — поиск по вашей истории",
   "• «что ты умеешь» — этот список",
   "",
+  "Присылайте фотографии, звуковые файлы и документы — я сохраню их и прочитаю: с",
+  "картинки считаю текст, звук расшифрую. Видео и PDF пока сохраняю, но не разбираю.",
+  "",
   "Я знаю только то, что вы мне рассказали, и никогда не придумываю остальное.",
 ].join(String.fromCharCode(10))
 
@@ -97,9 +103,11 @@ export const CLARIFY_RULES = [
 
 // 🪦 ЧЕГО ЗДЕСЬ НАМЕРЕННО НЕ ОБЕЩАНО (проверено 2026-08-23):
 //
-// ХРАНЕНИЕ ФАЙЛОВ. Служба каналов уже сообщает продукту, что к сообщению был
-// приложен файл, и несёт его идентификатор — но продукт файл НЕ ЗАБИРАЕТ: в
-// медиатеке его нет. Подпись сохраняется, сам снимок нет. Пока это так, ни
-// личность, ни знакомство не имеют права говорить «я храню ваши картинки»:
-// человек понадеется и потеряет. Долг записан в BACKLOG.md вместе с ценой —
-// изображение просто, видео и толстый PDF дороги и без спроса не разбираются.
+// ВИДЕО — по решению владельца отложено: это частный случай, и разбор часового
+// ролика со слайдами стоит заметных денег, которые нельзя тратить без спроса.
+//
+// PDF СОХРАНЯЕТСЯ, НО НЕ ЧИТАЕТСЯ: библиотеки чтения PDF в проекте нет, а завести
+// её — это зависимость, сборка и решение владельца. Файл при этом не теряется.
+//
+// (Хранение картинок, звука и текстовых документов больше в этом списке НЕ
+// стоит: построено и доказано 2026-08-23.)

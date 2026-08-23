@@ -5,6 +5,7 @@ import { understand, type Understanding } from "./understand"
 import { takeFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
 import { waitingNow } from "./calendar"
+import { timezoneOf } from "./timezone"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -111,6 +112,24 @@ export type IngestResult = {
   notes: string[]
 }
 
+/** Метка вопроса о поясе: узнаётся по тексту нашего же последнего ответа. */
+export const WHERE_MARK = "часовой пояс"
+
+async function lastWasWhereQuestion(chatId: string): Promise<boolean> {
+  const row = (await db
+    .prepare(
+      `SELECT text FROM tgdesk_messages
+        WHERE chat_id = ? AND direction = 'out' ORDER BY id DESC LIMIT 1`,
+    )
+    .get(chatId)) as { text?: string } | undefined
+  return String(row?.text ?? "").includes(WHERE_MARK)
+}
+
+/** Пояс известен? Дверь спрашивает об этом до того, как ставить напоминание. */
+export function timezoneKnown(): boolean {
+  return Boolean(timezoneOf())
+}
+
 /** Секунды, а не миллисекунды: по этому полю считают периоды и режут выборки. */
 function unix(at: string): number {
   const ms = Date.parse(at)
@@ -203,7 +222,12 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // заметка; оно же в ответ на «дату не разобрал» — поправка. Смысл фразы задаёт
   // не фраза, а вопрос, заданный секунду назад.
   const awaiting = Boolean(await waitingNow(msg.chatId))
-  const u = await understand(spoken, awaiting)
+
+  // 🔒 «Я в Мадриде» — это ответ на наш вопрос, только если вопрос был задан
+  // последним. Иначе это заметка о поездке, и записать её поясом значило бы
+  // переставить человеку все напоминания из-за одной фразы.
+  const askedWhere = await lastWasWhereQuestion(msg.chatId)
+  const u = await understand(spoken, awaiting, askedWhere)
   let currency = ""
   let currencyFromConfig = false
   let needsConfirm = false

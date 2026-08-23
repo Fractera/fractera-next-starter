@@ -1,4 +1,5 @@
 import { openAiKey } from "@/lib/openai-key"
+import { nowLocal, localToUtcIso, timezoneOf } from "../timezone"
 
 // ВЕТВЬ «РАСПИСАНИЕ»: вынуть из слов момент, когда должно сработать.
 //
@@ -50,11 +51,18 @@ export async function extractSchedule(text: string): Promise<Schedule | null> {
 
   // 🔒 ЧАСЫ, А НЕ ТОЛЬКО ДАТА. ✗ здесь стояла одна дата, и «через минуту» было
   // невычислимо: чтобы назвать час и минуту, надо знать, который час сейчас.
-  const now = new Date().toISOString().slice(0, 16).replace("T", " ")
+  //
+  // 🔒 И ЧАСЫ ЧЕЛОВЕКА, А НЕ СЕРВЕРА. Модель считает «завтра в десять» от того
+  // времени, которое ей назвали; назвать ей время по Гринвичу значит получить
+  // десять утра по Гринвичу. Пояса нет — работаем в UTC и говорим об этом.
+  const tz = timezoneOf()
+  const now = nowLocal(tz)
 
   const sys = [
     "You read one message and answer with JSON only.",
-    `Right now it is ${now} UTC — that is the date AND the clock.`,
+    tz
+      ? `Right now it is ${now} where the person lives (${tz}). Answer in THEIR local time.`
+      : `Right now it is ${now} UTC. Answer in UTC — their timezone is not known yet.`,
     'Answer {"schedule":{"kind":"reminder"|"event","title":string,"when":"YYYY-MM-DDTHH:MM",',
     '"repeat":"daily"|"weekdays"|"weekly"|"monthly"|null,"remind_before":number}}.',
     '"when" is the moment it must fire, computed from the clock above.',
@@ -81,7 +89,11 @@ export async function extractSchedule(text: string): Promise<Schedule | null> {
     if (!res.ok) return null
     const d = (await res.json()) as { choices?: { message?: { content?: string } }[] }
     const parsed = JSON.parse(d.choices?.[0]?.message?.content ?? "{}") as Record<string, unknown>
-    return readSchedule(parsed.schedule)
+    // Модель ответила местным временем — храним мгновение в UTC: календарь
+    // сравнивает секунды, и две записи в разных поясах иначе несравнимы.
+    const local = readSchedule(parsed.schedule)
+    if (!local) return null
+    return { ...local, when: localToUtcIso(local.when, tz) }
   } catch {
     return null
   }

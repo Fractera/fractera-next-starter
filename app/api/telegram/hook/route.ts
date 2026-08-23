@@ -9,6 +9,9 @@ import {
   applyEntryCorrection, applyCalendarCorrection,
 } from "@/lib/products/telegram-desk/calendar"
 import { extractCorrection } from "@/lib/products/telegram-desk/branches/correct"
+import { cityToZone } from "@/lib/products/telegram-desk/branches/where"
+import { saveTimezone, timezoneOf } from "@/lib/products/telegram-desk/timezone"
+import { WHERE_MARK } from "@/lib/products/telegram-desk/ingest"
 import { card } from "@/lib/products/telegram-desk/card"
 import { GREETING } from "@/lib/products/telegram-desk/persona"
 import { meta } from "@/lib/products/telegram-desk/branches/meta"
@@ -64,12 +67,35 @@ async function compose(
       return `Подтвердил: ${waiting.title}.`
     }
 
+    // Ответ на наш вопрос о поясе: записываем и БОЛЬШЕ НЕ СПРАШИВАЕМ.
+    case "where": {
+      const zone = await cityToZone(text)
+      if (!zone) return `Не понял место. Назовите город — например, «Мадрид».`
+      // 🔒 Пишем сразу, а не отправляем человека в настройки: до поля в панели
+      // почти никто не доходит, а пустой пояс молча ломает каждое напоминание.
+      // Решение владельца 2026-08-23.
+      if (!saveTimezone(zone)) {
+        return "Понял, но записать не смог. Поставьте часовой пояс в настройках приложения."
+      }
+      return `Запомнил: ${zone}. Теперь время считаю по вашим часам.`
+    }
+
     case "schedule": {
       // Время ПРОИЗНОСИТСЯ вслух и ждёт согласия — модель ошибается в датах,
       // а цена ошибки здесь не «неточность», а пропущенная встреча.
       if (r.schedule) {
         await propose(chatId, r.messageId, r.schedule)
-        return speak(r.schedule)
+        const said = speak(r.schedule)
+        // 🔒 Пояс спрашивается ровно там, где он впервые НУЖЕН, и один раз.
+        // Спросить при знакомстве значило бы задать вопрос человеку, который
+        // ещё не понял, зачем он тут; спросить позже — поставить напоминание
+        // не на то время и заставить его это обнаружить.
+        if (!timezoneOf()) {
+          return `${said}
+
+И ещё: в каком городе вы живёте? Мне нужен ваш ${WHERE_MARK}, иначе время считаю по Гринвичу.`
+        }
+        return said
       }
       // Ветвь угадана, время — нет. Просить уточнить честнее, чем молча
       // превратить просьбу в заметку: так это и терялось четыре раза подряд.

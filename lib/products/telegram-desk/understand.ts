@@ -37,9 +37,13 @@ const NOTHING: Understanding = {
 const YES = /^(да|ага|давай|ставь|верно|точно|ок|окей|ok|yes|yep|sure)\b/i
 const NO = /^(нет|не надо|отмени|отбой|no|nope|cancel)\b/i
 
-export async function understand(text: string, awaiting = false): Promise<Understanding> {
+export async function understand(
+  text: string,
+  awaiting = false,
+  askedWhere = false,
+): Promise<Understanding> {
   const t = text.trim()
-  const intent = await routeIntent(t, awaiting)
+  const intent = await routeIntent(t, awaiting, askedWhere)
 
   switch (intent) {
     // Две ветви не стоят ни одного вызова модели.
@@ -54,6 +58,7 @@ export async function understand(text: string, awaiting = false): Promise<Unders
     // Поправка разбирается отдельной веткой в двери: там известно, ЧТО именно
     // ждёт исправления, а без этого «20 августа» не к чему приложить.
     case "correct":
+    case "where":
     case "question":
     case "meta":
       return { ...NOTHING, intent, summary: t.slice(0, 200) }

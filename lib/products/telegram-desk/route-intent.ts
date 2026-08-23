@@ -17,7 +17,7 @@ import { COMMANDS } from "./persona"
 // есть та самая болезнь: как только у вызова появляется второе дело, одно из двух
 // начинает пропадать — и пропадает молча.
 
-export const INTENTS = ["capture", "question", "schedule", "confirm", "correct", "meta", "command"] as const
+export const INTENTS = ["capture", "question", "schedule", "confirm", "correct", "where", "meta", "command"] as const
 export type Intent = (typeof INTENTS)[number]
 
 // 🔒 КОМАНДЫ ПЕРЕЧИСЛЕНЫ ЗДЕСЬ ИЗ ОДНОГО ИСТОЧНИКА — persona.COMMANDS.
@@ -33,6 +33,15 @@ const AWAITING_HINT = [
   '"correct" — they are FIXING what you proposed: a different date, another amount,',
   '"нет, 20 августа", "это было 300, а не 30", "валюта евро". Not a plain yes or no.',
   'A plain "да"/"нет" is still "confirm". A brand new story is still "capture".',
+].join(String.fromCharCode(10))
+
+// Та же дисциплина, что у поправки: ветвь предлагается модели ТОЛЬКО когда
+// вопрос задан. Иначе «я в Мадриде» — это заметка о поездке, а не ответ.
+const WHERE_HINT = [
+  "",
+  "YOU JUST ASKED THEM WHERE THEY LIVE, to set their timezone.",
+  '"where" — they are answering that: a city, a country, an offset like "UTC+2".',
+  "Anything else is not an answer to it.",
 ].join(String.fromCharCode(10))
 
 const SYSTEM = [
@@ -57,7 +66,11 @@ const SYSTEM = [
 // по себе — это заметка; оно же в ответ на «дату не распознал, ставлю
 // сегодняшнюю» — исправление. Смысл фразы задаёт не фраза, а то, о чём
 // спросили секунду назад, и маршрутизатор обязан это знать.
-export async function routeIntent(text: string, awaiting = false): Promise<Intent> {
+export async function routeIntent(
+  text: string,
+  awaiting = false,
+  askedWhere = false,
+): Promise<Intent> {
   const t = text.trim()
   // Два случая решаются без модели: платить за них незачем.
   if (t.startsWith("/")) return "command"
@@ -77,9 +90,9 @@ export async function routeIntent(text: string, awaiting = false): Promise<Inten
         messages: [
           {
             role: "system",
-            content: awaiting
-              ? SYSTEM + String.fromCharCode(10) + AWAITING_HINT
-              : SYSTEM,
+            content: [SYSTEM, awaiting ? AWAITING_HINT : "", askedWhere ? WHERE_HINT : ""]
+              .filter(Boolean)
+              .join(String.fromCharCode(10)),
           },
           { role: "user", content: t.slice(0, 1200) },
         ],

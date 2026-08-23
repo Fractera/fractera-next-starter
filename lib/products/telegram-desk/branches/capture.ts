@@ -1,4 +1,5 @@
 import { openAiKey } from "@/lib/openai-key"
+import { nowLocal, timezoneOf } from "../timezone"
 
 // ВЕТВЬ «РАССКАЗ»: человек сообщает, что случилось. Вынуть смысл и разложить.
 //
@@ -65,7 +66,9 @@ export async function capture(text: string): Promise<Capture> {
   if (!key) return { ...EMPTY_CAPTURE, failed: "no-key" }
   if (!text.trim()) return EMPTY_CAPTURE
 
-  const now = new Date().toISOString().slice(0, 16).replace("T", " ")
+  // «Вчера» у человека и «вчера» на сервере расходятся ровно в те часы, когда
+  // он чаще всего и пишет: поздно вечером и рано утром.
+  const now = nowLocal(timezoneOf())
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { dataFetch } from "@/lib/fractera/data-service"
+import { utcToLocal, timezoneOf, localToUtcIso } from "./timezone"
 
 // КАЛЕНДАРЬ: постановка напоминаний, подтверждение времени, срабатывание.
 //
@@ -29,12 +30,16 @@ const HUMAN_REPEAT: Record<string, string> = {
 
 /** Как продукт произносит предложенное время, чтобы человек мог возразить. */
 export function speak(p: Proposal): string {
-  const d = new Date(p.when + ":00Z")
-  const day = d.toISOString().slice(0, 10)
-  const time = d.toISOString().slice(11, 16)
+  // Человеку время произносится ЕГО часами — иначе он подтверждает цифру,
+  // которой не понимает, и обнаруживает ошибку уже пропущенной встречей.
+  const tz = timezoneOf()
+  const shown = utcToLocal(Math.floor(Date.parse(p.when + ":00Z") / 1000), tz)
+  const day = shown.slice(0, 10)
+  const time = shown.slice(11, 16)
   const parts = [`${p.kind === "event" ? "Встреча" : "Напоминание"}: ${p.title}.`]
   parts.push(p.repeat ? `Когда: ${HUMAN_REPEAT[p.repeat]} в ${time}, начиная с ${day}.` : `Когда: ${day} в ${time}.`)
   if (p.remindBefore > 0) parts.push(`Предупрежу за ${p.remindBefore} мин.`)
+  if (!tz) parts.push("Время по Гринвичу: часовой пояс мне ещё не назвали.")
   parts.push("Ставлю? Ответьте «да» или назовите другое время.")
   return parts.join(" ")
 }
@@ -137,7 +142,8 @@ export async function cancelEntry(id: number): Promise<void> {
 
 /** Поправка времени у ожидающего напоминания. */
 export async function applyCalendarCorrection(id: number, whenIso: string): Promise<string> {
-  const due = Math.floor(Date.parse(whenIso + ":00Z") / 1000)
+  // Поправка приходит местным временем — как и всё, что человек называет.
+  const due = Math.floor(Date.parse(localToUtcIso(whenIso, timezoneOf()) + ":00Z") / 1000)
   if (!Number.isFinite(due)) return ""
   await db.prepare("UPDATE tgdesk_calendar SET due_unix = ? WHERE id = ?").run(due, id)
   return whenIso.replace("T", " ")
@@ -215,7 +221,7 @@ export async function fireDue(): Promise<{ fired: number; pre: number }> {
   for (const r of rows) {
     // Предупреждение заранее — если время ещё не наступило.
     if (r.remind_before > 0 && !r.pre_sent && r.due_unix > now) {
-      const at = new Date(r.due_unix * 1000).toISOString().slice(11, 16)
+      const at = utcToLocal(r.due_unix, timezoneOf()).slice(11, 16)
       if (await send(r.chat_id, `Через ${r.remind_before} мин: ${r.title} (в ${at}).`)) {
         await db.prepare("UPDATE tgdesk_calendar SET pre_sent = 1 WHERE id = ?").run(r.id)
         pre++

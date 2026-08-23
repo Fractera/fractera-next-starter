@@ -506,6 +506,9 @@
         "currency"
       ],
       "additionalProperties": {}
+    },
+    "timezone": {
+      "type": "string"
     }
   },
   "required": [
@@ -528,7 +531,8 @@
     "analytics",
     "jsonLd",
     "geo",
-    "commerce"
+    "commerce",
+    "timezone"
   ],
   "additionalProperties": {}
 }

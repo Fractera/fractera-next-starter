@@ -138,6 +138,7 @@ export const appConfigSchema = z.looseObject({
   }),
   /** Валюта витрины, ISO-4217. Непригодный код лечится в `normalize()` читателя. */
   commerce: z.looseObject({ currency: z.string() }),
+  timezone: z.string(),
 });
 
 export const __appConfigSchemaMatchesType: z.infer<typeof appConfigSchema> extends AppConfig

@@ -178,6 +178,15 @@ export interface AppConfig {
   // Варшаве и магазин в Далласе ставят здесь разное, поэтому значение живёт в
   // настройках, а не в коде.
   commerce: { currency: string };
+  // Часовой пояс владельца, имя IANA: `Europe/Madrid`, `America/Chicago`.
+  //
+  // 🔒 ПОЧЕМУ ЭТО НАСТРОЙКА, А НЕ ВЫЧИСЛЯЕМОЕ. Сервер живёт в UTC и о человеке
+  // не знает ничего: ни браузер, ни мессенджер часового пояса не сообщают.
+  // Без него «напомни завтра в десять» приходит по Гринвичу — то есть не
+  // тогда, и заметит это человек ровно один раз, проспав встречу.
+  //
+  // Пусто — законное состояние: продукт спросит сам и запишет ответ сюда.
+  timezone: string;
 }
 
 // 🪦 УДАЛЕНЫ 2026-08-15 — два поля, которые объявлялись и не читались никем:
@@ -313,6 +322,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   jsonLd: { website: true, organization: true, localBusiness: false },
   geo: {},
   commerce: { currency: "USD" },
+  timezone: "",
 };
 
 // ---- pure getters (take a config object; safe on client or server) ------------------

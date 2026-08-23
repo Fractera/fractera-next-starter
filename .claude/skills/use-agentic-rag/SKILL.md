@@ -68,6 +68,14 @@ relations, create / edit / merge), streaming query, and an ollama-compatible cha
 **Reach it with `dataFetch`, not with a new address.** Ask `/capabilities` for the proxy prefix rather
 than trusting this list — a route list in a document is stale the moment the engine is upgraded.
 
+🔒 **Deletion is ASYNCHRONOUS, and `200` is not proof of it.** The engine answers `deletion_started`
+and does the work in the background: the document is still in the list a moment later, and that is not
+a failure. Verify by asking for the list again and finding it gone — never by the status code.
+
+🔒 **Delete by the document's ID, not by its name.** A name is what a person typed; the id is what the
+engine indexed. Deleting by name looks like it worked — it returns the same cheerful `deletion_started`
+and removes nothing. Both facts were bought on 2026-08-23, in a run that reported success twice.
+
 ## 6. "Unavailable" is a normal state, not a failure
 
 `ask` returns `{ available: false }` when the base is switched off, and that is correct for a project

@@ -158,6 +158,11 @@ fractions on text (`text-muted-foreground/50`), because a fraction reads in one 
 Keep the donor's geometry, drop the donor's palette. Layout is what was chosen; colour is what the
 project owns.
 
+🔒 **A widget that takes the WHOLE screen inherits a page's duties.** The moment it is the page, it
+owes what a page owes: the markdown twin for machines, an address in the sitemap, a heading hierarchy,
+and honest behaviour without JavaScript — or an explicit statement that it requires it. ✗ "it is only a
+widget" is how a full-screen thing ends up invisible to search and to models while looking finished.
+
 ## Proof
 
 Green types prove nothing here. Four measurements, all cheap:

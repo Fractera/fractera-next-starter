@@ -86,12 +86,16 @@ folder — this is where the engine stops being self-contained:
 
 Posts need none of the three: `parser-fs` finds them, and the blog list feeds the sitemap.
 
-🔒 **A whole NEW TAB costs exactly one line outside its own folder.** Create
-`app/[lang]/(publicLayer)/<tab>/` with its `_lib/{post,types}`, `_data`, `_components` and post
-folders, then add the tab to `COLLECTIONS` in `lib/parser-fs.mjs`. That entry is the only edit
-outside the new folder. There is deliberately no central `posts.ts` to append to: a shared list is a
-merge-conflict point that every author has to touch, and an agent has to read before it can do
-anything at all.
+🔒 **A whole NEW TAB is a folder plus FOUR edits outside it, and one of them is invisible.** Create
+`app/[lang]/(publicLayer)/<tab>/` with its `_lib/{post,types}`, `_data`, `_components` and post folders,
+then: (1) the tab into `COLLECTIONS` in `lib/parser-fs.mjs` — without it the list is never generated;
+(2) the section into `app/sitemap.ts` — posts inside a KNOWN tab arrive by themselves, a new tab does
+not; (3) the surface into `lib/aio/surfaces.ts`, or `/index.md` answers 404 for the whole tab; (4) the
+entry into the menu, if people are meant to find it (`place-page-in-menu`).
+
+✗ 2026-08-19: a whole section was written, translated and served 200 — and appeared in no map at all,
+with every gate green. There is deliberately no central `posts.ts` to append to, but "no registry" was
+never the same as "nothing outside the folder".
 
 🔒 **Two factories exist, and the pair is CLOSED.** `createContentPost` for an item inside a
 collection, `createContentPage` for everything else — the home page, privacy, terms, cookies. **A page

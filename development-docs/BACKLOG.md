@@ -72,8 +72,8 @@ variables `lib/design-css.ts` produces. Then a foreign chart or UI kit is repain
 palette on its own, even when the widget takes the whole page. The boundary is checked by an import
 gate, not by an honest word.
 
-A full-screen widget inherits a page's duties: the markdown twin, an address in the sitemap, heading
-hierarchy, honest behaviour without JavaScript or an explicit statement that it requires it.
+**Moved out 2026-08-23:** the law "a full-screen widget inherits a page's duties" now lives in
+`use-widgets`, where it is read at the moment it applies.
 
 ## 🚧 Search, machine readers and the installable app — mechanisms exist, the explanation does not
 
@@ -95,7 +95,24 @@ The skill was checked claim by claim against the gates on 2026-08-22, and four d
 fixed. But nobody has built an `app/api/**/route.ts` door and a `SCHEMA` table by it. Fact-checking and
 an agent run are different proofs, and the second one does not exist.
 
-## 🚧 `reports/` stands empty on purpose
+## 🚧 A feature report is owed for the data-layer group (544–546)
 
-Creating files there "as an example" would fill the corpus with things that never happened. The first
-real file appears with the first closed group of steps.
+The group closed on 2026-08-23 and its steps are in `completed-steps/`, but the report that describes
+the feature AS A WHOLE is not written. Reason it is deferred rather than forgotten: the exam of the
+instruction corpus runs first by the owner's decision, and the same session cannot both take a
+measurement and rewrite what is being measured.
+
+## 🚧 Telegram: the bridge does not exist (verified 2026-08-23)
+
+The channel service answers questions from the knowledge base by itself. Your application has **no**
+outbound route, **no** inbound door, and voice notes are dropped silently — the loop keeps `msg.text`
+only. One chat, the owner's. The five limits are listed in `use-channels` §3.
+
+**What closing it takes** (platform work, in `services/channels`): accept `voice` updates → fetch the
+file from Telegram → transcribe (the slot already has `app/api/transcribe`) → treat as text; plus two
+doors for the application — send, and receive with the sender's chat id.
+
+**What is already proven and should be reused rather than reinvented:** the deleted projects layer
+pushed each update into a door of the application together with `telegramChatId`, and delivered to a
+personal chat linked natively (step 296, verified end to end). Take the shape, not the files — that
+generation was per-automation, and the channel today is one service per server.

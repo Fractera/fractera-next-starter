@@ -69,6 +69,18 @@ entry is repeated by the next entry and reused by nothing.
 Rows that a page shows must be fetched on the server. A public page stays static: the shell is
 prerendered and the dynamic part wakes up inside it (`use-dynamic-pages`).
 
+🔒 **Paging is a property of the DOOR you called, not of "the data layer".** The layer's own table door
+takes `limit` (default 500, hard ceiling 1000) and `offset`, plus `search` across the text columns:
+`/db/tables/<table>?limit=100&offset=200&search=…`. The services it PROXIES speak their own dialect —
+the knowledge graph, for instance, pages with `page_size` and refuses a value below its schema minimum.
+✗ assuming one vocabulary for all doors returns a 400 that reads like a broken query. Ask
+`GET /capabilities` when you are not sure; it answers for the door you are about to call.
+
+🔒 **A table door never returns a column just because it exists.** `/db/tables/users?limit=1` once
+handed back the whole row including the bcrypt password hash. The door now selects columns
+deliberately — when you add a table holding anything secret, that decision is yours to make explicitly,
+not something the door guesses.
+
 ## 5. What belongs in a column, and what does not
 
 - **Translations of a row** live in its `i18n` column as JSON, not in a column per language: a

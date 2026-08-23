@@ -1,4 +1,5 @@
 import { openAiKey } from "@/lib/openai-key"
+import { COMMANDS } from "./persona"
 
 // ШАГ ПЕРВЫЙ: ЧТО ЭТО ЗА ПРОСЬБА. Один вызов, один ответ — имя ветви.
 //
@@ -18,6 +19,11 @@ import { openAiKey } from "@/lib/openai-key"
 
 export const INTENTS = ["capture", "question", "schedule", "confirm", "meta", "command"] as const
 export type Intent = (typeof INTENTS)[number]
+
+// 🔒 КОМАНДЫ ПЕРЕЧИСЛЕНЫ ЗДЕСЬ ИЗ ОДНОГО ИСТОЧНИКА — persona.COMMANDS.
+// Список, повторённый в промпте и в тексте знакомства, разойдётся: человеку
+// пообещают слово, которого маршрутизатор не знает, и оно молча не сработает.
+const COMMAND_HINTS = COMMANDS.map((c) => `«${c.say}» — ${c.does}`).join(String.fromCharCode(10))
 
 const SYSTEM = [
   "Classify ONE message from a person to their personal assistant. Answer JSON only:",

@@ -31,6 +31,8 @@ export type IngestResult = {
   duplicate: boolean
   artifacts: { kind: string; ref: string }[]
   understood: boolean
+  /** Вопрос это был или рассказ — дверь строит ответ по-разному. */
+  isQuestion: boolean
   notes: string[]
 }
 
@@ -51,7 +53,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     .prepare("SELECT id FROM tgdesk_messages WHERE channel = ? AND external_id = ?")
     .get("telegram", msg.externalId)) as { id?: number } | undefined
   if (seen?.id) {
-    return { messageId: seen.id, duplicate: true, artifacts: [], understood: false, notes: ["duplicate"] }
+    return {
+      messageId: seen.id,
+      duplicate: true,
+      artifacts: [],
+      understood: false,
+      isQuestion: false,
+      notes: ["duplicate"],
+    }
   }
 
   // 🔒 ИДЕНТИФИКАТОР ЧИТАЕТСЯ ОБРАТНО, А НЕ БЕРЁТСЯ ИЗ ОТВЕТА ВСТАВКИ.
@@ -80,8 +89,16 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   if (u.failed) notes.push(`understand:${u.failed}`)
   if (!u.failed) {
     await db
-      .prepare("UPDATE tgdesk_messages SET ai_summary = ?, has_financial = ? WHERE id = ?")
-      .run(u.summary, u.hasFinancial ? 1 : 0, messageId)
+      .prepare(
+        "UPDATE tgdesk_messages SET ai_summary = ?, has_financial = ?, happened_unix = ? WHERE id = ?",
+      )
+      .run(
+        u.summary,
+        u.hasFinancial ? 1 : 0,
+        // Дата события в секундах — рядом с датой рассказа, а не вместо неё.
+        u.happenedAt ? Math.floor(Date.parse(u.happenedAt + "T12:00:00Z") / 1000) : null,
+        messageId,
+      )
     if (u.kind) {
       await db
         .prepare("INSERT INTO tgdesk_entries (message_id, kind, title, payload) VALUES (?, ?, ?, ?)")
@@ -127,7 +144,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       .run(messageId, a.kind, a.ref)
   }
 
-  return { messageId, duplicate: false, artifacts, understood: !u.failed, notes }
+  return {
+    messageId,
+    duplicate: false,
+    artifacts,
+    understood: !u.failed,
+    isQuestion: u.isQuestion,
+    notes,
+  }
 }
 
 /** Ответ продукта — такая же строка истории: без неё «последние двадцать» однобоки. */

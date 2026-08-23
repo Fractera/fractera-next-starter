@@ -5,9 +5,10 @@ import { openAiKey } from "@/lib/openai-key"
 // Он отвечает на один вопрос: что человек сказал и куда это положить. Всё
 // остальное в двери — механика: записать строку, разложить по складам, ответить.
 //
-// 🔒 ОДИН ВЫЗОВ, А НЕ ПЯТЬ. Сводка, род записи, заголовок, признак денег и поля
-// нужны одновременно и об одном тексте. Пять вызовов дали бы пять оплат и пять
-// поводов разойтись во мнениях об одной фразе.
+// 🔒 ОДИН ВЫЗОВ, А НЕ ПЯТЬ. Сводка, род записи, заголовок, признак денег, дата
+// события и «вопрос это или утверждение» нужны одновременно и об одном тексте.
+// Пять вызовов дали бы пять оплат и пять поводов разойтись во мнениях об одной
+// фразе.
 //
 // 🔒 ОТКАЗ МОДЕЛИ НЕ ТЕРЯЕТ СООБЩЕНИЕ. Нет ключа, кончились деньги, служба молчит —
 // возвращается пустой разбор, и сообщение всё равно ложится в базу и в векторный
@@ -26,6 +27,10 @@ export type Understanding = {
   /** Поля рода: у чека сумма и продавец, у места адрес. JSON намеренно. */
   payload: Record<string, unknown> | null
   hasFinancial: boolean
+  /** Когда СОБЫТИЕ произошло, YYYY-MM-DD. Пусто — времени в фразе не было. */
+  happenedAt: string | null
+  /** Вопрос к своей истории или рассказ о жизни: ответ строится по-разному. */
+  isQuestion: boolean
   /** Разбор не состоялся — причина названа, а не спрятана за пустотой. */
   failed: string
 }
@@ -36,20 +41,38 @@ const EMPTY: Understanding = {
   title: "",
   payload: null,
   hasFinancial: false,
+  happenedAt: null,
+  isQuestion: false,
   failed: "",
 }
 
-const SYSTEM = [
-  "You sort short personal messages a person dictates or types to their own assistant.",
-  "Answer with JSON only, no prose, using exactly these keys:",
-  '{"summary":string,"kind":string|null,"title":string,"payload":object|null,"has_financial":boolean}',
-  `"kind" is one of: ${ENTRY_KINDS.join(", ")} — or null when nothing fits.`,
-  '"summary" is one sentence in the SAME language the person used.',
-  '"title" is at most six words.',
-  '"has_financial" is true when money is mentioned: a price, a payment, a receipt, a salary.',
-  '"payload" carries the fields of that kind and nothing else — a receipt has amount and vendor,',
-  "a place has address, a task has due when it was said. Never invent a value that was not said.",
-].join("\n")
+// 🔒 СЕГОДНЯШНЯЯ ДАТА ПЕРЕДАЁТСЯ МОДЕЛИ ЯВНО. Без неё «вчера» разрешить не во
+// что: модель не знает, какой сегодня день, и либо промолчит, либо угадает год
+// обучения. Оплачено первым же живым сообщением — «вчера купил» легло в базу
+// временем РАЗГОВОРА, и вопрос «в каком месяце я покупал» отвечался бы неверно.
+function systemPrompt(todayIso: string): string {
+  return [
+    "You sort short personal messages a person dictates or types to their own assistant.",
+    "Answer with JSON only, no prose, using exactly these keys:",
+    '{"summary":string,"kind":string|null,"title":string,"payload":object|null,',
+    '"has_financial":boolean,"happened_at":string|null,"is_question":boolean}',
+    `"kind" is one of: ${ENTRY_KINDS.join(", ")} — or null when nothing fits.`,
+    '"summary" is one sentence in the SAME language the person used.',
+    '"title" is at most six words.',
+    '"has_financial" is true when money is mentioned: a price, a payment, a receipt, a salary.',
+    '"payload" carries the fields of that kind and nothing else — a receipt has amount and vendor,',
+    "a place has address, a task has due when it was said. Never invent a value that was not said.",
+    "",
+    '"happened_at" is WHEN THE EVENT HAPPENED, as YYYY-MM-DD.',
+    `Today is ${todayIso}. "yesterday" is the day before that, "last Monday" is a real date,`,
+    '"in March" is that month of the nearest past year. Nothing was said about time — null.',
+    "Never copy today into it just to fill the field: a wrong date is worse than an empty one,",
+    "because a wrong one is believable.",
+    "",
+    '"is_question" is true when the person ASKS about their own history',
+    '("what did I promise", "how much did I spend"), false when they TELL you something happened.',
+  ].join("\n")
+}
 
 export async function understand(text: string): Promise<Understanding> {
   const key = openAiKey()
@@ -65,7 +88,7 @@ export async function understand(text: string): Promise<Understanding> {
         temperature: 0,
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: systemPrompt(new Date().toISOString().slice(0, 10)) },
           { role: "user", content: text.slice(0, 8000) },
         ],
       }),
@@ -81,6 +104,11 @@ export async function understand(text: string): Promise<Understanding> {
     // дашборд, фильтрующий по "receipt", молча покажет пустоту.
     const kind = ENTRY_KINDS.includes(parsed.kind as EntryKind) ? (parsed.kind as EntryKind) : null
 
+    // Дата принимается только в строгой форме. Проза вроде "на прошлой неделе"
+    // легла бы в колонку строкой и сломала бы любое сравнение по времени.
+    const day = String(parsed.happened_at ?? "")
+    const happenedAt = /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null
+
     return {
       summary: String(parsed.summary ?? "").slice(0, 500),
       kind,
@@ -90,6 +118,8 @@ export async function understand(text: string): Promise<Understanding> {
           ? (parsed.payload as Record<string, unknown>)
           : null,
       hasFinancial: parsed.has_financial === true,
+      happenedAt,
+      isQuestion: parsed.is_question === true,
       failed: "",
     }
   } catch (e) {

@@ -17,7 +17,13 @@ import { VECTOR_COLLECTION } from "./ingest"
 const WINDOW = 20
 const NEAREST = 8
 
-type Row = { direction: string; text: string; ai_summary: string | null; at: string }
+type Row = {
+  direction: string
+  text: string
+  ai_summary: string | null
+  at: string
+  happened_unix: number | null
+}
 
 export async function answer(question: string): Promise<string> {
   const key = openAiKey()
@@ -29,7 +35,7 @@ export async function answer(question: string): Promise<string> {
   //    что сам сказал минуту назад.
   const recent = (await db
     .prepare(
-      `SELECT direction, text, ai_summary, at FROM tgdesk_messages
+      `SELECT direction, text, ai_summary, at, happened_unix FROM tgdesk_messages
        ORDER BY at_unix DESC LIMIT ?`,
     )
     .all(WINDOW)) as unknown as Row[]
@@ -62,7 +68,14 @@ export async function answer(question: string): Promise<string> {
 
   const context = [
     "RECENT (newest first):",
-    ...recent.reverse().map((r) => `${r.at} ${r.direction}: ${r.ai_summary || r.text}`),
+    ...recent.reverse().map((r) => {
+      // 🔒 Дата СОБЫТИЯ, если она известна, важнее даты рассказа: человек говорит
+      // "вчера купил", и без этой подстановки модель отвечает днём разговора.
+      const when = r.happened_unix
+        ? `happened ${new Date(r.happened_unix * 1000).toISOString().slice(0, 10)}, said ${r.at.slice(0, 10)}`
+        : r.at.slice(0, 16)
+      return `${when} ${r.direction}: ${r.ai_summary || r.text}`
+    }),
     similar.length ? "\nRELATED BY MEANING:\n" + similar.join("\n") : "",
     graph ? "\nFROM THE KNOWLEDGE GRAPH:\n" + graph : "",
     `\nMessages mentioning money: ${money?.n ?? 0}`,

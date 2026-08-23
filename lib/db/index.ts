@@ -119,6 +119,12 @@ const SCHEMA = `
     -- Флаг, ради которого не нужно перечитывать текст: «покажи траты» становится
     -- условием SQL, а не прогоном модели по всей истории.
     has_financial INTEGER NOT NULL DEFAULT 0,
+    -- 🔒 КОГДА ЭТО СЛУЧИЛОСЬ — НЕ ТО ЖЕ, ЧТО КОГДА ОБ ЭТОМ СКАЗАЛИ.
+    -- Человек говорит "вчера купил", и at_unix запоминает минуту РАССКАЗА.
+    -- Без второй отметки вопрос "в каком месяце я покупал ноутбук" отвечается
+    -- датой разговора: неверно, и неверно правдоподобно. Пусто здесь законно —
+    -- в большинстве фраз времени события нет вовсе.
+    happened_unix INTEGER,
     created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE UNIQUE INDEX IF NOT EXISTS tgdesk_messages_external ON tgdesk_messages (channel, external_id);
@@ -467,6 +473,7 @@ const LATE_COLUMNS = [
   `ALTER TABLE products ADD COLUMN description  TEXT`,
   `ALTER TABLE products ADD COLUMN i18n         TEXT`,
   `ALTER TABLE development_steps ADD COLUMN kind TEXT NOT NULL DEFAULT 'work'`,
+  `ALTER TABLE tgdesk_messages ADD COLUMN happened_unix INTEGER`,
 ]
 
 async function initRemoteSchema() {

@@ -17,6 +17,13 @@ import { dataFetch } from "@/lib/fractera/data-service"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
+/** Короткое подтверждение: что записано и как понято. Модель здесь не нужна. */
+function confirm(r: { understood: boolean; artifacts: { kind: string }[] }): string {
+  if (!r.understood) return "Записал. Разобрать не смог — сохранил как есть."
+  const searchable = r.artifacts.some((a) => a.kind === "vector")
+  return searchable ? "Записал — найдётся по смыслу." : "Записал."
+}
+
 export async function POST(req: NextRequest) {
   const secret = process.env.TELEGRAM_HOOK_SECRET ?? ""
   if (!secret) {
@@ -51,9 +58,16 @@ export async function POST(req: NextRequest) {
 
   // Ответ человеку. Он идёт через службу — своего клиента Telegram здесь нет и
   // не будет: читатель бота один, и это она.
+  // 🔒 РАССКАЗ И ВОПРОС — РАЗНЫЕ ОТВЕТЫ, И ЭТО НЕ ВЕЖЛИВОСТЬ.
+  // Первый живой прогон показал: на фразу «вчера купил ноутбук» ассистент
+  // пересказал её же, исправив пунктуацию. Формально правил он не нарушил —
+  // ничего не выдумал; полезного тоже не сказал. Человеку, который делится
+  // фактом, нужно подтверждение, что факт записан и КАК он понят; ответ на
+  // вопрос строится по всей истории и стоит дороже — задавать его на каждое
+  // утверждение значит платить за эхо.
   let replied = false
   try {
-    const reply = await answer(text)
+    const reply = result.isQuestion ? await answer(text) : confirm(result)
     const res = await dataFetch("/service/channels/telegram/send", {
       method: "POST",
       body: JSON.stringify({ chatId, text: reply }),

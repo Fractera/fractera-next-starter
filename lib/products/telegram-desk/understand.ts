@@ -39,7 +39,7 @@ const NO = /^(нет|не надо|отмени|отбой|no|nope|cancel)\b/i
 
 export async function understand(
   text: string,
-  awaiting = false,
+  awaiting: string | boolean = false,
   askedWhere = false,
 ): Promise<Understanding> {
   const t = text.trim()

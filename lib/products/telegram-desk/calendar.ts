@@ -46,6 +46,12 @@ export function speak(p: Proposal): string {
 
 /** Предложение ложится в календарь неактивным и ждёт слова человека. */
 export async function propose(chatId: string, messageId: number, p: Proposal): Promise<number> {
+  // 🔒 ОДНО ОЖИДАНИЕ ЗА РАЗ. ✗ 2026-08-23: две неотвеченные встречи повисли
+  // одновременно, и «да» ушло бы в ту, о которой спрашивали раньше.
+  await db
+    .prepare("UPDATE tgdesk_calendar SET status = 'cancelled' WHERE chat_id = ? AND status = 'pending'")
+    .run(chatId)
+
   const due = Math.floor(Date.parse(p.when + ":00Z") / 1000)
   await db
     .prepare(
@@ -78,6 +84,20 @@ export type Waiting =
   | { what: "calendar"; id: number; title: string; at: string }
   | { what: "entry"; id: number; title: string; at: string }
 
+// 🔒 ПРАВИЛА СВЯЗНОСТИ — почему ответ находит свой вопрос (владелец 2026-08-23).
+//
+// 1. ОТКРЫТОЕ ОЖИДАНИЕ СИЛЬНЕЕ ВРЕМЕНИ. Продукт спросил «ставлю?» — значит
+//    ответ относится к этому вопросу, сколько бы ни прошло: человек отвлёкся,
+//    а не передумал. ✗ «Да» через пять минут стало отдельной заметкой, потому
+//    что связь искали окном в три минуты — а окно тут вообще ни при чём.
+// 2. ОКНО В ТРИ МИНУТЫ — про сообщения, идущие ПОДРЯД (пересылка с пояснением).
+//    Это другой род связи, и он не заменяет первый.
+// 3. ОЖИДАНИЕ НЕ ВЕЧНО. Через сутки вопрос протух: человек уже не помнит, о чём
+//    его спрашивали, и «да» будет значить что-то другое.
+// 4. ОЖИДАНИЕ ОДНО. Новое предложение отменяет прежнее неотвеченное — иначе
+//    «да» уходит в то, о чём спрашивали позавчера.
+const WAITING_TTL_SEC = 24 * 3600
+
 export async function waitingNow(chatId: string): Promise<Waiting | null> {
   const cal = (await db
     .prepare(
@@ -93,8 +113,18 @@ export async function waitingNow(chatId: string): Promise<Waiting | null> {
     )
     .get()) as { id?: number; title?: string; created_at?: string } | undefined
 
-  const a = cal?.id ? { what: "calendar" as const, id: cal.id, title: String(cal.title), at: String(cal.created_at ?? "") } : null
-  const b = ent?.id ? { what: "entry" as const, id: ent.id, title: String(ent.title), at: String(ent.created_at ?? "") } : null
+  // Протухшее ожидание — то же, что его отсутствие.
+  const fresh = (t?: string) =>
+    Boolean(t) && Date.now() - Date.parse(String(t)) < WAITING_TTL_SEC * 1000
+
+  const a =
+    cal?.id && fresh(cal.created_at)
+      ? { what: "calendar" as const, id: cal.id, title: String(cal.title), at: String(cal.created_at ?? "") }
+      : null
+  const b =
+    ent?.id && fresh(ent.created_at)
+      ? { what: "entry" as const, id: ent.id, title: String(ent.title), at: String(ent.created_at ?? "") }
+      : null
   if (a && b) return a.at >= b.at ? a : b
   return a ?? b
 }
@@ -130,6 +160,18 @@ export async function applyEntryCorrection(
     date = c.date
   }
   return { payload, currency, title, date }
+}
+
+/** Одной строкой: что именно предложено и ждёт ответа. Идёт в подсказку модели. */
+export async function waitingLabel(chatId: string): Promise<string> {
+  const w = await waitingNow(chatId)
+  if (!w) return ""
+  if (w.what === "entry") return `запись «${w.title}» — подтвердить сумму и дату`
+  const row = (await db
+    .prepare("SELECT due_unix FROM tgdesk_calendar WHERE id = ?")
+    .get(w.id)) as { due_unix?: number } | undefined
+  const when = row?.due_unix ? utcToLocal(row.due_unix, timezoneOf()) : ""
+  return `«${w.title}»${when ? ` на ${when}` : ""} — подтвердить время`
 }
 
 export async function confirmEntry(id: number): Promise<void> {

@@ -4,7 +4,7 @@ import { learn } from "@/lib/fractera/knowledge"
 import { understand, type Understanding } from "./understand"
 import { takeFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
-import { waitingNow } from "./calendar"
+import { waitingLabel } from "./calendar"
 import { timezoneOf } from "./timezone"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
@@ -281,7 +281,9 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // 🔒 МАРШРУТИЗАТОР ДОЛЖЕН ЗНАТЬ, ЧТО ЧЕГО-ТО ЖДУТ. «20 августа» само по себе —
   // заметка; оно же в ответ на «дату не разобрал» — поправка. Смысл фразы задаёт
   // не фраза, а вопрос, заданный секунду назад.
-  const awaiting = Boolean(await waitingNow(msg.chatId))
+  // Не «ждёт ли что-то», а ЧТО именно ждёт: слабой модели нужен предмет, иначе
+  // «12:00» заводит вторую встречу вместо поправки первой.
+  const awaiting = await waitingLabel(msg.chatId)
 
   // 🔒 «Я в Мадриде» — это ответ на наш вопрос, только если вопрос был задан
   // последним. Иначе это заметка о поездке, и записать её поясом значило бы

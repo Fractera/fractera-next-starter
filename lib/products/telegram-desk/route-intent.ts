@@ -31,6 +31,9 @@ const AWAITING_HINT = [
   "",
   "RIGHT NOW something you proposed is awaiting their answer — a time, an amount, a date.",
   '"correct" — they are FIXING what you proposed: a different date, another amount,',
+  '"нет, 20 августа", "это было 300, а не 30", "валюта евро", or just a bare time',
+  '("12:00") — a bare value while something is pending REPLACES the value you proposed,',
+  'it does not start a second thing.',
   '"нет, 20 августа", "это было 300, а не 30", "валюта евро". Not a plain yes or no.',
   'A plain "да"/"нет" is still "confirm". A brand new story is still "capture".',
 ].join(String.fromCharCode(10))
@@ -68,7 +71,7 @@ const SYSTEM = [
 // спросили секунду назад, и маршрутизатор обязан это знать.
 export async function routeIntent(
   text: string,
-  awaiting = false,
+  awaiting: string | boolean = false,
   askedWhere = false,
 ): Promise<Intent> {
   const t = text.trim()
@@ -90,7 +93,19 @@ export async function routeIntent(
         messages: [
           {
             role: "system",
-            content: [SYSTEM, awaiting ? AWAITING_HINT : "", askedWhere ? WHERE_HINT : ""]
+            content: [
+              SYSTEM,
+              // Слабой модели мало сказать «что-то ждёт ответа» — ей нужно знать,
+              // ЧТО именно: тогда «12:00» очевидно поправляет предложенное время,
+              // а не заводит вторую встречу.
+              awaiting
+                ? AWAITING_HINT +
+                  (typeof awaiting === "string" && awaiting
+                    ? String.fromCharCode(10) + `You proposed: ${awaiting}`
+                    : "")
+                : "",
+              askedWhere ? WHERE_HINT : "",
+            ]
               .filter(Boolean)
               .join(String.fromCharCode(10)),
           },

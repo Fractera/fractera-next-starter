@@ -25,6 +25,12 @@ meaning.
 through the one door. Do not write HTTP calls of your own to `/vectors` — the helper is the same call
 with the mistakes already removed.
 
+🔒 **Nothing in this repository calls them yet** (checked 2026-08-23: zero imports of
+`lib/fractera/vectors` outside the helper itself). The helper is written and the store answers — but
+you will be the first caller, so budget a minute to look at what `recall` actually returns instead of
+assuming a shape. The neighbouring map skill states the same thing about itself; this one did not,
+and a cold run pointed that out.
+
 Storage lives in the SAME database as your rows, so a record can point back at the row it describes
 through `refTable` / `refId`. That link is what turns "a passage matched" into "this product matched".
 

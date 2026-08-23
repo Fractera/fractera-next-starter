@@ -39,10 +39,28 @@ All calls are server-side, through `dataFetch`.
 
 | Route | Ask it | Answers |
 |---|---|---|
-| `/service/geo/geo/geocode` | `{ q: "улица, дом, город" }` | `{ lat, lon, name }` — 404 when the address is not found |
-| `/service/geo/geo/route` | `{ coords: [{lat,lon}, …] }` in YOUR order | geometry (GeoJSON) + length and duration |
-| `/service/geo/geo/matrix` | `{ coords: [...] }`, 2 or more | N×N road distances and durations — the raw material for your own logic |
-| `/service/geo/geo/optimize` | `{ coords: [...] }` | `{ order, geometry, totalKm, totalMin }` — the visiting ORDER, solved for you |
+| `/service/geo/geo/geocode` | `{ q: "street, house, city" }` | `{ lat, lon, name }` · 404 when not found |
+| `/service/geo/geo/route` | `{ coords: [{lat,lon}, …] }` in YOUR order | `{ geometry, distanceKm, durationMin }` |
+| `/service/geo/geo/matrix` | `{ coords: [...] }`, 2 or more | `{ distances, durations }` — N×N arrays, **metres and seconds** |
+| `/service/geo/geo/optimize` | `{ coords: [...] }` | `{ order, geometry, totalKm, totalMin }` |
+
+🔒 **THE UNITS DIFFER BETWEEN NEIGHBOURING ROUTES, and nothing warns you.** Measured live
+2026-08-23, Eiffel Tower → Louvre: `route` answered `distanceKm: 4.29`, `durationMin: 10.5`, while
+`matrix` answered `4303.9` and `632.1` **for the same pair** — metres and seconds, straight from the
+routing engine. Read a matrix cell as kilometres and you are wrong by a factor of a thousand, in a
+number that still looks plausible on a delivery screen.
+
+```
+matrix   → {"distances":[[0,4303.9],[4039.4,0]], "durations":[[0,632.1],[610.8,0]]}   // m, s
+route    → {"geometry":…, "distanceKm":4.29, "durationMin":10.5}                      // km, min
+optimize → {"order":[0,1,2], "geometry":…, "totalKm":6.79, "totalMin":17.19}           // km, min
+```
+
+🔒 **The matrix is NOT symmetric.** `4303.9` there against `4039.4` back — one-way streets are real.
+Averaging the two directions, or reading one cell for both, quietly invents a road that does not exist.
+
+*(This block exists because a cold acceptance run had to GUESS the units: the skill said only «raw
+material for your own logic». A guess that lands on the right answer is still a guess.)*
 
 🔒 **`route` keeps your order; `optimize` chooses one.** Sending points to `route` and calling the
 result "the optimal delivery route" is the mistake this pair exists to prevent — it is the length of

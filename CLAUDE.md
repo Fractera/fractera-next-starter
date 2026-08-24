@@ -19,6 +19,14 @@ you install foreign skills (`find-skills`).
 > **Notation.** 🔒 law · ✗ the defect that bought it · → the skill carrying the procedure ·
 > 🪦 cancelled, listed once in the last section.
 
+🔒 **"The owner" is ONE person: whoever this project belongs to** (2026-08-24). Every "ask the owner",
+"lead him to the panel", "his decision" in this file points at him and at nobody else. Other people may
+appear around the work — the author of a source project you are porting, a colleague who wrote a
+component, whoever handed you an access key — and **none of them is a party to it**: they do not
+confirm cases, do not choose the mode and do not approve steps. Unsure who the owner is in a given
+sentence — it is the person you are talking to. ✗ without this line an agent starts looking for someone
+to ask, and asks the wrong person.
+
 | Layer | What it is | Where |
 |---|---|---|
 | **platform** | auth, data, panel, services, config schemas | `/opt/fractera/*` — readable, pointless to edit: a deployment reinstalls it |
@@ -208,6 +216,12 @@ Modernising is allowed. **Deleting is not.** An outdated fragment is marked 🪦
 reason, and what replaces it is named — in `development-docs/CANCELLED.md`, not here. ✗ a deleted
 fragment is resurrected from memory by the next session, inaccurately and as news.
 
+🔒 **The ban covers RULES, not foreign FACTS** (2026-08-24). A rule that stopped being true is buried
+with a headstone, because somebody will remember it. A fact of somebody else's project — another
+repository, another domain, a mode nobody here chose — is simply **deleted**: there is nothing to bury
+and nobody to remember it, and leaving it turns the instruction into a description of a machine you
+have never seen. ✗ the letter of the ban blocked cleaning exactly that.
+
 ## The server
 
 Transport is four scripts in `scripts/server/`. There is no other way to the server.
@@ -258,11 +272,6 @@ language.
   coverage and the enabled set, and the difference IS the debt. A hand-kept registry is the first thing
   to go stale. → `use-multi-lang`
 
-<!-- ***** МЕХАНИЗМ СОСТОЯНИЯ: поток и язык по умолчанию — для разговора с владельцем.
-     поток: мультиязычный (en,es,fr,it,ru,de,pt,pl,tr,nl)
-     язык по умолчанию: en
-     ***** -->
-
 ## The four configs
 
 The panel writes, the application reads on every request, applied without a rebuild.
@@ -307,10 +316,13 @@ writing anything, check whether a switch already does it.
 Five ready pieces, a folder each: voice input, image cropping, video trimming, syntax-highlighted code
 view, translations dialog. **Look here BEFORE building anything similar** → `use-tools`.
 
-🔒 **Every tool has TWO homes and both are mandatory.** The same set lives in the panel
-(`bridges/app/_tools/`) and in its registry. ✗ here only — the panel loses what its own forms use;
-there only — the application depends on the panel at runtime and the owner's right to walk away dies
-with it. Copies drift, so each header names its mirror and lists the differences.
+🔒 **A tool lives HERE, in your repository, and that is what makes it yours.** The application must not
+depend on the panel at runtime, or the owner's right to walk away dies with that dependency.
+
+✗ **A federal law used to stand here and did not belong** (removed 2026-08-24): "every tool has two
+homes, the second is `bridges/app/_tools/`". That mirror is the platform's business — the folder does
+not exist in your repository and cannot. An agent reading it either hunts for something absent or
+decides the rule is not for him; neither follows from the text.
 
 `code-view` is the only one needing a package — `shiki` — and this repository does not have it. The
 import is lazy and inside `try/catch`, so without the package highlighting silently becomes plain
@@ -572,15 +584,24 @@ page for authored text means a site search cannot see.
 
 The machine is local; the subject of the work is the app on `3000`.
 
-<!-- ***** МЕХАНИЗМ СОСТОЯНИЯ: панель обязана заполнить этот блок сама, как заполняет набор инструкций.
-     репозиторий:        r672442251-gif/aifa8
-     режим:              FRACTERA_IP_NODOMAIN_MODE=false → домен aifa.dev, протокол https
-     авто-развёртывание: off
-     режим разработки:   cases
-     ***** -->
+🔒 **THIS FILE NEVER HOLDS THE ANSWER — IT HOLDS THE ADDRESS (2026-08-24).** Where you are is state,
+and state lives in the slot's own files. The panel keeps no data of its own: it is an editor over
+these files, and the application reads them at runtime. A copy of that state inside the instruction is
+a second source of truth, and the second one goes stale silently.
 
-The block is empty — find out on the spot: `git remote -v`, the switch in `.env.local`, the deployment
-mode in the panel.
+| What you need to know | Where the answer actually is |
+|---|---|
+| which repository this is | `git remote -v`, or `USER_GITHUB_REPO_URL` in `.env.local` |
+| IP mode or a domain | `FRACTERA_IP_NODOMAIN_MODE` in `.env.local` |
+| the development mode | `developmentMode` in `PLATFORM-CONFIG` — empty means `classic` |
+| the language set and the default | `NEXT_PUBLIC_SUPPORTED_LANGUAGES`, `NEXT_PUBLIC_DEFAULT_LOCALE` |
+| the site name, the address, the look | `APP-CONFIG`, `DESIGN-CONFIG` |
+| what is being built and for whom | `PRODUCTS-CONFIG` |
+
+✗ **Why the rule is written in capitals.** A comment block used to sit here, filled with the facts of
+the machine the STARTER was built on — a foreign repository, a foreign domain, a mode nobody chose for
+you — and one line below it the prose said "the block is empty". Both readings were defensible, and
+every clone carried somebody else's project into your first session.
 
 **Two channels.** GitHub carries the code: the repository is named in `USER_GITHUB_REPO_URL`
 (`.env.local`, written by the panel); empty means GitHub is not connected, `pull`/`push` will not work,
@@ -641,13 +662,21 @@ confirmed, here from code that already exists. A case says what should be; the r
    Not a capability table, not the first step: until it is visible what the project turns into here,
    there is nothing to argue about.
 
-🔒 **There is no token there on purpose.** The owner keeps a private repository open while the move
-lasts — that is what the public page says too. Do not ask for a token and do not offer to put one in a
-config. Source: `PLATFORM-CONFIG.migration` (`source`, `repositoryUrl`, `declaredAt`), read at start
+🔒 **No token for the SOURCE repository, on purpose.** The owner keeps the private repository he is
+moving FROM open while the move lasts — that is what the public page says too. Do not ask him for a
+token to read it and do not offer to put one in a config.
+
+🔒 **Not to be confused with `USER_GITHUB_ACCESS_TOKEN` in `.env.local`** (2026-08-24). That one
+belongs to YOUR OWN repository, the panel writes it there itself, and it is entirely legitimate — you
+neither ask for it nor move it nor remove it. ✗ an agent read the two as one law, found the token in
+the file, and took it for somebody's leak. Source: `PLATFORM-CONFIG.migration` (`source`, `repositoryUrl`, `declaredAt`), read at start
 together with the mode. Empty means the source is not named, and that is the first thing you ask about.
 
-🔒 **You READ foreign code, you never run it.** No `npm install`, no build, no scripts of a foreign
-project on the owner's server. A broken or hostile dependency must not move in.
+🔒 **ON THE SERVER you READ foreign code and never run it** — no `npm install`, no build, no scripts of
+a foreign project there. A broken or hostile dependency must not move into a machine that serves
+visitors. **On the local machine installing its dependencies is legitimate and often necessary**: types
+resolve, imports become navigable, and the code can actually be read. ✗ the scope used to trail the
+sentence, so the ban read as absolute and an honest local `npm install` looked like a violation.
 
 **How the queue is born:** cases before steps, each carrying original code · the skeleton is the first
 step and there is only one · one capability, one step · every step names its CASE and its PROOF (a live
@@ -750,6 +779,11 @@ catalogue samples, which is also a working mode.
 
 **`npm run build` is not needed locally.** The server builds before starting; `dev` plays that role for
 you. Building at home costs minutes and teaches nothing.
+
+🔒 **A project may decide otherwise, and that decision lives in the PROJECT** (2026-08-24). An owner who
+wants every check made on the live server is entitled to it — he sees what his visitors see. Write that
+down in `current-steps.md` as his decision; do not rewrite this law, because the next project may have
+no server at hand at all.
 
 **Gates.** Nineteen run themselves before the build (`prebuild`): doors, config schemas, content,
 sections, the block map, dialogs, project types, layout, typography, protection, **statics**, the menu,
@@ -860,14 +894,10 @@ say so and work without it rather than inventing its content.
 | `use-migration` | mode `migration` | — |
 
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
-blog post cold; `use-pwa` was verified in the browser on `https://aifa.dev` (2026-08-22);
+blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);
 `use-code-shape` was checked claim by claim against the gates; `use-data`, `use-database`,
 `use-vector-memory` and `use-map` were exercised by a cold agent building a parts warehouse
-(2026-08-23). The evidence lives in `completed-steps/`, not here.
-
-<!-- fractera:instruction-set begin -->
-**Managed by the control panel — do not edit this block by hand.**
-<!-- fractera:instruction-set end -->
+(2026-08-23). ✗ that evidence was gathered while BUILDING the starter, so it lives in the Fractera dev repository — not in your `completed-steps/`, which starts empty.
 
 ## Backlog
 

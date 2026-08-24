@@ -35,7 +35,7 @@ Strike a line out by deleting it, in the same change that adds the translation.
 
 - `app/[lang]/(protectedLayer)/(admin)/administration/users/_data/ui.i18n.ts` — page chrome (title,
   subtitle, the note about who may open this page) · **owes 82** · the page ships with the product, so
-  it must speak any language the owner switches on. Written in `en, ru` while step 531 is open; the
+  it must speak any language the owner switches on. Written in `en, ru` while the page was being built; the
   remaining 80 arrive through `i18n:export` → external model → `i18n:import`.
 - `app/[lang]/(protectedLayer)/(admin)/administration/users/_widgets/dynamic/users-table/ui.i18n.ts` —
   the widget's own words (columns, the role editor, the four refusals) · **owes 10** — the page set

@@ -233,11 +233,24 @@ Transport is four scripts in `scripts/server/`. There is no other way to the ser
 | `status.sh` | port holder and its `ppid` chain, uptime twice, restarts, panel lock, `DEPLOY_STATE.json`, `/api/health` |
 | `deploy.sh [<path>…]` | delivery → build → `pm2 reload` → verification. With `FRACTERA_DEPLOY_SECRET` the panel builds (its queue, journal and rollback); without it we build over SSH and the panel's journal keeps the old entry |
 
-Access: `FRACTERA_SSH_HOST`, `FRACTERA_SSH_PORT`, `FRACTERA_SSH_USER`, `FRACTERA_SSH_KEY_PATH` in the
-project's `.env.local` (panel → "Environment variables" → export); key and `known_hosts` in
-`.fractera-ssh/`, which is in `.gitignore`. No variables means the second channel is shut too: until
-the owner connects GitHub the slot has no `origin`, and `push` goes into the starter's repository and
-never reaches the server. Say that and stop.
+🔒 **ACCESS IS ONE BUTTON, AND THE OWNER PRESSES IT ONCE** (2026-08-24). Panel → "Environment
+variables" → the `.env.local` button. That single download carries everything: `FRACTERA_SSH_HOST`,
+`_PORT`, `_USER`, `_KEY_PATH` **and the private key itself**, as `FRACTERA_SSH_KEY_B64`. The export
+issues and authorises the key on the server by itself if it does not exist yet.
+
+**Nothing is placed by hand.** `run.sh` decodes that line into `.fractera-ssh/` with mode `600` on
+first use; the folder is in `.gitignore`, so the key never travels to GitHub with the code.
+
+✗ **Paid for by an hour of the owner's search.** The door that issues the key existed and stood on the
+server; no button called it, the export stayed silent about the reason, and `deploy.sh` answered "write
+the variable in `.env.local`" — the SECOND link of the chain while the FIRST was the broken one. He
+downloaded the environment, saw no variables, and everyone concluded there was no channel at all. Then
+the first fix asked him to download a key file and place it in a folder by hand: four manual actions
+where one suffices, and he refused it — rightly.
+
+**No `FRACTERA_SSH_*` in the file** means the owner has not downloaded `.env.local` since the panel got
+this build. Say exactly that — "press the `.env.local` button in the panel, everything comes inside the
+file" — never "there is no access". → `use-deploy` §6a
 
 A new script goes in the same folder: access through `. run.sh --lib` (`fx_load`, `fx_ssh`, `fx_scp`),
 no secrets inside, prints a unique marker `===<NAME>_OK===`, returns non-zero on failure.

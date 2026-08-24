@@ -49,7 +49,22 @@ fx_load() {
   FX_PORT="$(fx_env_get FRACTERA_SSH_PORT)"; FX_PORT="${FX_PORT:-22}"
   case "$FX_KEY" in "~"*) FX_KEY="$HOME${FX_KEY#\~}" ;; esac
   case "$FX_KEY" in /*|[A-Za-z]:*) ;; *) FX_KEY="$FX_ROOT/$FX_KEY" ;; esac
-  [ -f "$FX_KEY" ] || fx_die "scripts/server: приватного ключа нет по пути FRACTERA_SSH_KEY_PATH=$FX_KEY — запросите ключ у владельца сервера." 2
+
+  # 🔒 КЛЮЧ РАЗВОРАЧИВАЕТСЯ САМ (владелец 2026-08-24). Панель кладёт приватную
+  # половину прямо в файл окружения строкой `FRACTERA_SSH_KEY_B64`, потому что
+  # прежний порядок — скачать ключ второй кнопкой и положить руками в папку —
+  # владелец назвал неприемлемым: четыре ручных действия вместо одного.
+  # Файл создаётся с правами 600, иначе ssh откажется его читать.
+  if [ ! -f "$FX_KEY" ]; then
+    FX_KEY_B64="$(fx_env_get FRACTERA_SSH_KEY_B64)"
+    if [ -n "$FX_KEY_B64" ]; then
+      mkdir -p "$(dirname "$FX_KEY")"
+      printf '%s' "$FX_KEY_B64" | base64 -d > "$FX_KEY" 2>/dev/null || fx_die "scripts/server: FRACTERA_SSH_KEY_B64 не разбирается — скачайте .env.local заново в панели." 2
+      chmod 600 "$FX_KEY"
+    fi
+  fi
+
+  [ -f "$FX_KEY" ] || fx_die "scripts/server: приватного ключа нет и строки FRACTERA_SSH_KEY_B64 тоже — скачайте .env.local заново: панель → «Переменные окружения» → кнопка .env.local. Ключ заводится и приезжает сам, вручную ничего переносить не нужно." 2
   chmod 600 "$FX_KEY" 2>/dev/null || true
   FX_KNOWN="$FX_ROOT/.fractera-ssh/known_hosts"
   mkdir -p "$(dirname "$FX_KNOWN")"

@@ -98,3 +98,18 @@ dynamic page for an authored text is a page search never sees.
 - `page.tsx` stays thin: declare the segment, re-export `./_components`. `check:protected` measures it.
 - Open the page as somebody who should NOT see it. A protected page that opens for a guest in `dev` or
   on a bare IP is the bypass, not a fault — but say which mode you tested in.
+
+## 🔒 Форма страницы задаётся СЛОЕМ, и слои устроены по-разному
+
+✗ **Оплачено 2026-08-24.** Публичный маршрут собрали по образцу соседей из защищённого слоя — три
+сторожа отказали хором: собственный `<main>` вместо `PageShell`, нет `generateMetadata`, нет
+markdown-двойника.
+
+| Слой | Что обязана нести страница |
+|---|---|
+| `(publicLayer)` | оболочку слоя, метаданные, markdown-двойника для машинных читателей; собирается фабрикой → `use-static-pages` |
+| `(protectedLayer)` | ничего из перечисленного: индексации нет, машинный двойник не нужен |
+
+🔒 **Образец берётся из СВОЕГО слоя.** Сосед по дереву — не образец, если он живёт в другом слое:
+внешне страницы похожи, а обязанности у них разные. Проверка одна: чем собран ближайший маршрут ТОГО
+ЖЕ слоя.

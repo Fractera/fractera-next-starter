@@ -679,6 +679,21 @@ confirmed, here from code that already exists. A case says what should be; the r
 3. 🔒 **The first artefact is a FILE TREE of the original's intent, built to the Fractera architecture.**
    Not a capability table, not the first step: until it is visible what the project turns into here,
    there is nothing to argue about.
+4. 🔒 **THE RESEARCH PHASE OPENS WITH THE TYPE OF APPLICATION AND THE RIGHTS — AND DOES NOT CLOSE
+   WITHOUT AN ANSWER** (owner, 2026-08-24). Four questions, asked before any route, table or door:
+   **what kind of application** this is · **will there be authentication** · **will there be role-based
+   access** · **if so, which roles and what exactly does each one restrict**.
+   **Why this and not screens:** in this architecture the answer decides the LAYOUT OF EVERYTHING —
+   which layer a route lives in (`(publicLayer)` / `(protectedLayer)`), which permission group it joins
+   (`account` · `staff` · `admin` · `finance`), what lock its door carries and what a guest sees.
+   Getting it wrong means relaying the skeleton, not fixing a page.
+   **How you ask** — a rule, not politeness: the answer **follows** from the original or from the
+   passport → do not ask from zero, state your assumption out loud ("here is what I assume") and ask
+   for confirmation; it does **not** follow → ask him to state it plainly, with no guesswork and no
+   "I will take this for now".
+   🛑 **Without the answer the next step is impossible**, literally: no routes, no tables, no doors.
+   A missing answer is a lawful stop, not a failed step. ✗ a role chosen "for now" in a skeleton
+   becomes permanent, and every door built on it has to be rebuilt.
 
 🔒 **No token for the SOURCE repository, on purpose.** The owner keeps the private repository he is
 moving FROM open while the move lasts — that is what the public page says too. Do not ask him for a

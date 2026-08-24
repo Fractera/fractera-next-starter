@@ -10,7 +10,7 @@
     "read:app-config": "node scripts/print-app-config-for-agent.mjs",
     "check:encoding": "node scripts/scan-broken-characters.mjs",
     "predev": "node lib/parser-fs.mjs && node scripts/generate-image-previews.mjs",
-    "prebuild": "node lib/parser-fs.mjs && node scripts/generate-image-previews.mjs && node scripts/check-api.mjs && node scripts/check-config-schemas.mjs && node scripts/check-content.mjs && node scripts/check-sections.mjs && node scripts/check-blocks-map.mjs && node scripts/check-dialogs.mjs && node scripts/check-project-types.mjs && node scripts/check-layout.mjs && node scripts/check-typography.mjs && node scripts/check-protected.mjs && node scripts/check-static.mjs && node scripts/check-menu.mjs && node scripts/scan-broken-characters.mjs && node scripts/check-seo.mjs && node scripts/check-aio.mjs && node scripts/check-pwa.mjs && node scripts/check-contrast.mjs && node scripts/check-links.mjs && node scripts/seed-media.mjs",
+    "prebuild": "node lib/parser-fs.mjs && node scripts/generate-image-previews.mjs && node scripts/check-api.mjs && node scripts/check-config-schemas.mjs && node scripts/check-content.mjs && node scripts/check-sections.mjs && node scripts/check-blocks-map.mjs && node scripts/check-dialogs.mjs && node scripts/check-project-types.mjs && node scripts/check-layout.mjs && node scripts/check-typography.mjs && node scripts/check-protected.mjs && node scripts/check-static.mjs && node scripts/check-menu.mjs && node scripts/scan-broken-characters.mjs && node scripts/check-seo.mjs && node scripts/check-aio.mjs && node scripts/check-pwa.mjs && node scripts/check-contrast.mjs && node scripts/check-links.mjs && node scripts/check-steps.mjs && node scripts/seed-media.mjs",
     "check:content": "node scripts/check-content.mjs --strict",
     "check:sections": "node scripts/check-sections.mjs",
     "check:protected": "node scripts/check-protected.mjs",
@@ -40,7 +40,8 @@
     "build:config-schemas": "node scripts/build-config-schemas.mjs",
     "check:config-schemas": "node scripts/check-config-schemas.mjs",
     "build:blocks-map": "node scripts/build-blocks-map.mjs",
-    "check:blocks-map": "node scripts/check-blocks-map.mjs"
+    "check:blocks-map": "node scripts/check-blocks-map.mjs",
+    "check:steps": "node scripts/check-steps.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1030.0",

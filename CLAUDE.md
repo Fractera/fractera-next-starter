@@ -102,6 +102,18 @@ session reads that file first. Write into it along the way, not at the end.
 half the file's value is holding the **links and closing conditions** — "534 closes only after 535 and
 536". That knowledge exists neither in the plan nor in the result.
 
+🔒 **A SUBSTEP IS THE METRONOME OF THE HANDOVER, NOT PAPERWORK** (2026-08-24). A step splits into 2–10
+substeps and a substep behaves exactly like a step: its own plan, its own acceptance, its own result
+file (`12-1.md`), its own two proofs. The context reset is placed at the **end of a substep**. A step
+without substeps runs for hours, the edge of the window arrives in the middle of unfinished work —
+there is nothing to write down and nothing safe to reset — and the handover law tears exactly where it
+was meant to hold. **Splitting rule:** a substep ends in something one line of proof can state — not
+"half the page is done" but "the form answers 200 and the row appeared in the table".
+
+🔒 **The accounting is owed no matter how the task arrived** — by voice, from a defect, as a five-line
+edit. Your freedom concerns **how** you build and never whether the work is carried as a step and the
+state is written down. → *Development modes*
+
 🔒 **A feature report is a fourth entity, and it is not a step report.** A capability rarely fits in
 one step: twenty build it, including steps nobody planned. Twenty step reports are a chronicle; they
 do not answer "what do we have and in what state". Written when the LAST step of the group closes —
@@ -592,12 +604,25 @@ The owner chooses in the panel: "Application" → "Development mode". The value 
 no code that would substitute a default — you are the only reader, by eye. An empty field means "the
 owner has not spoken", not "guess": he said it, you did it, without cases and without steps.
 
-| Mode | Order | Skill |
-|---|---|---|
-| `classic` | on request: he said it, you did it. No case, no step | — |
-| `steps` | a queue of numbered steps; what is planned is written BEFORE it is done | `use-development-steps` |
-| `cases` | cases → products → a queue of steps; every step names its case | `use-use-cases` |
-| `migration` | "Move to Fractera": a foreign project is read and rebuilt on this architecture | — (planned) |
+| Mode | Where the task comes from | A numbered plan AHEAD? | Skill |
+|---|---|---|---|
+| `classic` | the owner's request | no | — |
+| `steps` | a queue of numbered steps | yes, written BEFORE it is done | `use-development-steps` |
+| `cases` | a confirmed case of a product | yes, and every step names its case | `use-use-cases` |
+| `migration` | 🔶 **named but not provided** — no procedure exists behind it | work as `steps` and say so out loud | — |
+
+🔒 **THE MODE DECIDES ONLY WHERE THE TASK COMES FROM — NEVER WHETHER THE WORK IS RECORDED**
+(2026-08-24). All four addresses of *Your memory* are owed in every mode: `current-steps.md` is kept
+always, a result is written always. In `classic` there may be no plan ahead; there is never no state
+and no result. ✗ this was paid for live: `PLATFORM-CONFIG` is empty on a fresh server, empty means
+`classic`, the agent read "no case, **no step**" and honestly concluded it owed nothing — then built
+its own `Migration/` folder the moment it needed structure. The default was silent about accounting,
+not opposed to it. It is no longer silent.
+
+🔒 **Never create your own folder to track work** — no `Migration/`, `tasks/`, `plans/`, `steps/`.
+Something is missing in the four addresses: say it to the owner. A parallel system of record is not a
+better method, it is a lost handover: the next session reads the four addresses and finds nothing.
+`npm run check:steps` fails the build on such a folder.
 
 **`migration`** (2026-08-22). The owner switches it on in the "Move to Fractera" tab and names his
 repository; work then starts from what he already wrote. Order: read the foreign project → a
@@ -726,9 +751,11 @@ catalogue samples, which is also a working mode.
 **`npm run build` is not needed locally.** The server builds before starting; `dev` plays that role for
 you. Building at home costs minutes and teaches nothing.
 
-**Gates.** Eighteen run themselves before the build (`prebuild`): doors, config schemas, content,
+**Gates.** Nineteen run themselves before the build (`prebuild`): doors, config schemas, content,
 sections, the block map, dialogs, project types, layout, typography, protection, **statics**, the menu,
-encoding, search, AIO, PWA, contrast, links. Two do NOT run by themselves and must be called by hand:
+encoding, search, AIO, PWA, contrast, links, **steps**. The last one (`check:steps`) fails the build if
+work is being tracked outside the four addresses of *Your memory* — a `Migration/`, `tasks/` or
+`plans/` folder of your own. Two do NOT run by themselves and must be called by hand:
 `npm run check:types` and `npm run check:i18n`. Since you do
 not build locally, those two are the only thing between your edit and the build on the server.
 

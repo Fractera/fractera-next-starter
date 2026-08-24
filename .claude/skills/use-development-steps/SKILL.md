@@ -2,17 +2,25 @@
 name: use-development-steps
 description: >
   How work here survives the end of a session — and how a step is planned, carried and closed. Load it
-  when you start a session and the project has work in flight, when you finish a substep, when the
-  context window is running out, when a step or a group of steps is being closed, and whenever the
-  owner asks how the queue is kept. The rule that changes behaviour: this project does NOT compact —
-  state is written to current-steps.md in words and the session is restarted clean. Also: what belongs
-  in a handover, why a group of steps is the real unit of work, and when a feature report is written.
+  at the START OF EVERY SESSION, including the very first one in a brand-new project where the steps
+  folder is still empty; the moment the owner gives you any task, however small; when you finish a
+  substep; when the context window is running out; when a step or a group of steps is being closed;
+  and before you create any folder of your own to track work. The rule that changes behaviour: this
+  project does NOT compact — state is written to current-steps.md in words and the session is
+  restarted clean. Also: why the accounting is owed in every development mode, why a substep is what
+  makes the handover possible, and when a feature report is written.
 ---
 
 # use-development-steps
 
 > Informational, not binding. **Know a better way for the case in front of you — do it your way and
 > say so.** You are trusted with the creative work on this project.
+>
+> 🔒 **С одной границей, и она здесь единственная (2026-08-24).** Свобода касается того, **КАК** ты
+> строишь: метод, порядок, инструменты. Она **никогда** не касается того, ведётся ли работа шагом и
+> записано ли состояние. ✗ оплачено живьём: агент на удалённой машине решил, что знает лучше, завёл
+> собственную папку `Migration/` с имитацией шагов — и следующая сессия не смогла продолжить работу.
+> Заводить свою систему учёта рядом с этой запрещено; не хватает чего-то в этой — скажи владельцу.
 
 ## 1. 🔒 Передача сессии — то, ради чего всё остальное
 
@@ -62,7 +70,16 @@ description: >
 Планируешь любое действие — заводишь шаг; правка на пять строк тоже шаг, просто короткий. План лежит в
 `new-steps/<номер>-<описание-6-8-слов>.md` и расписан так, чтобы работу можно было продолжить с чистого
 контекста. Шаг дробится на 2–10 подшагов, и подшаг ведёт себя как шаг: свой план, своя приёмка, свой
-итог.
+итог, свои два доказательства.
+
+🔒 **Подшаг — метроном передачи сессии, а не бюрократия.** Сброс контекста ставится на **конец
+подшага** (§2). Шаг без подшагов идёт часами, предел окна приходит на середину незакрытой работы —
+записывать нечего, сбрасывать нельзя, и закон о передаче рвётся ровно там, где должен был сработать.
+Подшаг задаёт частоту, с которой состояние ложится в файл.
+
+**Отсюда правило дробления:** подшаг кончается тем, что записывается одной строкой доказательства.
+Не «сделал половину страницы», а «форма отдаёт 200 и запись появилась в таблице». Не делится так —
+значит это не подшаг, а кусок работы, и границу надо искать в другом месте.
 
 **Закрытие шага:** итог в `completed-steps/` (`<шаг>-<подшаг>.md`, общий `<шаг>-main.md`), план из
 `new-steps/` уходит. В итоге обязательны **ошибки** — шаг без них читается как работа, которой не было —
@@ -88,12 +105,26 @@ description: >
 не вспомнит). Он отвечает на вопрос, на который двадцать отчётов о шагах не отвечают: **что у нас есть
 и в каком оно состоянии**.
 
-## 6. Режим `steps`
+## 6. 🔒 Учёт не зависит от режима — режим решает только, ОТКУДА берётся задача
 
-Когда владелец включил его в панели («Приложение» → «Режим разработки»), очередь обязательна:
-запланированное записано ДО исполнения. В `classic` источник задачи — просьба владельца, и очередь не
-нужна; законы этого навыка про передачу сессии действуют в любом режиме, потому что контекст кончается
-одинаково.
+| Режим | Откуда берётся задача | Нужен ли номерной план ВПЕРЁД |
+|---|---|---|
+| `classic` | просьба владельца | нет |
+| `steps` | очередь шагов | да, до исполнения |
+| `cases` | подтверждённый кейс продукта | да, и шаг называет свой кейс |
+| `migration` | 🔶 **режим назван, но не обеспечен** — процедуры за ним нет | работать как `steps` и сказать владельцу |
+
+🔒 **Ни один режим не отменяет четыре адреса памяти.** `current-steps.md` ведётся всегда, итог
+пишется всегда — потому что контекст кончается одинаково во всех четырёх, а сессия сменяется одинаково.
+В `classic` может не быть плана вперёд; состояния и итога не быть не может.
+
+✗ **Чем это оплачено.** На свежем сервере `PLATFORM-CONFIG` пуст, а пустое значение означает `classic`.
+Агент прочитал «no case, **no step**», честно решил, что не должен ничего, — и завёл свою папку, когда
+структура всё-таки понадобилась. Дефолт умалчивал об учёте, а не запрещал его; теперь не умалчивает.
+
+🔶 **`migration`: если владелец включил этот режим — скажи ему вслух, что навыка за ним нет**, веди
+работу как `steps` и не изобретай собственную структуру под него. Названная, но не обеспеченная
+возможность — приглашение импровизировать; это уже стоило одного провала.
 
 ## 7. Чего не делать
 

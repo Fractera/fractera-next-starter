@@ -28,7 +28,20 @@ after the next start. There are no migration files and no button.
 that exists on the server and not in the repository: the next clone, the next developer and the next
 deployment know nothing about it.
 
-Write `CREATE TABLE IF NOT EXISTS`, and add columns in a way that an existing database survives.
+🔒 **A COLUMN IS NOT A TABLE, AND `SCHEMA` WILL NOT DELIVER IT** (2026-08-24). `CREATE TABLE IF NOT
+EXISTS` does nothing at all where the table already exists — which is every machine except a brand-new
+one. ✗ paid live on 2026-08-17: `kind` was declared in `SCHEMA`, deployed, and the column never
+appeared; the data layer then answered `no such column` to every catalogue query, taking the storefront,
+the sitemap and the products page down together.
+
+**A column added AFTER its table goes into `LATE_COLUMNS` in the same file, and nowhere else.** It is a
+plain `ALTER TABLE … ADD COLUMN`, applied blind, swallowing exactly one error — "column already
+exists", the normal outcome on every server past the first run.
+
+🔒 **One ladder, two walkers.** `LATE_COLUMNS` is executed by BOTH `makeLocalDb()` and
+`initRemoteSchema()`. ✗ it once lived inside the local path only: while the app wrote to a file nobody
+noticed, and the day it moved to the data layer the ladder stopped running entirely. Pairs like that
+diverge silently — each branch is healthy on its own.
 
 ## 2. 🔒 Which database you are actually talking to
 

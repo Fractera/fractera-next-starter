@@ -563,6 +563,11 @@ would suit ANY page → create it (renderer `sections/blocks/<kind>.server.tsx`,
 (`lib/db/index.ts`) and a door `app/api/<name>/route.ts` (named in `PUBLIC_API_PREFIXES` if it serves a
 guest).
 
+🔒 **A COLUMN added later does NOT travel through `SCHEMA`** — `CREATE TABLE IF NOT EXISTS` does nothing
+where the table already exists, which is every machine but a fresh one. It goes into `LATE_COLUMNS` in
+the same file. ✗ paid live: a column declared in `SCHEMA` never appeared, and the data layer answered
+`no such column` to every catalogue query. → `use-database`
+
 **Looks.** Palette, fonts, scale and shapes come from `DESIGN-CONFIG`. Text and headings come from
 `components/ui/typography.tsx`, never from hand-set classes. Libraries: `shadcn/ui`, `lucide-react`,
 Sonner. There are no others.

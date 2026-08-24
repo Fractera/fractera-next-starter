@@ -12,7 +12,8 @@ is deleted here. An empty file means nothing is owed.
 
 ## 🔶 Mode `migration` is half built
 
-Step 533, closed 2026-08-22 → `development-steps/completed-steps/533-main.md`.
+Step 533, closed 2026-08-22. Its result file stayed in the Fractera dev repository — the starter ships
+with an empty `development-steps/`, so there is nothing to open here.
 
 **Works:** the `migration` value in the `PLATFORM-CONFIG` schema and type; the mode card in the panel
 with a door to its tab; the "Move to Fractera" tab writing the source into `PLATFORM-CONFIG.migration`.

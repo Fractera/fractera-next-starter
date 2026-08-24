@@ -81,6 +81,13 @@ as a whole. Nowhere else.
 | `development-docs/development-steps/current-steps.md` | one file per project | **where the work is now** — the group of active steps and their closing conditions |
 | `development-docs/reports/` | `<category>-<8+ words with dashes>.md` | the detailed account: one failure (`errors-`) or a **finished feature** (`feature-`) |
 
+🔒 **These four addresses arrive EMPTY in a new project, and that is a law (2026-08-24).** They hold
+the steps and reports of THIS project and nothing else. The steps that built the starter itself are a
+foreign history: they name files you do not have and decisions you never took, and they are read at
+the start of every session next to your own. Whoever works on the starter keeps its steps in the
+Fractera dev repository (`code/development-steps/`) — writing them into the template ships them to
+every future client.
+
 🔒 **You read `current-steps.md` FIRST in every session** — before the step plan, before the code. It
 is not a list of steps but the **state of the project**: a feature outlives dozens of sessions, and a
 step plan says what was intended while staying silent about what is already done.

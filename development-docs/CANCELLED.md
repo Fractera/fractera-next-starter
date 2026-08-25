@@ -18,4 +18,5 @@ It left `CLAUDE.md` on 2026-08-23: a graveyard read by every session is paid for
 | 2026-08-22 | a glossary page in the panel (`/service/glossary`) | the file is edited as a file — `development-docs/GLOSSARY.md` |
 | 2026-08-23 | `CONTENT-ENGINE.md`, `DYNAMIC-WORKFLOWS.md`, `CASE-TO-STEP.md` | moved into skills; tombstones with the transfer map stay in `development-docs/` |
 | 2026-08-23 | planned skills `use-troubleshooting`, `use-passport`, `use-panel` | their content lives in `use-deploy`, `use-testing`, `use-code-shape`, and beside each panel lever |
+| 2026-08-25 | ⚠️ **partial reversal of the line above** | the SKILL `use-passport` stays cancelled — but the passport itself came back the next day as an ENTITY, not a skill: `development-docs/PASSPORT.md`, the fifth address of memory, defined in `CLAUDE.md` § *Your memory*. The 23rd's reasoning ("its content lives in other skills") was true of a procedure and false of a place to keep knowledge. 🔒 A cancelled thing that returns is recorded here, never revived in silence |
 | 2026-08-23 | the `## Cancelled` section inside `CLAUDE.md` | this file — the instruction points here from «Editing this file» |

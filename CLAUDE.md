@@ -79,11 +79,12 @@ in five seconds; an unseen one cannot be corrected at all.
 
 ## Your memory
 
-Four addresses hold everything: what you planned, where you are, how it ended, and what grew out of it
-as a whole. Nowhere else.
+Five addresses hold everything: what the project IS, what you planned, where you are, how it ended, and
+what grew out of it as a whole. Nowhere else.
 
 | Folder | File name | What is inside |
 |---|---|---|
+| `development-docs/` | `PASSPORT.md` | **what this project IS** — see below; the only one of the five that describes the PROJECT rather than the WORK |
 | `development-docs/development-steps/new-steps/` | `<number>-<6-8-words>.md` | the plan of work ahead |
 | `development-docs/development-steps/completed-steps/` | `<step>-<substep>.md` and `<step>-main.md` | the compressed result of finished work |
 | `development-docs/development-steps/current-steps.md` | one file per project | **where the work is now** — the group of active steps and their closing conditions |
@@ -96,9 +97,50 @@ the start of every session next to your own. Whoever works on the starter keeps 
 Fractera dev repository (`code/development-steps/`) — writing them into the template ships them to
 every future client.
 
+### 🔒 `PASSPORT.md` — the fifth address, and the only one that describes the PROJECT
+
+The other four describe the WORK: what was planned, where it stands, how it ended. **None of them
+answers "what is this project and by what rules is it built".** That knowledge arrives in the owner's
+voice, lives in a chat that ends, and the next session never sees it.
+
+Ten sections, and a start light at the top listing every ⛔ still unanswered:
+
+| § | What goes in |
+|---|---|
+| 1 | **what the product is** — in the owner's words, and what "it works" means for him |
+| 2 | **the core** — the capability everything else exists to serve |
+| 3 | **roles and access** — verbatim, with the date; what each role restricts |
+| 4 | **languages** — which, and why those |
+| 5 | **static against dynamic** — page by page: what a crawler must see without JavaScript |
+| 6 | **furniture** — drawer · top menu · footer: needed or not, and why |
+| 7 | **external sources** — who supplies data, who sends messages, which keys exist |
+| 8 | **what is verified and what is not** — a claim nobody measured is marked as such |
+| 9 | **the owner's decisions**, verbatim and dated, including the ones he reversed |
+| 10 | **open questions** — every ⛔, with what becomes impossible while it stands |
+
+🔒 **The start light is a condition, not a decoration** (owner, 2026-08-24): *the project must not start
+at all until you understand, from the passport, the minimally sufficient set of data for development.*
+Not "it is advisable to read it" — while a ⛔ stands, you ask and wait.
+
+**Why so strict.** There may be no cases at all — the owner is free not to write any. Then the passport
+is the ONLY source of understanding, and a gap in it means working blind, not "with less context".
+
+✗ **Paid for live the day it was invented.** An agent analysed the template's messaging service as the
+candidate for sending a product's messages and built the migration's "main question" around it — while
+sending was done by an external gateway entirely. It did not reason badly: **it simply did not have at
+the start what the owner said out loud an hour later.**
+
+🔒 **You write it yourself, and you write it as you learn** — this is not the product dossier
+(`PRODUCTS-CONFIG/<id>.json`), which only the panel may write. The dossier holds the CASES; the
+passport holds the DECISIONS. A decision recorded in only one of the two is the one that gets reversed
+silently.
+
 🔒 **You read `current-steps.md` FIRST in every session** — before the step plan, before the code. It
 is not a list of steps but the **state of the project**: a feature outlives dozens of sessions, and a
 step plan says what was intended while staying silent about what is already done.
+
+**`PASSPORT.md` is read second**, and unlike the other four it is read WHOLE — it is short by
+construction, and its start light is what tells you whether work may begin at all.
 
 🔒 **It replaces `/compact`, and the replacement is mandatory.** Model-side compression loses silently
 and unpredictably — neither of you sees what went missing, and it surfaces an hour later as a

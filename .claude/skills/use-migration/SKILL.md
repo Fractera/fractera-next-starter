@@ -118,7 +118,7 @@ The order IS half the skill. Do not reorder it for a project that "is different"
 | **A** | **before any code** | |
 | 1 | **placement — the GATE of §1** | six checks pass, the owner confirms in words, the parent instruction names the reading addresses |
 | 2 | inventory of the source | a map with the column *what it turns into* — and a measurement of how much of the core exists at all |
-| 3 | project passport — the FIFTH address of memory | a start light: while any ⛔ stands, no code |
+| 3 | project passport — `development-docs/PASSPORT.md` | its start light is clear: while any ⛔ stands, no code |
 | 4 | first live update | four proofs, not "the site opened" |
 | 5 | application type and rights (`CLAUDE.md`) | the owner's decision, recorded verbatim |
 | 6 | route design, in TWO answers with a stop | an agreed tree, not one you chose |
@@ -199,11 +199,12 @@ the look of the output.**
   twofold. **The most valuable line of the map is "no answer".**
 - 🔒 **This is the one cheap moment to drop the original's compromises** — list them before code; later
   they are your debt, not theirs.
-- 🔒 **The passport is the FIFTH address of memory, and it is a start light.** The four addresses
-  describe the WORK; none of them describes the PROJECT. Owner's law, verbatim: *"the project must not
-  start at all until the agent understands, from the passport, the minimally sufficient set of data for
-  development"*. ✗ the reason it exists: everything the owner had explained lived only in chat, and the
-  agent mixed things up not because it was poor but because that explanation had not reached it.
+- 🔒 **Stage 3 fills `development-docs/PASSPORT.md`** — the fifth address of memory. **Its ten sections
+  and its start light are defined in `CLAUDE.md` § *Your memory*; do not invent a shape for it here.**
+  What is specific to a migration is only the SOURCE of the answers: §1, §2 and §7 are read out of the
+  original's code and then confirmed by the owner, while §3–§6 and §9 can only come from him.
+  ✗ the reason it exists: everything the owner had explained lived only in chat, and the agent mixed
+  things up not because it was poor but because that explanation had not reached it.
 - 🔒 **The four questions of stage 5 can come back answered CONTRADICTORILY, and that is not a
   mistake.** ✗ one answer said a person "will not be connected to the auth system at all" and in the
   same breath needed a role for them "so that they get into the system". The owner said himself the

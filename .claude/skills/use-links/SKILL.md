@@ -39,10 +39,10 @@ project means a different page or none. So the gate verifies the target route ex
 public** — `check:content`, rule `page-link-missing`. A link into the protected layer is refused: a
 public link to a 403 is a promise the site does not keep.
 
-🔒 **Where the interlinking should point is a product question, and the answer is not yours.** The
-foundations that would decide it — the project passport and its neighbours — are not written yet.
-Until they are: **follow the architect's direct instruction on what links where**, and do not invent a
-web of cross-links because SEO advice says to.
+🔒 **Where the interlinking should point is a product question, and the answer is not yours.** Read
+`development-docs/PASSPORT.md` — §1, §2 and §6 say what this product is for and what furniture carries
+its navigation. Where it is silent, **follow the architect's direct instruction on what links where**,
+and do not invent a web of cross-links because SEO advice says to.
 
 ## 3. What the gates catch
 

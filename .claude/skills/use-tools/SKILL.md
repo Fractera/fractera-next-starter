@@ -73,6 +73,23 @@ before installing, not a surprise at build time. A page on the showcase. A docum
 
 Half of that is not a tool. It is a component someone will fail to find.
 
+## A component from a foreign registry: read the technique, not the manifest
+
+🔒 **`npmDeps` answers what will be INSTALLED. It never answers what the reader GETS.** A visual
+component brought in from someone else's registry (AI Elements, shadcn-style catalogues, a snippet
+from a docs site) can add no package at all and still hand every visitor without JavaScript a broken
+surface — the known case paints its text with `bg-clip-text text-transparent`, so the letters are
+transparent and only the background makes them visible.
+
+**Before installing, grep its source for how it draws content:** `transparent`, `bg-clip-text`,
+`clip-path`, `mask-image`, `visibility`, `initial`. Anything found there is a decision for the
+static twin (`use-widgets`), not a detail — and it is invisible in the dependency list, in the demo
+and in the screenshot, because all three run JavaScript.
+
+**Pairs with the CLI law** — `ANTI-PATTERNS.md`, "An unknown flag on a foreign CLI means *do
+everything*": same suspicion of outside code, a different axis. That one is about what it may
+execute, this one about what it may hide.
+
 ## When you build a new one
 
 Ask first whether the thing is genuinely reusable or belongs to one screen. A tool that serves one

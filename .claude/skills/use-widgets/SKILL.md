@@ -110,9 +110,15 @@ already on the page?" before reusing a kind — no gate enforces it.
 Classic use of a motion library kills SEO. The page goes dynamic, the markup ships with `opacity: 0`,
 and the crawler — like anyone with JavaScript off — sees empty space. So:
 
-1. **The server prints stillness.** A static twin, fully visible, zero `opacity: 0`.
-2. **An island holds the twin** and swaps in the animated version on the **first click — or when the
-   pointer enters the area** (`pointerenter`; a finger never fires it, so touch keeps the click).
+1. **The server prints stillness.** A static twin, fully visible, whose letters carry their own
+   colour. 🔒 `opacity: 0` is one mechanism out of many — read "Present in the markup and still
+   unreadable" below before you call the twin honest.
+2. **An island holds the twin** and swaps in the animated version. 🔒 **The event is chosen by the
+   price of the motion, not copied from the specimen.** Expensive or decorative — on the **first
+   click, or when the pointer enters the area** (`pointerenter`; a finger never fires it, so touch
+   keeps the click). Cheap and part of the meaning — the page's own heading, a word that must be
+   alive for everyone — **right after mount**, the library still lazy, because asking a person to
+   activate a title means showing it to nobody. Name the chosen event and its reason in the file.
 3. **The animated version loads lazily** (`lazy` + `Suspense`), and the fallback of the swap is the
    twin itself — so nothing blinks while the chunk flies.
 4. **Both versions share one markup file.** Geometry must match 1:1 at any width; measure the
@@ -124,6 +130,31 @@ and the crawler — like anyone with JavaScript off — sees empty space. So:
 Read `security-orbit` before writing your own: `index.tsx` (server, resolves words), `static.tsx`
 (the twin), `swap.client.tsx` (the island), `animated.client.tsx` (motion), `parts.tsx` (the one
 markup), `ui.i18n.ts` (its words).
+
+## Present in the markup and still unreadable
+
+🔒 **The defect is one class, and `opacity` is only its most famous member: the colour and the
+visibility of the letters are decided by something around them instead of by themselves.** `curl`
+finds the text, search indexes it, the gate stays green — and the person without JavaScript is handed
+a heading in the colour of a caption, or nothing at all.
+
+The ways in, none of them exhaustive:
+
+- `text-transparent` / `color: transparent` with `bg-clip-text` — the background paints the letters;
+- `clip-path`, `mask-image` — the letters are cut out of something else;
+- `visibility: hidden`, `content-visibility`, a container of zero height;
+- text living in `::before` / `::after`, or in an icon font;
+- any `initial` style of a motion library, not only the transparent one.
+
+🔒 **Partial degradation is worse than total.** A title that vanishes is noticed in a second. A title
+whose real colour was `transparent`, drawn by a second static background layer, simply looks *slightly
+grey* — no `curl`, no gate and no person who has not seen the intended colour will catch it. This is
+why the no-JS proof measures the **computed colour**, and why a "the text is in the HTML" answer is
+not an answer.
+
+🔒 **When the component comes from someone else's registry, read the technique, not the manifest.**
+Its dependencies tell you what will be installed; how it paints the content tells you what the reader
+gets — and only the second one can hand you transparent letters. `use-tools` carries this as a rule.
 
 ## Two ways a widget reaches a page
 
@@ -168,7 +199,12 @@ widget" is how a full-screen thing ends up invisible to search and to models whi
 Green types prove nothing here. Four measurements, all cheap:
 
 1. **The route stays `●`** in the build table. A widget that turns the page `ƒ` has already failed.
-2. **No-JS:** `curl` the page and find every title of the widget in the HTML, and zero `opacity: 0`.
+2. **No-JS, and the question is READABILITY, not presence.** `curl` the page: every title of the
+   widget must be in the HTML — and then, with JavaScript switched off in the browser, the computed
+   colour of those letters must equal the theme's text colour and their computed visibility must be
+   normal. 🔒 Grepping the markup for `opacity: 0` is NOT this check: `bg-clip-text text-transparent`
+   carries no `opacity` at all and still hands the reader a heading painted the colour of a caption.
+   No browser at hand — say so out loud and record it as a debt; do not report the widget proven.
 3. **The swap does not jump:** bounding boxes of the cards and the centre, before the first click and
    a second after — identical strings.
 4. **Deletion:** remove the folder, run the gates, grep the tree. One line in the route entry and one

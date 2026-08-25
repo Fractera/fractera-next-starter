@@ -159,6 +159,11 @@ crawler's documentation promises that they do.
 `headers()` and `searchParams` do (entry above). What motion breaks is not the route, it is the
 CONTENT of the HTML. Both end the same way in search; the cure is different.
 
+🔒 **`opacity: 0` is one member of a wider class: the letters' colour and visibility decided by
+something around them, not by themselves** — `bg-clip-text text-transparent` (a background paints
+them), `clip-path`, `mask-image`, text in `::before`, an icon font. Grep finds no `opacity` and the
+heading still arrives the colour of a caption. **Check the computed colour, not the string.**
+
 **Instead:** the server prints a visible static twin; an island swaps in the animated version after the
 first click, `motion` loaded lazily, both versions sharing one markup file so the swap is 1:1.
 Specimen — `app/[lang]/(publicLayer)/_widgets/static/security-orbit/`.
@@ -173,6 +178,37 @@ Specimen — `app/[lang]/(publicLayer)/_widgets/static/security-orbit/`.
 <SecuritySwap ui={ui}><SecurityStatic ui={ui} /></SecuritySwap>
 ```
 
+
+---
+
+# An unknown flag on a foreign CLI means "do everything"
+
+> Anti-pattern · stable
+
+**`npx <foreign-cli> --help` was read as "install all".** Before the terminal stopped it, the CLI had
+added **ten** packages to `package.json` and reached "`accordion.tsx` exists, overwrite?" — it was
+about to replace the project's own primitives. A component registry's defaults never match the
+composition of this project.
+
+**Instead: a foreign CLI is run only with an explicit list of what is being installed**, and the
+reconnaissance is done by READING the registry (`curl` the component's address), not by launching the
+installer. Check the registry for what exists today, too: components disappear between versions, and
+a plan made from memory of the library installs nothing.
+
+---
+
+# Judging a foreign component by its dependencies
+
+> Anti-pattern · stable
+
+**A component from someone else's registry was cleared because it added no package** ("`motion` is
+already installed, nothing new arrives") — and it painted its text with `bg-clip-text
+text-transparent`, i.e. handed every reader without JavaScript a heading in the wrong colour. The
+manifest answers what gets INSTALLED; it never answers what the reader GETS.
+
+**Instead: read the technique of drawing before installing** — grep the source for `transparent`,
+`bg-clip-text`, `clip-path`, `mask-image`, `initial`. Pairs with the CLI law (a foreign CLI is
+installed by an explicit list, never by trust): same suspicion, other axis.
 
 ---
 

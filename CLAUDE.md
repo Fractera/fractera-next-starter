@@ -841,10 +841,17 @@ for one of the three lines above; there is almost never another reason.
 ✗ **Classic `motion` usage kills search:** the page goes dynamic whole and the markup arrives with
 `opacity: 0`, so a crawler and a person without JavaScript see empty space.
 
+🔒 **`opacity: 0` is one member of a class, not the class itself:** letters whose colour or visibility
+is decided by what is around them — `bg-clip-text text-transparent`, `clip-path`, `mask-image`, text
+in `::before`, an icon font. The proof is the COMPUTED colour of the letters, never a grep for a
+string. → `use-widgets`, "Present in the markup and still unreadable".
+
 One rule: **motion lives in an island, over an already drawn static twin.**
 
 1. The server prints the state of rest — everything visible, nothing waiting for a script.
-2. The island holds the twin and swaps it for the animated version after the first click.
+2. The island holds the twin and swaps it for the animated version — after the first click when the
+   motion is decorative, right after mount when it belongs to the meaning (a heading); the event is
+   chosen by the price of the motion, not copied from the specimen.
 3. The motion library loads lazily (`lazy`); the swap's fallback is the same twin, so nothing flickers.
 4. Both versions share ONE markup (a common parts file): the swap must be 1:1 at any width.
 5. `prefers-reduced-motion` is honoured: the swap happens, the motion does not.

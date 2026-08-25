@@ -1,12 +1,14 @@
 ---
 name: use-migration
 description: >
-  Moving an existing project onto this architecture: nineteen stages in order, what each one ends with,
-  and ten probes to run before writing code over somebody else's data. Load it when the mode is
-  `migration`, when the owner says "we are moving this project" / "port my app" / "here is the repo we
-  migrate from", and again at the start of every session of such a move — a migration outlives dozens
-  of sessions and you locate yourself by its stage. The mode itself, the four questions about rights,
-  and the rules for foreign code live in `CLAUDE.md` §`migration`; this file does not repeat them.
+  Moving an existing project onto this architecture: the launch GATE that must pass before anything
+  begins, nineteen stages in order with what each ends with, and ten probes to run before writing code
+  over somebody else's data. Load it when the mode is `migration`, when the owner says "we are moving
+  this project" / "port my app" / "here is the repo we migrate from" — and **at the very first message**,
+  because §1 decides where the session must be standing, which cannot be repaired later. Load it again
+  at the start of every session of such a move: a migration outlives dozens of them and you locate
+  yourself by its stage. The mode itself, the four questions about rights, and the rules for foreign
+  code live in `CLAUDE.md` §`migration`; this file does not repeat them.
 ---
 
 # use-migration
@@ -26,7 +28,56 @@ and never rewritten*, the four questions about application type and rights, no t
 repository, never execute foreign code on the server. Read it. This file carries what it does not:
 **the stages, the probes, and the traps of each phase.**
 
-## 1. Three laws that govern the whole move
+## 1. Stage 1 is a GATE, not a step — nothing begins until it passes
+
+A migration is the one kind of work that needs **two trees open at once**, so it needs a working folder
+of its own with exactly two repositories inside. ✗ getting this wrong cost the first day of the real
+move: the session stood in the wrong place, the result's corpus of laws was absent from the agent's
+context, and it invented its own `Migration/` folder to track work — the handover that folder was
+supposed to protect never existed.
+
+**① Explain it to the owner in his words, before anything else:**
+
+> A move needs two projects side by side — the one we read and the one we build. Make **one new folder
+> for this project** and put both inside it: **source** — what we are moving, it dies when the move
+> ends; **result** — the Fractera project it becomes. Then **start the session from that new folder**,
+> not from a repository you already had open.
+
+**② Demand a confirmation in words, and do not accept silence:** *"yes, the session is started in the
+project folder"*.
+
+🔒 **Why a confirmation and not a command.** You can check where you ARE; you cannot check where you
+STARTED — and the instruction files in your context were loaded at start, not at `cd`. This is not a
+beginner's mistake: an already-open terminal is the default for everyone, and experienced developers
+lose it just as often.
+
+**One self-check does detect it and costs one read:** open the project folder's `CLAUDE.md`. **If its
+content is new to you, you did not start here.** Stop and ask for a restart from the project folder.
+
+**③ Verify with your own tools — all six, before the first plan:**
+
+| # | Check | ✗ what it prevents |
+|---|---|---|
+| 1 | the working directory is the project folder, not a general repository | every path below lands in the wrong tree, and it shows up days later |
+| 2 | both folders exist and are non-empty | "I cloned it" and "it is there" are different facts |
+| 3 | both are git repositories — `.git` present in each | a downloaded archive is not a repository: no history, no diff, nothing to recover from |
+| 4 | the result has a remote — **presence only, never print the URL** | ✗ a live access token was embedded in a remote address, and merely reading state printed it |
+| 5 | the result carries the guest corpus: `CLAUDE.md`, `.claude/skills/`, `development-steps/` | if it does not, this is not a Fractera result folder and nothing below applies |
+| 6 | the source is never written to — say it aloud as a rule, no flag enforces it | an agent that edits the original destroys the only reference the move has |
+
+**④ Write the project folder's `CLAUDE.md` — a step, not a formality.** The session sits in the PARENT
+folder, so **the result's own instruction is not loaded automatically** and its entire corpus is missing
+from your context until you name it. That file states in words: which folder is the source and that it
+dies · which is the result · and **what to read at the start of every session** — the result's
+`CLAUDE.md`, its `current-steps.md`, its steps folder, its `ANTI-PATTERNS.md`.
+
+✗ Without that section the agent builds its own bookkeeping. It did, on day one — and `check:steps` in
+the result fails the build over a folder that should never have existed.
+
+🛑 **The gate:** six checks pass · the confirmation is given in words · the parent instruction exists
+and names the reading addresses. Until then there is no inventory, no passport and no code.
+
+## 2. Three laws that govern the whole move
 
 🔒 **A migration MOVES, it does not develop.** "Should this route be dynamic?", "should these entities
 merge?" are questions about developing the product and lie **outside** the move. ✗ an entity×role matrix
@@ -45,14 +96,14 @@ permission.** The new sentence sounds like an order and the record looks like hi
 executes the sentence and cancels the decision in silence — **the worst kind of invention, because it
 looks like implementation.** Show both sides, name the cost of each, stop.
 
-## 2. The map — nineteen stages in four phases
+## 3. The map — nineteen stages in four phases
 
 The order IS half the skill. Do not reorder it for a project that "is different".
 
 | # | Stage | Ends with |
 |---|---|---|
 | **A** | **before any code** | |
-| 1 | placement: two repos side by side, roles named in words | the session sits in the parent folder **and** knows the reading addresses of the result |
+| 1 | **placement — the GATE of §1** | six checks pass, the owner confirms in words, the parent instruction names the reading addresses |
 | 2 | inventory of the source | a map with the column *what it turns into* — and a measurement of how much of the core exists at all |
 | 3 | project passport | a start light: while any ⛔ stands, no code |
 | 4 | first live update | four proofs, not "the site opened" |
@@ -85,17 +136,21 @@ made the product write to 481 people who had refused contact in writing.
 🔒 **Analytics is second to last** because it consumes all data at once and so works as the last
 detector of silent defects. Earlier, it finds the same things on incomplete data — unconvincingly.
 
-## 3. How a session of a migration starts
+## 4. How a session of a migration starts
 
-`current-steps.md` first → find the stage → read its row and its phase below. **A migration outlives
-dozens of sessions**; the queue is in the owner's `new-steps/`, the accounting is `use-development-steps`
-with no exception for this mode.
+**Every session, first two moves: check 1 of the gate, then `current-steps.md`.** The folder question
+does not go away after the first day — a session started from the wrong place on day nine looks exactly
+like one started from the right place, until a path lands in the wrong tree. Then find the stage and
+read its row and its phase below.
+
+**A migration outlives dozens of sessions**; the queue is in the owner's `new-steps/`, the accounting is
+`use-development-steps` with no exception for this mode.
 
 🔒 **Check the premises of the step before its first action** — usually one command each. ✗ the most
 transferable law of the whole run: both premises of a planned step were false, and both were checkable
 in a single command that nobody ran.
 
-## 4. Ten probes — run them, do not reason about them
+## 5. Ten probes — run them, do not reason about them
 
 The corpus's own meta-law: *a statement about state, written as a law, rots — replace it with a command
 that checks*. These are that replacement. Each costs one query and buys a class of silent defect.
@@ -117,7 +172,7 @@ that checks*. These are that replacement. Each costs one query and buys a class 
 signature defect: no error, no red gate, a plausible answer. **Distinguish them by the probe, never by
 the look of the output.**
 
-## 5. Phase A traps — before any code
+## 6. Phase A traps — before any code
 
 - 🔒 **The inventory names, for every element, HOW it moves:** *literally* · *by meaning* (a person's
   rhythm: a median moved out of SQL into TypeScript) · *by structure* ("a client is a STATE, not a flag"
@@ -144,7 +199,7 @@ the look of the output.**
   1:1 · changed and why · not moved and what instead. **A route lost in silence is this stage's main
   defect.**
 
-## 6. Phase B traps — structure
+## 7. Phase B traps — structure
 
 - 🔒 **Stage 7 builds the structure ENTIRELY and finishes no page.** `layout`, header and footer stay
   untouched, or the owner cannot walk the tree and the stage is unverifiable. **A route counts as
@@ -170,7 +225,7 @@ the look of the output.**
 - 🔒 **Silence in a list is not permission.** A template widget appeared in neither the delete nor the
   keep list: the right move was to ask.
 
-## 7. Phase C and D traps — data and product
+## 8. Phase C and D traps — data and product
 
 - 🔒 **A capability with no data behind it is the OWNER'S decision, not a development task.** ✗
   birthdays empty for 1845 of 1845 — no API call changes that. Hand him that list as its own document
@@ -193,7 +248,7 @@ the look of the output.**
 - 🔒 **Name your disagreement with the original out loud**, leaving the owner the right to reverse it:
   *"this is my decision, said here; correct me if you see it otherwise"*.
 
-## 8. The queue, and what you write down
+## 9. The queue, and what you write down
 
 🔒 **An agreed queue is a hypothesis, not a schedule.** In the real move one step was born from a defect
 the audit screen found, one was pushed back by the owner, one was never in the queue at all. **Unplanned
@@ -208,7 +263,7 @@ over in silence.
 label on every page. The wording that works demands **distinguishability**: the same check on a
 neighbouring address must give a different answer.
 
-## 9. What this skill does not know
+## 10. What this skill does not know
 
 It was assembled from **one** migration: a CRM-fed loyalty service, PostgreSQL → this stack, one
 country, one owner. **Phases A and B and all ten probes are stack-independent** and should hold

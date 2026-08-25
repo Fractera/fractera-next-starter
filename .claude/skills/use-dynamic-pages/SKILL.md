@@ -15,6 +15,18 @@ description: >
 > Informational, not binding. **Know a better way for the case in front of you — do it your way and
 > say so.** You are trusted with the creative work on this project.
 
+🔒 **First, make sure you are in the right skill.** Two different things are called "dynamic" here:
+
+| | Dynamic **data** — this skill | Dynamic **address** — `use-route-parameters` |
+|---|---|---|
+| What varies | what one page shows | **how many pages exist** |
+| Address | one, fixed: `/en/patients` | one per record: `/en/patients/8f21` |
+| Shape | static shell + widget calling `/api/*` | a folder named `[something]` |
+
+A request usually needs **both** — a list whose rows link to a page per record — and the owner never
+says which he means, because in ordinary language his sentence is already complete. Recognising that
+is `use-route-parameters` §1; it is a conversation, not a build decision.
+
 ## 1. A static shell with dynamic holes, not a dynamic page
 
 This is the whole model, and it is what makes this the second of the three page models rather than a

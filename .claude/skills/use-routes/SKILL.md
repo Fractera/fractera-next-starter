@@ -91,6 +91,13 @@ neighbouring route's table is not a library.
 Getting this wrong is not cosmetic: a folder per item for a catalogue is a million folders, and a
 dynamic page for an authored text is a page search never sees.
 
+🔒 **The row is chosen by an answer only the OWNER has, and he was probably never asked.** "One page,
+or one per record" is invisible inside a sentence like "make a client page", which is complete in
+ordinary language and ambiguous here. → **`use-route-parameters`**: how to ask it in his words, what to
+tell him before he answers, and — the dangerous half — what to check before REMOVING a parameter that
+already exists, because "I don't need this here" has four readings and only one of them deletes a
+route.
+
 ## 6. Before you call it done
 
 - `check:content` (`route-unclassified`), `check:protected`, `check:static`, `check:seo` — each covers

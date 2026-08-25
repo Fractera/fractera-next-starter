@@ -801,6 +801,11 @@ that skill says what starting looks like.
 widget or tool; if a widget — static or dynamic; show at once or hide; what the crawler sees without
 JavaScript. Written in one line BEFORE the code.
 
+🔒 **And if the task is a PAGE, one more line before that one: ONE address, or one per record?** It is
+invisible inside "make a client page" — a sentence that is complete in ordinary language and ambiguous
+here — and it is the owner's answer, not yours. → `use-route-parameters`, which also covers the
+opposite move: "I don't need this here" has four readings, and only one of them deletes a route.
+
 Cycle: `pull` → edit → `push` → build. Product boundaries are in *The product*.
 
 **You work alone.** A second agent is started only by the owner's word; the size of a task and its
@@ -945,6 +950,7 @@ say so and work without it rather than inventing its content.
 | `use-personal-data` | data about PEOPLE: two tables and the join on your own server, what may not leave the country, health, erasure | ✅ |
 | `use-widgets` | widgets: two kinds by folder, the boundary "out/in", motion as an island over a twin | ✅ |
 | `use-dynamic-pages` | a page with dynamic data: a static shell with holes, the door stricter than the session, a gate no softer than the service | ✅ |
+| `use-route-parameters` | one address or one per record: the question hidden in "make a client page", what to tell the owner before he answers, and what to count before REMOVING a parameter that exists | 🔬 |
 | `use-sections` | the section layer: the catalogue closed by type, kind against widget, colour only by token | ✅ |
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |
@@ -985,7 +991,9 @@ that actually happened — from **one** project, which is why it carries its own
 not know". It earns a tick the way the others did: by holding while somebody works by it.
 **`build-product-with-owner` carries the same mark for the opposite reason**: it was assembled from the
 laws this corpus already paid for, and no product has yet been walked from cases to a prototype by it.
-Its first real product is its examination.
+Its first real product is its examination. **`use-route-parameters`** carries it for the same reason,
+with one difference in its favour: the numbers in its removal section were counted in this repository,
+not recalled.
 
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
 blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);

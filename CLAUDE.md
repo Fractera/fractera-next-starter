@@ -648,7 +648,7 @@ owner has not spoken", not "guess": he said it, you did it, without cases and wi
 | `classic` | the owner's request | no | — |
 | `steps` | a queue of numbered steps | yes, written BEFORE it is done | `use-development-steps` |
 | `cases` | a confirmed case of a product | yes, and every step names its case | `use-use-cases` |
-| `migration` | 🔶 **named but not provided** — no procedure exists behind it | work as `steps` and say so out loud | — |
+| `migration` | reading an existing project that already works | yes — a queue born from the reading | `use-migration` |
 
 🔒 **THE MODE DECIDES ONLY WHERE THE TASK COMES FROM — NEVER WHETHER THE WORK IS RECORDED**
 (2026-08-24). All four addresses of *Your memory* are owed in every mode: `current-steps.md` is kept
@@ -924,7 +924,12 @@ say so and work without it rather than inventing its content.
 | `use-development-steps` | session handover instead of compression, the group of steps, closing with a feature report | ✅ |
 | `use-use-cases` | mode `cases`: a confirmed case is what gives the right to start; where cases and steps live, two entrances to the decomposition step | ✅ |
 | `use-deploy` | delivery and build in one command, two modes, two proofs, four traps | ✅ |
-| `use-migration` | mode `migration` | — |
+| `use-migration` | mode `migration`: the nineteen stages and what each ends with, the inventory that names HOW each element moves, and the laws of moving DATA — where migrations actually break | 🔬 |
+
+🔬 **means written from a real run but NOT yet proved by a cold agent.** `use-migration` was assembled
+from the journal of one complete migration (2026-08-25), law by law, and every ✗ in it is a failure
+that actually happened. That is not the same as a tick: a tick is only earned when a fresh agent works
+by the skill and it holds.
 
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
 blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);

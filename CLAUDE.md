@@ -689,7 +689,7 @@ owner has not spoken", not "guess": he said it, you did it, without cases and wi
 |---|---|---|---|
 | `classic` | the owner's request | no | — |
 | `steps` | a queue of numbered steps | yes, written BEFORE it is done | `use-development-steps` |
-| `cases` | a confirmed case of a product | yes, and every step names its case | `use-use-cases` |
+| `cases` | a confirmed case of a product | yes, and every step names its case | `use-use-cases` (the right to start) + **`build-product-with-owner`** (the path to a prototype) |
 | `migration` | reading an existing project that already works | yes — a queue born from the reading | `use-migration` |
 
 🔒 **THE MODE DECIDES ONLY WHERE THE TASK COMES FROM — NEVER WHETHER THE WORK IS RECORDED**
@@ -789,6 +789,11 @@ and got a wall. Say plainly that there is nothing to build the product from and 
 | "no, I want cases" | lead him to the panel: product → intake → confirmation. Until one is confirmed there is nothing to build, and that is his decision, not yours |
 
 You keep and name the step; you have nothing to change its state with — ask the owner.
+
+🔒 **And once a case IS confirmed, the work does not start with code.** → **`build-product-with-owner`**:
+the pact that opens it, the four decisions owed before the first route (roles · languages · static
+against dynamic · the furniture), and the prototype line. Confirmation gives you the right to start;
+that skill says what starting looks like.
 
 ## How we build
 
@@ -970,6 +975,7 @@ say so and work without it rather than inventing its content.
 | `use-multi-lang` | the language set is the owner's; one language during development, the rest is a recorded debt | ✅ |
 | `use-development-steps` | session handover instead of compression, the group of steps, closing with a feature report | ✅ |
 | `use-use-cases` | mode `cases`: a confirmed case is what gives the right to start; where cases and steps live, two entrances to the decomposition step | ✅ |
+| `build-product-with-owner` | mode `cases`, the PATH: the pact that opens the work, the four decisions before the first route, designing the furniture instead of inheriting it, how short an iteration may be, where the prototype line runs | 🔬 |
 | `use-deploy` | delivery and build in one command, two modes, two proofs, four traps | ✅ |
 | `use-migration` | mode `migration`: the nineteen stages and what each ends with, the inventory that names HOW each element moves, and the laws of moving DATA — where migrations actually break | 🔬 |
 
@@ -977,6 +983,9 @@ say so and work without it rather than inventing its content.
 from the journal of one complete migration (2026-08-25), law by law, and every ✗ in it is a failure
 that actually happened — from **one** project, which is why it carries its own §9 "what this skill does
 not know". It earns a tick the way the others did: by holding while somebody works by it.
+**`build-product-with-owner` carries the same mark for the opposite reason**: it was assembled from the
+laws this corpus already paid for, and no product has yet been walked from cases to a prototype by it.
+Its first real product is its examination.
 
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
 blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);

@@ -91,6 +91,7 @@ expensive thing this mode exists to prevent.
 | Skill | Owns |
 |---|---|
 | `use-use-cases` (this) | the right to start: cases, their confirmation, the queue born from them |
+| **`build-product-with-owner`** | **the PATH once a case is confirmed**: the pact with the owner, the four decisions before the first route, the furniture, the size of an iteration, the prototype line |
 | `use-development-steps` | how a step is CARRIED — session handover in `current-steps.md`, the group, the closing report |
 | `use-products-config` | the dossier itself: record, phases, the pages plan, what belongs to which product |
 

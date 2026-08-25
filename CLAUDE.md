@@ -663,7 +663,12 @@ Something is missing in the four addresses: say it to the owner. A parallel syst
 better method, it is a lost handover: the next session reads the four addresses and finds nothing.
 `npm run check:steps` fails the build on such a folder.
 
-**`migration`** (2026-08-22). The owner switches it on in the "Move to Fractera" tab and names his
+**`migration`** (2026-08-22). 🔒 **Load `use-migration` before the first route, table or door** — it
+carries the NINETEEN stages with what each ends with, and ten probes to run before writing code over
+somebody else's data. Everything below is the outline; the skill is the detail, and the two do not
+disagree — the outline names three links where the skill names nineteen.
+
+The owner switches it on in the "Move to Fractera" tab and names his
 repository; work then starts from what he already wrote. Order: read the foreign project → a
 decomposition, and from it a queue → the SKELETON first (addresses, tables, login, public and private
 repositories; access rights are asked about here) → capabilities one per step, each with a proof →
@@ -926,10 +931,10 @@ say so and work without it rather than inventing its content.
 | `use-deploy` | delivery and build in one command, two modes, two proofs, four traps | ✅ |
 | `use-migration` | mode `migration`: the nineteen stages and what each ends with, the inventory that names HOW each element moves, and the laws of moving DATA — where migrations actually break | 🔬 |
 
-🔬 **means written from a real run but NOT yet proved by a cold agent.** `use-migration` was assembled
+🔬 **means written from a real run and now being proved by real ones.** `use-migration` was assembled
 from the journal of one complete migration (2026-08-25), law by law, and every ✗ in it is a failure
-that actually happened. That is not the same as a tick: a tick is only earned when a fresh agent works
-by the skill and it holds.
+that actually happened — from **one** project, which is why it carries its own §9 "what this skill does
+not know". It earns a tick the way the others did: by holding while somebody works by it.
 
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
 blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);

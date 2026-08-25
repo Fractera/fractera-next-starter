@@ -41,22 +41,40 @@ owner's bot. ✗ that trap already cost this project a day.
 `status` is the honest first call: `configured: false` means the owner has not set a bot up, and that
 is a **normal state**, not a fault to hide. Show it as "not connected", never as an error.
 
-## 3. 🔒 What is NOT there — check this before you promise anything
+## 3. Three MORE routes exist — outbound and inbound (corrected 2026-08-25)
 
-Verified against the running service on 2026-08-23. These are not gaps in the telling; they are gaps in
-the product, and a promise made over them is a promise the platform will not keep.
+🪦 **This section used to say "impossible from your app: there is no outbound route", and that was
+FALSE.** It described the service as it stood on 2026-08-23; sending was added afterwards and the text
+was never corrected. ✗ Found by a guest agent reading the service's own source while the skill told him
+the opposite — **a wrong law is more dangerous than a missing one**, and this one sat exactly where
+somebody was building.
+
+Verified in `services/channels/server.js` on 2026-08-25, by line:
+
+| Route | Line | What it does |
+|---|---|---|
+| `POST /telegram/send` | 596 | sends text. `chatId` may be passed or falls back to the linked one; `422` if no token or no chat, `400` without text, `502` if Telegram refuses — with Telegram's own reason |
+| `POST /telegram/sendFile` | 616 | sends bytes as base64. 🔒 **`kind` decides the METHOD**: `audio`→`sendVoice`, `image`→`sendPhoto`, otherwise `sendDocument`. A voice note sent as a photo loses its player; a document sent as a voice note is refused outright |
+| `GET /telegram/inbox` | 651 | reads what arrived — `?after=<id>&limit=<n>`, returns `messages` and `lastId` for cursor polling |
+
+🔒 **The token never leaves the service.** Your app hands over text or bytes; the credential stays on
+`:3500`. That is the whole reason these routes exist rather than a Telegram client in your slot (§1).
+
+## 3a. 🔒 What is genuinely NOT there — check before you promise
+
+These are gaps in the product, and a promise made over them is one the platform will not keep.
 
 | The owner asks for | Today |
 |---|---|
-| "send me a notification to my phone" | **impossible from your app**: there is no outbound route. `sendMessage` lives inside the service and is not exposed |
-| "let my app react to what people write to the bot" | **impossible**: no webhook, no queue, no door into the project. The service reads the update and answers it itself |
-| "I want to talk to it by voice" | **the voice note is dropped silently.** The loop asks Telegram for `allowed_updates=["message"]` and keeps only `msg.text`; an update without text is skipped without a log line and without an error |
-| "each of my clients gets their own chat" | **one chat, the owner's.** `chatId` is a single field in the config; linking overwrites it |
+| "let my app react automatically to what people write" | **no push into your project**: no webhook, no queue. The service reads the update and answers it itself; you can only POLL `/telegram/inbox` |
+| "I want to talk to it by voice" | **the voice note is dropped silently.** The loop asks Telegram for `allowed_updates=["message"]` and keeps only `msg.text`; an update without text is skipped with no log line and no error |
+| "each of my clients gets their own chat" | **one chat, the owner's.** `chatId` is a single field in the config; linking overwrites it. You may pass a `chatId` to `/telegram/send`, but nothing in the panel collects other people's |
+| "mass mailing to my customer base" | **not this service.** One bot, one linked chat, one messenger. A loyalty service messaging thousands is a different product and usually an external gateway |
 | "say it in our language" | the bot's own replies are English strings **inside the service**; your app cannot translate them |
 
-**So when one of these is asked for, the honest answer is not "I will build it".** Name exactly which
-of the five is missing, say that it is a change in the channel service — platform, not your slot — and
-hand it over the way `CLAUDE.md` describes. Then build everything around it that does not depend on it.
+**When one of these is asked for, the honest answer is not "I will build it".** Name exactly which is
+missing, say it is a change in the channel service — platform, not your slot — and hand it over the way
+`CLAUDE.md` describes. Then build everything around it that does not depend on it.
 
 ## 4. 🔒 Linking is a handshake, and the human moves first
 

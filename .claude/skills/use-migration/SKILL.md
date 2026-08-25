@@ -96,6 +96,19 @@ permission.** The new sentence sounds like an order and the record looks like hi
 executes the sentence and cancels the decision in silence — **the worst kind of invention, because it
 looks like implementation.** Show both sides, name the cost of each, stop.
 
+🔒 **"Done" for the whole move is defined from the REASON for moving, and defined before stage 2.**
+Ask why they are leaving, and write the acceptance of the entire migration in those terms. ✗ in the
+real move the owner arrived believing a migration is "the interface is carried over"; the reasons were
+a scheduler the old host would not run, a regulator forbidding foreign storage, and cost — so
+"succeeded" meant **timed chains running on their own server against their own database**, and the
+interface was the cheapest part of the work.
+
+**Expect that definition to be corrected twice, and say it out loud both times.** It happened at
+stage 2, when the inventory showed the product's core did not exist in the source at all, and again
+around stages 10–12, when the silent defects turned out to live in data rather than in screens. An
+owner whose picture of the job changes is normal; an agent that lets the acceptance drift with it in
+silence is not.
+
 ## 3. The map — nineteen stages in four phases
 
 The order IS half the skill. Do not reorder it for a project that "is different".
@@ -105,7 +118,7 @@ The order IS half the skill. Do not reorder it for a project that "is different"
 | **A** | **before any code** | |
 | 1 | **placement — the GATE of §1** | six checks pass, the owner confirms in words, the parent instruction names the reading addresses |
 | 2 | inventory of the source | a map with the column *what it turns into* — and a measurement of how much of the core exists at all |
-| 3 | project passport | a start light: while any ⛔ stands, no code |
+| 3 | project passport — the FIFTH address of memory | a start light: while any ⛔ stands, no code |
 | 4 | first live update | four proofs, not "the site opened" |
 | 5 | application type and rights (`CLAUDE.md`) | the owner's decision, recorded verbatim |
 | 6 | route design, in TWO answers with a stop | an agreed tree, not one you chose |
@@ -186,6 +199,26 @@ the look of the output.**
   twofold. **The most valuable line of the map is "no answer".**
 - 🔒 **This is the one cheap moment to drop the original's compromises** — list them before code; later
   they are your debt, not theirs.
+- 🔒 **The passport is the FIFTH address of memory, and it is a start light.** The four addresses
+  describe the WORK; none of them describes the PROJECT. Owner's law, verbatim: *"the project must not
+  start at all until the agent understands, from the passport, the minimally sufficient set of data for
+  development"*. ✗ the reason it exists: everything the owner had explained lived only in chat, and the
+  agent mixed things up not because it was poor but because that explanation had not reached it.
+- 🔒 **The four questions of stage 5 can come back answered CONTRADICTORILY, and that is not a
+  mistake.** ✗ one answer said a person "will not be connected to the auth system at all" and in the
+  same breath needed a role for them "so that they get into the system". The owner said himself the
+  purpose was unclear. **An owner who does not know and an owner who answered inconsistently need
+  different handling; to neither do you substitute your own answer.** Carry it forward as an open
+  question, with a ban on deciding it silently.
+- 🔒 **When delivery fails, find the FIRST broken link, not the one the error names.** ✗ the whole
+  delivery chain was built and shipped while the agent's key had never been issued: the environment
+  export skipped a block in silence, and the script refused naming the *second* link ("set the
+  variable") instead of the first ("no key was issued"). A chain that reports the wrong link looks
+  exactly like an agent that will not obey.
+- 🔒 **A required proof can be unobtainable by construction — say so, never substitute an easy one.**
+  ✗ the canonical delivery proof reads a build stamp that only one of the two build paths writes, so on
+  the other path it is `null` and the proof cannot exist. Name the hole; do not quietly prove something
+  else.
 - 🔒 **Stage 6 is AGREEMENT, in two answers.** First the source's architecture as it is — tree, groups,
   route types, what is public — **with not one opinion in it**; he says continue; only then your
   proposal. Merged, he never sees the original, only an opinion about it.
@@ -224,6 +257,20 @@ the look of the output.**
   but **"every address of the agreed tree is still reachable"**.
 - 🔒 **Silence in a list is not permission.** A template widget appeared in neither the delete nor the
   keep list: the right move was to ask.
+- 🔒 **Emptying a page breaks whatever stood on its content.** ✗ removing the home page's blocks also
+  removed its heading: a `titleInBody` flag was set because a section printed the H1. **A setting
+  explained by a neighbouring piece outlives that piece and lies in silence.** After emptying, re-read
+  the settings that existed FOR the content.
+- 🔒 **A negative result, proved by negative controls, is worth exactly as much as a positive one.**
+  ✗ stage 9 removed **zero** menu items: the premise "menus surely still point at deleted pages" did not
+  hold, because the group manifests lived inside the deleted section folders. That could only be
+  established by walking every menu — and the walk IS the work of the stage. Do not report "nothing to
+  do" as a skipped stage.
+- 🔒 **Your own note in `ANTI-PATTERNS` can make you misread a REAL failure.** ✗ an observation about
+  false alarms was written at stage 4, and at stage 7 a genuine gate failure was dismissed by its own
+  author under that note. **A wrong law is more dangerous than a missing one**, so every entry you write
+  during a migration owes a third field beside symptom and cure: **how to tell this case from the one it
+  resembles.**
 
 ## 8. Phase C and D traps — data and product
 
@@ -263,7 +310,17 @@ over in silence.
 label on every page. The wording that works demands **distinguishability**: the same check on a
 neighbouring address must give a different answer.
 
-## 10. What this skill does not know
+## 10. Read the account once, before your first migration
+
+`ACCOUNT.md`, beside this file. It is the same migration told **from the owner's side**, in order, from
+the first minute to stage 19 — what he believed when he started, where his picture of the job was wrong,
+which of his own decisions he reversed, and at which stage each realisation arrived.
+
+**Why it exists next to a skill.** This file says WHAT to do. The account says **what the process feels
+like from inside and in what order understanding arrives** — which is exactly what a list of laws cannot
+carry, and what explains why these laws and not others. Read it once; do not load it every session.
+
+## 11. What this skill does not know
 
 It was assembled from **one** migration: a CRM-fed loyalty service, PostgreSQL → this stack, one
 country, one owner. **Phases A and B and all ten probes are stack-independent** and should hold

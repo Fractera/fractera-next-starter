@@ -995,6 +995,11 @@ Its first real product is its examination. **`use-route-parameters`** carries it
 with one difference in its favour: the numbers in its removal section were counted in this repository,
 not recalled.
 
+🔒 **A number written into a skill is obtained by a COMMAND at the moment of writing, never from
+memory.** A skill is read as fact, and a figure recalled from an earlier pass through the same code is
+the kind of wrong nobody checks. ✗ paid twice in one day: a file's length was estimated and was 40%
+short, and a count of "four widgets" turned out to be five and ten files. Both were one command away.
+
 **What the ticks rest on.** Eight skills were closed by two runs of fresh agents building a page and a
 blog post cold; `use-pwa` was verified in a browser against a live deployment (2026-08-22);
 `use-code-shape` was checked claim by claim against the gates; `use-data`, `use-database`,

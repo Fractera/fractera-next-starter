@@ -85,7 +85,7 @@ what grew out of it as a whole. Nowhere else.
 | Folder | File name | What is inside |
 |---|---|---|
 | `development-docs/` | `PASSPORT.md` | **what this project IS** — see below; the only one of the five that describes the PROJECT rather than the WORK |
-| `development-docs/development-steps/new-steps/` | `<number>-<6-8-words>.md` | the plan of work ahead |
+| `development-docs/development-steps/new-steps/` | a folder `<N>/` → `<N>-main.md` + `<N>-1.md`…`<N>-10.md`; a short step stays one file `<number>-<6-8-words>.md` | the plan of work ahead: **the shared brief AND a separate document per substep** |
 | `development-docs/development-steps/completed-steps/` | `<step>-<substep>.md` and `<step>-main.md` | the compressed result of finished work |
 | `development-docs/development-steps/current-steps.md` | one file per project | **where the work is now** — the group of active steps and their closing conditions |
 | `development-docs/reports/` | `<category>-<8+ words with dashes>.md` | the detailed account: one failure (`errors-`) or a **finished feature** (`feature-`) |
@@ -153,8 +153,8 @@ half the file's value is holding the **links and closing conditions** — "534 c
 536". That knowledge exists neither in the plan nor in the result.
 
 🔒 **A SUBSTEP IS THE METRONOME OF THE HANDOVER, NOT PAPERWORK** (2026-08-24). A step splits into 2–10
-substeps and a substep behaves exactly like a step: its own plan, its own acceptance, its own result
-file (`12-1.md`), its own two proofs. The context reset is placed at the **end of a substep**. A step
+substeps and a substep behaves exactly like a step: its own plan (`new-steps/12/12-1.md`), its own
+acceptance, its own result file (`completed-steps/12-1.md`), its own two proofs. The context reset is placed at the **end of a substep**. A step
 without substeps runs for hours, the edge of the window arrives in the middle of unfinished work —
 there is nothing to write down and nothing safe to reset — and the handover law tears exactly where it
 was meant to hold. **Splitting rule:** a substep ends in something one line of proof can state — not
@@ -189,10 +189,22 @@ into the glossary in the same operation. A term describing a demolished subsyste
 buried: the file has a "🪦 Removed" section so the next session does not build on a dead word.
 
 **You plan ANY action as a step** — a five-line fix is a step too, just a short one. A step is split
-into **2–10 substeps**; a substep behaves exactly like a step: own plan, own acceptance, own result
-(`12-1.md` … `12-10.md`, plus one `12-main.md` for what is only visible whole). The plan is detailed
-enough that the work can continue from an empty context. Errors are a mandatory part of the result,
-not decoration: a step without them reads as work that never happened.
+into **2–10 substeps**; a substep behaves exactly like a step: own plan (`new-steps/12/12-1.md`), own
+acceptance, own result (`completed-steps/12-1.md` … `12-10.md`, plus one `12-main.md` for what is only
+visible whole). The plan is detailed enough that the work can continue from an empty context. Errors
+are a mandatory part of the result, not decoration: a step without them reads as work that never
+happened.
+
+🔒 **PLANNING A LARGE STEP IS NOT FINISHED UNTIL EVERY SUBSTEP IS EXPANDED INTO ITS OWN BRIEF** — before
+the first line of code. A row in a table is not a brief. Each `<N>-<k>.md` states: what gets built
+(files and doors by name) · what counts as done · **what proves it — two planes, named IN ADVANCE** ·
+what the substep excludes. ✗ paid 2026-08-26 in the Fractera dev repository: a step got one 276-line
+document in which seven substeps were a seven-row table, and substep 1 was a single comma-separated
+line. Nothing was formally broken — the law demanded the substep have "its own plan" and **gave that
+plan no address**, and a requirement without an address is executed by nobody.
+
+🔒 **A substep closes with a COMMIT, not only with a written result, and the result names the hash.**
+Uncommitted work does not survive a power cut — neither the work nor the record of it. → `use-development-steps`
 
 🔒 **The second half of closing a step is skill evolution.** Which skills you read, where they slowed
 you down, what you had to find in the code anyway, what the architect demanded. Out of that comes a

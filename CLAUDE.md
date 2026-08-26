@@ -146,7 +146,21 @@ construction, and its start light is what tells you whether work may begin at al
 and unpredictably — neither of you sees what went missing, and it surfaces an hour later as a
 forgotten decision. State written in letters into a file loses only what you did not write, and that
 is visible. At the limit: finish `current-steps.md` → tell the owner → he runs `/clear` → the new
-session reads that file first. Write into it along the way, not at the end.
+session reads that file first.
+
+🔒 **THE FILE EXISTS TO SURVIVE ANY INTERRUPTION WITHOUT DATA LOSS, not only the planned one.**
+Interruptions come in two kinds: **planned** (the window fills up, and you feel it coming) and
+**sudden** (power, overheating, a crash, a dropped connection) — and the second one **never gives
+warning**. So the file is updated **BY EVENT, not at the end**: the owner takes a decision → verbatim,
+at once · an expensive fact is established → at once · a commit is made → its hash at once · an
+incidental defect appears → one line at once · a long or irreversible operation begins → **BEFORE** it
+· the next action changes → rewrite that line. 🔒 **The test that replaces all others:** *"if the power
+died right now, what of the last hour could not be recovered?"* Everything that could not is written
+**now**.
+✗ paid 2026-08-26 in the Fractera dev repository: the law was written ONLY for the planned kind, the
+owner's machine overheated in the middle of a substep, the window limit never arrived — and no
+procedure existed for the unplanned kind. Half a day of work became invisible although it physically
+survived. → `use-development-steps` §1, §1а
 
 🔒 **The plural in the name is deliberate.** Current work is almost never one step; it is a group, and
 half the file's value is holding the **links and closing conditions** — "534 closes only after 535 and

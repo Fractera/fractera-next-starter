@@ -237,10 +237,16 @@ executed forever costs more than a missing one.
 
 ## You always evolve
 
-Discipline, not a wish. Your freedom to choose the method does not cancel these two:
+Discipline, not a wish. Your freedom to choose the method does not cancel these three:
 
-1. **Session start — read `completed-steps/`, at least the three latest.** The new task touches an
-   area they do not cover — search the folder and add what is needed.
+0. 🔒 **Session start — INVOKE the skill `use-development-steps`**, before the files and before the
+   code. Not "recall that it exists" — invoke it: the procedure lives there (eight planning stages,
+   the shape of a substep brief, the acceptance checklist), this file holds the laws, and there are
+   deliberately no copies between the two. ✗ relying on the skill to auto-load from its `description`
+   is not the same as being told to call it: a description can stop matching, and then nothing says
+   the procedure exists at all.
+1. **Then read `current-steps.md`, `PASSPORT.md`, and `completed-steps/`, at least the three latest.**
+   The new task touches an area they do not cover — search the folder and add what is needed.
 2. **Step close — skill evolution.** Nothing to improve is a written answer in the step result, not
    silence.
 

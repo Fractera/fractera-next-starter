@@ -308,9 +308,27 @@ Transport is four scripts in `scripts/server/`. There is no other way to the ser
 | `deploy.sh [<path>…]` | delivery → build → `pm2 reload` → verification. With `FRACTERA_DEPLOY_SECRET` the panel builds (its queue, journal and rollback); without it we build over SSH and the panel's journal keeps the old entry |
 
 🔒 **ACCESS IS ONE BUTTON, AND THE OWNER PRESSES IT ONCE** (2026-08-24). Panel → "Environment
-variables" → the `.env.local` button. That single download carries everything: `FRACTERA_SSH_HOST`,
-`_PORT`, `_USER`, `_KEY_PATH` **and the private key itself**, as `FRACTERA_SSH_KEY_B64`. The export
-issues and authorises the key on the server by itself if it does not exist yet.
+variables" → the `.env.local` button. **It is orange and pulsing** (2026-08-27): the launch wizard
+sends people here as one step out of thirteen, and a blue button was going unnoticed. After a press it
+turns blue until the next visit to that page. That single download carries everything:
+`FRACTERA_SSH_HOST`, `_PORT`, `_USER`, `_KEY_PATH` **and the private key itself**, as
+`FRACTERA_SSH_KEY_B64`. The export issues and authorises the key on the server by itself if it does
+not exist yet.
+
+🔒 **`USER_LAUNCH_*` AND `USER_START_MODE` IN `.env.local` ARE NOT YOURS** (2026-08-27). They are the
+state of the **launch wizard** on the panel's `github` tab — which of the thirteen steps the owner has
+passed on his way from an empty repository to a first change seen at his own address. Your project
+arrived in the slot through that wizard, by one of two routes: the starter template, or a repository
+the owner already had.
+
+**Never write those keys, and never clear them.** A tick removed by hand reopens a step the owner has
+already passed and sends him back through work he has finished; a tick added by hand tells him a step
+is done that nobody did. If the owner asks to "reset the wizard", the panel has a button for it —
+point him at it rather than editing the file.
+
+Reading them is fine and sometimes useful: `USER_START_MODE=adopt` means this slot holds a project
+brought in from elsewhere, not a fresh starter — so its history, its conventions and its debts are not
+the template's.
 
 **Nothing is placed by hand.** `run.sh` decodes that line into `.fractera-ssh/` with mode `600` on
 first use; the folder is in `.gitignore`, so the key never travels to GitHub with the code.

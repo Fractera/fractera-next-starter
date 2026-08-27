@@ -132,6 +132,21 @@ invisible to both agent and owner, and the loss surfaces an hour later as a forg
 written in words into `current-steps.md`, the session is restarted clean (`/clear`), and the new one
 reads that file first. See `CLAUDE.md` → "Что строим", and the skill `use-development-steps`.
 
+### Routing a task that arrived mid-step (added 2026-08-27)
+
+| Term | What it means |
+|---|---|
+| **routing a task** | deciding WHERE a task that arrived in the middle of a step belongs: a substep of the current step · a substep of a step already closed · a new step. Not an estimate and not a priority — routing answers "whose step is this", not "when do we do it" |
+| **routing gates** | the two questions at the entrance: does a file in the repository change because of it · does it serve the same capability the step was opened for. A shared file is not a gate: **a shared file is not kinship** |
+| **outcome A / B / C** | **A** it belongs to the current step · **B** it does not, and a search needs the owner's permission · **C** the search found nothing, so a new step is opened. The letters are fixed: the skill and `CLAUDE.md` mean the same by them |
+| **re-closing a step** | a closed step that received a new substep is closed **again, in full**: outcome, feature report and state are rewritten as if it had that many substeps from the start. Not "editing a closure" — the genre "amended step" **does not exist** |
+| **queue of what is ahead** | what `new-steps/` is: only work not yet done lives there. The plan of a finished step sitting in it is a lie that work is still waiting |
+| **fate of the plan** | the plan of a closed step is deleted **in the same commit** as the outcome and is recovered from git: `git log --diff-filter=D --format=%H -1 -- <path>` → `git show <hash>^:<path>` |
+
+🔒 **The search sub-agent is a witness, not a helper.** It returns a **judgement** in a fixed form and
+edits no accounting file; it is launched only on the owner's confirmation, **every time**; it looks at
+at most **15 last STEPS** — not substep files — and **never enters `archive/`**.
+
 ## Development modes — how work is run in this project
 
 The owner picks one in the panel ("Приложение" → "Режим разработки"); the value is `developmentMode` in

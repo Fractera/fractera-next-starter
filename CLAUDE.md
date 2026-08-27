@@ -178,6 +178,18 @@ was meant to hold. **Splitting rule:** a substep ends in something one line of p
 edit. Your freedom concerns **how** you build and never whether the work is carried as a step and the
 state is written down. → *Development modes*
 
+🔒 **A TASK THAT ARRIVES IN THE MIDDLE OF A STEP IS ROUTED, NOT DONE SILENTLY** (2026-08-27). Two
+gates: does a file in the repository change because of it · does it serve the **same capability** the
+current step was opened for. A shared file is not kinship; kinship is a shared capability. Three
+outcomes: **A** it belongs → a substep goes into the queue · **B** it does not → **stop and ask** for
+permission to search the closed steps · **C** the search found nothing → a new step. In A and C the
+work does **not** start at once: the task queues, the current step is not interrupted. 🔒 One
+exception: an owner decision that changes a **law or a skill** is applied immediately — a law parked
+in a queue does not govern the very step you are closing. Full procedure — skill
+`use-development-steps`, sections «Задача пришла посреди шага», «Поиск подходящего шага» and
+«Закрытый шаг получил новый подшаг» (that skill is written in Russian; titles are quoted verbatim so
+you can find them). No copies here on purpose.
+
 🔒 **A feature report is a fourth entity, and it is not a step report.** A capability rarely fits in
 one step: twenty build it, including steps nobody planned. Twenty step reports are a chronicle; they
 do not answer "what do we have and in what state". Written when the LAST step of the group closes —

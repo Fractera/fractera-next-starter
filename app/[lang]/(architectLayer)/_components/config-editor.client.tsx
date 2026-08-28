@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { H3, Small } from "@/components/ui/typography"
+import { Separator } from "@/components/ui/separator"
 import { FieldRow } from "./field-row.client"
 import { patchAtPath, mergePatches, typedValue, type Section } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
@@ -119,23 +120,50 @@ export function ConfigEditor({
             )}
           </div>
 
-          {/* 🔒 ДВЕ КОЛОНКИ НА `md`, ОДНА НА УЗКОМ — решение владельца. Текстовая
-              область занимает обе: поле на три строки в половине ширины читается
-              хуже, чем на всю. */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            {section.fields.map(field => (
-              <div key={field.path} className={field.type === "textarea" ? "md:col-span-2" : undefined}>
-                <FieldRow
-                  field={field}
-                  lang={lang}
-                  value={values[field.path] ?? ""}
-                  translationMode={editLang !== defaultLang}
-                  translated={translatedPaths.includes(field.path)}
-                  onChange={next => setValues(v => ({ ...v, [field.path]: next }))}
-                  ui={ui}
-                />
-              </div>
-            ))}
+          {/* 🔒 ГОРИЗОНТАЛЬНАЯ ЛИНИЯ ОТДЕЛЯЕТ ЗАГОЛОВОК ОТ ПОЛЕЙ (заказ владельца
+              2026-08-28). Без неё подпись секции и первая подпись поля стоят
+              одинаково набранными строками подряд, и глаз не видит, где кончилось
+              название раздела и начались его настройки. */}
+          <Separator />
+
+          {/* 🔒 ДВЕ НАСТОЯЩИЕ КОЛОНКИ, А НЕ СЕТКА — И ЭТО СЛЕДСТВИЕ ЗАКАЗА
+              ВЕРТИКАЛЬНОЙ ЛИНИИ. В сетке `grid-cols-2` разделителя между колонками
+              не существует как элемента: линию пришлось бы рисовать подложкой
+              посередине, и она перечёркивала бы любое поле, растянутое на обе
+              колонки. Две колонки с сепаратором между ними — та же раскладка, но
+              линия здесь настоящая и не пересекает ничего.
+              ✗ Цена решения, названная вслух: порядок полей стал КОЛОНОЧНЫМ
+              (первая половина слева, вторая справа), а был строчным. Для секции в
+              5–9 полей это читается так же, и другого способа получить честную
+              линию между колонками нет.
+              На узком экране колонка одна, и линии нет: разделять нечего. */}
+          <div className="flex flex-col gap-5 md:flex-row md:gap-8">
+            {[0, 1].map(side => {
+              const half = Math.ceil(section.fields.length / 2)
+              const part = side === 0 ? section.fields.slice(0, half) : section.fields.slice(half)
+              if (part.length === 0) return null
+              return (
+                <Fragment key={side}>
+                  {side === 1 && (
+                    <Separator orientation="vertical" className="hidden md:block" data-column-rule />
+                  )}
+                  <div className="flex min-w-0 flex-1 flex-col gap-5">
+                    {part.map(field => (
+                      <FieldRow
+                        key={field.path}
+                        field={field}
+                        lang={lang}
+                        value={values[field.path] ?? ""}
+                        translationMode={editLang !== defaultLang}
+                        translated={translatedPaths.includes(field.path)}
+                        onChange={next => setValues(v => ({ ...v, [field.path]: next }))}
+                        ui={ui}
+                      />
+                    ))}
+                  </div>
+                </Fragment>
+              )
+            })}
           </div>
         </section>
       ))}

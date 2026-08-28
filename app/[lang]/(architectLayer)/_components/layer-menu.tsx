@@ -36,7 +36,15 @@ export function LayerMenu({
   ui: ArchitectLayerUi
 }) {
   return (
-    <nav data-layer-menu aria-label={ui.menuTitle} className="shrink-0 md:w-60">
+    // 🔒 БОРДЮР ТОЛЬКО НА ШИРОКОМ ЭКРАНЕ (заказ владельца 2026-08-28). На узком
+    // меню уезжает НАД содержимым, и правая граница там разрезала бы экран
+    // пополам поперёк чтения — граница между колонками существует ровно там, где
+    // есть две колонки.
+    <nav
+      data-layer-menu
+      aria-label={ui.menuTitle}
+      className="shrink-0 md:w-60 md:border-r md:border-border md:pr-6"
+    >
       <H3 variant="ui" className="mb-3">{ui.menuTitle}</H3>
       <ul className="flex flex-col gap-1">
         {ARCHITECT_GROUPS.map(group => {

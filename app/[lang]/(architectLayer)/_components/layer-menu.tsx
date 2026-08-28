@@ -36,25 +36,34 @@ export function LayerMenu({
   ui: ArchitectLayerUi
 }) {
   return (
-    // 🔒 БОРДЮР ТОЛЬКО НА ШИРОКОМ ЭКРАНЕ (заказ владельца 2026-08-28). На узком
-    // меню уезжает НАД содержимым, и правая граница там разрезала бы экран
-    // пополам поперёк чтения — граница между колонками существует ровно там, где
-    // есть две колонки.
+    // 🔒 ОДНО МЕНЮ, ДВА ПОЛОЖЕНИЯ (заказ владельца 2026-08-28): на широком экране
+    // оно левое и вертикальное, на узком становится ВЕРХНИМ — рядом кнопок с
+    // горизонтальной прокруткой. Это не «то же меню поуже»: восемь вертикальных
+    // пунктов на телефоне съедают экран целиком, и человек прокручивает страницу,
+    // не дойдя до полей, ради которых пришёл.
+    //
+    // 🔒 РАЗДЕЛИТЕЛЬ ЕДЕТ ВСЛЕД ЗА МЕНЮ. Наверху граница нижняя, слева — правая:
+    // линия отделяет меню от содержимого, а с какой оно стороны, решает ширина.
+    // Оставить правую границу у верхнего ряда значило бы прочертить экран поперёк
+    // чтения.
     <nav
       data-layer-menu
       aria-label={ui.menuTitle}
-      className="shrink-0 md:w-60 md:border-r md:border-border md:pr-6"
+      className="shrink-0 border-b border-border pb-3 md:w-60 md:border-r md:border-b-0 md:pr-6"
     >
       <H3 variant="ui" className="mb-3">{ui.menuTitle}</H3>
-      <ul className="flex flex-col gap-1">
+      {/* 🔒 ОТРИЦАТЕЛЬНЫЙ ОТСТУП + `px-1` — чтобы полоса прокрутки не обрезала
+          подсветку крайних пунктов: фон активного пункта шире его текста, и без
+          этого зазора он упирался бы в край и выглядел срезанным. */}
+      <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 md:flex-col md:overflow-x-visible">
         {ARCHITECT_GROUPS.map(group => {
           const label = ui.groups[group.id] ?? group.id
-          const base = "block rounded-md px-3 py-2 text-[length:var(--fs-body)] transition-colors"
+          const base = "block whitespace-nowrap rounded-md px-3 py-2 text-[length:var(--fs-body)] transition-colors"
 
           if (group.state.kind === "here") {
             const isActive = group.id === active
             return (
-              <li key={group.id}>
+              <li key={group.id} className="shrink-0 md:shrink">
                 <Link
                   href={`/${lang}/architect/app-config?group=${group.id}`}
                   data-group={group.id}
@@ -81,7 +90,7 @@ export function LayerMenu({
           )
 
           return (
-            <li key={group.id}>
+            <li key={group.id} className="shrink-0 md:shrink">
               {href ? (
                 <a
                   href={href}

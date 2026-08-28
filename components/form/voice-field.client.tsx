@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { H3, Small } from "@/components/ui/typography"
 import { useVoiceRecorder, VOICE_BAR } from "@/_tools/voice-input/client/use-voice-recorder"
+import { MicIcon } from "./mic-icon"
 
 // ФИРМЕННОЕ ПОЛЕ ВВОДА С ГОЛОСОМ (шаг 32-3, 2026-08-28).
 //
@@ -168,7 +169,7 @@ export function VoiceField({
             value={v.draft}
             onChange={e => v.setDraft(e.target.value)}
             rows={Math.min(8, Math.max(2, v.draft.split("\n").length + 1))}
-            className="text-[length:var(--fs-body)]"
+            className="text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
           />
           <div className="flex items-center gap-2">
             <Button type="button" size="sm" onClick={v.accept} disabled={!v.draft.trim()} data-voice-accept>
@@ -193,23 +194,5 @@ export function VoiceField({
           читают, а не примечание к полю ввода. */}
       {comment && <FieldDescription className="text-[length:var(--fs-small)]">{comment}</FieldDescription>}
     </Field>
-  )
-}
-
-function MicIcon({ off }: { off?: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      className="size-4"
-      aria-hidden
-    >
-      <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-      <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4" />
-      {off ? <path d="M3 3l18 18" /> : null}
-    </svg>
   )
 }

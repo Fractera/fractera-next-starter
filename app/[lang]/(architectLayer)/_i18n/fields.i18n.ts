@@ -17,6 +17,15 @@ export type FieldWords = { label: string; hint?: string; placeholder?: string }
 export type FieldsUi = {
   /** Заголовки секций по `id`. */
   sections: Record<string, string>
+  /**
+   * Объяснение секции — там, где без него поле выглядит необязательным.
+   *
+   * 🔒 ПЕРЕНЕСЕНО ИЗ ПАНЕЛИ ВМЕСТЕ С ПОЛЯМИ, а не выброшено как «мелочь»: текст
+   * про валюту объясняет, почему пустое поле стоит человеку карточки товара в
+   * поиске. Такое знание, потерянное при переезде, потом покупается заново
+   * недоумением владельца.
+   */
+  sectionHints: Record<string, string>
   /** Слова полей по пути в конфиге. */
   fields: Record<string, FieldWords>
   /** Общие подписи формы. */
@@ -36,8 +45,36 @@ export type FieldsUi = {
 }
 
 const en: FieldsUi = {
-  sections: { brand: "Brand & identity" },
+  sections: {
+    brand: "Brand & identity",
+    author: "Author",
+    commerce: "Commerce",
+    geo: "Local business / address",
+  },
+  sectionHints: {
+    author: "Default author used in metadata and Person structured data.",
+    commerce:
+      "The currency every price on the site is shown and published in. A price without a currency means nothing to a visitor, and product markup without it is rejected by search engines outright.",
+    geo: "Only used when the LocalBusiness schema is on.",
+  },
   fields: {
+    "author.name": { label: "Name" },
+    "author.email": { label: "Email" },
+    "author.url": { label: "URL" },
+    "author.jobTitle": { label: "Job title" },
+    "author.bio": { label: "Bio" },
+    "author.twitter": { label: "Twitter", placeholder: "@handle or URL" },
+    "author.linkedin": { label: "LinkedIn" },
+    "author.facebook": { label: "Facebook" },
+    "commerce.currency": { label: "Currency", placeholder: "USD · EUR · PLN · RUB" },
+    "geo.address": { label: "Street address" },
+    "geo.city": { label: "City" },
+    "geo.country": { label: "Country" },
+    "geo.postalCode": { label: "Postal code" },
+    "geo.phone": { label: "Phone" },
+    "geo.latitude": { label: "Latitude" },
+    "geo.longitude": { label: "Longitude" },
+    "geo.hours": { label: "Opening hours", placeholder: "Mo-Fr 09:00-18:00" },
     name: { label: "App name", placeholder: "Fractera" },
     short_name: { label: "Short name", placeholder: "Fractera", hint: "Used by the PWA icon label." },
     description: { label: "Description", placeholder: "What this app is…" },
@@ -60,8 +97,36 @@ const en: FieldsUi = {
 }
 
 const ru: FieldsUi = {
-  sections: { brand: "Имя и лицо проекта" },
+  sections: {
+    brand: "Имя и лицо проекта",
+    author: "Автор",
+    commerce: "Торговля",
+    geo: "Адрес и организация",
+  },
+  sectionHints: {
+    author: "Автор по умолчанию: он подставляется в мету страниц и в разметку «Person» для поисковиков.",
+    commerce:
+      "Валюта, в которой сайт показывает и публикует любую цену. Цена без валюты ничего не значит для посетителя, а разметку товара без неё поисковик отвергает целиком — карточка с ценой просто не появляется.",
+    geo: "Используется, только когда включена разметка LocalBusiness.",
+  },
   fields: {
+    "author.name": { label: "Имя" },
+    "author.email": { label: "Почта" },
+    "author.url": { label: "Адрес страницы" },
+    "author.jobTitle": { label: "Должность" },
+    "author.bio": { label: "О себе" },
+    "author.twitter": { label: "Twitter", placeholder: "@ник или адрес" },
+    "author.linkedin": { label: "LinkedIn" },
+    "author.facebook": { label: "Facebook" },
+    "commerce.currency": { label: "Валюта", placeholder: "USD · EUR · PLN · RUB" },
+    "geo.address": { label: "Улица и дом" },
+    "geo.city": { label: "Город" },
+    "geo.country": { label: "Страна" },
+    "geo.postalCode": { label: "Почтовый индекс" },
+    "geo.phone": { label: "Телефон" },
+    "geo.latitude": { label: "Широта" },
+    "geo.longitude": { label: "Долгота" },
+    "geo.hours": { label: "Часы работы", placeholder: "Пн-Пт 09:00-18:00" },
     name: { label: "Название приложения", placeholder: "Fractera" },
     short_name: { label: "Короткое имя", placeholder: "Fractera", hint: "Подпись под значком приложения." },
     description: { label: "Описание", placeholder: "О чём это приложение…" },

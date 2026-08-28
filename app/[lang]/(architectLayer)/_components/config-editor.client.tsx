@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { H3 } from "@/components/ui/typography"
+import { H3, Small } from "@/components/ui/typography"
 import { FieldRow } from "./field-row.client"
 import { patchAtPath, mergePatches, type Section } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
@@ -108,7 +108,12 @@ export function ConfigEditor({
     <div data-config-editor className="flex flex-col gap-8">
       {sections.map(section => (
         <section key={section.id} data-section={section.id} className="flex flex-col gap-4">
-          <H3 variant="ui">{ui.sections[section.id] ?? section.id}</H3>
+          <div className="flex flex-col gap-1">
+            <H3 variant="ui">{ui.sections[section.id] ?? section.id}</H3>
+            {ui.sectionHints[section.id] && (
+              <Small className="max-w-2xl">{ui.sectionHints[section.id]}</Small>
+            )}
+          </div>
 
           {/* 🔒 ДВЕ КОЛОНКИ НА `md`, ОДНА НА УЗКОМ — решение владельца. Текстовая
               область занимает обе: поле на три строки в половине ширины читается

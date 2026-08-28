@@ -57,6 +57,45 @@ export const SECTIONS: readonly Section[] = [
       { path: "mailSupport", type: "text" },
     ],
   },
+  {
+    id: "author",
+    group: "basics",
+    // 🔒 `author.image` ЗДЕСЬ НЕТ, И ЭТО НЕ ПОТЕРЯ. Фотография — поле-картинка,
+    // а картинки едут отдельным подшагом (31-7) вместе с логотипом и значками:
+    // у них своя механика загрузки, и втащить одно поле раньше её значило бы
+    // построить эту механику дважды. Сверка полноты — 31-8.
+    fields: [
+      { path: "author.name", type: "text" },
+      { path: "author.email", type: "text" },
+      { path: "author.url", type: "text" },
+      { path: "author.jobTitle", type: "text" },
+      { path: "author.bio", type: "textarea" },
+      { path: "author.twitter", type: "text" },
+      { path: "author.linkedin", type: "text" },
+      { path: "author.facebook", type: "text" },
+    ],
+  },
+  {
+    id: "commerce",
+    group: "basics",
+    fields: [
+      { path: "commerce.currency", type: "text" },
+    ],
+  },
+  {
+    id: "geo",
+    group: "basics",
+    fields: [
+      { path: "geo.address", type: "text" },
+      { path: "geo.city", type: "text" },
+      { path: "geo.country", type: "text" },
+      { path: "geo.postalCode", type: "text" },
+      { path: "geo.phone", type: "text" },
+      { path: "geo.latitude", type: "text" },
+      { path: "geo.longitude", type: "text" },
+      { path: "geo.hours", type: "text" },
+    ],
+  },
 ]
 
 /** Секции одной группы меню, в порядке описания. */

@@ -55,6 +55,19 @@ export type FieldsUi = {
   /** Пометка заблокированного поля. */
   locked: string
   lockedHint: string
+  /** Поле-картинка. */
+  upload: string
+  uploaded: string
+  uploadFailed: string
+  clear: string
+  noImage: string
+  /** Конструктор соцсетей. */
+  socialsEmpty: string
+  socialName: string
+  socialValue: string
+  socialTemplate: string
+  socialAdd: string
+  socialRemove: string
 }
 
 const en: FieldsUi = {
@@ -67,6 +80,9 @@ const en: FieldsUi = {
     og: "OpenGraph",
     jsonLd: "Structured data (JSON-LD)",
     analytics: "Analytics",
+    logoImages: "Logo & images",
+    pwa: "App icons & PWA",
+    socials: "Social profiles",
   },
   sectionHints: {
     author: "Default author used in metadata and Person structured data.",
@@ -76,8 +92,31 @@ const en: FieldsUi = {
     og: "The card other sites and messengers show when someone shares a link to this project.",
     jsonLd: "Structured data: what the site tells machines about itself. LocalBusiness reads the address section.",
     analytics: "Google Analytics stays off until a measurement ID is entered — the switch alone changes nothing.",
+    logoImages: "Every picture here is optional: without one the project shows its own placeholder.",
+    pwa: "How the project looks once it is installed as an app. The icon SET is still generated in the control panel — that door does not exist here yet.",
+    socials: "Linked from the footer, the OG card and Organization sameAs. Each entry carries its own address rule, so the link is computed rather than guessed.",
   },
   fields: {
+    'author.image': { label: 'Photo' },
+    logo: { label: 'Logo' },
+    'images.ogImage': { label: 'OG / social image' },
+    'images.homePage-light': { label: 'Home illustration (light)' },
+    'images.homePage-dark': { label: 'Home illustration (dark)' },
+    'images.loading-light': { label: 'Loading (light)' },
+    'images.loading-dark': { label: 'Loading (dark)' },
+    'images.notFound-light': { label: '404 (light)' },
+    'images.notFound-dark': { label: '404 (dark)' },
+    'images.error500-light': { label: '500 (light)' },
+    'images.error500-dark': { label: '500 (dark)' },
+    'pwa.themeColor': { label: 'Theme color', placeholder: '#ffffff' },
+    'pwa.backgroundColor': { label: 'Background color', placeholder: '#ffffff' },
+    'pwa.display': { label: 'Display' },
+    'pwa.orientation': { label: 'Orientation' },
+    'pwa.startUrl': { label: 'Start URL', placeholder: '/' },
+    'pwa.scope': { label: 'Scope', placeholder: '/' },
+    'themeColors.light': { label: 'Browser bar color (light)', placeholder: '#ffffff' },
+    'themeColors.dark': { label: 'Browser bar color (dark)', placeholder: '#09090b' },
+    'seo.socialLinks': { label: 'Social networks' },
     "author.name": { label: "Name" },
     "author.email": { label: "Email" },
     "author.url": { label: "URL" },
@@ -139,6 +178,17 @@ const en: FieldsUi = {
   notTranslated: "no translation",
   locked: "read-only",
   lockedHint: "This value follows the address the server actually answers on.",
+  upload: "Upload",
+  uploaded: "Image uploaded",
+  uploadFailed: "Could not upload the image",
+  clear: "Clear the image",
+  noImage: "No image yet — the project shows its built-in placeholder.",
+  socialsEmpty: "No networks yet.",
+  socialName: "Network",
+  socialValue: "Handle or address",
+  socialTemplate: "Address rule",
+  socialAdd: "Add a network",
+  socialRemove: "Remove the network",
 }
 
 const ru: FieldsUi = {
@@ -151,6 +201,9 @@ const ru: FieldsUi = {
     og: "Карточка ссылки (OpenGraph)",
     jsonLd: "Разметка для машин (JSON-LD)",
     analytics: "Аналитика",
+    logoImages: "Логотип и картинки",
+    pwa: "Значок приложения и PWA",
+    socials: "Профили в соцсетях",
   },
   sectionHints: {
     author: "Автор по умолчанию: он подставляется в мету страниц и в разметку «Person» для поисковиков.",
@@ -160,8 +213,31 @@ const ru: FieldsUi = {
     og: "Карточка, которую покажут другие сайты и мессенджеры, когда кто-то поделится ссылкой на проект.",
     jsonLd: "Структурированные данные: что сайт сообщает машинам о себе. Разметка LocalBusiness читает секцию адреса.",
     analytics: "Google Analytics не работает без идентификатора счётчика — один переключатель ничего не включает.",
+    logoImages: "Любая картинка здесь необязательна: без неё проект показывает собственную заглушку.",
+    pwa: "Как проект выглядит установленным приложением. НАБОР значков по-прежнему нарезается в панели — такой двери здесь пока нет.",
+    socials: "Ссылки идут в подвал сайта, в карточку OG и в разметку Organization. У каждой записи своё правило адреса, поэтому ссылка считается, а не угадывается.",
   },
   fields: {
+    'author.image': { label: 'Фотография' },
+    logo: { label: 'Логотип' },
+    'images.ogImage': { label: 'Картинка для соцсетей (OG)' },
+    'images.homePage-light': { label: 'Иллюстрация главной (светлая)' },
+    'images.homePage-dark': { label: 'Иллюстрация главной (тёмная)' },
+    'images.loading-light': { label: 'Загрузка (светлая)' },
+    'images.loading-dark': { label: 'Загрузка (тёмная)' },
+    'images.notFound-light': { label: '404 (светлая)' },
+    'images.notFound-dark': { label: '404 (тёмная)' },
+    'images.error500-light': { label: '500 (светлая)' },
+    'images.error500-dark': { label: '500 (тёмная)' },
+    'pwa.themeColor': { label: 'Цвет темы', placeholder: '#ffffff' },
+    'pwa.backgroundColor': { label: 'Цвет фона', placeholder: '#ffffff' },
+    'pwa.display': { label: 'Режим окна' },
+    'pwa.orientation': { label: 'Ориентация' },
+    'pwa.startUrl': { label: 'Стартовый адрес', placeholder: '/' },
+    'pwa.scope': { label: 'Область приложения', placeholder: '/' },
+    'themeColors.light': { label: 'Цвет строки браузера (светлая)', placeholder: '#ffffff' },
+    'themeColors.dark': { label: 'Цвет строки браузера (тёмная)', placeholder: '#09090b' },
+    'seo.socialLinks': { label: 'Соцсети' },
     "author.name": { label: "Имя" },
     "author.email": { label: "Почта" },
     "author.url": { label: "Адрес страницы" },
@@ -227,6 +303,17 @@ const ru: FieldsUi = {
   notTranslated: "перевода нет",
   locked: "только чтение",
   lockedHint: "Значение следует за адресом, на который сервер реально отвечает.",
+  upload: "Загрузить",
+  uploaded: "Картинка загружена",
+  uploadFailed: "Не удалось загрузить картинку",
+  clear: "Убрать картинку",
+  noImage: "Картинки пока нет — проект показывает встроенную заглушку.",
+  socialsEmpty: "Сетей пока нет.",
+  socialName: "Сеть",
+  socialValue: "Псевдоним или адрес",
+  socialTemplate: "Правило адреса",
+  socialAdd: "Добавить сеть",
+  socialRemove: "Убрать сеть",
 }
 
 const DICT: Record<string, FieldsUi> = { en, ru }

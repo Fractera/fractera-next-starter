@@ -16,7 +16,16 @@
 // `configValueForLang()` в `config/app-config.ts`. Пометить языковым шестое поле
 // значит записать перевод, который никто никогда не прочитает.
 
-export type FieldType = "text" | "textarea" | "number" | "select" | "switch"
+export type FieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "select"
+  | "switch"
+  /** Картинка: значение — адрес файла, а сам файл живёт в хранилище. */
+  | "image"
+  /** Конструктор соцсетей: список записей, а не поле ввода. */
+  | "socials"
 
 export type Field = {
   /** Путь значения в `app-config.json`, точками. */
@@ -60,16 +69,15 @@ export const SECTIONS: readonly Section[] = [
   {
     id: "author",
     group: "basics",
-    // 🔒 `author.image` ЗДЕСЬ НЕТ, И ЭТО НЕ ПОТЕРЯ. Фотография — поле-картинка,
-    // а картинки едут отдельным подшагом (31-7) вместе с логотипом и значками:
-    // у них своя механика загрузки, и втащить одно поле раньше её значило бы
-    // построить эту механику дважды. Сверка полноты — 31-8.
+    // `author.image` вернулось сюда в 31-7 вместе с механикой картинок — на своё
+    // место из панели, а не в чужую секцию.
     fields: [
       { path: "author.name", type: "text" },
       { path: "author.email", type: "text" },
       { path: "author.url", type: "text" },
       { path: "author.jobTitle", type: "text" },
       { path: "author.bio", type: "textarea" },
+      { path: "author.image", type: "image" },
       { path: "author.twitter", type: "text" },
       { path: "author.linkedin", type: "text" },
       { path: "author.facebook", type: "text" },
@@ -123,6 +131,50 @@ export const SECTIONS: readonly Section[] = [
     fields: [
       { path: "analytics.enabled", type: "switch" },
       { path: "analytics.googleAnalyticsId", type: "text" },
+    ],
+  },
+  {
+    id: "logoImages",
+    group: "metaMedia",
+    fields: [
+      { path: "logo", type: "image" },
+      { path: "images.ogImage", type: "image" },
+      { path: "images.homePage-light", type: "image" },
+      { path: "images.homePage-dark", type: "image" },
+      { path: "images.loading-light", type: "image" },
+      { path: "images.loading-dark", type: "image" },
+      { path: "images.notFound-light", type: "image" },
+      { path: "images.notFound-dark", type: "image" },
+      { path: "images.error500-light", type: "image" },
+      { path: "images.error500-dark", type: "image" },
+    ],
+  },
+  {
+    id: "pwa",
+    group: "metaMedia",
+    // 🛑 `iconSet` СЮДА НЕ ВХОДИТ, И ЭТО НЕ ЗАБЫВЧИВОСТЬ (измерено 31-7).
+    // Набор значков — не картинка, а СТРУКТУРА (`{ setId, files: {...} }`), которую
+    // НАРЕЗАЕТ панель из одного квадратного источника. В гостевом слое есть только
+    // дверь отдачи готового файла (`api/media/icons/[setId]/file`) — двери, которая
+    // набор ПОРОЖДАЕТ, здесь нет вовсе. Инструмент есть, право есть, а третьего
+    // звена — двери — нет: это тупик, и объявляется он заранее, а не всплывает
+    // сломанной кнопкой. Пока звена нет, значки остаются в панели.
+    fields: [
+      { path: "pwa.themeColor", type: "text" },
+      { path: "pwa.backgroundColor", type: "text" },
+      { path: "pwa.display", type: "select", options: ["standalone", "fullscreen", "minimal-ui", "browser"] },
+      { path: "pwa.orientation", type: "select", options: ["portrait-primary", "landscape-primary", "any"] },
+      { path: "pwa.startUrl", type: "text" },
+      { path: "pwa.scope", type: "text" },
+      { path: "themeColors.light", type: "text" },
+      { path: "themeColors.dark", type: "text" },
+    ],
+  },
+  {
+    id: "socials",
+    group: "metaMedia",
+    fields: [
+      { path: "seo.socialLinks", type: "socials" },
     ],
   },
   {
@@ -195,6 +247,20 @@ export function patchAtPath(path: string, value: unknown): Record<string, unknow
  */
 export function typedValue(field: Field, raw: string): unknown {
   if (field.type === "switch") return raw === "true"
+  // 🔒 СПИСОК СОЦСЕТЕЙ ЕДЕТ ЧЕРЕЗ СОСТОЯНИЕ ФОРМЫ СТРОКОЙ JSON, и это осознанно:
+  // движок держит значения полей в `Record<string, string>`, и заводить второе
+  // хранилище ради одного поля значило бы иметь два правила «что считать
+  // изменённым». Разбор здесь, на границе с конфигом, где он и нужен.
+  // Разбор не удался — отдаём пустой список, а не мусор: испорченное значение
+  // должно очистить список, а не записать в конфиг строку вместо массива.
+  if (field.type === "socials") {
+    try {
+      const parsed: unknown = JSON.parse(raw || "[]")
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
   if (field.type === "number") {
     if (raw.trim() === "") return null
     const n = Number(raw)

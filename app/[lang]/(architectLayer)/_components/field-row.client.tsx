@@ -8,6 +8,8 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Small } from "@/components/ui/typography"
 import VoiceInput from "@/_tools/voice-input/client/voice-input.client"
+import { ImageField } from "./image-field.client"
+import { SocialsField } from "./socials-field.client"
 import type { Field } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
@@ -110,6 +112,10 @@ export function FieldRow({
             disabled={field.locked}
             onCheckedChange={next => onChange(next ? "true" : "false")}
           />
+        ) : field.type === "image" ? (
+          <ImageField id={id} value={value} disabled={field.locked} onChange={onChange} ui={ui} />
+        ) : field.type === "socials" ? (
+          <SocialsField value={value} disabled={field.locked} onChange={onChange} ui={ui} />
         ) : field.type === "select" ? (
           <select
             id={id}

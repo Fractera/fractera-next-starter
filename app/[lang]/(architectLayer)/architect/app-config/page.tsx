@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/content-page/page-header.server"
 import { P } from "@/components/ui/typography"
 import { getAppConfig } from "@/config/app-config"
 import { adminUrlFromSite } from "@/lib/site-urls"
+import { resolveSocialLinks } from "@/config/app-config.defaults"
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from "@/config/translations/translations.config"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { fieldsUi } from "../../_i18n/fields.i18n"
@@ -78,6 +79,17 @@ export default async function ArchitectAppConfigPage({
     if (isTranslation && typeof translation === "string" && translation.trim() !== "") {
       translatedPaths.push(field.path)
     }
+    // 🔒 СПИСОК СОЦСЕТЕЙ ЕДЕТ СТРОКОЙ JSON — движок держит значения полей
+    // строками, и второе хранилище ради одного поля дало бы два правила «что
+    // считать изменённым». Читается он общим резолвером (`resolveSocialLinks`),
+    // тем же, которым подвал сайта решает, что показывать: два места, считающие
+    // список по-разному, разойдутся на первой же старой записи.
+    if (field.type === "socials") {
+      const cfg = getAppConfig()
+      values[field.path] = JSON.stringify(resolveSocialLinks(cfg.seo))
+      continue
+    }
+
     values[field.path] =
       translation ?? asText(atPath(raw, field.path) ?? atPath(effective, field.path))
   }

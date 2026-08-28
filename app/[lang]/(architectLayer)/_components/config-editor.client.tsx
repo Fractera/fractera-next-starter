@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { H3, Small } from "@/components/ui/typography"
 import { FieldRow } from "./field-row.client"
-import { patchAtPath, mergePatches, type Section } from "../_lib/fields"
+import { patchAtPath, mergePatches, typedValue, type Section } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
 // ФОРМА ОДНОЙ ГРУППЫ (31-4, 2026-08-28). Порт `settings-editor.client.tsx` панели.
@@ -76,7 +76,11 @@ export function ConfigEditor({
       const field = all.find(f => f.path === path)
       const value = values[path]
       const perLangTranslation = field?.perLang && editLang !== defaultLang
-      if (!perLangTranslation) return patchAtPath(path, value)
+      // 🔒 ЗНАЧЕНИЕ ПРИВОДИТСЯ К ТИПУ КОНФИГА. Форма держит всё строками, конфиг —
+      // нет; строка `"true"` в булевом поле теряется молча, потому что проверка на
+      // чтении щадящая и уронит её на умолчание.
+      if (!perLangTranslation) return patchAtPath(path, field ? typedValue(field, value) : value)
+      // Перевод всегда строка: языковыми бывают только текстовые поля.
       // Пустой перевод стирается: `null` в заплате удаляет ключ.
       return patchAtPath(`i18n.${path}.${editLang}`, value.trim() === "" ? null : value)
     })

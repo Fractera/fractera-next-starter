@@ -12,7 +12,20 @@
 // путь есть контракт с читателями конфига и не меняется никогда, подпись —
 // человеческий текст, который правится и переводится свободно.
 
-export type FieldWords = { label: string; hint?: string; placeholder?: string }
+export type FieldWords = {
+  label: string
+  hint?: string
+  placeholder?: string
+  /**
+   * Подписи вариантов списка: значение → слово.
+   *
+   * 🔒 ЗНАЧЕНИЯ ЖИВУТ В ОПИСАНИИ ПОЛЯ, СЛОВА — ЗДЕСЬ. Значение (`allow`) есть
+   * контракт с читателями конфига и не переводится никогда; слово («Разрешить
+   * индексацию») — человеческий текст. Слить их в одно место значило бы либо
+   * заморозить перевод в контракте, либо переводить контракт.
+   */
+  options?: Record<string, string>
+}
 
 export type FieldsUi = {
   /** Заголовки секций по `id`. */
@@ -50,12 +63,19 @@ const en: FieldsUi = {
     author: "Author",
     commerce: "Commerce",
     geo: "Local business / address",
+    seo: "SEO",
+    og: "OpenGraph",
+    jsonLd: "Structured data (JSON-LD)",
+    analytics: "Analytics",
   },
   sectionHints: {
     author: "Default author used in metadata and Person structured data.",
     commerce:
       "The currency every price on the site is shown and published in. A price without a currency means nothing to a visitor, and product markup without it is rejected by search engines outright.",
     geo: "Only used when the LocalBusiness schema is on.",
+    og: "The card other sites and messengers show when someone shares a link to this project.",
+    jsonLd: "Structured data: what the site tells machines about itself. LocalBusiness reads the address section.",
+    analytics: "Google Analytics stays off until a measurement ID is entered — the switch alone changes nothing.",
   },
   fields: {
     "author.name": { label: "Name" },
@@ -66,6 +86,31 @@ const en: FieldsUi = {
     "author.twitter": { label: "Twitter", placeholder: "@handle or URL" },
     "author.linkedin": { label: "LinkedIn" },
     "author.facebook": { label: "Facebook" },
+    "seo.indexing": {
+      label: "Indexing",
+      options: { allow: "Allow (index this site)", disallow: "Disallow (no-index)" },
+    },
+    "seo.titleTemplate": { label: "Title template", placeholder: "%s | Brand", hint: "%s is the page title." },
+    "seo.robotsIndex": { label: "Robots: index" },
+    "seo.robotsFollow": { label: "Robots: follow" },
+    "seo.keywords": { label: "Keywords", placeholder: "comma, separated" },
+    "seo.canonicalBase": {
+      label: "Canonical base URL",
+      hint: "Same address as Site URL — search engines use it to name the one true copy of a page.",
+    },
+    "seo.sitemapUrl": { label: "Sitemap URL", hint: "The site map the app generates at that address." },
+    "seo.googleVerification": { label: "Google verification" },
+    "seo.yandexVerification": { label: "Yandex verification" },
+    "og.type": { label: "Type", options: { website: "website", article: "article", product: "product" } },
+    "og.siteName": { label: "Site name" },
+    "og.locale": { label: "Locale", placeholder: "en_US" },
+    "og.imageWidth": { label: "Image width", placeholder: "1200" },
+    "og.imageHeight": { label: "Image height", placeholder: "630" },
+    "jsonLd.website": { label: "WebSite schema" },
+    "jsonLd.organization": { label: "Organization schema" },
+    "jsonLd.localBusiness": { label: "LocalBusiness schema" },
+    "analytics.enabled": { label: "Enable Google Analytics" },
+    "analytics.googleAnalyticsId": { label: "Measurement ID", placeholder: "G-XXXXXXX" },
     "commerce.currency": { label: "Currency", placeholder: "USD · EUR · PLN · RUB" },
     "geo.address": { label: "Street address" },
     "geo.city": { label: "City" },
@@ -102,12 +147,19 @@ const ru: FieldsUi = {
     author: "Автор",
     commerce: "Торговля",
     geo: "Адрес и организация",
+    seo: "Поиск",
+    og: "Карточка ссылки (OpenGraph)",
+    jsonLd: "Разметка для машин (JSON-LD)",
+    analytics: "Аналитика",
   },
   sectionHints: {
     author: "Автор по умолчанию: он подставляется в мету страниц и в разметку «Person» для поисковиков.",
     commerce:
       "Валюта, в которой сайт показывает и публикует любую цену. Цена без валюты ничего не значит для посетителя, а разметку товара без неё поисковик отвергает целиком — карточка с ценой просто не появляется.",
     geo: "Используется, только когда включена разметка LocalBusiness.",
+    og: "Карточка, которую покажут другие сайты и мессенджеры, когда кто-то поделится ссылкой на проект.",
+    jsonLd: "Структурированные данные: что сайт сообщает машинам о себе. Разметка LocalBusiness читает секцию адреса.",
+    analytics: "Google Analytics не работает без идентификатора счётчика — один переключатель ничего не включает.",
   },
   fields: {
     "author.name": { label: "Имя" },
@@ -118,6 +170,35 @@ const ru: FieldsUi = {
     "author.twitter": { label: "Twitter", placeholder: "@ник или адрес" },
     "author.linkedin": { label: "LinkedIn" },
     "author.facebook": { label: "Facebook" },
+    "seo.indexing": {
+      label: "Индексация",
+      options: { allow: "Разрешить (сайт в поиске)", disallow: "Запретить (скрыть из поиска)" },
+    },
+    "seo.titleTemplate": {
+      label: "Шаблон заголовка",
+      placeholder: "%s | Бренд",
+      hint: "%s — это заголовок самой страницы.",
+    },
+    "seo.robotsIndex": { label: "Роботам: индексировать" },
+    "seo.robotsFollow": { label: "Роботам: ходить по ссылкам" },
+    "seo.keywords": { label: "Ключевые слова", placeholder: "через, запятую" },
+    "seo.canonicalBase": {
+      label: "Канонический адрес",
+      hint: "Тот же адрес, что и адрес сайта: по нему поисковик решает, какая копия страницы настоящая.",
+    },
+    "seo.sitemapUrl": { label: "Адрес карты сайта", hint: "Карта, которую приложение отдаёт по этому адресу." },
+    "seo.googleVerification": { label: "Подтверждение Google" },
+    "seo.yandexVerification": { label: "Подтверждение Яндекса" },
+    "og.type": { label: "Тип", options: { website: "сайт", article: "статья", product: "товар" } },
+    "og.siteName": { label: "Имя сайта в карточке" },
+    "og.locale": { label: "Локаль", placeholder: "ru_RU" },
+    "og.imageWidth": { label: "Ширина картинки", placeholder: "1200" },
+    "og.imageHeight": { label: "Высота картинки", placeholder: "630" },
+    "jsonLd.website": { label: "Разметка WebSite" },
+    "jsonLd.organization": { label: "Разметка Organization" },
+    "jsonLd.localBusiness": { label: "Разметка LocalBusiness" },
+    "analytics.enabled": { label: "Включить Google Analytics" },
+    "analytics.googleAnalyticsId": { label: "Идентификатор счётчика", placeholder: "G-XXXXXXX" },
     "commerce.currency": { label: "Валюта", placeholder: "USD · EUR · PLN · RUB" },
     "geo.address": { label: "Улица и дом" },
     "geo.city": { label: "Город" },

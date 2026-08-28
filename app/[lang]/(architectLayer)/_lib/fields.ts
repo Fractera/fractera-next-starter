@@ -83,6 +83,49 @@ export const SECTIONS: readonly Section[] = [
     ],
   },
   {
+    id: "seo",
+    group: "seo",
+    fields: [
+      { path: "seo.indexing", type: "select", options: ["allow", "disallow"] },
+      { path: "seo.titleTemplate", type: "text", perLang: true },
+      { path: "seo.robotsIndex", type: "switch" },
+      { path: "seo.robotsFollow", type: "switch" },
+      { path: "seo.keywords", type: "textarea", perLang: true },
+      { path: "seo.canonicalBase", type: "text", locked: true },
+      { path: "seo.sitemapUrl", type: "text", locked: true },
+      { path: "seo.googleVerification", type: "text" },
+      { path: "seo.yandexVerification", type: "text" },
+    ],
+  },
+  {
+    id: "og",
+    group: "seo",
+    fields: [
+      { path: "og.type", type: "select", options: ["website", "article", "product"] },
+      { path: "og.siteName", type: "text", perLang: true },
+      { path: "og.locale", type: "text" },
+      { path: "og.imageWidth", type: "number" },
+      { path: "og.imageHeight", type: "number" },
+    ],
+  },
+  {
+    id: "jsonLd",
+    group: "seo",
+    fields: [
+      { path: "jsonLd.website", type: "switch" },
+      { path: "jsonLd.organization", type: "switch" },
+      { path: "jsonLd.localBusiness", type: "switch" },
+    ],
+  },
+  {
+    id: "analytics",
+    group: "seo",
+    fields: [
+      { path: "analytics.enabled", type: "switch" },
+      { path: "analytics.googleAnalyticsId", type: "text" },
+    ],
+  },
+  {
     id: "geo",
     group: "basics",
     fields: [
@@ -136,6 +179,28 @@ export function patchAtPath(path: string, value: unknown): Record<string, unknow
     }
   })
   return out
+}
+
+/**
+ * Значение поля в ТИПЕ КОНФИГА, а не в типе формы.
+ *
+ * 🔒 ФОРМА ДЕРЖИТ ВСЁ СТРОКАМИ — так устроен ввод в браузере. Конфиг держит
+ * булево булевым и число числом, и записать туда строку `"true"` значит потерять
+ * настройку МОЛЧА: проверка на чтении щадящая, она уронит ключ неверного типа на
+ * его умолчание и не скажет ни слова. Переключатель останется выключенным, а
+ * человек будет уверен, что включил его.
+ *
+ * Пустое число — это `null` (то есть «стереть»), а не `0`: ноль ширины картинки
+ * и отсутствие ширины — разные вещи, и превращать одно в другое нельзя.
+ */
+export function typedValue(field: Field, raw: string): unknown {
+  if (field.type === "switch") return raw === "true"
+  if (field.type === "number") {
+    if (raw.trim() === "") return null
+    const n = Number(raw)
+    return Number.isFinite(n) ? n : null
+  }
+  return raw
 }
 
 /** Слияние заплат в одну — по тем же правилам, что у писателя на сервере. */

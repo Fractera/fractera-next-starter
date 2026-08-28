@@ -119,7 +119,7 @@ export function FieldRow({
             className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-[length:var(--fs-body)]"
           >
             {(field.options ?? []).map(option => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>{words.options?.[option] ?? option}</option>
             ))}
           </select>
         ) : (

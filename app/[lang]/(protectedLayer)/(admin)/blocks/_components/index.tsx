@@ -3,6 +3,7 @@ import { SPECIMEN } from '../_data/specimen'
 import { blocksCatalogueUi } from '../_data/ui.i18n'
 import { H1 } from '@/components/ui/typography'
 import { PageHeader } from "@/components/content-page/page-header.server"
+import { FormElements } from "./form-elements"
 
 // Каталог секций — единственное место, где КАЖДЫЙ вид блока действительно
 // рисуется. Страница живёт в слое прав `admin`: она инструмент архитектора, а не
@@ -21,6 +22,12 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
     <main className="min-h-screen bg-background text-foreground">
       <div data-app-column className="flex flex-col gap-10 px-6 py-[var(--page-py-content)]">
         <PageHeader lang={lang} eyebrow={`${SPECIMEN.length} ${ui.countLabel}`} title={ui.title} subtitle={ui.subtitle} />
+
+        {/* 🔒 ЭЛЕМЕНТЫ ФОРМЫ СТОЯТ ОТДЕЛЬНО ОТ КАТАЛОГА КОНТЕНТА, а не в общем
+            списке: 44 вида ниже — это то, из чего собирают СТРАНИЦУ, а здесь то,
+            из чего собирают ФОРМУ. Смешать их в один поток значило бы предложить
+            поставить поле ввода в статью. */}
+        <FormElements lang={lang} />
 
         {SPECIMEN.map(section => (
           <section key={section.kind} className="flex flex-col gap-4">

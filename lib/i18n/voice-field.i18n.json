@@ -17,7 +17,13 @@
     "mic": "Hold to speak",
     "fieldTitle": "Field with voice input",
     "fieldHint": "Type, or hold the microphone and speak — the transcript lands where your cursor is.",
-    "fieldComment": "Voice input needs a secure connection and the OpenAI key. Without either the field still accepts typing."
+    "fieldComment": "Voice input needs a secure connection and the OpenAI key. Without either the field still accepts typing.",
+    "specimenTitle": "Form elements with voice",
+    "specimenNote": "Two elements, one mechanism. The field keeps the microphone inside it, on the right; the text area keeps it underneath, across the full width — a button beside a three-line box has no edge to sit on.",
+    "specimenFieldCaption": "Single-line field — microphone built into the field",
+    "specimenAreaCaption": "Text area — microphone underneath, full width",
+    "specimenI18nTitle": "These words come from one file, in two languages",
+    "specimenI18nNote": "Everything you read inside these two elements lives in lib/i18n/voice-field.i18n.json. Two commands take it to an external model and bring the answer back — the same pair works for any dictionary in DICTS."
   },
   "es": {
     "hold": "Mantén para hablar",
@@ -85,7 +91,13 @@
     "mic": "Удерживайте для речи",
     "fieldTitle": "Поле с голосовым вводом",
     "fieldHint": "Печатайте или удерживайте микрофон и говорите — расшифровка встанет туда, где курсор.",
-    "fieldComment": "Голосовому вводу нужны защищённое соединение и ключ OpenAI. Без них поле по-прежнему принимает набор с клавиатуры."
+    "fieldComment": "Голосовому вводу нужны защищённое соединение и ключ OpenAI. Без них поле по-прежнему принимает набор с клавиатуры.",
+    "specimenTitle": "Элементы формы с голосом",
+    "specimenNote": "Два элемента, одна механика. У поля микрофон встроен справа, у области текста — снизу во всю ширину: рядом с полем на три строки кнопке не на что опереться.",
+    "specimenFieldCaption": "Однострочное поле — микрофон встроен в поле",
+    "specimenAreaCaption": "Область текста — микрофон снизу, во всю ширину",
+    "specimenI18nTitle": "Эти слова берутся из одного файла, на двух языках",
+    "specimenI18nNote": "Всё, что вы читаете внутри этих двух элементов, лежит в lib/i18n/voice-field.i18n.json. Две команды отдают его внешней модели и вносят ответ обратно — та же пара работает для любого словаря из DICTS."
   },
   "de": {
     "hold": "Zum Sprechen halten",

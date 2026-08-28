@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Linkedin, Facebook, Boxes, SlidersHorizontal } from "lucide-react";
+import { Github, Linkedin, Facebook, Boxes, SlidersHorizontal, Wrench } from "lucide-react";
 import { BrandX } from "@/components/icons/brand-x";
 import { getAppConfig } from "@/config/app-config";
 import { resolveSocialLinks, socialHref } from "@/config/app-config.defaults";
@@ -9,7 +9,7 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi } from "@/components/menu/footer/footer-menu.i18n";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
@@ -187,6 +187,32 @@ export function FooterMenu({ lang }: { lang: string }) {
                   украшение; на узком экране режется украшение. */}
               <Boxes className="hidden size-3.5 sm:inline-block" />
               {architectureLinkUi(lang).footer}
+            </Link>
+
+            {/* 🔒 ВХОД В СЛОЙ АРХИТЕКТОРА (шаг 31-1, решение владельца 2026-08-28:
+                «я хочу в подвал сайта по 3000 перенести вкладку для работа с App
+                CONFIG»). Настройки проекта переезжают из панели внутрь самого
+                проекта, и вход к ним — здесь, рядом со входом в панель.
+
+                🔒 ССЫЛКА ВИДНА ВСЕМ, И ЭТО НЕ ДЫРА В ДОСТУПЕ. Подвал НЕ читает
+                сессию намеренно: одна строка с `cookies()` сделала бы динамическим
+                ВЕСЬ публичный слой и убила бы поиск. Закрывает не видимость
+                ссылки, а замок страницы (`(architectLayer)/layout.tsx`) и двери
+                `/api/*`: посторонний, нажав, получает отказ, а не настройки.
+                Ровно так же здесь живёт соседняя ссылка на панель.
+
+                `rel="nofollow"` и `Link`: страница служебная и поисковику не
+                нужна, но она СВОЯ — в отличие от панели, которая живёт на чужом
+                поддомене и потому берёт `<a>`. */}
+            <Link
+              href={`/${lang}/architect/app-config`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              {/* Значок прячется на телефоне — то же правило, что у соседей:
+                  на узкой полосе режется украшение, а не слово. */}
+              <Wrench className="hidden size-3.5 sm:inline-block" />
+              {architectLinkUi(lang).footer}
             </Link>
 
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).

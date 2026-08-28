@@ -154,6 +154,31 @@ export function adminLinkLabels(lang: string): AdminLinkLabels {
   return ADMIN_LINK[lang] ?? ADMIN_LINK.en;
 }
 
+// ─── Architect layer (footer) ────────────────────────────────────────────────
+//
+// Подпись входа в слой архитектора — страницу настроек проекта ВНУТРИ самого
+// проекта (шаг 31-1, решение владельца 2026-08-28).
+//
+// 🔒 СЛОВО НЕ ПОВТОРЯЕТ СОСЕДА. Рядом стоит «Панель управления» — чужой
+// поддомен, где живёт платформа. Здесь настройки самого проекта, и назвать это
+// вторыми «настройками» значило бы поставить в один ряд две кнопки, между
+// которыми человек выбирает наугад.
+//
+// 🔒 ЯЗЫКОВ ДВА, И ЭТО НАЗВАНО ЧЕСТНО. Владелец 2026-08-28: «en + ru сейчас,
+// остальные файлом позже» — набор строк слоя ещё меняется каждый подшаг, и
+// переводить его сейчас значит переводить дважды. Резолвер откатывается на
+// английский, поэтому остальные языки видят рабочую кнопку, а не пустоту.
+export type ArchitectLinkUi = { footer: string };
+
+const ARCHITECT_LINK: Record<string, ArchitectLinkUi> = {
+  en: { footer: "Project settings" },
+  ru: { footer: "Настройки проекта" },
+};
+
+export function architectLinkUi(lang: string): ArchitectLinkUi {
+  return ARCHITECT_LINK[lang] ?? ARCHITECT_LINK.en;
+}
+
 // ─── Content-width toggle (footer) ───────────────────────────────────────────
 // aria-label/title for the wide/narrow screen-width button (ported from the Projects
 // zone). Admin-layers ten (rule 4г); English fallback for any other language.

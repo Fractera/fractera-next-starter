@@ -84,6 +84,14 @@ export default async function ArchitectAppConfigPage({
     // считать изменённым». Читается он общим резолвером (`resolveSocialLinks`),
     // тем же, которым подвал сайта решает, что показывать: два места, считающие
     // список по-разному, разойдутся на первой же старой записи.
+    if (field.type === "icons") {
+      // Полю нужен только идентификатор действующего набора: сами файлы живут в
+      // слое данных и адресуются от него.
+      const set = getAppConfig().iconSet
+      values[field.path] = set?.id ?? ""
+      continue
+    }
+
     if (field.type === "socials") {
       const cfg = getAppConfig()
       values[field.path] = JSON.stringify(resolveSocialLinks(cfg.seo))

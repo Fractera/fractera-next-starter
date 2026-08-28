@@ -61,6 +61,14 @@ export type FieldsUi = {
   uploadFailed: string
   clear: string
   noImage: string
+  /** Набор значков приложения. */
+  iconsSlice: string
+  iconsDrop: string
+  iconsDone: string
+  iconsDropped: string
+  iconsFailed: string
+  iconsCurrent: string
+  iconsNone: string
   /** Конструктор соцсетей. */
   socialsEmpty: string
   socialName: string
@@ -93,7 +101,7 @@ const en: FieldsUi = {
     jsonLd: "Structured data: what the site tells machines about itself. LocalBusiness reads the address section.",
     analytics: "Google Analytics stays off until a measurement ID is entered — the switch alone changes nothing.",
     logoImages: "Every picture here is optional: without one the project shows its own placeholder.",
-    pwa: "How the project looks once it is installed as an app. The icon SET is still generated in the control panel — that door does not exist here yet.",
+    pwa: "How the project looks once it is installed as an app. Give one square image and the server cuts the whole icon set from it.",
     socials: "Linked from the footer, the OG card and Organization sameAs. Each entry carries its own address rule, so the link is computed rather than guessed.",
   },
   fields: {
@@ -117,6 +125,7 @@ const en: FieldsUi = {
     'themeColors.light': { label: 'Browser bar color (light)', placeholder: '#ffffff' },
     'themeColors.dark': { label: 'Browser bar color (dark)', placeholder: '#09090b' },
     'seo.socialLinks': { label: 'Social networks' },
+    iconSet: { label: 'App icon set' },
     "author.name": { label: "Name" },
     "author.email": { label: "Email" },
     "author.url": { label: "URL" },
@@ -183,6 +192,13 @@ const en: FieldsUi = {
   uploadFailed: "Could not upload the image",
   clear: "Clear the image",
   noImage: "No image yet — the project shows its built-in placeholder.",
+  iconsSlice: "Slice from an image",
+  iconsDrop: "Remove the set",
+  iconsDone: "The icon set is ready",
+  iconsDropped: "The set is removed — the project icons are back",
+  iconsFailed: "Could not slice the icon set",
+  iconsCurrent: "This set is in use: favicon, home-screen icon and the app manifest.",
+  iconsNone: "No set yet — the project uses the icons it ships with. Give one square image and the server cuts the rest.",
   socialsEmpty: "No networks yet.",
   socialName: "Network",
   socialValue: "Handle or address",
@@ -214,7 +230,7 @@ const ru: FieldsUi = {
     jsonLd: "Структурированные данные: что сайт сообщает машинам о себе. Разметка LocalBusiness читает секцию адреса.",
     analytics: "Google Analytics не работает без идентификатора счётчика — один переключатель ничего не включает.",
     logoImages: "Любая картинка здесь необязательна: без неё проект показывает собственную заглушку.",
-    pwa: "Как проект выглядит установленным приложением. НАБОР значков по-прежнему нарезается в панели — такой двери здесь пока нет.",
+    pwa: "Как проект выглядит установленным приложением. Дайте одну квадратную картинку — весь набор значков сервер нарежет из неё сам.",
     socials: "Ссылки идут в подвал сайта, в карточку OG и в разметку Organization. У каждой записи своё правило адреса, поэтому ссылка считается, а не угадывается.",
   },
   fields: {
@@ -238,6 +254,7 @@ const ru: FieldsUi = {
     'themeColors.light': { label: 'Цвет строки браузера (светлая)', placeholder: '#ffffff' },
     'themeColors.dark': { label: 'Цвет строки браузера (тёмная)', placeholder: '#09090b' },
     'seo.socialLinks': { label: 'Соцсети' },
+    iconSet: { label: 'Набор значков приложения' },
     "author.name": { label: "Имя" },
     "author.email": { label: "Почта" },
     "author.url": { label: "Адрес страницы" },
@@ -308,6 +325,13 @@ const ru: FieldsUi = {
   uploadFailed: "Не удалось загрузить картинку",
   clear: "Убрать картинку",
   noImage: "Картинки пока нет — проект показывает встроенную заглушку.",
+  iconsSlice: "Нарезать из картинки",
+  iconsDrop: "Убрать набор",
+  iconsDone: "Набор значков готов",
+  iconsDropped: "Набор убран — вернулись значки проекта",
+  iconsFailed: "Не удалось нарезать набор",
+  iconsCurrent: "Этот набор используется: значок вкладки, значок на домашнем экране и манифест приложения.",
+  iconsNone: "Набора пока нет — проект показывает свои встроенные значки. Дайте одну квадратную картинку, остальное сервер нарежет сам.",
   socialsEmpty: "Сетей пока нет.",
   socialName: "Сеть",
   socialValue: "Псевдоним или адрес",

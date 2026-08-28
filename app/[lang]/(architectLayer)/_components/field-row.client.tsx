@@ -10,6 +10,7 @@ import { Small } from "@/components/ui/typography"
 import VoiceInput from "@/_tools/voice-input/client/voice-input.client"
 import { ImageField } from "./image-field.client"
 import { SocialsField } from "./socials-field.client"
+import { IconsField } from "./icons-field.client"
 import type { Field } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
@@ -114,6 +115,8 @@ export function FieldRow({
           />
         ) : field.type === "image" ? (
           <ImageField id={id} value={value} disabled={field.locked} onChange={onChange} ui={ui} />
+        ) : field.type === "icons" ? (
+          <IconsField current={value} ui={ui} />
         ) : field.type === "socials" ? (
           <SocialsField value={value} disabled={field.locked} onChange={onChange} ui={ui} />
         ) : field.type === "select" ? (

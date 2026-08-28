@@ -13,7 +13,8 @@
 // Что проверяется:
 //   1. Перечень поверхностей существует и не пуст.
 //   2. У КАЖДОЙ поверхности из перечня есть markdown-маршрут `<путь>/index.md`.
-//   3. Ни один markdown-маршрут не лежит в группе прав `(protectedLayer)`:
+//   3. Ни один markdown-маршрут не лежит в ЗАКРЫТОМ слое (`(protectedLayer)`,
+//      `(architectLayer)`):
 //      карта для ИИ — приглашение прочитать, и закрытые адреса в неё не попадают.
 //   4. Файлы карты существуют в корне и на язык.
 //   5. `llms-full.txt` нигде не назван стандартом: его нет в спецификации.
@@ -64,7 +65,15 @@ function walkPages(dir, out = []) {
 }
 
 const mdRoutes = walkDirs(LANG_DIR, "index.md");
-const pageDirs = walkPages(LANG_DIR).filter(d => !rel(d).includes("(protectedLayer)"));
+// 🔒 ЗАКРЫТЫЕ СЛОИ — ОДИН СПИСОК, А НЕ ПОВТОРЁННАЯ СТРОКА (31-8, 2026-08-28).
+// Слой архитектора добавился после того, как гейт был написан, и требование
+// markdown-версии прилетело странице настроек: по модели гейта всё, что не
+// `(protectedLayer)`, публично. Карта для ИИ — приглашение прочитать; страница за
+// замком роли в неё не попадает, и markdown-двойник ей не нужен.
+const CLOSED_LAYERS = ["(protectedLayer)", "(architectLayer)"];
+const isClosed = p => CLOSED_LAYERS.some(m => p.includes(m));
+
+const pageDirs = walkPages(LANG_DIR).filter(d => !isClosed(rel(d)));
 
 for (const dir of pageDirs) {
   if (!fs.existsSync(path.join(dir, "index.md", "route.ts"))) {
@@ -74,7 +83,7 @@ for (const dir of pageDirs) {
 
 // 3 — ничего закрытого.
 for (const dir of mdRoutes) {
-  if (rel(dir).includes("(protectedLayer)")) {
+  if (isClosed(rel(dir))) {
     errors.push(`${rel(dir)}: markdown-версия у страницы за ролью — закрытый адрес не публикуется`);
   }
 }

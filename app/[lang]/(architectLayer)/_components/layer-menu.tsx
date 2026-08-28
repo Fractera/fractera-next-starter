@@ -86,7 +86,7 @@ export function LayerMenu({
                   <ExternalLink className="sr-only" aria-hidden />
                 </a>
               ) : (
-                <span data-group={group.id} data-in-panel="true" className={base + " text-muted-foreground/70"}>
+                <span data-group={group.id} data-in-panel="true" className={base + " text-muted-foreground"}>
                   {inner}
                 </span>
               )}

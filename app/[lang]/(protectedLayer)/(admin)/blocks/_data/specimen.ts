@@ -464,4 +464,26 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'voiceField',
+    when: "A text field that can be dictated — the first kind of the catalogue that TAKES something from a visitor instead of showing them something. One kind, two sizes: 'line' puts the microphone inside the frame of a single-line input, 'area' puts a full-width button under a text area. While recording, an equaliser bar appears below; when recording stops, the bar is REPLACED in the same place by the transcript, which the visitor edits before accepting. It has NO receiver, by the owner's decision of 2026-08-28: the text lives in the browser and disappears on reload, so this is not a contact form. Transcription needs HTTPS, a session and a server key; without them the field stays an ordinary input and says why the microphone is unavailable.",
+    blocks: [
+      {
+        kind: 'voiceField',
+        variant: 'line',
+        title: 'What should the assistant be called?',
+        hint: 'One word or two. Hold the microphone and say it.',
+        comment: 'The transcript lands in the field only after you accept it — a misheard word costs one correction, not a second dictation.',
+        placeholder: 'For example, Nadia',
+      },
+      {
+        kind: 'voiceField',
+        variant: 'area',
+        title: 'What is this project about?',
+        hint: 'A paragraph is fine. The button sits under the whole area, not inside it.',
+        comment: 'The same control in its long form: only the shape of the field and the place of the button differ.',
+        placeholder: 'A few sentences about the product',
+      },
+    ],
+  },
 ]

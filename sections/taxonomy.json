@@ -344,6 +344,11 @@
       "id": "0031",
       "type": "page-material",
       "shape": "toc"
+    },
+    "voiceField": {
+      "id": "0032",
+      "type": "page-material",
+      "shape": "text"
     }
   }
 }

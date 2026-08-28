@@ -46,6 +46,8 @@ export function VoiceControl({
   labelledBy,
   describedBy,
   type = "text",
+  inputMode,
+  voice = true,
   apiUrl = "/api/transcribe",
 }: {
   id: string
@@ -61,6 +63,22 @@ export function VoiceControl({
   describedBy?: string
   /** Для однострочного поля: `text` или `number`. */
   type?: "text" | "number"
+  /**
+   * Клавиатура браузера: `email`, `url`, `tel`.
+   *
+   * 🔒 ЭТО НЕ КОСМЕТИКА, А КЛАВИАТУРА ТЕЛЕФОНА: на `email` появляется «@», на `tel` —
+   * цифровая панель. Ровно там, где у поля забрали микрофон, человеку и нужен самый
+   * быстрый ручной ввод.
+   */
+  inputMode?: "email" | "url" | "tel"
+  /**
+   * Есть ли у поля микрофон.
+   *
+   * 🔒 УМОЛЧАНИЕ — «ЕСТЬ», И ЭТО НАМЕРЕННО. Два потребителя из трёх (`VoiceField`,
+   * `VoiceTextarea`) созданы ради голоса, и требовать от них признак значило бы
+   * повторять очевидное в каждом вызове. Третий — форма настроек — решает по полю.
+   */
+  voice?: boolean
   apiUrl?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -75,8 +93,9 @@ export function VoiceControl({
   })
   const L = v.strings
 
-  // Микрофон не показывается там, где диктовать некуда: поле только для чтения.
-  const withVoice = !readOnly
+  // Микрофона нет там, где диктовать некуда: поле только для чтения — или само поле
+  // не про речь (координаты, токен, цвет), и это решает тот, кто его ставит.
+  const withVoice = voice && !readOnly
   const failure = withVoice ? v.note || (!v.supported ? L.tipInsecure : "") : ""
 
   const mic = (
@@ -131,6 +150,7 @@ export function VoiceControl({
               id={id}
               ref={inputRef}
               type={type}
+              inputMode={inputMode}
               value={value}
               placeholder={placeholder}
               disabled={disabled}
@@ -145,6 +165,7 @@ export function VoiceControl({
           <Input
             id={id}
             type={type}
+            inputMode={inputMode}
             value={value}
             placeholder={placeholder}
             disabled={disabled}

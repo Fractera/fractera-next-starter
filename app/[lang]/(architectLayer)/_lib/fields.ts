@@ -21,6 +21,10 @@ export type FieldType =
   | "textarea"
   | "number"
   | "select"
+  /** Список с возможностью своего значения: четыре валюты — и любая пятая. */
+  | "combo"
+  /** Цвет: образец рядом с полем, палитра браузера и те же шестнадцать знаков. */
+  | "color"
   | "switch"
   /** Картинка: значение — адрес файла, а сам файл живёт в хранилище. */
   | "image"
@@ -41,8 +45,28 @@ export type Field = {
    * которого не существует.
    */
   locked?: boolean
-  /** Варианты для `select`; значения — то, что уходит в конфиг. */
+  /** Варианты для `select` и `combo`; значения — то, что уходит в конфиг. */
   options?: readonly string[]
+  /**
+   * Микрофон у этого поля.
+   *
+   * 🔒 ПРИЗНАК ЯВНЫЙ, И ЭТО ПЕРЕВОРОТ ПРЕЖНЕГО ПРАВИЛА (32-10, решение владельца).
+   * Было: «поле текстовое → значит есть голос», и микрофон достался тридцати пяти
+   * полям — включая подтверждение Яндекса, координаты, HEX-цвет и шаблон `%s | Бренд`.
+   * Диктовать туда нечего, а кнопка обещает работу, которой не существует.
+   * Стало: голос у того, что человек ПРОИЗНОСИТ словами. Признак пишется полем, а не
+   * выводится из типа: тип говорит, КАК поле устроено, и ничего не знает о том, что в
+   * него кладут.
+   */
+  voice?: true
+  /**
+   * Тип ввода браузера: `email`, `url`, `tel`.
+   *
+   * 🔒 ЭТО НЕ КОСМЕТИКА, А КЛАВИАТУРА ТЕЛЕФОНА. На `email` появляется «@», на `tel` —
+   * цифровая панель, на `url` — «/» и «.com». Ровно там, где мы забрали микрофон,
+   * человеку и нужен самый быстрый ручной ввод.
+   */
+  input?: "email" | "url" | "tel"
 }
 
 export type Section = {
@@ -61,11 +85,14 @@ export const SECTIONS: readonly Section[] = [
     id: "brand",
     group: "basics",
     fields: [
-      { path: "name", type: "text", perLang: true },
-      { path: "short_name", type: "text" },
-      { path: "description", type: "textarea", perLang: true },
+      // Имя, короткое имя и описание — слова, которые человек ПРОИЗНОСИТ. Почта — нет:
+      // продиктованный адрес приезжает как «собака точка ком» и правится дольше, чем
+      // набирается.
+      { path: "name", type: "text", perLang: true, voice: true },
+      { path: "short_name", type: "text", voice: true },
+      { path: "description", type: "textarea", perLang: true, voice: true },
       { path: "url", type: "text", locked: true },
-      { path: "mailSupport", type: "text" },
+      { path: "mailSupport", type: "text", input: "email" },
     ],
   },
   {
@@ -74,11 +101,13 @@ export const SECTIONS: readonly Section[] = [
     // `author.image` вернулось сюда в 31-7 вместе с механикой картинок — на своё
     // место из панели, а не в чужую секцию.
     fields: [
-      { path: "author.name", type: "text" },
-      { path: "author.email", type: "text" },
-      { path: "author.url", type: "text" },
-      { path: "author.jobTitle", type: "text" },
-      { path: "author.bio", type: "textarea" },
+      // Голос — у имени, должности и рассказа о себе. Почта, адрес страницы и три
+      // профиля — набираемые строки: в них решают точки, слэши и регистр.
+      { path: "author.name", type: "text", voice: true },
+      { path: "author.email", type: "text", input: "email" },
+      { path: "author.url", type: "text", input: "url" },
+      { path: "author.jobTitle", type: "text", voice: true },
+      { path: "author.bio", type: "textarea", voice: true },
       { path: "author.image", type: "image" },
       { path: "author.twitter", type: "text" },
       { path: "author.linkedin", type: "text" },
@@ -89,7 +118,12 @@ export const SECTIONS: readonly Section[] = [
     id: "commerce",
     group: "basics",
     fields: [
-      { path: "commerce.currency", type: "text" },
+      // 🔒 ЧЕТЫРЕ ВАЛЮТЫ СПИСКОМ И ЛЮБАЯ ПЯТАЯ РУКАМИ — решение владельца 2026-08-28.
+      // Обычный `select` запер бы проект в четырёх странах; обычное поле оставило бы
+      // человека вспоминать, что код пишется тремя заглавными буквами (ISO 4217), — а
+      // «евро» вместо «EUR» ломает разметку товара молча. Список отвечает на частый
+      // случай одним щелчком и оставляет открытым весь остальной мир.
+      { path: "commerce.currency", type: "combo", options: ["USD", "EUR", "PLN", "RUB"] },
     ],
   },
   {
@@ -97,12 +131,17 @@ export const SECTIONS: readonly Section[] = [
     group: "seo",
     fields: [
       { path: "seo.indexing", type: "select", options: ["allow", "disallow"] },
+      // Шаблон — не фраза, а формула с `%s`: продиктовать её нельзя в принципе.
       { path: "seo.titleTemplate", type: "text", perLang: true },
       { path: "seo.robotsIndex", type: "switch" },
       { path: "seo.robotsFollow", type: "switch" },
-      { path: "seo.keywords", type: "textarea", perLang: true },
+      // Единственное поле поиска, куда диктуют: это слова, а не код.
+      { path: "seo.keywords", type: "textarea", perLang: true, voice: true },
       { path: "seo.canonicalBase", type: "text", locked: true },
       { path: "seo.sitemapUrl", type: "text", locked: true },
+      // ✗ ЗДЕСЬ БЫЛ МИКРОФОН, И ВЛАДЕЛЕЦ НАЗВАЛ ЭТО ПРЯМО: «подтверждение Яндекс?
+      // Реально.» Это случайная строка чужого сервиса, которую копируют из буфера:
+      // произнести её нельзя, а ошибка в одном знаке рушит подтверждение целиком.
       { path: "seo.googleVerification", type: "text" },
       { path: "seo.yandexVerification", type: "text" },
     ],
@@ -112,7 +151,7 @@ export const SECTIONS: readonly Section[] = [
     group: "seo",
     fields: [
       { path: "og.type", type: "select", options: ["website", "article", "product"] },
-      { path: "og.siteName", type: "text", perLang: true },
+      { path: "og.siteName", type: "text", perLang: true, voice: true },
       { path: "og.locale", type: "text" },
       { path: "og.imageWidth", type: "number" },
       { path: "og.imageHeight", type: "number" },
@@ -165,14 +204,17 @@ export const SECTIONS: readonly Section[] = [
     // разговаривает. Я проверил свой слой и объявил тупик по всему пути.
     fields: [
       { path: "iconSet", type: "icons" },
-      { path: "pwa.themeColor", type: "text" },
-      { path: "pwa.backgroundColor", type: "text" },
+      // 🔒 ЦВЕТ — НЕ СТРОКА, ХОТЯ ХРАНИТСЯ СТРОКОЙ. Человек не помнит, что светло-серый
+      // это `#f4f4f5`; он его УЗНАЁТ. Поле цвета даёт образец рядом и палитру браузера,
+      // а те же шестнадцать знаков остаются доступны для вставки из макета.
+      { path: "pwa.themeColor", type: "color" },
+      { path: "pwa.backgroundColor", type: "color" },
       { path: "pwa.display", type: "select", options: ["standalone", "fullscreen", "minimal-ui", "browser"] },
       { path: "pwa.orientation", type: "select", options: ["portrait-primary", "landscape-primary", "any"] },
       { path: "pwa.startUrl", type: "text" },
       { path: "pwa.scope", type: "text" },
-      { path: "themeColors.light", type: "text" },
-      { path: "themeColors.dark", type: "text" },
+      { path: "themeColors.light", type: "color" },
+      { path: "themeColors.dark", type: "color" },
     ],
   },
   {
@@ -186,11 +228,15 @@ export const SECTIONS: readonly Section[] = [
     id: "geo",
     group: "basics",
     fields: [
-      { path: "geo.address", type: "text" },
-      { path: "geo.city", type: "text" },
-      { path: "geo.country", type: "text" },
+      // Адрес, город и страна — то самое, ради чего голосовой ввод и заводят: их диктуют
+      // на ходу. Индекс, телефон и координаты — цифры, а продиктованная цифра ошибается
+      // там, где ошибиться нельзя. Часы работы — формат schema.org (`Mo-Fr 09:00-18:00`),
+      // а не фраза «с девяти до шести».
+      { path: "geo.address", type: "text", voice: true },
+      { path: "geo.city", type: "text", voice: true },
+      { path: "geo.country", type: "text", voice: true },
       { path: "geo.postalCode", type: "text" },
-      { path: "geo.phone", type: "text" },
+      { path: "geo.phone", type: "text", input: "tel" },
       { path: "geo.latitude", type: "text" },
       { path: "geo.longitude", type: "text" },
       { path: "geo.hours", type: "text" },

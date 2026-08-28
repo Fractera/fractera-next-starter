@@ -5,6 +5,8 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Small } from "@/components/ui/typography"
 import { VoiceControl } from "@/components/form/voice-control.client"
+import { ColorField } from "./color-field.client"
+import { ComboField } from "./combo-field.client"
 import { ImageField } from "./image-field.client"
 import { SocialsField } from "./socials-field.client"
 import { IconsField } from "./icons-field.client"
@@ -21,9 +23,18 @@ import type { FieldsUi } from "../_i18n/fields.i18n"
 // и `text-[12px]`; здесь подпись — `--fs-small`, значение и поле ввода —
 // `--fs-body` (16px). **Порт везёт логику, а не размеры.**
 //
-// 🔒 ГОЛОС — У КАЖДОГО ТЕКСТОВОГО ПОЛЯ (`text`, `textarea`), и это тоже прямое
-// требование. У переключателя и списка его нет и быть не может: диктовать нечего,
-// а кнопка рядом с ними обещала бы работу, которой не существует.
+// 🔒 ГОЛОС — У ТОГО, ЧТО ПРОИЗНОСЯТ СЛОВАМИ, А НЕ У ВСЕГО ТЕКСТОВОГО (32-10).
+// ✗ Здесь стояло «голос у каждого текстового поля», и это было ошибкой ровно того
+// сорта, что легче всего не заметить: правило звучало стройно, а на экране микрофон
+// получили подтверждение Яндекса, координаты, HEX-цвет и шаблон `%s | Бренд`.
+// Владелец назвал это прямо: «подтверждение Яндекс? Реально.» Теперь решает признак
+// `voice` в описании поля — оно одно знает, ЧТО в поле кладут, тогда как тип знает
+// лишь, как поле устроено.
+//
+// 🔒 У ТОГО, ЧТО ГОЛОС ПОТЕРЯЛО, ПОЯВИЛОСЬ СВОЁ: почта, адрес и телефон получили
+// клавиатуру браузера (`input`), четыре цвета — образец и палитру, валюта — четыре
+// кнопки и открытый ввод, остальные — подсказку прямо в поле. Забрать и не дать
+// взамен значило бы сделать форму беднее, а не честнее.
 //
 // 🔒 АДРЕС ДВЕРИ РАСШИФРОВКИ ЗАДАН ЯВНО. Инструмент по умолчанию стучится к
 // соседу — относительно текущего пути, что дало бы
@@ -100,6 +111,7 @@ export function FieldRow({
             id={id}
             variant={field.type === "textarea" ? "textarea" : "input"}
             type={field.type === "number" ? "number" : "text"}
+            inputMode={field.input}
             rows={3}
             value={value}
             onChange={onChange}
@@ -107,7 +119,24 @@ export function FieldRow({
             placeholder={words.placeholder}
             disabled={field.locked}
             readOnly={field.locked}
+            /* 🔒 МИКРОФОН ПО ПРИЗНАКУ ПОЛЯ, А НЕ ПО ЕГО ТИПУ (32-10). Раньше здесь
+               стояло «текстовое → значит с голосом», и кнопка досталась подтверждению
+               Яндекса, координатам и шаблону `%s | Бренд`. Признак решает описание
+               поля: оно одно знает, что в поле кладут. */
+            voice={Boolean(field.voice)}
             apiUrl="/api/transcribe"
+          />
+        ) : field.type === "color" ? (
+          <ColorField id={id} value={value} placeholder={words.placeholder} disabled={field.locked} onChange={onChange} />
+        ) : field.type === "combo" ? (
+          <ComboField
+            id={id}
+            value={value}
+            options={field.options ?? []}
+            optionLabels={words.options}
+            placeholder={words.placeholder}
+            disabled={field.locked}
+            onChange={onChange}
           />
         ) : field.type === "switch" ? (
           <Switch

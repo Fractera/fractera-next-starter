@@ -1,5 +1,4 @@
 import type { SectionRenderer } from '@/sections/contract'
-import { voiceStrings } from '@/lib/i18n/voice-field.i18n'
 import { VoiceBlock } from '@/components/form/voice-block.client'
 
 // ПОЛЕ ВВОДА С ГОЛОСОМ КАК ВИД КАТАЛОГА (шаг 32-9, 2026-08-28).
@@ -26,6 +25,5 @@ export const voiceField: SectionRenderer<'voiceField'> = (b, { key: k, lang }) =
     hint={b.hint}
     comment={b.comment}
     placeholder={b.placeholder}
-    micLabel={voiceStrings(lang).mic}
   />
 )

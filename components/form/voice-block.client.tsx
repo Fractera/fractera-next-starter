@@ -26,7 +26,6 @@ export function VoiceBlock({
   hint,
   comment,
   placeholder,
-  micLabel,
 }: {
   lang: string
   /** `line` — микрофон внутри рамки поля; `area` — кнопка снизу во всю ширину. */
@@ -35,8 +34,6 @@ export function VoiceBlock({
   hint?: string
   comment?: string
   placeholder?: string
-  /** Подпись кнопки микрофона для читалок экрана; у области она своя. */
-  micLabel: string
 }) {
   const [value, setValue] = useState("")
 
@@ -63,7 +60,6 @@ export function VoiceBlock({
       hint={hint}
       comment={comment}
       placeholder={placeholder}
-      micLabel={micLabel}
     />
   )
 }

@@ -1,13 +1,10 @@
 "use client"
 
-import { useRef } from "react"
 import { Lock } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Small } from "@/components/ui/typography"
-import VoiceInput from "@/_tools/voice-input/client/voice-input.client"
+import { VoiceControl } from "@/components/form/voice-control.client"
 import { ImageField } from "./image-field.client"
 import { SocialsField } from "./socials-field.client"
 import { IconsField } from "./icons-field.client"
@@ -56,12 +53,8 @@ export function FieldRow({
   onChange: (next: string) => void
   ui: FieldsUi
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const areaRef = useRef<HTMLTextAreaElement>(null)
-
   const words = ui.fields[field.path] ?? { label: field.path }
   const id = `field-${field.path.replace(/\./g, "-")}`
-  const isText = field.type === "text" || field.type === "textarea"
 
   return (
     <div data-field={field.path} data-field-type={field.type} className="flex flex-col gap-1.5">
@@ -95,16 +88,26 @@ export function FieldRow({
       </div>
 
       <div className="flex items-start gap-2">
-        {field.type === "textarea" ? (
-          <Textarea
+        {field.type === "textarea" || field.type === "text" || field.type === "number" ? (
+          /* 🔒 ПОЛЕ, МИКРОФОН, ПОЛОСА И РАСШИФРОВКА — ОДИН ЭЛЕМЕНТ НА ТРИ МЕСТА
+             (32-8). Здесь стояли Input/Textarea рядом с отдельной кнопкой голоса;
+             связка была третьей копией того, что уже дважды одинаково в
+             `VoiceField` и `VoiceTextarea`. Копии расходятся молча — эта успела
+             отстать на весь новый облик. Различие двух раскладок принадлежит
+             элементу и выражено его `variant`: у строки микрофон ВНУТРИ рамки, у
+             области — снизу во всю ширину. */
+          <VoiceControl
             id={id}
-            ref={areaRef}
+            variant={field.type === "textarea" ? "textarea" : "input"}
+            type={field.type === "number" ? "number" : "text"}
             rows={3}
             value={value}
+            onChange={onChange}
+            lang={lang}
             placeholder={words.placeholder}
             disabled={field.locked}
-            onChange={e => onChange(e.target.value)}
-            className="text-[length:var(--fs-body)]"
+            readOnly={field.locked}
+            apiUrl="/api/transcribe"
           />
         ) : field.type === "switch" ? (
           <Switch
@@ -131,28 +134,7 @@ export function FieldRow({
               <option key={option} value={option}>{words.options?.[option] ?? option}</option>
             ))}
           </select>
-        ) : (
-          <Input
-            id={id}
-            ref={inputRef}
-            type={field.type === "number" ? "number" : "text"}
-            value={value}
-            placeholder={words.placeholder}
-            disabled={field.locked}
-            onChange={e => onChange(e.target.value)}
-            className="text-[length:var(--fs-body)]"
-          />
-        )}
-
-        {isText && !field.locked && (
-          <VoiceInput
-            targetRef={field.type === "textarea" ? areaRef : inputRef}
-            value={value}
-            onChange={onChange}
-            lang={lang}
-            apiUrl="/api/transcribe"
-          />
-        )}
+        ) : null}
       </div>
 
       {(words.hint || field.locked) && (

@@ -264,7 +264,13 @@ function scanUsage() {
 function cardDescription(kind) {
   const file = join(BLOCKS, `${kind}.md`)
   if (!existsSync(file)) return null
-  const lines = readFileSync(file, "utf8").split("\n")
+  // 🔒 ПЕРЕВОДЫ СТРОК НОРМАЛИЗУЮТСЯ, И ЭТО НЕ КОСМЕТИКА (найдено в 32-8). Карточка
+  // лежит в рабочей копии, а на Windows git отдаёт её с CRLF — тогда порождённый
+  // здесь JSON отличается от порождённого на сервере БАЙТОМ НА КАЖДОЙ СТРОКЕ, и
+  // сторож свежести падает сразу после чистого клона, ничего не сказав о причине.
+  // Файл, который сверяют посимвольно, не имеет права зависеть от настроек рабочей
+  // копии.
+  const lines = readFileSync(file, "utf8").replace(/\r\n/g, "\n").split("\n")
   const body = lines.slice(1).join("\n").trim()
   return body || null
 }

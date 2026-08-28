@@ -60,7 +60,7 @@ export function SocialsField({
                 value={link.name ?? ""}
                 disabled={disabled}
                 onChange={e => patch(index, { name: e.target.value })}
-                className="text-[length:var(--fs-body)]"
+                className="text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -70,7 +70,7 @@ export function SocialsField({
                 disabled={disabled}
                 placeholder="@handle"
                 onChange={e => patch(index, { value: e.target.value })}
-                className="text-[length:var(--fs-body)]"
+                className="text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -80,7 +80,7 @@ export function SocialsField({
                 disabled={disabled}
                 placeholder="https://t.me/{value}"
                 onChange={e => patch(index, { urlTemplate: e.target.value })}
-                className="text-[length:var(--fs-body)]"
+                className="text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
               />
             </div>
           </div>

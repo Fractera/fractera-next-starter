@@ -68,7 +68,7 @@ export function ImageField({
           disabled={disabled}
           placeholder="/api/media/… "
           onChange={e => onChange(e.target.value)}
-          className="text-[length:var(--fs-body)]"
+          className="text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
         />
         <Button
           type="button"

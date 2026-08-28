@@ -14,6 +14,15 @@
 export type ArchitectLayerUi = {
   /** Название слоя целиком — крошка и заголовок раздела. */
   layer: string
+  /** Заголовок левого меню. */
+  menuTitle: string
+  /** Пометка у группы, которая ещё живёт в панели. */
+  inPanel: string
+  /** Подпись переключателя языка настроек и объяснение, что он переключает. */
+  editLang: string
+  editLangHint: string
+  /** Названия восьми групп; ключи совпадают с `id` в `_lib/architect-menu.ts`. */
+  groups: Record<string, string>
   /** Страница настроек приложения. */
   appConfigTitle: string
   appConfigSubtitle: string
@@ -30,6 +39,20 @@ export type ArchitectLayerUi = {
 const DICT: Record<string, ArchitectLayerUi> = {
   en: {
     layer: "Architect layer",
+    menuTitle: "Project settings",
+    inPanel: "in the panel",
+    editLang: "Settings language",
+    editLangHint: "Which language you are editing the values for. It does not change the language of this page.",
+    groups: {
+      multilang: "Languages",
+      basics: "Basics",
+      seo: "SEO",
+      metaMedia: "Meta and media",
+      parallelRouting: "Parallel routing",
+      header: "Project header",
+      footer: "Project footer",
+      cookieBanner: "Cookie banner",
+    },
     appConfigTitle: "Application settings",
     appConfigSubtitle:
       "The name, addresses, meta and appearance of this project. Saved settings are read at runtime — a change shows on the next page load, with no rebuild.",
@@ -38,6 +61,20 @@ const DICT: Record<string, ArchitectLayerUi> = {
   },
   ru: {
     layer: "Слой архитектора",
+    menuTitle: "Настройки проекта",
+    inPanel: "в панели",
+    editLang: "Язык настроек",
+    editLangHint: "Для какого языка вы правите значения. Язык самой этой страницы он не меняет.",
+    groups: {
+      multilang: "Мультиязычность",
+      basics: "Основные",
+      seo: "SEO",
+      metaMedia: "Мета и медиа",
+      parallelRouting: "Параллельная маршрутизация",
+      header: "Хедер проекта",
+      footer: "Футер проекта",
+      cookieBanner: "Куки-баннер",
+    },
     appConfigTitle: "Настройки приложения",
     appConfigSubtitle:
       "Имя, адреса, мета и внешний вид этого проекта. Сохранённые настройки читаются на лету — изменение видно при следующей загрузке страницы, без пересборки.",

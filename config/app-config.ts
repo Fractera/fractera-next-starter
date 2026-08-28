@@ -32,6 +32,29 @@ function deepMerge<T>(base: T, over: unknown): T {
   return out as T;
 }
 
+// 🪦 CANCELLED 2026-08-28 BY THE OWNER'S DECISION — read the law below, it is still
+// worth knowing, but it is no longer in force.
+//
+// The owner moved the application settings out of the control panel and into the
+// project itself ("I want the App CONFIG tab moved into the footer of the site on
+// 3000"), and chose, out of two paths, the one where the slot writes the file
+// ITSELF rather than forwarding the save to the panel. So there are now TWO
+// writers of this file, and the defect the law below was written against is real
+// again.
+//
+// It is paid for by construction, not by hope: the writer lives in exactly one
+// place — `lib/architect/app-config-writer.ts` — it accepts a PATCH rather than a
+// whole config, reads the disk at the moment of writing and renames a temporary
+// file into place. A page cannot overwrite a branch it never sent, so foreign
+// branches are safe even when nobody remembers they exist.
+//
+// 🔒 WHAT SURVIVES THE CANCELLATION: this MODULE still only reads. Nothing here
+// writes the file, and a second writer inside the read path would be the very
+// thing the old law forbade.
+//
+// 🪦 THE CANCELLED LAW, kept verbatim so the next session does not resurrect it
+// from memory as news:
+//
 // 🔒 THIS LAYER ONLY READS THE CONFIG. IT NEVER WRITES IT. (revision 2026-08-09)
 //
 // The single source of truth is the control panel (:3002 → api/config/site). It owns

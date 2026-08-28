@@ -6,11 +6,15 @@ import { resolveSocialLinks } from "@/config/app-config.defaults"
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from "@/config/translations/translations.config"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { fieldsUi } from "../../_i18n/fields.i18n"
-import { resolveGroup } from "../../_lib/architect-menu"
+import { resolveGroup, sourceOfGroup } from "../../_lib/architect-menu"
+import { modeOf, activeSlots } from "../../_lib/routing"
 import { sectionsOfGroup, atPath } from "../../_lib/fields"
 import { LayerMenu } from "../../_components/layer-menu"
 import { EditLangSwitch } from "../../_components/edit-lang-switch"
 import { ConfigEditor } from "../../_components/config-editor.client"
+import { RoutingEditor } from "../../_components/routing-editor.client"
+import { groupsUi } from "../../_i18n/groups.i18n"
+import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 import { readRawConfig } from "@/lib/architect/app-config-writer"
 
 // НАСТРОЙКИ ПРИЛОЖЕНИЯ ВНУТРИ ПРОЕКТА — оболочка (31-1 каркас, 31-3 раскладка).
@@ -59,8 +63,24 @@ export default async function ArchitectAppConfigPage({
   // пустым при живом значении, и человек «исправлял» бы пустоту, записывая в файл
   // умолчание шаблона как собственное решение.
   const fw = fieldsUi(lang)
+  const gw = groupsUi(lang)
+
+  // 🔒 ЗАГОЛОВОК СТРАНИЦЫ — ИМЯ ОТКРЫТОЙ ГРУППЫ, А НЕ ИМЯ СТРАНИЦЫ (31-12).
+  // Пока групп было три и все они были настройками приложения, общий заголовок
+  // говорил правду. Теперь на том же адресе живут языки, раскладка и куки-баннер —
+  // и «Настройки приложения» над списком языков просто неверно. Крошка остаётся
+  // общей: она про место, заголовок — про предмет.
+  const groupTitle = t.groups[group] ?? t.appConfigTitle
+
+  // Источник значений группы: настройки приложения, платформенный конфиг или
+  // окружение. От него зависит и редактор, и то, применится ли правка без сборки.
+  const source = sourceOfGroup(group)
   const sections = sectionsOfGroup(group)
   const raw = readRawConfig()
+  // 🔒 ЧИТАЕТСЯ СЫРОЙ ФАЙЛ, А НЕ КАРТИНА ЧИТАТЕЛЯ. Записать обратно полную
+  // картину значило бы объявить решением владельца каждое умолчание шаблона —
+  // и следующая версия шаблона уже не смогла бы поменять ни одного.
+  const platform = source === "platform" ? readRawPlatformConfig() : {}
   const effective = getAppConfig() as unknown as Record<string, unknown>
   const i18n = (raw.i18n ?? {}) as Record<string, Record<string, string>>
 
@@ -107,9 +127,9 @@ export default async function ArchitectAppConfigPage({
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
         <PageHeader
           lang={lang}
-          breadcrumbs={[{ label: t.layer }, { label: t.appConfigTitle }]}
+          breadcrumbs={[{ label: t.layer }, { label: t.appConfigTitle }, { label: groupTitle }]}
           eyebrow={t.layer}
-          title={t.appConfigTitle}
+          title={groupTitle}
           subtitle={t.appConfigSubtitle}
         />
 
@@ -117,6 +137,12 @@ export default async function ArchitectAppConfigPage({
           <LayerMenu lang={lang} active={group} adminUrl={adminUrl} ui={t} />
 
           <div className="min-w-0 flex-1">
+            {/* 🔒 ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА НАСТРОЕК — ТОЛЬКО У НАСТРОЕК ПРИЛОЖЕНИЯ.
+                Он переключает язык ЗНАЧЕНИЙ (имя сайта по-русски и по-английски),
+                а у раскладки, языков и куки-баннера языковых значений нет вовсе:
+                там булевы выключатели и списки. Оставить его на всех группах
+                значило бы показать рычаг, который ничего не двигает. */}
+            {source === "app-config" && (
             <EditLangSwitch
               lang={lang}
               group={group}
@@ -124,13 +150,25 @@ export default async function ArchitectAppConfigPage({
               active={editLang}
               ui={t}
             />
+            )}
 
             {/* 🔒 ЗНАЧЕНИЯ СЧИТАЮТСЯ ЗДЕСЬ, НА СЕРВЕРЕ, для выбранного языка
                 настроек — островок получает готовые строки и готовые слова.
                 Отдать ему конфиг целиком значило бы увезти в браузер и чужие
                 ветки, и весь словарь; отдать словарь — все его языки. */}
             <div data-config-grid className="mt-6">
-              {sections.length > 0 ? (
+              {/* 🔒 РЕДАКТОР ВЫБИРАЕТСЯ ПО ГРУППЕ, И ЭТО НЕ ВЕТВЛЕНИЕ РАДИ
+                  УДОБСТВА. У групп разные ХРАНИЛИЩА: настройки приложения, файл
+                  платформы, окружение сборки. Один редактор на всех означал бы
+                  либо общий знаменатель (галочки и строки), либо один компонент,
+                  знающий про три двери сразу. */}
+              {group === "parallelRouting" ? (
+                <RoutingEditor
+                  initialMode={modeOf(platform)}
+                  initialSlots={activeSlots(platform)}
+                  ui={gw}
+                />
+              ) : sections.length > 0 ? (
                 <ConfigEditor
                   sections={sections}
                   initial={values}

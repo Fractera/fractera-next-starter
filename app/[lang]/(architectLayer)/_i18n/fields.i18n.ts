@@ -178,7 +178,7 @@ const en: FieldsUi = {
     description: { label: "Description", placeholder: "What this app is…" },
     url: {
       label: "Site URL",
-      hint: "Follows this server's domain. Change it in the panel → Personal Domain.",
+      hint: "Follows this server's domain — set where the project was deployed.",
     },
     mailSupport: { label: "Support email", placeholder: "admin@example.com" },
   },
@@ -316,7 +316,7 @@ const ru: FieldsUi = {
     description: { label: "Описание", placeholder: "О чём это приложение…" },
     url: {
       label: "Адрес сайта",
-      hint: "Следует за доменом этого сервера. Меняется в панели → «Личный домен».",
+      hint: "Следует за доменом этого сервера — задаётся там, где проект развёрнут.",
     },
     mailSupport: { label: "Почта поддержки", placeholder: "admin@example.com" },
   },

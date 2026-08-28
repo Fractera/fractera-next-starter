@@ -78,6 +78,15 @@
       },
       "additionalProperties": {}
     },
+    "slots": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
     "instructions": {
       "type": "object",
       "propertyNames": {

@@ -52,6 +52,16 @@ export const platformConfigSchema = z.looseObject({
       declaredAt: z.string().optional(),
     })
     .optional(),
+  /**
+   * Области раскладки параллельного режима (31-12).
+   *
+   * 🔒 БЕЗ ЭТОЙ СТРОКИ КЛЮЧ ПРОХОДИЛ ЛИШЬ ПОТОМУ, ЧТО СХЕМА `looseObject`, — то
+   * есть держался на свойстве, которое никто не обещал сохранять. Тот же дефект
+   * уже оплачен здесь одиннадцатым выключателем (`socials`): не названный в
+   * схеме ключ проверка вычищает молча, и настройка выглядит нерабочей при
+   * совершенно верном файле.
+   */
+  slots: z.record(z.string(), z.boolean()).optional(),
   /** Выключатели документов корпуса: пишет панель, читает агент, приложение — нет. */
   instructions: z.record(z.string(), z.boolean()).optional(),
   instructionsSnapshot: z.record(z.string(), z.boolean()).nullable().optional(),

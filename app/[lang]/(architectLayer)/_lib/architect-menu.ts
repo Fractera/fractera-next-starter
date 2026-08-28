@@ -15,28 +15,49 @@
 // условие: пока раздел не переехал, настройка обязана оставаться доступной там,
 // где она есть.
 
-/** Что группа умеет ПРЯМО СЕЙЧАС. */
+/**
+ * Что группа умеет ПРЯМО СЕЙЧАС.
+ *
+ * 🔒 ВСЕ ВОСЕМЬ ГРУПП СТАЛИ `here` (31-12 … 31-16, 2026-08-29). Вариант `panel`
+ * оставлен НЕ на всякий случай: слой архитектора — сменная точка, и завтра сюда
+ * может прийти группа, чей раздел ещё не перенесён. Убрать вариант значило бы
+ * заставить следующего заводить его заново, потеряв причину, по которой у
+ * неготовой группы обязан быть адрес в панели.
+ */
 export type GroupState =
   /** Поля живут на этой странице. */
   | { kind: "here" }
   /** Ещё в панели: `slug` — её раздел, из которого собирается адрес. */
   | { kind: "panel"; slug: string }
 
+/**
+ * Откуда группа берёт значения.
+ *
+ * 🔒 ТРИ ХРАНИЛИЩА, И РАЗНИЦА МЕЖДУ НИМИ НЕ ТЕХНИЧЕСКАЯ, А ПО ПОСЛЕДСТВИЯМ.
+ * `app-config` и `platform` читаются на КАЖДОМ запросе — правка видна на
+ * следующей загрузке страницы. `env` запекается на сборке, и его правка не
+ * значит ничего, пока проект не пересобран. Сказать об этом человеку обязана
+ * страница, а знает об этом — карта.
+ */
+export type GroupSource = "app-config" | "platform" | "env"
+
 export type ArchitectGroup = {
   /** Ключ группы: он же значение `?group=` и ключ словаря. */
   id: string
   state: GroupState
+  /** Где лежат значения группы. Умолчание — настройки приложения. */
+  source?: GroupSource
 }
 
 export const ARCHITECT_GROUPS: readonly ArchitectGroup[] = [
-  { id: "multilang", state: { kind: "panel", slug: "languages" } },
+  { id: "multilang", state: { kind: "here" }, source: "env" },
   { id: "basics", state: { kind: "here" } },
   { id: "seo", state: { kind: "here" } },
   { id: "metaMedia", state: { kind: "here" } },
-  { id: "parallelRouting", state: { kind: "panel", slug: "parallel-routing" } },
-  { id: "header", state: { kind: "panel", slug: "top-menu" } },
-  { id: "footer", state: { kind: "panel", slug: "footer-pages" } },
-  { id: "cookieBanner", state: { kind: "panel", slug: "cookie-banner" } },
+  { id: "parallelRouting", state: { kind: "here" }, source: "platform" },
+  { id: "header", state: { kind: "here" }, source: "app-config" },
+  { id: "footer", state: { kind: "here" }, source: "app-config" },
+  { id: "cookieBanner", state: { kind: "here" }, source: "platform" },
 ] as const
 
 /** Группы, поля которых уже здесь, — в порядке владельца. */
@@ -52,4 +73,10 @@ export const GROUPS_HERE = ARCHITECT_GROUPS.filter(g => g.state.kind === "here")
 export function resolveGroup(raw: string | undefined): string {
   const known = GROUPS_HERE.some(g => g.id === raw)
   return known && raw ? raw : GROUPS_HERE[0].id
+}
+
+
+/** Откуда группа берёт значения; по умолчанию — настройки приложения. */
+export function sourceOfGroup(id: string): GroupSource {
+  return ARCHITECT_GROUPS.find(g => g.id === id)?.source ?? "app-config"
 }

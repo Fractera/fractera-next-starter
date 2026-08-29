@@ -30,6 +30,7 @@ export function FeaturesEditor({
   hint,
   switches,
   ui,
+  childrenGatedBy,
   children,
 }: {
   title: string
@@ -44,6 +45,16 @@ export function FeaturesEditor({
     initial: boolean
   }[]
   ui: GroupsUi
+  /**
+   * Ключ выключателя, от которого зависят дети.
+   *
+   * 🔒 ВЫКЛЮЧЕННАЯ ВОЗМОЖНОСТЬ НЕ ПОКАЗЫВАЕТ СВОИХ НАСТРОЕК (решение владельца
+   * 2026-08-29). Список пунктов меню под погашенным «показывать это меню» —
+   * приглашение править то, чего на сайте нет: человек расставляет порядок,
+   * сохраняет и не находит результата. Именно отсутствующий, а не серый: серый
+   * по-прежнему выглядит как работа, которую можно сделать.
+   */
+  childrenGatedBy?: string
   children?: ReactNode
 }) {
   const [values, setValues] = useState<Record<string, boolean>>(() =>
@@ -87,7 +98,7 @@ export function FeaturesEditor({
         setBusy(false)
         return
       }
-      toast.success(ui.saved)
+      toast.success(ui.savedReload)
       setSaved({ ...values })
       setBusy(false)
     } catch {
@@ -139,7 +150,7 @@ export function FeaturesEditor({
         </ul>
       </section>
 
-      {children}
+      {(!childrenGatedBy || values[childrenGatedBy]) && children}
 
       <div className="flex items-center gap-3">
         <Button type="button" onClick={save} disabled={busy || !changed} data-save className="h-10 px-5">

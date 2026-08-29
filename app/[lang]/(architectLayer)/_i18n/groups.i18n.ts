@@ -18,6 +18,7 @@ export type GroupsUi = {
   save: string
   saving: string
   saved: string
+  savedReload: string
   failed: string
   nothingToSave: string
   /** Предупреждение о том, что настройка применяется только после пересборки. */
@@ -104,6 +105,7 @@ export type GroupsUi = {
     nothingFoundHint: string
     clearSearch: string
     starLegend: string
+    savedRebuild: string
   }
 }
 
@@ -111,6 +113,7 @@ const en: GroupsUi = {
   save: "Save",
   saving: "Saving…",
   saved: "Saved",
+  savedReload: "Saved. Reload the page to see the change.",
   failed: "Could not save",
   nothingToSave: "Nothing changed",
   needsRebuild:
@@ -220,6 +223,8 @@ const en: GroupsUi = {
     nothingFoundHint: "Try the code (en, ar, zh) or the name in the language itself.",
     clearSearch: "Clear the search",
     starLegend: "The star marks the default language — the one the site opens with.",
+    savedRebuild:
+      "Saved. It takes effect once the project is rebuilt — that takes at least two minutes, and longer the more languages and pages the project has. Until then the site keeps serving the previous set.",
   },
 }
 
@@ -227,6 +232,7 @@ const ru: GroupsUi = {
   save: "Сохранить",
   saving: "Сохраняем…",
   saved: "Сохранено",
+  savedReload: "Сохранено. Обновите страницу, чтобы увидеть изменения.",
   failed: "Не удалось сохранить",
   nothingToSave: "Ничего не изменилось",
   needsRebuild:
@@ -336,6 +342,8 @@ const ru: GroupsUi = {
     nothingFoundHint: "Попробуйте код (en, ar, zh) или название на самом языке.",
     clearSearch: "Очистить поиск",
     starLegend: "Звёздочкой отмечен язык по умолчанию — тот, с которого открывается сайт.",
+    savedRebuild:
+      "Сохранено. Изменения вступят в силу после пересборки проекта — она занимает не меньше двух минут и тем дольше, чем больше в проекте языков и страниц. До пересборки сайт отдаёт прежний набор.",
   },
 }
 

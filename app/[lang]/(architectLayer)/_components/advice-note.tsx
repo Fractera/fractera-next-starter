@@ -32,7 +32,7 @@ const TONE: Record<NoteTone, { box: string; icon: string; title: string; text: s
     box: "border-destructive/40 bg-destructive/10",
     icon: "text-destructive",
     title: "text-destructive",
-    text: "text-destructive/90",
+    text: "text-destructive",
   },
 }
 

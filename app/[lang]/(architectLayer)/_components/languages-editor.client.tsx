@@ -182,9 +182,17 @@ export function LanguagesEditor({
         setBusy(false)
         return
       }
-      // Два сообщения подряд были бы шумом: одной строкой говорим и что
-      // сохранено, и что это значит на самом деле.
-      toast.success(ui.saved + " — " + t.rebuildTitle)
+      // 🔒 У ЭТОЙ ГРУППЫ СВОЁ СООБЩЕНИЕ, И ЭТО ЕДИНСТВЕННОЕ ИСКЛЮЧЕНИЕ. Остальные
+      // настройки читаются на каждом запросе, и чтобы увидеть их, довольно обновить
+      // страницу. Набор языков запекается на сборке — «обновите страницу» здесь было
+      // бы советом, который ничего не меняет, и человек решил бы, что сохранение
+      // сломано.
+      //
+      // 🔒 СКАЗАНО «ВСТУПЯТ В СИЛУ ПОСЛЕ ПЕРЕСБОРКИ», А НЕ «ПЕРЕСБОРКА ЗАПУЩЕНА»:
+      // отсюда её никто не запускает. Обещание запуска было бы ложью, которую человек
+      // проверит через две минуты. Запуск пересборки из слоя архитектора — отдельная
+      // способность, названная долгом.
+      toast.success(t.savedRebuild)
       setSaved(JSON.stringify([[...selected].sort(), def]))
       setBusy(false)
     } catch {
@@ -293,12 +301,15 @@ export function LanguagesEditor({
                     <span aria-hidden className="text-[length:var(--fs-h3)] leading-none">{row.flag}</span>
                     <span className="min-w-0">
                       <span className="block truncate text-[length:var(--fs-body)]">{row.nativeName}</span>
-                      {/* На заливке приглушённый цвет текста нечитаем: он рассчитан
-                          на фон страницы, а не на основной цвет. */}
+                      {/* 🔒 НА ЗАЛИВКЕ ВТОРАЯ СТРОКА БЕРЁТ ТОТ ЖЕ ТОКЕН, ЧТО ПЕРВАЯ,
+                          и различается только кеглем. Приглушённый цвет рассчитан на
+                          фон страницы и на основном нечитаем, а доля от токена
+                          (`/80`) запрещена гейтом контраста: прозрачность даёт цвет,
+                          которого никто не проверял. */}
                       <span
                         className={
                           "block truncate text-[length:var(--fs-small)] " +
-                          (on ? "text-primary-foreground/80" : "text-muted-foreground")
+                          (on ? "text-primary-foreground" : "text-muted-foreground")
                         }
                       >
                         {row.englishName} · {row.tier === "A" ? t.tierA : t.tierCommunity}

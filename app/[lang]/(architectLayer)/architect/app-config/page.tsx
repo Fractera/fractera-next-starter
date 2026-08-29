@@ -268,6 +268,7 @@ export default async function ArchitectAppConfigPage({
                     },
                   ]}
                   ui={gw}
+                  childrenGatedBy={group === "header" ? "topMenu" : "footerPages"}
                 >
                   {/* 🔒 ВЫКЛЮЧАТЕЛЬ И ПУНКТЫ СОХРАНЯЮТСЯ ОТДЕЛЬНО, И ЭТО ЧЕСТНО:
                       они пишут в РАЗНЫЕ файлы — выключатель в платформенный конфиг,

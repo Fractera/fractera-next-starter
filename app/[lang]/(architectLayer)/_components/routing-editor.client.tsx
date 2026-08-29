@@ -142,7 +142,7 @@ export function RoutingEditor({
         setBusy(false)
         return
       }
-      toast.success(ui.saved)
+      toast.success(ui.savedReload)
       setSavedMode(mode)
       setSavedSlots({ ...slots })
       setBusy(false)

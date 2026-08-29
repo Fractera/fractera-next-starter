@@ -45,6 +45,7 @@ export type FieldsUi = {
   save: string
   saving: string
   saved: string
+  savedReload: string
   failed: string
   nothingToSave: string
   /** Пометка «значение своё на каждый язык». */
@@ -185,6 +186,7 @@ const en: FieldsUi = {
   save: "Save",
   saving: "Saving…",
   saved: "Saved",
+  savedReload: "Saved. Reload the page to see the change.",
   failed: "Could not save",
   nothingToSave: "Nothing changed",
   perLang: "per language",
@@ -323,6 +325,7 @@ const ru: FieldsUi = {
   save: "Сохранить",
   saving: "Сохраняем…",
   saved: "Сохранено",
+  savedReload: "Сохранено. Обновите страницу, чтобы увидеть изменения.",
   failed: "Не удалось сохранить",
   nothingToSave: "Ничего не изменилось",
   perLang: "на каждый язык",

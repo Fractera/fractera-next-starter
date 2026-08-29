@@ -99,7 +99,7 @@ export function ConfigEditor({
         setBusy(false)
         return
       }
-      toast.success(ui.saved)
+      toast.success(ui.savedReload)
       // Сохранённое становится новым «исходным»: кнопка гаснет до следующей правки.
       setSaved(values)
       setBusy(false)

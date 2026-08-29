@@ -98,7 +98,7 @@ export function NavEditor({
         setBusy(false)
         return
       }
-      toast.success(ui.saved)
+      toast.success(ui.savedReload)
       setSaved(JSON.stringify(items))
       setBusy(false)
     } catch {

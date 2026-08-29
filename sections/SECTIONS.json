@@ -318,7 +318,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 26,
+          "order": 23,
           "times": 1
         },
         {
@@ -445,8 +445,8 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 11,
-          "times": 4
+          "order": 15,
+          "times": 1
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -635,7 +635,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 28,
+          "order": 25,
           "times": 1
         }
       ]
@@ -697,7 +697,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 27,
+          "order": 24,
           "times": 1
         }
       ]
@@ -736,7 +736,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 29,
+          "order": 26,
           "times": 1
         }
       ]

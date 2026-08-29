@@ -37,6 +37,8 @@ export type GroupsUi = {
     standardAreasHint: string
     previewTitle: string
     childrenLabel: string
+    comingSoon: string
+    notConsumed: string
     areas: Record<string, string>
     areaHints: Record<string, string>
   }
@@ -120,6 +122,9 @@ const en: GroupsUi = {
       "The standard mode uses three areas — header, content, footer. Switch to parallel to choose the rest.",
     previewTitle: "Layout preview",
     childrenLabel: "Page content",
+    comingSoon: "Available in an upcoming update",
+    notConsumed:
+      "Nothing reads this setting yet: parallel routing is not wired into the project's root layout. You can make the choice here, but it cannot be saved — the file would say one thing and the screen another.",
     areas: {
       header: "Header",
       promoScreen: "Promo screen",
@@ -222,6 +227,9 @@ const ru: GroupsUi = {
       "В обычном режиме работают три области — шапка, содержимое, подвал. Остальные выбираются в параллельном.",
     previewTitle: "Чертёж раскладки",
     childrenLabel: "Содержимое страницы",
+    comingSoon: "Будет доступно в ближайшем обновлении",
+    notConsumed:
+      "Эту настройку пока никто не читает: параллельная маршрутизация ещё не подключена в корневой layout проекта. Выбор здесь можно сделать, но сохранить его нельзя — файл остался бы с одним ответом, а экран с другим.",
     areas: {
       header: "Шапка",
       promoScreen: "Промо-экран",

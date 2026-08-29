@@ -78,6 +78,15 @@ export type FieldsUi = {
   socialAdd: string
   socialIcon: string
   socialIconNone: string
+  /** Слова инструмента «соцсети через ИИ» (`_tools/socials-ai`). */
+  ai: {
+    open: string; title: string; description: string
+    phraseLabel: string; phrasePlaceholder: string
+    recognize: string; recognizing: string; proposalTitle: string
+    valueLabel: string; ownValue: string; add: string
+    outcomeExists: string; outcomeAbsent: string; outcomeClosed: string
+    noKey: string; unknownNetwork: string; modelFailed: string; cancel: string
+  }
   socialRemove: string
 }
 
@@ -215,6 +224,26 @@ const en: FieldsUi = {
   socialAdd: "Add a network",
   socialIcon: "Icon",
   socialIconNone: "No icon",
+  ai: {
+    open: "Add with AI",
+    title: "A network from a description",
+    description: "Describe the network and what your profile looks like. The model works out the URL rule and checks the variants it finds.",
+    phraseLabel: "Description",
+    phrasePlaceholder: "my instagram, handle in latin letters with hyphens",
+    recognize: "Recognise",
+    recognizing: "Recognising…",
+    proposalTitle: "What came out",
+    valueLabel: "Handle or number",
+    ownValue: "Your own",
+    add: "Take it",
+    outcomeExists: "the profile answers",
+    outcomeAbsent: "no such profile",
+    outcomeClosed: "the network does not answer strangers — check it yourself",
+    noKey: "The helper needs an OpenAI key in the environment settings. A network can be added by hand — close this window.",
+    unknownNetwork: "Could not tell which network this is. Name it plainly — «Telegram», «LinkedIn» — or add it by hand.",
+    modelFailed: "The model did not answer. Try again or add the network by hand.",
+    cancel: "Cancel",
+  },
   socialRemove: "Remove the network",
 }
 
@@ -356,6 +385,26 @@ const ru: FieldsUi = {
   socialAdd: "Добавить сеть",
   socialIcon: "Значок",
   socialIconNone: "Без значка",
+  ai: {
+    open: "Добавить через ИИ",
+    title: "Соцсеть по описанию",
+    description: "Опишите словами, какая это сеть и как выглядит ваш профиль. Модель определит правило адреса и проверит найденные варианты.",
+    phraseLabel: "Описание",
+    phrasePlaceholder: "мой инстаграм, псевдоним латиницей через дефис",
+    recognize: "Определить",
+    recognizing: "Определяю…",
+    proposalTitle: "Что получилось",
+    valueLabel: "Псевдоним или номер",
+    ownValue: "Свой вариант",
+    add: "Взять",
+    outcomeExists: "профиль отвечает",
+    outcomeAbsent: "профиля нет",
+    outcomeClosed: "сеть не отвечает посторонним — проверьте сами",
+    noKey: "Помощнику нужен ключ OpenAI в настройках окружения. Сеть можно завести и руками — закройте это окно.",
+    unknownNetwork: "Не удалось понять, о какой сети речь. Назовите её прямо — «Telegram», «LinkedIn» — или заведите руками.",
+    modelFailed: "Модель не ответила. Попробуйте ещё раз или заведите сеть руками.",
+    cancel: "Отмена",
+  },
   socialRemove: "Убрать сеть",
 }
 

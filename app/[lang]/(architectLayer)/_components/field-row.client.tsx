@@ -161,7 +161,14 @@ export function FieldRow({
         ) : field.type === "icons" ? (
           <IconsField current={value} ui={ui} cropUi={cropUi} />
         ) : field.type === "socials" ? (
-          <SocialsField value={value} disabled={field.locked} onChange={onChange} ui={ui} />
+          <SocialsField
+            value={value}
+            disabled={field.locked}
+            onChange={onChange}
+            ui={ui}
+            lang={lang}
+            dialogUi={cropUi.dialog}
+          />
         ) : field.type === "select" ? (
           <select
             id={id}

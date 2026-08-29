@@ -15,6 +15,8 @@ import {
 import { socialHref, type SocialLink } from "@/config/app-config.defaults"
 import { SOCIAL_BRANDS, isUploadedIcon } from "@/lib/socials/catalogue"
 import { socialIcon } from "@/components/icons/socials"
+import { SocialsAiDialog } from "@/_tools/socials-ai/client/socials-ai-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
 // КОНСТРУКТОР СОЦСЕТЕЙ (31-7, 2026-08-28). Колонка значка — 31-26, 2026-08-29.
@@ -42,12 +44,17 @@ export function SocialsField({
   disabled,
   onChange,
   ui,
+  lang,
+  dialogUi,
 }: {
   /** Список в виде строки JSON: движок держит все значения полей строками. */
   value: string
   disabled?: boolean
   onChange: (next: string) => void
   ui: FieldsUi
+  /** Язык страницы — для слов инструмента и подсказки модели. */
+  lang: string
+  dialogUi: AppDialogUi
 }) {
   let links: SocialLink[] = []
   try {
@@ -193,7 +200,10 @@ export function SocialsField({
         )
       })}
 
-      <div>
+      {/* 🔒 ДВЕ КНОПКИ РЯДОМ, А НЕ ОДНА С РЕЖИМАМИ (решение владельца 2026-08-29).
+          Ручное добавление обязано остаться первым и работать без ключа модели:
+          помощник необязателен, а сети заводят всегда. */}
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
           variant="outline"
@@ -212,6 +222,18 @@ export function SocialsField({
           <Plus className="size-4" aria-hidden />
           {ui.socialAdd}
         </Button>
+        <SocialsAiDialog
+          lang={lang}
+          ui={ui.ai}
+          dialogUi={dialogUi}
+          disabled={disabled}
+          onAdd={link =>
+            write([
+              ...links,
+              { id: `s${Date.now()}`, name: link.name, value: link.value, urlTemplate: link.urlTemplate, icon: link.icon },
+            ])
+          }
+        />
       </div>
     </div>
   )

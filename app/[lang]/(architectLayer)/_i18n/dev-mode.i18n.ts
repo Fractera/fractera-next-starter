@@ -70,6 +70,8 @@ export type DevModeUi = {
   current: string
   alpha: string
   adviceTitle: string
+  /** Обвязка списка продуктов на вкладке кейсов (34-E). */
+  products: { title: string; hint: string; empty: string; emptyHint: string; create: string; creating: string; created: string; namePlaceholder: string; phase: string; stage: string }
   choose: string
   chosen: string
   saving: string
@@ -100,6 +102,18 @@ const en: DevModeUi = {
   current: "current",
   alpha: "alpha testing",
   adviceTitle: "Before you choose",
+  products: {
+    title: "Products of this project",
+    hint: "A product is the unit of work: one server carries several, and each lives at its own pace. The id (p1, p2) means nothing and never changes — paths hang on it.",
+    empty: "No products yet",
+    emptyHint: "A product is not a page. It is a thing this server carries: a shop, a landing, a company brain — with its own cases, steps and address.",
+    create: "New product",
+    creating: "Creating…",
+    created: "Product created",
+    namePlaceholder: "What you call it yourself",
+    phase: "Phase",
+    stage: "Stage",
+  },
   choose: "Choose this mode",
   chosen: "This mode is in effect",
   saving: "Saving…",
@@ -175,6 +189,18 @@ const ru: DevModeUi = {
   current: "сейчас",
   alpha: "альфа-тестирование",
   adviceTitle: "Прежде чем выбрать",
+  products: {
+    title: "Продукты этого проекта",
+    hint: "Продукт — единица работы: один сервер несёт несколько, и каждый живёт своим темпом. Идентификатор (p1, p2) не значит ничего и не меняется никогда — на нём висят пути.",
+    empty: "Продуктов пока нет",
+    emptyHint: "Продукт — это не страница. Это то, что несёт сервер: магазин, лендинг, мозг компании — со своими кейсами, шагами и адресом.",
+    create: "Новый продукт",
+    creating: "Создаю…",
+    created: "Продукт создан",
+    namePlaceholder: "Как вы его называете сами",
+    phase: "Фаза",
+    stage: "Стадия",
+  },
   choose: "Выбрать этот режим",
   chosen: "Этот режим действует",
   saving: "Сохраняю…",

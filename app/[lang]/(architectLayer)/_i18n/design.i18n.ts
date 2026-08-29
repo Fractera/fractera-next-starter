@@ -229,11 +229,11 @@ const EN = {
       "title": "Blocks",
       "hint": "Every block this project can build a page from, drawn by the real renderer. Grouped by what the block is for."
     },
-    "allTypes": "All",
-    "createBlock": "Create a new block",
-    "createBlockHint": "Not built yet — the button is here so the place for it is visible.",
-    "countLabel": "kinds"
-  }
+  },
+  "allTypes": "All",
+  "createBlock": "Create a new block",
+  "createBlockHint": "Not built yet — the button is here so the place for it is visible.",
+  "countLabel": "kinds"
 }
 
 const RU: typeof EN = {
@@ -443,11 +443,11 @@ const RU: typeof EN = {
       "title": "Блоки",
       "hint": "Все блоки, из которых этот проект собирает страницы, нарисованные настоящим рендерером. Сгруппированы по назначению."
     },
-    "allTypes": "Все",
-    "createBlock": "Создать новый блок",
-    "createBlockHint": "Пока не построено — кнопка стоит здесь, чтобы место для неё было видно.",
-    "countLabel": "видов"
-  }
+  },
+  "allTypes": "Все",
+  "createBlock": "Создать новый блок",
+  "createBlockHint": "Пока не построено — кнопка стоит здесь, чтобы место для неё было видно.",
+  "countLabel": "видов"
 }
 
 export type DesignUi = typeof EN

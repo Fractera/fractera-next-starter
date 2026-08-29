@@ -7,6 +7,10 @@ import { designUi } from "../../_i18n/design.i18n"
 import { DESIGN_SECTIONS, resolveDesignSection, hrefOfDesignSection } from "../../_lib/design-sections"
 import { LayerMenu } from "../../_components/layer-menu"
 import { DesignFonts } from "../../_components/design-fonts.client"
+import { DesignType } from "../../_components/design-type.client"
+import { DesignShape } from "../../_components/design-shape.client"
+import { DesignColors } from "../../_components/design-colors.client"
+import { BlocksCatalogue } from "../../_components/blocks-catalogue"
 import { readRawDesignConfig } from "@/lib/architect/design-config-writer"
 
 // ОФОРМЛЕНИЕ ПРОЕКТА ВНУТРИ ПРОЕКТА (39-2 … 39-5, 2026-08-29).
@@ -40,7 +44,7 @@ export default async function DesignPage({
   searchParams: Promise<{ section?: string; kind?: string }>
 }) {
   const { lang } = await params
-  const { section: rawSection } = await searchParams
+  const { section: rawSection, kind: rawKind } = await searchParams
 
   const t = architectLayerUi(lang)
   const ui = designUi(lang)
@@ -58,6 +62,10 @@ export default async function DesignPage({
   }))
 
   const fonts = (config.fonts ?? {}) as Record<string, { family: string; import?: string }>
+  const type = (config.type ?? {}) as { scale?: number; leading?: number }
+  const shape = (config.shape ?? {}) as { radius?: string; borderWidth?: string; spaceScale?: number; appWidth?: string }
+  const rawColors = (config.colors ?? {}) as { light?: Record<string, string>; dark?: Record<string, string> }
+  const colors = { light: rawColors.light ?? {}, dark: rawColors.dark ?? {} }
 
   return (
     <main className="min-h-screen bg-background">
@@ -80,6 +88,10 @@ export default async function DesignPage({
             <Small className="max-w-3xl">{t.appConfigSubtitle}</Small>
 
             {active === "fonts" && <DesignFonts initial={fonts} ui={ui.fonts} />}
+            {active === "type" && <DesignType initial={type} ui={ui.type} />}
+            {active === "shape" && <DesignShape initial={shape} ui={ui.shape} />}
+            {active === "colors" && <DesignColors initial={colors} ui={ui.colors} />}
+            {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} />}
           </div>
         </div>
       </div>

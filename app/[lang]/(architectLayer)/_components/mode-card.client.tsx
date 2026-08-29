@@ -29,6 +29,18 @@ import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 // ТОЖЕ ЗАПИСЫВАЕТСЯ. Молчание конфига действует как `classic`; не запиши мы
 // подтверждение — «не выбирал» осталось бы неотличимо от «выбрал классический»
 // навсегда. Поэтому кнопка активна и у действующего режима, пока выбор не записан.
+/**
+ * Адрес двери по имени режима.
+ *
+ * 🔒 СЧИТАЕТСЯ ЗДЕСЬ, А НЕ В СЛОВАРЕ. Адрес — не слово: он не переводится и
+ * зависит от того, что уже переехало в этот слой. Кейсы пока живут в панели,
+ * переезд — на своей же вкладке.
+ */
+function doorHref(mode: DevMode, lang: string, adminUrl: string): string {
+  if (mode === "migration") return `/${lang}/architect/dev-mode?mode=migration`
+  return adminUrl ? `${adminUrl}/${lang}/products` : ""
+}
+
 export function ModeCard({
   mode,
   current,
@@ -153,10 +165,10 @@ export function ModeCard({
           СКАЗАНО ПРЯМО. Тот же приём, что у неготовой группы меню: пока раздел не
           переехал, настройка обязана оставаться доступной там, где она есть. Данные
           при этом одни и те же — панель пишет в ту же папку продуктов. */}
-      {words.door && (words.door.href(lang, adminUrl).startsWith("/") || adminUrl) && (
+      {words.door && doorHref(mode, lang, adminUrl) && (
         <div data-mode-door={mode} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
           <a
-            href={words.door.href(lang, adminUrl)}
+            href={doorHref(mode, lang, adminUrl)}
             className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
           >
             {words.door.label}

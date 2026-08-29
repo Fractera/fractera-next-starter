@@ -44,7 +44,20 @@ export type ModeWords = {
    * двери её просто не имеет: ключа нет. Ветка `if (mode === "cases")` завела бы
    * частный случай, который при второй двери разваливает карточку надвое.
    */
-  door?: { label: string; hint: string; href: (lang: string, adminUrl: string) => string }
+  /**
+   * Дверь режима: КУДА идти после выбора. Здесь только СЛОВА.
+   *
+   * 🔒 АДРЕС ОТСЮДА УБРАН, И ЭТО ОПЛАЧЕНО МОЛЧА НЕ ОТРИСОВАННОЙ КАРТОЧКОЙ
+   * (2026-08-29). Сначала здесь лежала функция `href(lang, adminUrl)`. Функцию
+   * НЕЛЬЗЯ передать из серверного компонента в клиентский: сборка проходит, типы
+   * сходятся, а карточка просто не появляется — в разметке остаётся один
+   * полезный груз RSC. Владелец увидел это раньше меня: «я не вижу что ты
+   * сделала, попробовать не могу».
+   *
+   * Адрес считает сама карточка по имени режима: он не слово и переводу не
+   * подлежит.
+   */
+  door?: { label: string; hint: string }
 }
 
 export type DevModeUi = {
@@ -117,7 +130,6 @@ const en: DevModeUi = {
       door: {
         label: "Open the use cases",
         hint: "The surface of products and cases is still being moved into this layer. Until it lands, cases are edited in the control panel — the same files, the same data.",
-        href: (lang, adminUrl) => `${adminUrl}/${lang}/products`,
       },
       advice:
         "Go through the work with the model step by step rather than switching on a fully automatic run. Confirm one case, look at what the agent built from it, and only then hand over the next. An automatic pass is faster right up until it turns the wrong way — and then you pay for every step it took while nobody was watching.",
@@ -135,7 +147,6 @@ const en: DevModeUi = {
       door: {
         label: "Name your project",
         hint: "The address of the project you are moving from is set on the tab above. The reading itself is done by the agent inside this project.",
-        href: (lang) => `/${lang}/architect/dev-mode?mode=migration`,
       },
       advice:
         "Move the project piece by piece together with the model, not in one automatic sweep. Read one part, agree on what it becomes here, let it be built — then take the next. A migration that ran unattended is hardest to check exactly where it matters most: in your own data.",
@@ -194,7 +205,6 @@ const ru: DevModeUi = {
       door: {
         label: "Открыть пользовательские кейсы",
         hint: "Поверхность продуктов и кейсов ещё переезжает в этот слой. Пока она не приехала, кейсы правятся в панели управления — те же файлы, те же данные.",
-        href: (lang, adminUrl) => `${adminUrl}/${lang}/products`,
       },
       advice:
         "Проходите работу с моделью постепенно, шаг за шагом, а не включайте полностью автоматический прогон. Подтвердите один кейс, посмотрите, что агент из него построил, и только потом отдавайте следующий. Автоматический проход быстрее ровно до того мгновения, как свернёт не туда, — и тогда вы платите за каждый шаг, сделанный, пока никто не смотрел.",
@@ -212,7 +222,6 @@ const ru: DevModeUi = {
       door: {
         label: "Назвать свой проект",
         hint: "Адрес проекта, из которого переезжаете, задаётся на этой же вкладке ниже. Само чтение делает агент внутри этого проекта.",
-        href: (lang) => `/${lang}/architect/dev-mode?mode=migration`,
       },
       advice:
         "Перевозите проект по частям вместе с моделью, а не одним автоматическим заходом. Прочитали часть, договорились, чем она станет здесь, дали построить — и берите следующую. Переезд, прошедший без присмотра, труднее всего проверить там, где это важнее всего: в ваших собственных данных.",

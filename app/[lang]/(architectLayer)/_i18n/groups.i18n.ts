@@ -97,6 +97,13 @@ export type GroupsUi = {
     rebuild: string
     tierA: string
     tierCommunity: string
+    search: string
+    searchHint: string
+    found: string
+    nothingFound: string
+    nothingFoundHint: string
+    clearSearch: string
+    starLegend: string
   }
 }
 
@@ -205,6 +212,14 @@ const en: GroupsUi = {
       "The language set is baked in at build time. Save it here, then rebuild the project — until then the site keeps serving the previous set.",
     tierA: "well supported by machine translation",
     tierCommunity: "little training data — expect to edit translations by hand",
+    search: "Find a language",
+    searchHint:
+      "Type in any script: the native name, the English name or the code. Русский, Russian and ru all find the same row.",
+    found: "found",
+    nothingFound: "No language matches that",
+    nothingFoundHint: "Try the code (en, ar, zh) or the name in the language itself.",
+    clearSearch: "Clear the search",
+    starLegend: "The star marks the default language — the one the site opens with.",
   },
 }
 
@@ -313,6 +328,14 @@ const ru: GroupsUi = {
       "Набор языков запекается на сборке. Сохраните его здесь, затем пересоберите проект — до этого сайт продолжает отдавать прежний набор.",
     tierA: "хорошо поддержан машинным переводом",
     tierCommunity: "данных мало — переводы придётся править руками",
+    search: "Найти язык",
+    searchHint:
+      "Пишите любым письмом: родное название, английское или код. «Русский», Russian и ru находят одну и ту же строку.",
+    found: "найдено",
+    nothingFound: "Такого языка не нашлось",
+    nothingFoundHint: "Попробуйте код (en, ar, zh) или название на самом языке.",
+    clearSearch: "Очистить поиск",
+    starLegend: "Звёздочкой отмечен язык по умолчанию — тот, с которого открывается сайт.",
   },
 }
 

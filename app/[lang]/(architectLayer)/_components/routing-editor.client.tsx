@@ -175,7 +175,9 @@ export function RoutingEditor({
             исчезнет вместе с `WRITE_ENABLED`. */}
         <AdviceNote probe="one-slot-at-a-time" title={t.adviceTitle} text={t.advice} />
 
-        {!WRITE_ENABLED && <AdviceNote probe="not-consumed" title={t.comingSoon} text={t.notConsumed} />}
+        {!WRITE_ENABLED && (
+          <AdviceNote tone="warning" probe="not-consumed" title={t.comingSoon} text={t.notConsumed} />
+        )}
 
         <div className="flex flex-col gap-4 md:flex-row">
           {modes.map(m => {

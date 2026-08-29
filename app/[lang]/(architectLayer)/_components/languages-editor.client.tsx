@@ -1,9 +1,10 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Check, Loader2, Star } from "lucide-react"
+import { Check, Loader2, Search, Star, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
 import { AdviceNote } from "./advice-note"
@@ -19,7 +20,7 @@ export type LangRow = {
   tier: string
 }
 
-// НАБОР ЯЗЫКОВ САЙТА (31-16, 2026-08-29).
+// НАБОР ЯЗЫКОВ САЙТА (31-16, 2026-08-29). Поиск и подсветка — 31-20.
 //
 // 🔒 РЕЧЬ О ЯЗЫКАХ ЭТОГО САЙТА, А НЕ ЭКРАНОВ НАСТРОЕК. Два разных набора, и путать
 // их нельзя: снять здесь язык — значит перестать собирать для него страницы сайта.
@@ -34,6 +35,60 @@ export type LangRow = {
 // запекается на сборке. Сказать «Сохранено» и замолчать значило бы отдать человеку
 // зелёную отметку на настройку, которой сайт не видит: он откроет сайт, увидит
 // прежние языки и решит, что сохранение не работает.
+
+// 🔒 СРАВНЕНИЕ ИДЁТ ПО РАЗЛОЖЕННОЙ ФОРМЕ, А НЕ ПО СЫРОЙ СТРОКЕ. `NFD` разбивает
+// букву со знаком на букву и знак, `\p{M}` убирает знак. Так «Francais» находит
+// «Français», «Portugues» — «Português», а арабское слово находится и без огласовок:
+// они в Unicode — те же комбинирующие знаки. Без этого поиск работает только у того,
+// кто печатает диакритику, то есть почти ни у кого.
+function fold(s: string): string {
+  return s.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().trim()
+}
+
+// 🔒 ЧЕЛОВЕК ИЩЕТ ЯЗЫК ТЕМ СЛОВОМ, КОТОРОЕ ЗНАЕТ САМ, — И ЭТО ЧЕТВЁРТОЕ ИМЯ.
+// У строки каталога есть родное имя (العربية), английское (Arabic) и код (ar).
+// Русскоязычный человек напишет «арабский», немецкоязычный — «Arabisch», и ни одно
+// из трёх ему не поможет. Четвёртое имя даёт сам браузер: `Intl.DisplayNames` знает
+// название языка на языке читателя. Спрашиваем его на языке страницы И на языке
+// браузера — это разные вещи: страница может быть открыта на английском человеком,
+// который думает по-арабски.
+//
+// Всё в `try`: `Intl.DisplayNames` есть не везде и для части языков молчит. Молчание
+// здесь законно — поиск просто теряет четвёртое имя, а первые три работают.
+function localNames(codes: readonly string[]): Map<string, string[]> {
+  const out = new Map<string, string[]>()
+  const locales: string[] = []
+  try {
+    const pageLang = document.documentElement.lang
+    if (pageLang) locales.push(pageLang)
+    if (navigator.language && !locales.includes(navigator.language)) locales.push(navigator.language)
+  } catch {
+    /* среды без DOM — остаёмся с тремя именами */
+  }
+
+  for (const locale of locales) {
+    let dn: Intl.DisplayNames
+    try {
+      dn = new Intl.DisplayNames([locale], { type: "language" })
+    } catch {
+      continue
+    }
+    for (const code of codes) {
+      try {
+        const name = dn.of(code)
+        // `of` возвращает сам код, когда названия не знает: это не имя, а эхо.
+        if (!name || name === code) continue
+        const list = out.get(code) ?? []
+        if (!list.includes(name)) list.push(name)
+        out.set(code, list)
+      } catch {
+        /* один язык без названия не должен ронять весь список */
+      }
+    }
+  }
+  return out
+}
+
 export function LanguagesEditor({
   catalogue,
   initial,
@@ -55,6 +110,7 @@ export function LanguagesEditor({
   const [def, setDef] = useState(initialDefault)
   const [saved, setSaved] = useState(() => JSON.stringify([[...initial].sort(), initialDefault]))
   const [busy, setBusy] = useState(false)
+  const [query, setQuery] = useState("")
 
   const changed = useMemo(
     () => JSON.stringify([[...selected].sort(), def]) !== saved,
@@ -69,6 +125,25 @@ export function LanguagesEditor({
     const [savedSet] = JSON.parse(saved) as [string[], string]
     return savedSet.join(",") !== [...built].sort().join(",")
   }, [saved, built])
+
+  // Стог сена собирается один раз на весь каталог, а не на каждое нажатие клавиши.
+  const haystack = useMemo(() => {
+    const local = localNames(catalogue.map(r => r.code))
+    const map = new Map<string, string>()
+    for (const r of catalogue) {
+      map.set(
+        r.code,
+        fold([r.code, r.englishName, r.nativeName, ...(local.get(r.code) ?? [])].join(" ")),
+      )
+    }
+    return map
+  }, [catalogue])
+
+  const q = fold(query)
+  const shown = useMemo(
+    () => (q ? catalogue.filter(r => (haystack.get(r.code) ?? "").includes(q)) : catalogue),
+    [q, catalogue, haystack],
+  )
 
   function toggle(code: string) {
     setSelected(prev => {
@@ -135,61 +210,129 @@ export function LanguagesEditor({
           <Small className="max-w-2xl">{t.hint}</Small>
           <Small data-lang-count className="font-medium text-foreground">
             {selected.length} {t.selected}
+            {q && ` · ${shown.length} ${t.found}`}
+          </Small>
+          {/* 🔒 ЗНАЧОК ОБЪЯСНЯЕТСЯ ТАМ, ГДЕ ОН СТОИТ. Подпись у самой кнопки видит
+              только тот, кто уже навёл на неё мышь, — то есть тот, кто и так
+              догадался. Легенда стоит над списком и читается до первого щелчка. */}
+          <Small data-star-legend className="flex items-center gap-1.5">
+            <Star className="size-3.5 shrink-0" aria-hidden />
+            {t.starLegend}
           </Small>
         </div>
+
+        {/* 🔒 ПОЛЕ ПОИСКА С `dir="auto"`. Человек ищет язык словом, которое знает сам,
+            и слово это может быть арабским или ивритом — письмом справа налево.
+            Поле с жёстким направлением показало бы такой запрос задом наперёд:
+            курсор слева, знаки препинания не на своей стороне. `auto` отдаёт
+            направление первой значащей букве набранного. */}
+        <div className="relative max-w-xl">
+          <Search
+            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            data-lang-search
+            type="search"
+            dir="auto"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t.search}
+            aria-label={t.search}
+            className="h-11 ps-9 pe-10"
+          />
+          {query && (
+            <button
+              type="button"
+              data-lang-search-clear
+              onClick={() => setQuery("")}
+              aria-label={t.clearSearch}
+              title={t.clearSearch}
+              className="absolute end-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          )}
+        </div>
+        <Small className="max-w-xl">{t.searchHint}</Small>
+
         <Separator />
 
-        <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-          {catalogue.map(row => {
-            const on = selected.includes(row.code)
-            const isDefault = row.code === def
-            return (
-              <li
-                key={row.code}
-                data-lang={row.code}
-                data-on={on ? "true" : "false"}
-                data-default={isDefault ? "true" : "false"}
-                className={
-                  "flex items-center gap-3 rounded-lg border px-3 py-2 " +
-                  (on ? "border-primary/50 bg-primary/5" : "border-border")
-                }
-              >
-                <button
-                  type="button"
-                  onClick={() => toggle(row.code)}
-                  aria-pressed={on}
-                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        {shown.length === 0 ? (
+          <div data-lang-empty className="flex flex-col gap-1 rounded-lg border border-border px-4 py-6">
+            <P className="text-[length:var(--fs-body)] font-medium">{t.nothingFound}</P>
+            <Small>{t.nothingFoundHint}</Small>
+          </div>
+        ) : (
+          <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {shown.map(row => {
+              const on = selected.includes(row.code)
+              const isDefault = row.code === def
+              return (
+                <li
+                  key={row.code}
+                  data-lang={row.code}
+                  data-on={on ? "true" : "false"}
+                  data-default={isDefault ? "true" : "false"}
+                  // 🔒 ВЫБРАННАЯ КАРТОЧКА ЗАЛИТА ОСНОВНЫМ ЦВЕТОМ, А НЕ ОБВЕДЕНА
+                  // (решение владельца 2026-08-29). Восемьдесят две карточки в три
+                  // колонки: тонкая рамка и заливка в пять процентов различимы только
+                  // рядом, а выбранные разбросаны по всему списку. Заливка видна
+                  // краем глаза — по ней набор читается, не читая.
+                  className={
+                    "flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors " +
+                    (on ? "border-primary bg-primary text-primary-foreground" : "border-border")
+                  }
                 >
-                  <span aria-hidden className="text-[length:var(--fs-h3)] leading-none">{row.flag}</span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-[length:var(--fs-body)] text-foreground">{row.nativeName}</span>
-                    <Small className="block truncate">
-                      {row.englishName} · {row.tier === "A" ? t.tierA : t.tierCommunity}
-                    </Small>
-                  </span>
-                  {on && <Check className="size-4 shrink-0 text-primary" aria-hidden />}
-                </button>
-
-                {/* Основным можно сделать только выбранный язык: иначе сайт
-                    остался бы с умолчанием, страниц для которого не собирают. */}
-                {on && (
-                  <Button
+                  <button
                     type="button"
-                    variant={isDefault ? "default" : "ghost"}
-                    size="icon"
-                    aria-label={isDefault ? t.defaultLabel : t.makeDefault}
-                    title={isDefault ? t.defaultLabel : t.makeDefault}
-                    data-make-default={row.code}
-                    onClick={() => setDef(row.code)}
-                    className="size-9 shrink-0"
+                    onClick={() => toggle(row.code)}
+                    aria-pressed={on}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
-                    <Star className="size-4" aria-hidden />
-                  </Button>
-                )}
-              </li>
-            )
-          })}
-        </ul>
+                    <span aria-hidden className="text-[length:var(--fs-h3)] leading-none">{row.flag}</span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[length:var(--fs-body)]">{row.nativeName}</span>
+                      {/* На заливке приглушённый цвет текста нечитаем: он рассчитан
+                          на фон страницы, а не на основной цвет. */}
+                      <span
+                        className={
+                          "block truncate text-[length:var(--fs-small)] " +
+                          (on ? "text-primary-foreground/80" : "text-muted-foreground")
+                        }
+                      >
+                        {row.englishName} · {row.tier === "A" ? t.tierA : t.tierCommunity}
+                      </span>
+                    </span>
+                    {on && <Check data-lang-check className="size-4 shrink-0" aria-hidden />}
+                  </button>
+
+                  {/* Основным можно сделать только выбранный язык: иначе сайт
+                      остался бы с умолчанием, страниц для которого не собирают. */}
+                  {on && (
+                    <Button
+                      type="button"
+                      variant={isDefault ? "secondary" : "ghost"}
+                      size="icon"
+                      aria-label={isDefault ? t.defaultLabel : t.makeDefault}
+                      title={isDefault ? t.defaultLabel : t.makeDefault}
+                      data-make-default={row.code}
+                      onClick={() => setDef(row.code)}
+                      className={
+                        "size-9 shrink-0 " +
+                        (isDefault
+                          ? ""
+                          : "text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground")
+                      }
+                    >
+                      <Star className={"size-4 " + (isDefault ? "fill-current" : "")} aria-hidden />
+                    </Button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </section>
 
       <div className="flex items-center gap-3">

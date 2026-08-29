@@ -73,7 +73,7 @@ export function LayerMenu({
       {/* 🔒 ОТРИЦАТЕЛЬНЫЙ ОТСТУП + `px-1` — чтобы полоса прокрутки не обрезала
           подсветку крайних пунктов: фон активного пункта шире его текста, и без
           этого зазора он упирался бы в край и выглядел срезанным. */}
-      <ul className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 md:flex-col md:overflow-x-visible">
+      <ul className="slim-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 pb-1 md:flex-col md:overflow-x-visible">
         {ARCHITECT_GROUPS.map(group => {
           const label = ui.groups[group.id] ?? group.id
           // 🔒 В ВЕРТИКАЛЬНОМ МЕНЮ ДЛИННОЕ НАЗВАНИЕ ОБРЕЗАЕТСЯ МНОГОТОЧИЕМ, В

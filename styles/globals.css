@@ -84,6 +84,39 @@
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ─── ТИХАЯ ПОЛОСА ПРОКРУТКИ (владелец 2026-08-29) ───────────────────────────
+   Дословно: «ужасный некрасивый скролбар, потому что он имеет background. Убери
+   background у этого скролл бара, пусть он будет просто в цвет фона; а бегунок
+   серый — это хорошо; а кнопки влево-вправо тоже убери».
+
+   🔒 ЭТО НЕ `hide-scrollbar` РЯДОМ, И РАЗНИЦА СОДЕРЖАТЕЛЬНАЯ. Тот прячет полосу
+   целиком — вместе с единственным признаком того, что список продолжается за
+   краем. Здесь полоса ОСТАЁТСЯ видимой: исчезают только жёлоб и стрелки, то
+   есть хром операционной системы, а бегунок сохраняется как указатель.
+
+   🔒 ЖЁЛОБ ПРОЗРАЧЕН, А НЕ ПЕРЕКРАШЕН В ЦВЕТ ФОНА. Прозрачность верна на любой
+   подложке; конкретный цвет пришлось бы повторять в каждом месте, где полоса
+   ляжет на карточку или панель, и он разошёлся бы с темой при первой её смене.
+
+   Стрелки убираются `::-webkit-scrollbar-button`: в Firefox их нет вовсе, а
+   `scrollbar-width: thin` там же отвечает и за толщину. */
+.slim-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted-foreground) transparent;
+}
+.slim-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+.slim-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.slim-scrollbar::-webkit-scrollbar-corner { background: transparent; }
+.slim-scrollbar::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--color-muted-foreground) 55%, transparent);
+  border-radius: 9999px;
+}
+.slim-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--color-muted-foreground) 75%, transparent);
+}
+
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }

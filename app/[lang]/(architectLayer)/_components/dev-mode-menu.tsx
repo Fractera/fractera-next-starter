@@ -33,7 +33,7 @@ export function DevModeMenu({
 }) {
   return (
     <nav data-dev-mode-menu aria-label={ui.title} className="border-b border-border">
-      <ul className="-mx-1 flex gap-1 overflow-x-auto px-1">
+      <ul className="slim-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
         {DEV_MODES.map(mode => {
           const isActive = mode === active
           const isCurrent = mode === current

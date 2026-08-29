@@ -16,6 +16,9 @@ import { ConfigEditor } from "../../_components/config-editor.client"
 import { RoutingEditor } from "../../_components/routing-editor.client"
 import { FeaturesEditor } from "../../_components/features-editor.client"
 import { NavEditor } from "../../_components/nav-editor.client"
+import { LanguagesEditor, type LangRow } from "../../_components/languages-editor.client"
+import { ALL_LANGUAGE_METADATA } from "@/config/translations/language-metadata"
+import { readEnvValue } from "@/lib/architect/env-writer"
 import { parseNavItems, type NavCandidate } from "../../_lib/nav"
 import { publicSurfaces } from "@/lib/aio/surfaces"
 import Link from "next/link"
@@ -121,6 +124,30 @@ export default async function ArchitectAppConfigPage({
     : navCandidates
         .filter(c => (navSlot === "footer" ? ["privacy", "terms", "cookies", "accessibility"].includes(c.id) : c.id !== "home"))
         .map((c, i) => ({ id: c.id, href: c.href, order: (i + 1) * 10, label: "" }))
+  // 🔒 КАТАЛОГ ЯЗЫКОВ РАЗБИРАЕТСЯ НА СЕРВЕРЕ И УЕЗЖАЕТ ГОТОВЫМИ СТРОКАМИ. В нём
+  // 84 записи с флагами, родными именами и регионами; тащить их в браузер незачем —
+  // разметку строит сервер, а островку нужны имя, флаг и качество перевода.
+  //
+  // 🔒 ЧИТАЕТСЯ ФАЙЛ, А НЕ `process.env`. Это разные ответы, и в этом весь смысл
+  // группы: в окружении процесса живёт набор, с которым проект СОБРАН, а в файле —
+  // то, что владелец сохранил последним. Расхождение и есть «ждёт пересборки».
+  const langCatalogue: LangRow[] = group !== "multilang" ? [] :
+    Object.values(ALL_LANGUAGE_METADATA)
+      .map(m => ({
+        code: m.code,
+        flag: m.flag,
+        nativeName: m.nativeName,
+        englishName: m.englishName,
+        tier: m.aiTier,
+      }))
+      .sort((a, b) => a.englishName.localeCompare(b.englishName))
+
+  const envLangs = readEnvValue("NEXT_PUBLIC_SUPPORTED_LANGUAGES")
+  const savedLangs = envLangs
+    ? envLangs.split(",").map(s => s.trim()).filter(Boolean)
+    : [...SUPPORTED_LANGUAGES]
+  const savedDefaultLang = readEnvValue("NEXT_PUBLIC_DEFAULT_LOCALE") ?? DEFAULT_LANGUAGE
+
   const effective = getAppConfig() as unknown as Record<string, unknown>
   const i18n = (raw.i18n ?? {}) as Record<string, Record<string, string>>
 
@@ -202,7 +229,15 @@ export default async function ArchitectAppConfigPage({
                   платформы, окружение сборки. Один редактор на всех означал бы
                   либо общий знаменатель (галочки и строки), либо один компонент,
                   знающий про три двери сразу. */}
-              {group === "parallelRouting" ? (
+              {group === "multilang" ? (
+                <LanguagesEditor
+                  catalogue={langCatalogue}
+                  initial={savedLangs}
+                  initialDefault={savedDefaultLang}
+                  built={SUPPORTED_LANGUAGES}
+                  ui={gw}
+                />
+              ) : group === "parallelRouting" ? (
                 <RoutingEditor
                   initialMode={modeOf(platform)}
                   initialSlots={activeSlots(platform)}

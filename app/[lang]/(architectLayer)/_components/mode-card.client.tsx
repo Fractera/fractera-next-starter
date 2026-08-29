@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
+import { AdviceNote } from "./advice-note"
 import { isAlphaMode, type DevMode } from "../_lib/dev-mode"
 import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 
@@ -104,6 +105,12 @@ export function ModeCard({
           </span>
         )}
       </div>
+
+      {/* 🔒 СОВЕТ СТОИТ НАД ОПИСАНИЕМ, А НЕ ПОД КНОПКОЙ. Он про то, КАК работать
+          в этом режиме, и прочитать его надо до выбора: под кнопкой он стал бы
+          сноской к уже принятому решению. Контейнер общий (`AdviceNote`, тон
+          `advice`) — тот же жанр, что «добавляйте по одному слоту». */}
+      {words.advice && <AdviceNote probe={`mode-advice-${mode}`} title={ui.adviceTitle} text={words.advice} />}
 
       <P className="max-w-3xl text-[length:var(--fs-body)]">{words.body}</P>
       <Small className="max-w-3xl">{words.when}</Small>

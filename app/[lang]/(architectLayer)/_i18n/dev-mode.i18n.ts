@@ -29,6 +29,15 @@ export type ModeWords = {
    * нет совсем.
    */
   requires: string[]
+  /**
+   * Совет, показанный оранжевым блоком над карточкой. Пусто — совета нет.
+   *
+   * 🔒 ЖАНР ТОТ ЖЕ, ЧТО У «ПО ОДНОМУ СЛОТУ» В МАРШРУТИЗАЦИИ: цена решения,
+   * названная до того, как решение приняли. Поэтому и контейнер тот же —
+   * `AdviceNote` в тоне `advice`, а не второе изобретение того же блока.
+   */
+  advice?: string
+
 }
 
 export type DevModeUi = {
@@ -40,6 +49,7 @@ export type DevModeUi = {
   /** Отметка у режима, который записан в конфиге. */
   current: string
   alpha: string
+  adviceTitle: string
   choose: string
   chosen: string
   saving: string
@@ -69,6 +79,7 @@ const en: DevModeUi = {
     "Static public pages, size limits, translations instead of inline text, settings read from config — these hold in every mode. A law that a mode could switch off would not be a law.",
   current: "current",
   alpha: "alpha testing",
+  adviceTitle: "Before you choose",
   choose: "Choose this mode",
   chosen: "This mode is in effect",
   saving: "Saving…",
@@ -88,12 +99,16 @@ const en: DevModeUi = {
       body: "The agent breaks the task into numbered steps with sub-steps, and works the queue. What is planned survives the end of a session, because it is written down before it is executed.",
       when: "Take it when the work is longer than one conversation.",
       requires: ["recommended for Opus 5"],
+      advice:
+        "This is the recommended way of working with the Fractera architecture. The project is built in numbered steps, each written down before it is done — so the work survives the end of a session, and you always see where it stands.",
     },
     cases: {
       label: "Use cases",
       body: "The fullest order: the owner confirms use cases, they become products, products become a queue of steps. Nothing is built on a guess, and every step names the case it serves.",
       when: "Take it when a product is being built, not patched.",
       requires: ["minimum requirement: Fable 5+", "recommended: dynamic workflows", "recommended: a Max plan"],
+      advice:
+        "Go through the work with the model step by step rather than switching on a fully automatic run. Confirm one case, look at what the agent built from it, and only then hand over the next. An automatic pass is faster right up until it turns the wrong way — and then you pay for every step it took while nobody was watching.",
     },
     migration: {
       label: "Move to Fractera",
@@ -105,6 +120,8 @@ const en: DevModeUi = {
         "recommended: a Max plan",
         "needs access to your project",
       ],
+      advice:
+        "Move the project piece by piece together with the model, not in one automatic sweep. Read one part, agree on what it becomes here, let it be built — then take the next. A migration that ran unattended is hardest to check exactly where it matters most: in your own data.",
     },
   },
   sourceTitle: "The project you are moving from",
@@ -129,6 +146,7 @@ const ru: DevModeUi = {
     "Статика публичных страниц, лимиты размера, переводы вместо вписанного текста, настройки из конфигов — действуют в любом режиме. Закон, который режим мог бы выключить, законом не был бы.",
   current: "сейчас",
   alpha: "альфа-тестирование",
+  adviceTitle: "Прежде чем выбрать",
   choose: "Выбрать этот режим",
   chosen: "Этот режим действует",
   saving: "Сохраняю…",
@@ -148,12 +166,16 @@ const ru: DevModeUi = {
       body: "Агент раскладывает задачу на нумерованные шаги с подшагами и работает очередь. Запланированное переживает конец сессии, потому что записано до того, как исполнено.",
       when: "Берите, когда работа длиннее одного разговора.",
       requires: ["рекомендуется для модели Opus 5"],
+      advice:
+        "Это рекомендованный режим работы с архитектурой Fractera. Проект строится нумерованными шагами, и каждый записан до того, как исполнен, — поэтому работа переживает конец сессии, и всегда видно, на чём она стоит.",
     },
     cases: {
       label: "Пользовательские кейсы",
       body: "Самый полный порядок: владелец подтверждает кейсы, из них рождаются продукты, из продуктов — очередь шагов. Ничего не строится на догадке, и каждый шаг называет кейс, которому служит.",
       when: "Берите, когда продукт строят, а не латают.",
       requires: ["минимальные требования Fable 5+", "рекомендуется: динамические рабочие процессы", "рекомендуется: тариф Max"],
+      advice:
+        "Проходите работу с моделью постепенно, шаг за шагом, а не включайте полностью автоматический прогон. Подтвердите один кейс, посмотрите, что агент из него построил, и только потом отдавайте следующий. Автоматический проход быстрее ровно до того мгновения, как свернёт не туда, — и тогда вы платите за каждый шаг, сделанный, пока никто не смотрел.",
     },
     migration: {
       label: "Переезд на Fractera",
@@ -165,6 +187,8 @@ const ru: DevModeUi = {
         "рекомендуется: тариф Max",
         "нужен доступ к вашему проекту",
       ],
+      advice:
+        "Перевозите проект по частям вместе с моделью, а не одним автоматическим заходом. Прочитали часть, договорились, чем она станет здесь, дали построить — и берите следующую. Переезд, прошедший без присмотра, труднее всего проверить там, где это важнее всего: в ваших собственных данных.",
     },
   },
   sourceTitle: "Проект, из которого переезжаете",

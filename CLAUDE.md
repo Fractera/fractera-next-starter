@@ -833,18 +833,31 @@ picked something he never picked.
 | `cases` | a confirmed case of a product | yes, and every step names its case | `use-use-cases` (the right to start) + **`build-product-with-owner`** (the path to a prototype) |
 | `migration` | reading an existing project that already works | yes — a queue born from the reading | `use-migration` |
 
-🔒 **THE MODE DECIDES ONLY WHERE THE TASK COMES FROM — NEVER WHETHER THE WORK IS RECORDED**
-(2026-08-24). All four addresses of *Your memory* are owed in every mode: `current-steps.md` is kept
-always, a result is written always. In `classic` there may be no plan ahead; there is never no state
-and no result. ✗ this was paid for live: `PLATFORM-CONFIG` is empty on a fresh server, empty means
-`classic`, the agent read "no case, **no step**" and honestly concluded it owed nothing — then built
-its own `Migration/` folder the moment it needed structure. The default was silent about accounting,
-not opposed to it. It is no longer silent.
+🔒 **`classic` IS FULLY EXEMPT FROM THE STEP MACHINERY; THE OTHER THREE MODES OWE ALL OF IT**
+(owner, 2026-08-29). His words: "if we use any mode other than classic, all the elements of
+development steps apply; if classic is used, the instruction and the skills ignore any of our
+requirements about steps."
 
-🔒 **Never create your own folder to track work** — no `Migration/`, `tasks/`, `plans/`, `steps/`.
-Something is missing in the four addresses: say it to the owner. A parallel system of record is not a
-better method, it is a lost handover: the next session reads the four addresses and finds nothing.
-`npm run check:steps` fails the build on such a folder.
+In `classic` there is no plan ahead, no `current-steps.md`, no result file, and `npm run check:steps`
+says so out loud instead of failing the build. In `steps`, `cases` and `migration` every address of
+*Your memory* is owed, and the skill of that mode is loaded before the first line of code.
+
+🪦 **THIS REPLACES THE LAW OF 2026-08-24, AND THE REPLACED ONE IS NAMED HERE ON PURPOSE.** It said:
+"the mode decides only WHERE the task comes from — never whether the work is recorded; all four
+addresses are owed in every mode". It was paid for by a live incident: on a fresh server the config was
+empty, empty meant `classic`, the agent read "no case, no step", honestly concluded it owed nothing —
+and built its own `Migration/` folder the moment it needed structure.
+
+🔒 **THE RISK OF THE NEW LAW IS THE OLD INCIDENT, AND IT IS STATED, NOT HIDDEN.** A `classic` session
+that ends — window exhausted, machine off — leaves nothing to hand over. That is the owner's decision,
+taken knowing the price; if handover matters to a particular project, its mode is `steps`, and
+switching costs one click in the panel.
+
+🔒 **ONE THING SURVIVES THE EXEMPTION: NEVER BUILD YOUR OWN FOLDER OF RECORD** — no `Migration/`,
+`tasks/`, `plans/`, `steps/`. This is not a step requirement; it is the ban on inventing a SECOND
+system. In `classic` there is no first system to compete with, but the owner switches modes later and
+finds a folder full of structure nobody looks for. `npm run check:steps` keeps this one check in every
+mode.
 
 **`migration`** (2026-08-22). 🔒 **Load `use-migration` before the first route, table or door** — it
 carries the NINETEEN stages with what each ends with, and ten probes to run before writing code over
@@ -1025,9 +1038,11 @@ no server at hand at all.
 
 **Gates.** Nineteen run themselves before the build (`prebuild`): doors, config schemas, content,
 sections, the block map, dialogs, project types, layout, typography, protection, **statics**, the menu,
-encoding, search, AIO, PWA, contrast, links, **steps**. The last one (`check:steps`) fails the build if
-work is being tracked outside the four addresses of *Your memory* — a `Migration/`, `tasks/` or
-`plans/` folder of your own. Two do NOT run by themselves and must be called by hand:
+encoding, search, AIO, PWA, contrast, links, **steps**. The last one (`check:steps`) READS THE
+DEVELOPMENT MODE: in `classic` it only checks that you have not built a folder of record of your own
+(`Migration/`, `tasks/`, `plans/`) and says out loud that the rest was skipped; in the other three
+modes it also fails the build when the addresses of *Your memory* are missing.
+Two do NOT run by themselves and must be called by hand:
 `npm run check:types` and `npm run check:i18n`. Since you do
 not build locally, those two are the only thing between your edit and the build on the server.
 

@@ -38,6 +38,36 @@ const PASSPORT = path.join(ROOT, "development-docs", "PASSPORT.md")
 const RIVAL_NAMES = new Set(["migration", "migrations", "tasks", "plans", "steps", "todo", "todos", "roadmap"])
 const SCAN_ROOTS = [ROOT, path.join(ROOT, "development-docs")]
 
+// 🔒 РЕЖИМ РАЗРАБОТКИ ЧИТАЕТСЯ ЗДЕСЬ, И В `classic` СТОРОЖ МОЛЧИТ О ШАГАХ
+// (решение владельца 2026-08-29). Дословно: «в случае, если мы используем любой
+// режим кроме классического, все элементы шагов разработки будут применяться;
+// если используют классический — инструкция и навыки проигнорируют любые наши
+// требования к шагам разработки».
+//
+// 🔒 ЧИТАЕТСЯ СЫРОЙ ФАЙЛ, А НЕ СЛИТЫЙ С УМОЛЧАНИЯМИ — но умолчание применяется
+// то же, что в приложении: пустой конфиг означает `steps` (шаг 36), и свежий
+// сервер поэтому стережётся с первого дня. Освобождение получает ТОЛЬКО тот, кто
+// выбрал `classic` явно, либо кто унаследовал его от старого сервера.
+//
+// 🔒 ЗАПРЕТ ПАРАЛЛЕЛЬНОГО УЧЁТА ПЕРЕЖИВАЕТ ОСВОБОЖДЕНИЕ, и это названо вслух.
+// Он не требование к шагам, а защита от второй системы записи: в `classic`
+// сравнивать её не с чем, но владелец включает `steps` позже — и находит папку
+// `tasks/`, набитую чужой структурой, которой никто не искал. Проверка дешёвая,
+// а её отсутствие однажды уже стоило дня.
+function developmentMode() {
+  try {
+    const raw = fs.readFileSync(path.join(ROOT, "PLATFORM-CONFIG", "platform-config.json"), "utf8")
+    const v = JSON.parse(raw)?.developmentMode
+    return ["classic", "steps", "cases", "migration"].includes(v) ? v : "steps"
+  } catch {
+    // Файла нет — законное состояние свежего проекта; умолчание то же, что в коде.
+    return "steps"
+  }
+}
+
+const MODE = developmentMode()
+const STEPS_OWED = MODE !== "classic"
+
 const findings = []
 const warnings = []
 
@@ -67,13 +97,16 @@ for (const root of SCAN_ROOTS) {
 // решение, а не небрежность: проекты, полученные до 2026-08-25, приехали без
 // него, и роняющий сборку сторож наказал бы их за нашу правку шаблона. Отсутствие
 // названо громко, но сборку не останавливает.
-if (!fs.existsSync(PASSPORT)) {
+if (STEPS_OWED && !fs.existsSync(PASSPORT)) {
   warnings.push("development-docs/PASSPORT.md — пятого адреса памяти нет на месте")
 }
 
-if (!fs.existsSync(STEPS)) {
+// 2. Четыре адреса памяти. 🔒 В `classic` этот блок не исполняется вовсе: владелец
+//    освободил режим от требований к шагам, и сторож, продолжающий их требовать,
+//    ронял бы сборку за неисполнение того, чего не просят.
+if (STEPS_OWED && !fs.existsSync(STEPS)) {
   findings.push({ kind: "missing", rel: "development-docs/development-steps" })
-} else {
+} else if (STEPS_OWED) {
   if (!fs.existsSync(CURRENT)) findings.push({ kind: "missing", rel: "development-docs/development-steps/current-steps.md" })
   for (const [dir, rel] of [[NEW, "new-steps"], [DONE, "completed-steps"]]) {
     if (!fs.existsSync(dir)) findings.push({ kind: "missing", rel: `development-docs/development-steps/${rel}` })
@@ -81,7 +114,7 @@ if (!fs.existsSync(STEPS)) {
 }
 
 // 3. Имя плана — указатель: <номер>-<описание из 6-8 слов>.
-if (fs.existsSync(NEW)) {
+if (STEPS_OWED && fs.existsSync(NEW)) {
   for (const name of fs.readdirSync(NEW)) {
     if (!name.endsWith(".md") || name === "README.md") continue
     const m = name.match(/^(\d+)-([a-z0-9-]+)\.md$/)
@@ -92,7 +125,7 @@ if (fs.existsSync(NEW)) {
 }
 
 // 4. План и итог одновременно не существуют: закрытый шаг забирает свой план.
-if (fs.existsSync(NEW) && fs.existsSync(DONE)) {
+if (STEPS_OWED && fs.existsSync(NEW) && fs.existsSync(DONE)) {
   const closed = new Set()
   for (const name of fs.readdirSync(DONE)) {
     const m = name.match(/^(\d+)-main\.md$/)
@@ -104,13 +137,26 @@ if (fs.existsSync(NEW) && fs.existsSync(DONE)) {
   }
 }
 
-console.log("check-steps — дисциплина шагов разработки")
+// 🔒 РЕЖИМ НАЗЫВАЕТСЯ В ОТЧЁТЕ ВСЕГДА. Молчащий сторож неотличим от сломанного:
+//    человек, увидевший «нарушений нет» в classic, обязан понимать, что часть
+//    проверок не исполнялась, а не считать, что они прошли.
+console.log(`check-steps — дисциплина шагов разработки · режим: ${MODE}`)
+if (!STEPS_OWED) {
+  console.log("  режим classic — требования к шагам не применяются (решение владельца 2026-08-29)")
+  console.log("  проверяется только отсутствие параллельного учёта")
+}
 
 for (const w of warnings) console.log(`  ⚠️  ${w}`)
 
 if (findings.length === 0) {
   console.log("  ✓ параллельного учёта рядом с пятью адресами нет")
-  console.log("  ✓ структура памяти на месте: current-steps.md, new-steps/, completed-steps/")
+  // 🔒 О ТОМ, ЧЕГО НЕ ПРОВЕРЯЛ, СТОРОЖ НЕ ОТЧИТЫВАЕТСЯ. ✗ поймано при первом же
+  //    прогоне освобождения: в classic он печатал «структура памяти на месте» —
+  //    и печатал это ДАЖЕ когда папки не было вовсе. Зелёная строка о непроверенном
+  //    хуже молчания: по ней принимают решение, что всё в порядке.
+  if (STEPS_OWED) {
+    console.log("  ✓ структура памяти на месте: current-steps.md, new-steps/, completed-steps/")
+  }
   if (warnings.length) {
     console.log("\n  Паспорт — то, что отвечает «что это за проект». Заведите его по образцу")
     console.log("  из шаблона: development-docs/PASSPORT.md. → CLAUDE.md § Your memory")

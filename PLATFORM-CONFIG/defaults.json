@@ -9,5 +9,6 @@
   "themeToggle": true,
   "widthToggle": true,
   "languageSwitcher": true,
-  "socials": true
+  "socials": true,
+  "viewportBadge": true
 }

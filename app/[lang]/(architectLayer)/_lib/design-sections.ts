@@ -16,7 +16,12 @@
 // файл чужого проекта через диск. Здесь каталог у себя дома: он порождается
 // сборкой этого приложения и стережётся его же гейтом.
 
-export const DESIGN_SECTIONS = ["fonts", "type", "shape", "colors", "blocks"] as const
+// 🔒 ШЕСТОЙ РАЗДЕЛ — «ИНСТРУМЕНТЫ» (шаг 41, 2026-08-29, слово владельца). Он
+// отличается от пяти соседей: те правят ВИД сайта, этот — то, что видит только
+// сам разработчик поверх сайта. Поэтому стоит последним и лежит в другом
+// хранилище (`PLATFORM-CONFIG`, а не `DESIGN-CONFIG`): индикатор ширины — не
+// оформление проекта, а прибор, которым это оформление обсуждают.
+export const DESIGN_SECTIONS = ["fonts", "type", "shape", "colors", "blocks", "tools"] as const
 export type DesignSection = (typeof DESIGN_SECTIONS)[number]
 
 export function isDesignSection(v: unknown): v is DesignSection {

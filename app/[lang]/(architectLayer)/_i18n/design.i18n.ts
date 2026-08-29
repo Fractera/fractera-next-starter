@@ -229,11 +229,19 @@ const EN = {
       "title": "Blocks",
       "hint": "Every block this project can build a page from, drawn by the real renderer. Grouped by what the block is for."
     },
+    "tools": {
+      "title": "Tools",
+      "hint": "Instruments that appear over the site for you, not for the visitor. They change nothing in the project itself."
+    },
   },
   "allTypes": "All",
   "createBlock": "Create a new block",
   "createBlockHint": "Not built yet — the button is here so the place for it is visible.",
-  "countLabel": "kinds"
+  "countLabel": "kinds",
+  "viewportBadgeLabel": "Screen width indicator",
+  "viewportBadgeHint": "A small circle in the bottom left corner: the current width in pixels and the breakpoint it falls into. It talks about layout in numbers instead of impressions — and it is visible on the live site, not only in development.",
+  "toolsOn": "On",
+  "toolsOff": "Off"
 }
 
 const RU: typeof EN = {
@@ -443,11 +451,19 @@ const RU: typeof EN = {
       "title": "Блоки",
       "hint": "Все блоки, из которых этот проект собирает страницы, нарисованные настоящим рендерером. Сгруппированы по назначению."
     },
+    "tools": {
+      "title": "Инструменты",
+      "hint": "Приборы, которые появляются поверх сайта для вас, а не для посетителя. В самом проекте они ничего не меняют."
+    },
   },
   "allTypes": "Все",
   "createBlock": "Создать новый блок",
   "createBlockHint": "Пока не построено — кнопка стоит здесь, чтобы место для неё было видно.",
-  "countLabel": "видов"
+  "countLabel": "видов",
+  "viewportBadgeLabel": "Индикатор ширины экрана",
+  "viewportBadgeHint": "Кружок в левом нижнем углу: текущая ширина в пикселях и ступень, в которую она попадает. Он позволяет говорить о вёрстке числами, а не ощущениями, — и виден на живом сайте, а не только в разработке.",
+  "toolsOn": "Включён",
+  "toolsOff": "Выключен"
 }
 
 export type DesignUi = typeof EN

@@ -27,6 +27,9 @@ const featureFlags = z.looseObject({
   footerPages: z.boolean().optional(),
   cookieBanner: z.boolean().optional(),
   offlineCache: z.boolean().optional(),
+  // Двенадцатый (шаг 41). Без строки ЗДЕСЬ проверка молча вычищает ключ, и
+  // читатель падает на умолчание: выключатель выглядит нерабочим при верном файле.
+  viewportBadge: z.boolean().optional(),
 });
 
 export const platformConfigSchema = z.looseObject({

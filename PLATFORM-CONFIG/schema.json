@@ -37,6 +37,9 @@
         },
         "offlineCache": {
           "type": "boolean"
+        },
+        "viewportBadge": {
+          "type": "boolean"
         }
       },
       "additionalProperties": {}

@@ -1,16 +1,16 @@
 import { PageHeader } from "@/components/content-page/page-header.server"
 import { Small } from "@/components/ui/typography"
-import { adminUrlFromSite } from "@/lib/site-urls"
-import { getAppConfig } from "@/config/app-config"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { designUi } from "../../_i18n/design.i18n"
 import { DESIGN_SECTIONS, resolveDesignSection, hrefOfDesignSection } from "../../_lib/design-sections"
-import { LayerMenu } from "../../_components/layer-menu"
+import { DesignMenu } from "../../_components/design-menu"
 import { DesignFonts } from "../../_components/design-fonts.client"
 import { DesignType } from "../../_components/design-type.client"
 import { DesignShape } from "../../_components/design-shape.client"
 import { DesignColors } from "../../_components/design-colors.client"
 import { BlocksCatalogue } from "../../_components/blocks-catalogue"
+import { DesignTools } from "../../_components/design-tools.client"
+import { featureOn } from "@/config/platform-config"
 import { readRawDesignConfig } from "@/lib/architect/design-config-writer"
 
 // ОФОРМЛЕНИЕ ПРОЕКТА ВНУТРИ ПРОЕКТА (39-2 … 39-5, 2026-08-29).
@@ -48,18 +48,9 @@ export default async function DesignPage({
 
   const t = architectLayerUi(lang)
   const ui = designUi(lang)
-  const adminUrl = adminUrlFromSite(getAppConfig().url)
   const active = resolveDesignSection(rawSection)
   const config = readRawDesignConfig()
 
-  // Подписи разделов берутся из словаря группы, а не набираются в разметке:
-  // левое меню и заголовок обязаны называть раздел одинаково.
-  const subItems = DESIGN_SECTIONS.map(id => ({
-    id,
-    href: hrefOfDesignSection(lang, id),
-    label: ui.pages[id]?.title ?? id,
-    active: id === active,
-  }))
 
   const fonts = (config.fonts ?? {}) as Record<string, { family: string; import?: string }>
   const type = (config.type ?? {}) as { scale?: number; leading?: number }
@@ -79,7 +70,7 @@ export default async function DesignPage({
         />
 
         <div className="mt-8 flex flex-col gap-8 md:flex-row md:gap-10">
-          <LayerMenu lang={lang} active="design" adminUrl={adminUrl} ui={t} subItems={subItems} />
+          <DesignMenu lang={lang} active={active} ui={ui} title={t.groups.design} />
 
           <div data-design-page data-design-section={active} className="flex min-w-0 flex-1 flex-col gap-6">
             {/* 🔒 ЧИТАЕТСЯ НА КАЖДОМ ЗАПРОСЕ — И ОБ ЭТОМ СКАЗАНО СЛОВАМИ. Без этой
@@ -92,6 +83,11 @@ export default async function DesignPage({
             {active === "shape" && <DesignShape initial={shape} ui={ui.shape} />}
             {active === "colors" && <DesignColors initial={colors} ui={ui.colors} />}
             {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} />}
+            {/* 🔒 ЧИТАЕТСЯ ДЕЙСТВУЮЩЕЕ ЗНАЧЕНИЕ, А НЕ СЫРОЙ ФАЙЛ. У выключателя
+                возможности есть умолчание проекта, и «владелец не высказался»
+                обязано показываться в том положении, в каком возможность реально
+                работает, — иначе страница спорит с сайтом. */}
+            {active === "tools" && <DesignTools initial={featureOn("viewportBadge")} ui={ui} />}
           </div>
         </div>
       </div>

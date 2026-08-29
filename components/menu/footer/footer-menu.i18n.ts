@@ -179,6 +179,27 @@ export function architectLinkUi(lang: string): ArchitectLinkUi {
   return ARCHITECT_LINK[lang] ?? ARCHITECT_LINK.en;
 }
 
+// ─── Design layer (footer) ───────────────────────────────────────────────────
+//
+// 🔒 ОТДЕЛЬНЫЙ ВХОД, А НЕ РАЗДЕЛ ВНУТРИ НАСТРОЕК — указание владельца 2026-08-29,
+// отменившее моё решение того же дня: «я хотел, чтобы здесь была ещё одна кнопка,
+// которая называется дизайн… чтобы они не были в одной огромной вкладке настройки
+// проекта, которая уже сильно перегружена».
+//
+// 🔒 СЛОВО КОРОТКОЕ И НЕ ПОВТОРЯЕТ СОСЕДЕЙ. В ряду уже стоят «Настройки проекта» и
+// «Панель управления»; третья кнопка со словом «настройки» сделала бы выбор между
+// ними угадыванием.
+export type DesignLinkUi = { footer: string };
+
+const DESIGN_LINK: Record<string, DesignLinkUi> = {
+  en: { footer: "Design" },
+  ru: { footer: "Дизайн" },
+};
+
+export function designLinkUi(lang: string): DesignLinkUi {
+  return DESIGN_LINK[lang] ?? DESIGN_LINK.en;
+}
+
 // ─── Content-width toggle (footer) ───────────────────────────────────────────
 // aria-label/title for the wide/narrow screen-width button (ported from the Projects
 // zone). Admin-layers ten (rule 4г); English fallback for any other language.

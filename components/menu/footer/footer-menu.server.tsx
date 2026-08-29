@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -10,7 +10,8 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi } from "@/components/menu/footer/footer-menu.i18n";
+import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
@@ -227,6 +228,25 @@ export function FooterMenu({ lang }: { lang: string }) {
               {architectLinkUi(lang).footer}
             </Link>
 
+            {/* 🔒 ДИЗАЙН — СВОЙ ВХОД, А НЕ РАЗДЕЛ ВНУТРИ НАСТРОЕК (владелец
+                2026-08-29, отменяет вложение, сделанное в тот же день). Довод его,
+                и он сильнее: «настройки проекта» уже несут десять групп, и шесть
+                разделов оформления сверху превращают одно меню в шестнадцать строк,
+                из которых каждый раз выбирают одну.
+
+                Законы соседней ссылки действуют и здесь дословно: видимость ничего
+                не открывает постороннему (замок — на макете слоя и на дверях),
+                `rel="nofollow"` — страница служебная, `Link` — она СВОЯ, в отличие
+                от панели на чужом поддомене. */}
+            <Link
+              href={`/${lang}/architect/design`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <Palette className="hidden size-3.5 sm:inline-block" />
+              {designLinkUi(lang).footer}
+            </Link>
+
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).
                 Панель закрыта авторизацией: без входа она уводит на страницу
                 регистрации, поэтому видимая ссылка ничего не открывает
@@ -238,22 +258,17 @@ export function FooterMenu({ lang }: { lang: string }) {
                 выдуманный адрес панели хуже отсутствующего.
                 `rel="nofollow"` — служебная страница не должна утаскивать вес
                 сайта на поддомен, который поисковику всё равно закрыт. */}
-            {adminUrl && (
-              <a
-                href={adminUrl}
-                rel="nofollow"
-                // 🔒 ЗНАЧОК СЛЕВА (заказ владельца 2026-08-17). Кнопка стояла в
-                // полосе последней и единственной без значка: соседи — вход,
-                // настройки cookie и архитектура — его несут. Ряд, где часть
-                // кнопок помечена, а часть нет, читается как недоделанный, а не
-                // как лаконичный. `gap-1.5` и размер значка — те же, что у
-                // соседей, иначе «единый ряд» держался бы на глазок.
-                className={buttonVariants({ variant: "outline", size: "sm" }) + " gap-1.5"}
-              >
-                <SlidersHorizontal className="hidden size-3.5 sm:inline-block" />
-                {adminLinkLabels(lang).admin}
-              </a>
-            )}
+            {/* 🔒 КНОПКА ПАНЕЛИ РИСУЕТСЯ ВСЕГДА, А АДРЕС У НЕЁ ИЗ ДВУХ ИСТОЧНИКОВ
+                (2026-08-29). Здесь стояло `{adminUrl && …}` — и на свежем сервере,
+                где `APP-CONFIG` ещё пуст, кнопка исчезала совсем. Владелец
+                спросил прямо: «почему у меня на старте, когда я нахожусь в
+                IP-режиме, отсутствует кнопка перейти в админпанель?» — ссылка
+                пропадала ровно у того, кому она нужнее всех.
+
+                Расчёт адреса переехал в островок: сервер даёт его из настроек,
+                а без них островок выводит из адреса окна. Ни один из двух
+                источников не выдумывает — оба считают. */}
+            <AdminLink href={adminUrl} label={adminLinkLabels(lang).admin} />
           </div>
         )}
 

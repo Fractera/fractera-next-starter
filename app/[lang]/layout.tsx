@@ -160,7 +160,16 @@ export default async function LangLayout({
             <DrawerMenu side="right" lang={lang} />
             {/* Индикатор ширины экрана — только в разработке; в боевой сборке
                 компонент вырезается целиком (см. его файл), а не прячется. */}
-            <ViewportBadge />
+            {/* 🔒 ИНДИКАТОР ШИРИНЫ ПОДЧИНЁН ВЫКЛЮЧАТЕЛЮ (шаг 41, 2026-08-29).
+                Прежде он рисовался всегда, и выключить его можно было только
+                правкой кода — то есть никак, если проект уже у клиента. Теперь
+                это возможность проекта, включённая по умолчанию, и её положение
+                человек меняет на `/{lang}/architect/design?section=tools`.
+
+                🔒 ПРОВЕРКА ЗДЕСЬ, А НЕ ВНУТРИ ЗНАЧКА: `featureOn` читает конфиг
+                на сервере, а значок — островок. Спроси он сам — конфиг уехал бы
+                в браузер вместе с ним. */}
+            {featureOn("viewportBadge") && <ViewportBadge />}
             {/* Cookie-consent banner (step 305) — on every public page via this layout. Strings are
                 server-provided per language (readBannerConfig, ISR) so anonymous visitors get a fully
                 localized banner without hitting the gated /api. */}

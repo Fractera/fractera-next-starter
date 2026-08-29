@@ -41,12 +41,26 @@ export type GroupState =
  */
 export type GroupSource = "app-config" | "platform" | "env"
 
+/**
+ * Адрес группы ВНУТРИ слоя.
+ *
+ * 🔒 ПОЯВИЛСЯ В 33-1, И ЭТО НЕ УДОБСТВО, А НЕОБХОДИМОСТЬ. Все восемь прежних групп
+ * живут на одной странице и различаются `?group=`; у режима разработки внутри
+ * ЧЕТЫРЕ подвкладки, и вложить второй уровень меню в страницу, которая сама
+ * выбирается меню, значит поставить рядом два меню одного вида. Поэтому у группы
+ * появился собственный маршрут; отсутствие поля означает прежнее поведение.
+ */
 export type ArchitectGroup = {
   /** Ключ группы: он же значение `?group=` и ключ словаря. */
   id: string
   state: GroupState
   /** Где лежат значения группы. Умолчание — настройки приложения. */
   source?: GroupSource
+  /**
+   * Свой сегмент под `/{lang}/architect/`. Нет — группа живёт на странице
+   * настроек приложения и открывается как `?group=<id>`.
+   */
+  route?: string
 }
 
 export const ARCHITECT_GROUPS: readonly ArchitectGroup[] = [
@@ -58,6 +72,10 @@ export const ARCHITECT_GROUPS: readonly ArchitectGroup[] = [
   { id: "header", state: { kind: "here" }, source: "app-config" },
   { id: "footer", state: { kind: "here" }, source: "app-config" },
   { id: "cookieBanner", state: { kind: "here" }, source: "platform" },
+  // 🔒 ДЕВЯТАЯ ГРУППА, И ОНА ПЕРВАЯ СО СВОИМ АДРЕСОМ (33-1, 2026-08-29). Режим
+  // разработки переехал из панели: без него нельзя удалить оттуда раздел настроек,
+  // потому что режим — его составная часть.
+  { id: "devMode", state: { kind: "here" }, source: "platform", route: "dev-mode" },
 ] as const
 
 /** Группы, поля которых уже здесь, — в порядке владельца. */
@@ -71,10 +89,25 @@ export const GROUPS_HERE = ARCHITECT_GROUPS.filter(g => g.state.kind === "here")
  * уже нет. Пустой экран в ответ на устаревшую ссылку человек читает как поломку.
  */
 export function resolveGroup(raw: string | undefined): string {
-  const known = GROUPS_HERE.some(g => g.id === raw)
+  // 🔒 ГРУППА СО СВОИМ МАРШРУТОМ НЕ МОЖЕТ БЫТЬ ОТКРЫТА ЗДЕСЬ. `?group=devMode` на
+  // странице настроек — устаревшая или подделанная ссылка: страницы у неё другая.
+  // Падаем на первую группу, как и с любым неизвестным значением.
+  const known = GROUPS_HERE.some(g => g.id === raw && !g.route)
   return known && raw ? raw : GROUPS_HERE[0].id
 }
 
+
+/**
+ * Адрес группы. Свой маршрут — если он назван; иначе страница настроек приложения.
+ *
+ * 🔒 ОДНА ФУНКЦИЯ НА ВСЕ ССЫЛКИ СЛОЯ. Меню строило адрес само, строкой в разметке;
+ * с появлением второго вида адреса это немедленно дало бы две несогласованные
+ * формулы — в меню и в хлебных крошках.
+ */
+export function hrefOfGroup(lang: string, id: string): string {
+  const route = ARCHITECT_GROUPS.find(g => g.id === id)?.route
+  return route ? `/${lang}/architect/${route}` : `/${lang}/architect/app-config?group=${id}`
+}
 
 /** Откуда группа берёт значения; по умолчанию — настройки приложения. */
 export function sourceOfGroup(id: string): GroupSource {

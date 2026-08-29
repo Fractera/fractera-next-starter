@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { ExternalLink } from "lucide-react"
 import { H3 } from "@/components/ui/typography"
-import { ARCHITECT_GROUPS } from "../_lib/architect-menu"
+import { ARCHITECT_GROUPS, hrefOfGroup } from "../_lib/architect-menu"
 import type { ArchitectLayerUi } from "../_i18n/architect-layer.i18n"
 
 // ЛЕВОЕ МЕНЮ СЛОЯ (31-3, 2026-08-28). Серверный компонент: ничего не решает в
@@ -91,7 +91,7 @@ export function LayerMenu({
             return (
               <li key={group.id} className="shrink-0 md:shrink">
                 <Link
-                  href={`/${lang}/architect/app-config?group=${group.id}`}
+                  href={hrefOfGroup(lang, group.id)}
                   data-group={group.id}
                   aria-current={isActive ? "page" : undefined}
                   className={

@@ -51,7 +51,7 @@ const DICT: Record<string, ArchitectLayerUi> = {
       parallelRouting: "Parallel routing",
       header: "Project header",
       footer: "Project footer",
-      cookieBanner: "Cookie banner",
+      cookieBanner: "Cookie banner",      devMode: "Development mode",
     },
     appConfigTitle: "Application settings",
     appConfigSubtitle:
@@ -72,7 +72,7 @@ const DICT: Record<string, ArchitectLayerUi> = {
       parallelRouting: "Параллельная маршрутизация",
       header: "Хедер проекта",
       footer: "Футер проекта",
-      cookieBanner: "Куки-баннер",
+      cookieBanner: "Куки-баннер",      devMode: "Режим разработки",
     },
     appConfigTitle: "Настройки приложения",
     appConfigSubtitle:

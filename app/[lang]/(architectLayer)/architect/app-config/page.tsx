@@ -110,7 +110,18 @@ export default async function ArchitectAppConfigPage({
   const navSlot = group === "header" ? "top" : "footer"
   const navCandidates: NavCandidate[] =
     source === "app-config" && (group === "header" || group === "footer")
-      ? publicSurfaces(lang).map(s => ({
+      ? publicSurfaces(lang)
+          // 🔒 В ХЕДЕР НЕ ПРЕДЛАГАЮТСЯ СТРАНИЦЫ ПОДВАЛА (решение владельца 2026-08-29,
+          // как было в панели). Правовые страницы — политика, условия, куки,
+          // доступность — живут в футере по своей природе: их ищут, когда они
+          // понадобились, а не выбирают из шапки. Предлагать их наверху значит
+          // предлагать испортить шапку, и однажды это сделают.
+          //
+          // Признак берётся у самой поверхности (`section`), а не из списка адресов
+          // рядом: список пришлось бы вести руками, и новая правовая страница
+          // молча оказалась бы в кандидатах шапки.
+          .filter(s => (group === "header" ? s.section !== "legal" : true))
+          .map(s => ({
           id: s.subPath.replace(/^\//, "") || "home",
           href: s.subPath || "/",
           title: s.title,

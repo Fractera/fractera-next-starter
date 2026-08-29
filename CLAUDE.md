@@ -403,7 +403,11 @@ menu-selected page would be two menus of the same kind side by side:
 | `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
 | `/{lang}/architect/design` | **the look of this project** — fonts · type scale · shape · colours · blocks |
 
-🔒 **THE DESIGN GROUP MOVED HERE FROM THE PANEL 2026-08-29, AND THE PANEL NO LONGER HAS IT.** Do not
+🔒 **DESIGN HAS ITS OWN ENTRY IN THE SITE FOOTER, NOT A ROW IN THE SETTINGS MENU** (owner, 2026-08-29).
+It moved out of the control panel the same day, and the panel no longer has those pages: do not send
+the owner there for fonts or colours. Its six sections live behind their own left menu; the project
+settings menu does not list them. The sixth section, **Tools**, is not about the look at all — it holds
+the switch for the screen-width badge, and it therefore writes to `PLATFORM-CONFIG`, not `DESIGN-CONFIG`.
 send the owner to the control panel for fonts or colours: those pages are deleted. The reason is not
 tidiness — `DESIGN-CONFIG` lives INSIDE this repository while the panel lives outside it, and settings
 edited where the code is not are settings the owner cannot see next to the code.

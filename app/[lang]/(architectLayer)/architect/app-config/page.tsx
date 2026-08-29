@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/content-page/page-header.server"
-import { P } from "@/components/ui/typography"
+import { P, Small } from "@/components/ui/typography"
 import { getAppConfig } from "@/config/app-config"
 import { getPlatformConfig } from "@/config/platform-config"
 import { adminUrlFromSite } from "@/lib/site-urls"
@@ -15,8 +15,10 @@ import { EditLangSwitch } from "../../_components/edit-lang-switch"
 import { ConfigEditor } from "../../_components/config-editor.client"
 import { RoutingEditor } from "../../_components/routing-editor.client"
 import { FeaturesEditor } from "../../_components/features-editor.client"
+import { NavEditor } from "../../_components/nav-editor.client"
+import { parseNavItems, type NavCandidate } from "../../_lib/nav"
+import { publicSurfaces } from "@/lib/aio/surfaces"
 import Link from "next/link"
-import { Small } from "@/components/ui/typography"
 import { groupsUi } from "../../_i18n/groups.i18n"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 import { readRawConfig } from "@/lib/architect/app-config-writer"
@@ -90,6 +92,35 @@ export default async function ArchitectAppConfigPage({
   // нетронутой возможности выглядел бы выключенным при работающем баннере.
   // Записывать же можно только то, что владелец действительно тронул.
   const features = getPlatformConfig().features
+
+  // 🔒 КАНДИДАТЫ В МЕНЮ — ПУБЛИЧНЫЕ ПОВЕРХНОСТИ ПРОЕКТА, а не отдельный список.
+  // Тот же реестр отдаёт карту сайта и машинные версии страниц: список, который
+  // ведут вручную, устаревает первым — новая страница появляется в дереве, а в
+  // меню её предложить нельзя, и человек считает, что страницу нельзя добавить.
+  //
+  // 🔒 ЗАГОЛОВОК БЕРЁТСЯ ГОТОВЫМ И НА ЯЗЫКЕ СТРАНИЦЫ: поверхность знает своё имя,
+  // а выдумывать имя по адресу значило бы показать `products` вместо «Товары».
+  const navSlot = group === "header" ? "top" : "footer"
+  const navCandidates: NavCandidate[] =
+    source === "app-config" && (group === "header" || group === "footer")
+      ? publicSurfaces(lang).map(s => ({
+          id: s.subPath.replace(/^\//, "") || "home",
+          href: s.subPath || "/",
+          title: s.title,
+        }))
+      : []
+
+  // Ветка меню в СЫРОМ файле: её отсутствие значит «владелец не открывал раздел»,
+  // и тогда сайт строит меню сам. Пустой массив значит «убрал все кнопки».
+  const navRaw = (raw.nav as Record<string, unknown> | undefined)?.[navSlot]
+  const navConfigured = Array.isArray(navRaw)
+  // Ненастроенное меню показывается тем, что СЕЙЧАС на сайте: иначе страница
+  // предложила бы настроить пустоту, тогда как в шапке стоят кнопки.
+  const navItems = navConfigured
+    ? parseNavItems(navRaw)
+    : navCandidates
+        .filter(c => (navSlot === "footer" ? ["privacy", "terms", "cookies", "accessibility"].includes(c.id) : c.id !== "home"))
+        .map((c, i) => ({ id: c.id, href: c.href, order: (i + 1) * 10, label: "" }))
   const effective = getAppConfig() as unknown as Record<string, unknown>
   const i18n = (raw.i18n ?? {}) as Record<string, Record<string, string>>
 
@@ -177,6 +208,33 @@ export default async function ArchitectAppConfigPage({
                   initialSlots={activeSlots(platform)}
                   ui={gw}
                 />
+              ) : group === "header" || group === "footer" ? (
+                <FeaturesEditor
+                  title={group === "header" ? gw.nav.topTitle : gw.nav.footerTitle}
+                  hint={group === "header" ? gw.nav.topHint : gw.nav.footerHint}
+                  switches={[
+                    {
+                      key: group === "header" ? "topMenu" : "footerPages",
+                      label: gw.nav.enable,
+                      hint: group === "header" ? gw.nav.enableTop : gw.nav.enableFooter,
+                      initial: group === "header" ? features.topMenu : features.footerPages,
+                    },
+                  ]}
+                  ui={gw}
+                >
+                  {/* 🔒 ВЫКЛЮЧАТЕЛЬ И ПУНКТЫ СОХРАНЯЮТСЯ ОТДЕЛЬНО, И ЭТО ЧЕСТНО:
+                      они пишут в РАЗНЫЕ файлы — выключатель в платформенный конфиг,
+                      пункты в настройки приложения. Одна кнопка на два файла
+                      означала бы, что половина сохранения может не пройти, а
+                      человек увидит одно слово «Сохранено». */}
+                  <NavEditor
+                    slot={navSlot}
+                    initial={navItems}
+                    configured={navConfigured}
+                    candidates={navCandidates}
+                    ui={gw}
+                  />
+                </FeaturesEditor>
               ) : group === "cookieBanner" ? (
                 <FeaturesEditor
                   title={gw.cookies.title}

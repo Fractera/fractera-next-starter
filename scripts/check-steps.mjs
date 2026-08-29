@@ -35,7 +35,13 @@ const PASSPORT = path.join(ROOT, "development-docs", "PASSPORT.md")
 // Имена, которыми агенты заводят параллельный учёт. Ищем только в корне проекта
 // и в development-docs/: глубже это почти всегда чужой домен (например
 // `app/[lang]/migration/` — законная страница).
-const RIVAL_NAMES = new Set(["migration", "migrations", "tasks", "plans", "steps", "todo", "todos", "roadmap"])
+// 🔒 `pre-steps` В ЭТОМ СПИСКЕ — НЕ ОШИБКА И НЕ ЗАПРЕТ САМОЙ СУЩНОСТИ (2026-08-29).
+//    Приёмная заявок существует и работает, но она принадлежит ФЕДЕРАЛЬНОМУ учёту,
+//    который живёт в другом репозитории и этому проекту невидим. Гостевой агент
+//    знает о ней ровно затем, чтобы не завести свою такую же, встретив имя, — а
+//    заведённая здесь она была бы вторым каналом, в который никто не смотрит.
+//    ✗ иначе запрет остаётся словом в инструкции, ничем не проверяемым.
+const RIVAL_NAMES = new Set(["migration", "migrations", "tasks", "plans", "steps", "todo", "todos", "roadmap", "pre-steps", "presteps"])
 const SCAN_ROOTS = [ROOT, path.join(ROOT, "development-docs")]
 
 // 🔒 РЕЖИМ РАЗРАБОТКИ ЧИТАЕТСЯ ЗДЕСЬ, И В `classic` СТОРОЖ МОЛЧИТ О ШАГАХ

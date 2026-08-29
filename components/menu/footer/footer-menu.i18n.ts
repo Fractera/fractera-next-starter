@@ -200,6 +200,27 @@ export function designLinkUi(lang: string): DesignLinkUi {
   return DESIGN_LINK[lang] ?? DESIGN_LINK.en;
 }
 
+// ─── Architect group heading (footer) ───────────────────────────────────────
+//
+// 🔒 ПОДПИСЬ ГРУППЫ, А НЕ ЕЩЁ ОДНА ССЫЛКА (владелец 2026-08-29). Четыре
+// служебные ссылки, отделённые линией и не подписанные, читаются как забытая
+// владельцем настройка подвала: линия говорит «это другое», но не говорит «другое
+// ЧТО».
+//
+// 🔒 СЛОВО НАЗЫВАЕТ АДРЕСАТА, А НЕ СОДЕРЖИМОЕ. «Служебные ссылки» описывало бы
+// нас, а не человека; «страницы архитектора» отвечает на вопрос «кому это»,
+// который у посетителя возникает первым.
+export type ArchitectGroupUi = { title: string };
+
+const ARCHITECT_GROUP: Record<string, ArchitectGroupUi> = {
+  en: { title: "Architect pages" },
+  ru: { title: "Страницы архитектора" },
+};
+
+export function architectGroupUi(lang: string): ArchitectGroupUi {
+  return ARCHITECT_GROUP[lang] ?? ARCHITECT_GROUP.en;
+}
+
 // ─── Content-width toggle (footer) ───────────────────────────────────────────
 // aria-label/title for the wide/narrow screen-width button (ported from the Projects
 // zone). Admin-layers ten (rule 4г); English fallback for any other language.

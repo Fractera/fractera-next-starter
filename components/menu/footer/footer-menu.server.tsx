@@ -10,7 +10,7 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
@@ -166,7 +166,11 @@ export function FooterMenu({ lang }: { lang: string }) {
         {/* Полоса действий: вход и настройки cookie. Обе появляются только когда
             включены соответствующие возможности, поэтому у проекта без них
             подвал выглядит ровно как раньше — пустой полосы не остаётся. */}
-        {(authSide || bannerOn || adminUrl) && (
+        {/* 🔒 ПОЛОСА ДЕЙСТВИЙ ОСТАЛАСЬ ПОЛОСОЙ ПРОДУКТА (владелец 2026-08-29):
+            «инструменты продуктов — такие как корзина, заказы и мой аккаунт»
+            против «инструментов архитектора». Здесь теперь только они, и условие
+            больше не спрашивает про адрес панели: панель уехала в свою группу. */}
+        {(authSide || bannerOn) && (
           <div className="flex flex-wrap items-center gap-2">
             {authSide && (
               <AccountButton
@@ -181,6 +185,29 @@ export function FooterMenu({ lang }: { lang: string }) {
             )}
             {bannerOn && <CookieSettingsButton label={cookieButtonUi(lang).settings} />}
 
+          </div>
+        )}
+
+        {/* ─── СТРАНИЦЫ АРХИТЕКТОРА — СВОЯ ГРУППА С РАЗДЕЛИТЕЛЕМ (владелец 2026-08-29) ───
+
+            Дословно: «сейчас смешались три группы ссылок… я хочу тот слой, который
+            относится к архитектору, вынести в отдельную группу с разделителем и
+            поставить между секцией футер-страниц и нижней секцией».
+
+            🔒 РАЗНИЦА МЕЖДУ ГРУППАМИ НЕ В ВИДЕ, А В АДРЕСАТЕ. Полоса выше —
+            инструменты ПОСЕТИТЕЛЯ: корзина, заказы, аккаунт, согласие на куки. Эта
+            группа — инструменты ХОЗЯИНА проекта, и посетителю она не нужна вовсе.
+            Пока они стояли вперемешку, ряд читался как один список, в котором
+            «моя корзина» соседствует с «панелью управления».
+
+            🔒 ГРУППА ПОДПИСАНА, А НЕ ПРОСТО ОТДЕЛЕНА ЛИНИЕЙ. Разделитель говорит
+            «это другое», подпись говорит «другое ЧТО»; без неё четыре служебные
+            ссылки выглядят как забытая владельцем настройка подвала. */}
+        <div data-architect-links className="border-t border-border pt-6">
+          <p className="mb-2 text-[length:var(--fs-small)] font-medium text-muted-foreground">
+            {architectGroupUi(lang).title}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
             {/* 🔒 АРХИТЕКТУРА — ОБЫЧНАЯ СТРАНИЦА САЙТА, И ССЫЛКА НА НЕЁ ОБЫЧНАЯ
                 (заказ владельца 2026-08-17). Она живёт там же, где privacy,
                 terms и cookies, и по тем же законам: статическая, индексируемая,
@@ -270,7 +297,8 @@ export function FooterMenu({ lang }: { lang: string }) {
                 источников не выдумывает — оба считают. */}
             <AdminLink href={adminUrl} label={adminLinkLabels(lang).admin} />
           </div>
-        )}
+        </div>
+
 
         {/* Section 3 — company: copyright + address, social, theme toggle, language.
             One row on every width (© + name on the left, controls on the right).

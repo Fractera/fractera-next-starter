@@ -55,6 +55,43 @@ export type DevModeUi = {
   sourceSave: string
   sourceSaved: string
   sourceNoToken: string
+  /** Поверхность продуктов на вкладке кейсов (34-2 … 34-5). */
+  products: {
+    title: string
+    hint: string
+    empty: string
+    emptyHint: string
+    create: string
+    creating: string
+    created: string
+    nameLabel: string
+    namePlaceholder: string
+    phase: string
+    stage: string
+    surface: string
+    route: string
+    routeHint: string
+    published: string
+    publishedHint: string
+    save: string
+    saved: string
+    cases: string
+    casesHint: string
+    caseAdd: string
+    caseTitle: string
+    caseSummary: string
+    confirm: string
+    unconfirm: string
+    confirmed: string
+    unconfirmedNotice: string
+    steps: string
+    stepsHint: string
+    stepsEmpty: string
+    phases: Record<string, string>
+    stages: Record<string, string>
+    surfaces: Record<string, string>
+    statuses: Record<string, string>
+  }
 }
 
 const en: DevModeUi = {
@@ -114,6 +151,42 @@ const en: DevModeUi = {
   sourceSaved: "Source saved",
   sourceNoToken:
     "No token is asked for, on purpose: keep the repository open while the move lasts, and close it again afterwards.",
+  products: {
+    title: "Products of this project",
+    hint: "A product is the unit of work: one server carries several, and each lives at its own pace. The id (p1, p2) means nothing and never changes — paths hang on it.",
+    empty: "No products yet",
+    emptyHint: "A product is not a page. It is a thing this server carries: a shop, a landing, a company brain — with its own cases, steps and address.",
+    create: "New product",
+    creating: "Creating…",
+    created: "Product created",
+    nameLabel: "Name",
+    namePlaceholder: "What you call it yourself",
+    phase: "Phase",
+    stage: "Stage",
+    surface: "Surface",
+    route: "Address",
+    routeHint: "The segment of the site this product lives at. Empty means it has no public address yet.",
+    published: "Published",
+    publishedHint: "Publication is not a phase: a product can be finished and shown to nobody.",
+    save: "Save",
+    saved: "Saved",
+    cases: "Use cases",
+    casesHint: "A case says what a person should be able to do. Only you confirm one — an unconfirmed case is the model's guess, and building on a guess is forbidden.",
+    caseAdd: "Add a case",
+    caseTitle: "What the person does",
+    caseSummary: "Why it matters",
+    confirm: "Confirm",
+    unconfirm: "Withdraw",
+    confirmed: "confirmed",
+    unconfirmedNotice: "Not confirmed yet — the agent may not build on this.",
+    steps: "Steps",
+    stepsHint: "Every step names the case it serves. A step without a case is work nobody ordered.",
+    stepsEmpty: "No steps yet — they are born from confirmed cases.",
+    phases: { intake: "Intake", decomposition: "Decomposition", development: "Development", analysis: "Analysis" },
+    stages: { waiting: "waiting", "in-progress": "in progress", review: "review", testing: "testing", "extra-cycle": "extra cycle", done: "done" },
+    surfaces: { public: "Public page", private: "Panel tab", headless: "No screen at all" },
+    statuses: { new: "new", "in-progress": "in progress", blocked: "blocked", done: "done", cancelled: "cancelled" },
+  },
 }
 
 const ru: DevModeUi = {
@@ -173,6 +246,42 @@ const ru: DevModeUi = {
   sourceSaved: "Источник сохранён",
   sourceNoToken:
     "Токен не спрашивается намеренно: держите репозиторий открытым, пока идёт переезд, и закройте его снова после.",
+  products: {
+    title: "Продукты этого проекта",
+    hint: "Продукт — единица работы: один сервер несёт несколько, и каждый живёт своим темпом. Идентификатор (p1, p2) не значит ничего и не меняется никогда — на нём висят пути.",
+    empty: "Продуктов пока нет",
+    emptyHint: "Продукт — это не страница. Это то, что несёт сервер: магазин, лендинг, мозг компании — со своими кейсами, шагами и адресом.",
+    create: "Новый продукт",
+    creating: "Создаю…",
+    created: "Продукт создан",
+    nameLabel: "Название",
+    namePlaceholder: "Как вы его называете сами",
+    phase: "Фаза",
+    stage: "Стадия",
+    surface: "Поверхность",
+    route: "Адрес",
+    routeHint: "Сегмент сайта, по которому живёт продукт. Пусто — публичного адреса у него пока нет.",
+    published: "Опубликован",
+    publishedHint: "Публикация — не фаза: продукт может быть закончен и не показан никому.",
+    save: "Сохранить",
+    saved: "Сохранено",
+    cases: "Пользовательские кейсы",
+    casesHint: "Кейс говорит, что человек должен смочь сделать. Подтверждаете только вы — неподтверждённый кейс это догадка модели, и строить по догадке запрещено.",
+    caseAdd: "Добавить кейс",
+    caseTitle: "Что делает человек",
+    caseSummary: "Почему это важно",
+    confirm: "Подтвердить",
+    unconfirm: "Отозвать",
+    confirmed: "подтверждён",
+    unconfirmedNotice: "Пока не подтверждён — агент не имеет права на этом строить.",
+    steps: "Шаги",
+    stepsHint: "Каждый шаг называет кейс, которому служит. Шаг без кейса — работа, которую никто не заказывал.",
+    stepsEmpty: "Шагов пока нет — они рождаются из подтверждённых кейсов.",
+    phases: { intake: "Опрос", decomposition: "Разбор", development: "Разработка", analysis: "Анализ" },
+    stages: { waiting: "ожидание", "in-progress": "в работе", review: "проверка", testing: "тестирование", "extra-cycle": "ещё круг", done: "готово" },
+    surfaces: { public: "Страница сайта", private: "Вкладка панели", headless: "Без экрана вовсе" },
+    statuses: { new: "новый", "in-progress": "в работе", blocked: "заблокирован", done: "готов", cancelled: "отменён" },
+  },
 }
 
 const DICT: Record<string, DevModeUi> = { en, ru }

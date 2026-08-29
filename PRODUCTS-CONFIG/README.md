@@ -20,8 +20,12 @@ four stores, and any two of them could drift apart in silence.
 
 ## How it works
 
-**The control panel (`:3002`) writes it. This application (`:3000`) reads it** — the same contract as
-`APP-CONFIG`, `DESIGN-CONFIG` and `PLATFORM-CONFIG`: one writer, one reader, read per request, applied
+**Two editors write it, and this application (`:3000`) reads it.** Since 2026-08-29 the architect
+layer inside this project writes dossiers too — `/{lang}/architect/dev-mode?mode=cases`, through
+`lib/architect/products-writer.ts`. The control panel (`:3002`) still writes the same folder from
+another process, and that is why a patch is written into ONE dossier rather than a snapshot of the
+folder. The reader is unchanged, and so is the rest of the contract shared with
+`APP-CONFIG`, `DESIGN-CONFIG` and `PLATFORM-CONFIG`: read per request, applied
 **without a rebuild**. Publishing a product is one field; nothing is rebuilt and nothing is deployed.
 
 Reading is `config/products-config.ts` (`getProducts`, `getProduct`, `getPublicProducts`). The list of

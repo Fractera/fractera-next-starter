@@ -35,6 +35,8 @@ export type GroupsUi = {
     areasHint: string
     lockedHint: string
     standardAreasHint: string
+    previewTitle: string
+    childrenLabel: string
     areas: Record<string, string>
     areaHints: Record<string, string>
   }
@@ -116,6 +118,8 @@ const en: GroupsUi = {
     lockedHint: "Always on: without it a page does not assemble.",
     standardAreasHint:
       "The standard mode uses three areas — header, content, footer. Switch to parallel to choose the rest.",
+    previewTitle: "Layout preview",
+    childrenLabel: "Page content",
     areas: {
       header: "Header",
       promoScreen: "Promo screen",
@@ -216,6 +220,8 @@ const ru: GroupsUi = {
     lockedHint: "Всегда включена: без неё страница не собирается.",
     standardAreasHint:
       "В обычном режиме работают три области — шапка, содержимое, подвал. Остальные выбираются в параллельном.",
+    previewTitle: "Чертёж раскладки",
+    childrenLabel: "Содержимое страницы",
     areas: {
       header: "Шапка",
       promoScreen: "Промо-экран",

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
-import { SLOT_ORDER, LOCKED_SLOTS, type RoutingMode, type SlotName } from "../_lib/routing"
+import { SLOT_ORDER, LOCKED_SLOTS, DEFAULT_SLOTS, type RoutingMode, type SlotName } from "../_lib/routing"
+import { SlotLayoutPreview } from "./slot-layout-preview.client"
 import type { GroupsUi } from "../_i18n/groups.i18n"
 
 // РЕЖИМ СБОРКИ СТРАНИЦЫ И СОСТАВ ОБЛАСТЕЙ (31-12, 2026-08-29).
@@ -24,6 +25,12 @@ import type { GroupsUi } from "../_i18n/groups.i18n"
 //
 // 🔒 ШАПКА И ПОДВАЛ ЗАПЕРТЫ, И ЗАМОК ВИДЕН. Без них страница не собирается;
 // выключатель, который молча не срабатывает, хуже отсутствующего.
+//
+// ЖИВОЙ ЧЕРТЁЖ ДОБАВЛЕН 31-17 (2026-08-29) — перенос интерфейса панели управления
+// (`bridges/app/app/[lang]/parallel-routing`), где он живёт с шага 501.
+// 🔒 СПИСОК ГОВОРИТ «ЧТО ВКЛЮЧЕНО», ЧЕРТЁЖ — «ЧТО ПОЛУЧИТСЯ», и первым второго не
+// заменить. Наведение на строку подсвечивает блок: иначе восемь служебных имён
+// приходится сопоставлять с прямоугольниками в уме.
 export function RoutingEditor({
   initialMode,
   initialSlots,
@@ -44,11 +51,32 @@ export function RoutingEditor({
     Object.fromEntries(SLOT_ORDER.map(s => [s, initialSlots.includes(s)])),
   )
   const [busy, setBusy] = useState(false)
+  /** Область под курсором в списке — подсвечивает свой блок на чертеже. */
+  const [hovered, setHovered] = useState<SlotName | null>(null)
 
   const changed = useMemo(
     () => mode !== savedMode || SLOT_ORDER.some(s => slots[s] !== savedSlots[s]),
     [mode, savedMode, slots, savedSlots],
   )
+
+  // 🔒 ЧЕРТЁЖ РИСУЕТ ВЫБРАННЫЙ РЕЖИМ, А НЕ СМЕСЬ ДВУХ. В обычном режиме состав
+  // областей не выбирают — их три; нарисовать там колонки значило бы пообещать
+  // раскладку, которой этот режим не даёт.
+  const previewActive = useMemo(() => {
+    if (mode !== "parallel") return new Set<SlotName>(DEFAULT_SLOTS)
+    return new Set<SlotName>(SLOT_ORDER.filter(s => LOCKED_SLOTS.includes(s) || Boolean(slots[s])))
+  }, [mode, slots])
+
+  // 🔒 ЦЕНТР ТЯНЕТ ЗА СОБОЙ СВОИ ПОЛОСЫ. «Над содержимым» и «под содержимым» живут
+  // ВНУТРИ центра: без него им негде стоять, и включённые сами по себе они описывали
+  // бы раскладку, которую нельзя нарисовать.
+  function toggleSlot(slot: SlotName, next: boolean) {
+    setSlots(prev =>
+      slot === "center"
+        ? { ...prev, center: next, centerHeader: next, centerFooter: next }
+        : { ...prev, [slot]: next },
+    )
+  }
 
   async function save() {
     if (!changed) {
@@ -138,40 +166,62 @@ export function RoutingEditor({
         </div>
         <Separator />
 
-        <ul data-slot-list className="flex flex-col gap-3">
-          {SLOT_ORDER.map(slot => {
-            const locked = LOCKED_SLOTS.includes(slot)
-            // В обычном режиме состав областей не выбирают: раскладка задана.
-            const disabled = locked || mode !== "parallel"
-            return (
-              <li
-                key={slot}
-                data-slot={slot}
-                data-on={slots[slot] ? "true" : "false"}
-                className={
-                  "flex items-start justify-between gap-4 rounded-lg border border-border px-4 py-3 " +
-                  (mode === "parallel" ? "" : "opacity-60")
-                }
-              >
-                <div className="min-w-0">
-                  <span className="flex items-center gap-2 text-[length:var(--fs-body)] text-foreground">
-                    {t.areas[slot] ?? slot}
-                    {locked && <Lock className="size-3.5 shrink-0 opacity-60" aria-hidden />}
-                  </span>
-                  <Small className="mt-0.5 block">
-                    {locked ? t.lockedHint : (t.areaHints[slot] ?? "")}
-                  </Small>
-                </div>
-                <Switch
-                  checked={locked ? true : Boolean(slots[slot])}
-                  disabled={disabled}
-                  aria-label={t.areas[slot] ?? slot}
-                  onCheckedChange={next => setSlots(prev => ({ ...prev, [slot]: next }))}
-                />
-              </li>
-            )
-          })}
-        </ul>
+        {/* Чертёж и список стоят рядом: выбор слева отражается справа в ту же секунду.
+            На узком экране чертёж уходит наверх — он объясняет список, а не наоборот. */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col gap-2 lg:sticky lg:top-24 lg:self-start">
+            <Small className="font-medium text-foreground">{t.previewTitle}</Small>
+            <SlotLayoutPreview
+              active={previewActive}
+              hovered={hovered}
+              labels={t.areas}
+              centerLabel={mode === "parallel" ? t.areas.center : t.childrenLabel}
+            />
+          </div>
+
+          <ul data-slot-list className="flex flex-col gap-3">
+            {SLOT_ORDER.map(slot => {
+              const locked = LOCKED_SLOTS.includes(slot)
+              // Полосы центра без самого центра поставить некуда.
+              const orphan = (slot === "centerHeader" || slot === "centerFooter") && !slots.center
+              // В обычном режиме состав областей не выбирают: раскладка задана.
+              const disabled = locked || orphan || mode !== "parallel"
+              return (
+                <li
+                  key={slot}
+                  data-slot={slot}
+                  data-on={slots[slot] ? "true" : "false"}
+                  onMouseEnter={() => setHovered(slot)}
+                  onMouseLeave={() => setHovered(null)}
+                  className={
+                    "flex items-start justify-between gap-4 rounded-lg border px-4 py-3 transition-colors " +
+                    (mode === "parallel"
+                      ? hovered === slot
+                        ? "border-primary bg-muted/50"
+                        : "border-border"
+                      : "border-border opacity-60")
+                  }
+                >
+                  <div className="min-w-0">
+                    <span className="flex items-center gap-2 text-[length:var(--fs-body)] text-foreground">
+                      {t.areas[slot] ?? slot}
+                      {locked && <Lock className="size-3.5 shrink-0 opacity-60" aria-hidden />}
+                    </span>
+                    <Small className="mt-0.5 block">
+                      {locked ? t.lockedHint : (t.areaHints[slot] ?? "")}
+                    </Small>
+                  </div>
+                  <Switch
+                    checked={locked ? true : Boolean(slots[slot])}
+                    disabled={disabled}
+                    aria-label={t.areas[slot] ?? slot}
+                    onCheckedChange={next => toggleSlot(slot, next)}
+                  />
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       </section>
 
       <div className="flex items-center gap-3">

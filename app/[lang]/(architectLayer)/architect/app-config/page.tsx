@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/content-page/page-header.server"
 import { P } from "@/components/ui/typography"
 import { getAppConfig } from "@/config/app-config"
+import { getPlatformConfig } from "@/config/platform-config"
 import { adminUrlFromSite } from "@/lib/site-urls"
 import { resolveSocialLinks } from "@/config/app-config.defaults"
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from "@/config/translations/translations.config"
@@ -13,6 +14,9 @@ import { LayerMenu } from "../../_components/layer-menu"
 import { EditLangSwitch } from "../../_components/edit-lang-switch"
 import { ConfigEditor } from "../../_components/config-editor.client"
 import { RoutingEditor } from "../../_components/routing-editor.client"
+import { FeaturesEditor } from "../../_components/features-editor.client"
+import Link from "next/link"
+import { Small } from "@/components/ui/typography"
 import { groupsUi } from "../../_i18n/groups.i18n"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 import { readRawConfig } from "@/lib/architect/app-config-writer"
@@ -81,6 +85,11 @@ export default async function ArchitectAppConfigPage({
   // картину значило бы объявить решением владельца каждое умолчание шаблона —
   // и следующая версия шаблона уже не смогла бы поменять ни одного.
   const platform = source === "platform" ? readRawPlatformConfig() : {}
+  // 🔒 ВЫКЛЮЧАТЕЛЬ ЧИТАЕТСЯ ИЗ ПОЛНОЙ КАРТИНЫ, А ПИШЕТСЯ В СЫРОЙ ФАЙЛ, и это не
+  // противоречие. Показать надо ДЕЙСТВУЮЩЕЕ значение — иначе выключатель
+  // нетронутой возможности выглядел бы выключенным при работающем баннере.
+  // Записывать же можно только то, что владелец действительно тронул.
+  const features = getPlatformConfig().features
   const effective = getAppConfig() as unknown as Record<string, unknown>
   const i18n = (raw.i18n ?? {}) as Record<string, Record<string, string>>
 
@@ -168,6 +177,37 @@ export default async function ArchitectAppConfigPage({
                   initialSlots={activeSlots(platform)}
                   ui={gw}
                 />
+              ) : group === "cookieBanner" ? (
+                <FeaturesEditor
+                  title={gw.cookies.title}
+                  hint={gw.cookies.hint}
+                  switches={[
+                    {
+                      key: "cookieBanner",
+                      label: gw.cookies.enable,
+                      hint: gw.cookies.enableHint,
+                      notice: { on: gw.cookies.onNotice, off: gw.cookies.offNotice },
+                      initial: features.cookieBanner,
+                    },
+                  ]}
+                  ui={gw}
+                >
+                  {/* 🔒 ССЫЛКА НА САМУ СТРАНИЦУ ПОЛИТИКИ, А НЕ ПОЛЕ С ЕЁ АДРЕСОМ.
+                      Адрес не настраивается: страница — часть правового раздела
+                      проекта и живёт по своему маршруту. Поле для него было бы
+                      рычагом, который ничего не двигает; ссылка — способ дойти
+                      до текста, который человек как раз и захочет прочесть. */}
+                  <section className="flex flex-col gap-2">
+                    <Link
+                      href={`/${lang}/cookies`}
+                      className="text-[length:var(--fs-body)] text-primary hover:underline"
+                      data-cookie-policy-link
+                    >
+                      {gw.cookies.linkTitle}
+                    </Link>
+                    <Small>{gw.cookies.linkHint}</Small>
+                  </section>
+                </FeaturesEditor>
               ) : sections.length > 0 ? (
                 <ConfigEditor
                   sections={sections}

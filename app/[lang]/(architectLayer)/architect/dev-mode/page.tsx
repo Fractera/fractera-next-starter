@@ -10,8 +10,6 @@ import { DevModeMenu } from "../../_components/dev-mode-menu"
 import { AdviceNote } from "../../_components/advice-note"
 import { ModeCard } from "../../_components/mode-card.client"
 import { MigrationSourceEditor } from "../../_components/migration-source.client"
-import { ProductsBoard, type ProductRow } from "../../_components/products-board.client"
-import { productIds, readRawDossier } from "@/lib/architect/products-writer"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 
 // РЕЖИМ РАЗРАБОТКИ ВНУТРИ ПРОЕКТА (33-1, 2026-08-29).
@@ -60,17 +58,6 @@ export default async function DevModePage({
   const active = resolveDevMode(rawMode, current)
   const words = ui.modes[active]
 
-  // 🔒 СПИСОК ПРОДУКТОВ — ОБХОД ПАПКИ, И ЧИТАЕТСЯ ОН НА СЕРВЕРЕ. Островок получает
-  // готовые строки: круг по сети за собственными файлами ради первого показа —
-  // пустой экран на время ответа там, где данные лежат на том же диске.
-  const products: ProductRow[] =
-    active === "cases"
-      ? productIds()
-          .map(id => readRawDossier(id))
-          .filter((d): d is Record<string, unknown> => d !== null)
-          .map(d => d as unknown as ProductRow)
-      : []
-
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
@@ -104,12 +91,6 @@ export default async function DevModePage({
                 переезжает: рычаг, который в трёх режимах из четырёх ничего не
                 двигает. */}
             {active === "migration" && <MigrationSourceEditor initial={migrationOf(config)} ui={ui} />}
-
-            {/* 🔒 ПОВЕРХНОСТЬ ПРОДУКТОВ — ТОЛЬКО НА ВКЛАДКЕ КЕЙСОВ. Это инструмент
-                режима, а не страницы: показать его на всех вкладках значило бы
-                предложить работу с кейсами тому, кто выбрал классический режим,
-                где кейсов нет по определению. */}
-            {active === "cases" && <ProductsBoard initial={products} ui={ui} />}
 
             <AdviceNote probe="mode-law" title={ui.lawTitle} text={ui.law} />
           </div>

@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
 import { SLOT_ORDER, LOCKED_SLOTS, DEFAULT_SLOTS, type RoutingMode, type SlotName } from "../_lib/routing"
 import { SlotLayoutPreview } from "./slot-layout-preview.client"
+import { AdviceNote } from "./advice-note"
 import type { GroupsUi } from "../_i18n/groups.i18n"
 
 // РЕЖИМ СБОРКИ СТРАНИЦЫ И СОСТАВ ОБЛАСТЕЙ (31-12, 2026-08-29).
@@ -168,14 +169,13 @@ export function RoutingEditor({
         {/* 🔒 ПРАВДА О СОСТОЯНИИ СТОИТ ВЫШЕ УПРАВЛЕНИЯ, а не в подсказке под ним:
             человек должен узнать, что экран не изменится, ДО того как выберет режим
             и нажмёт «Сохранить», а не после. */}
-        {!WRITE_ENABLED && (
-          <p
-            data-not-consumed
-            className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-[length:var(--fs-small)] leading-relaxed text-amber-800 dark:text-amber-200"
-          >
-            {t.notConsumed}
-          </p>
-        )}
+        {/* 🔒 СОВЕТ ВЛАДЕЛЬЦА СТОИТ ПЕРВЫМ, А ПРЕДУПРЕЖДЕНИЕ О НЕПРИМЕНЯЕМОСТИ —
+            вторым, и порядок не случаен: первый говорит, КАК этим пользоваться, и
+            останется навсегда; второй говорит, что сегодня оно ещё не исполняется, и
+            исчезнет вместе с `WRITE_ENABLED`. */}
+        <AdviceNote probe="one-slot-at-a-time" title={t.adviceTitle} text={t.advice} />
+
+        {!WRITE_ENABLED && <AdviceNote probe="not-consumed" title={t.comingSoon} text={t.notConsumed} />}
 
         <div className="flex flex-col gap-4 md:flex-row">
           {modes.map(m => {

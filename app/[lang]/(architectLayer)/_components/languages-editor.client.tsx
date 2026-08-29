@@ -1,11 +1,12 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { AlertTriangle, Check, Loader2, Star } from "lucide-react"
+import { Check, Loader2, Star } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
+import { AdviceNote } from "./advice-note"
 import type { GroupsUi } from "../_i18n/groups.i18n"
 
 /** Одна строка каталога: всё уже разобрано сервером. */
@@ -120,16 +121,7 @@ export function LanguagesEditor({
   return (
     <div data-languages-editor className="flex flex-col gap-8">
       {/* Цена — до списка. Она и есть решение, которое здесь принимают. */}
-      <div
-        data-lang-cost
-        className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4"
-      >
-        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
-        <div className="flex flex-col gap-1">
-          <P className="text-[length:var(--fs-body)] font-medium text-amber-900 dark:text-amber-100">{t.costTitle}</P>
-          <Small className="text-amber-800 dark:text-amber-200">{t.cost}</Small>
-        </div>
-      </div>
+      <AdviceNote probe="lang-cost" title={t.costTitle} text={t.cost} />
 
       {/* Строка про пересборку — не украшение: без неё «Сохранено» лжёт. */}
       <div data-lang-rebuild={pending ? "pending" : "clean"} className="flex flex-col gap-1">

@@ -39,6 +39,8 @@ export type GroupsUi = {
     childrenLabel: string
     comingSoon: string
     notConsumed: string
+    adviceTitle: string
+    advice: string
     areas: Record<string, string>
     areaHints: Record<string, string>
   }
@@ -123,6 +125,9 @@ const en: GroupsUi = {
     previewTitle: "Layout preview",
     childrenLabel: "Page content",
     comingSoon: "Available in an upcoming update",
+    adviceTitle: "Add one slot at a time",
+    advice:
+      "Designing an application around parallel routing takes a deep understanding of the user's path: the screen is split into areas, and each one lives its own life. Grow the project by adding no more than one slot at a time — until you understand how to use it in your own product.",
     notConsumed:
       "Nothing reads this setting yet: parallel routing is not wired into the project's root layout. You can make the choice here, but it cannot be saved — the file would say one thing and the screen another.",
     areas: {
@@ -187,9 +192,9 @@ const en: GroupsUi = {
     title: "Languages",
     hint:
       "The languages of THIS site — not of the settings screens. Every selected language multiplies the number of pages the project builds and the time each build takes.",
-    costTitle: "Choose fewer than you can",
+    costTitle: "Choose the smallest sufficient set of languages",
     cost:
-      "A language is not a checkbox: it is every page of the site forever, and every build several minutes longer. Two well-kept languages beat ten abandoned ones.",
+      "A language is not a checkbox. It costs translation, adds minutes to every build, and multiplies the project itself: fifty pages in one language become five hundred in ten. Everything grows at once — build time, the volume of checks, the price of every wording fix. Take as many languages as you are truly ready to keep, and add the next one when the previous is well kept.",
     selected: "selected",
     defaultLabel: "default",
     makeDefault: "Make default",
@@ -228,6 +233,9 @@ const ru: GroupsUi = {
     previewTitle: "Чертёж раскладки",
     childrenLabel: "Содержимое страницы",
     comingSoon: "Будет доступно в ближайшем обновлении",
+    adviceTitle: "Добавляйте по одному слоту",
+    advice:
+      "Проектирование приложения с параллельной маршрутизацией требует глубокого понимания пути пользователя: экран делится на области, и каждая живёт своей жизнью. Развивайте проект, добавляя не более одного слота за раз, — пока вы не поймёте, как использовать его в своём продукте.",
     notConsumed:
       "Эту настройку пока никто не читает: параллельная маршрутизация ещё не подключена в корневой layout проекта. Выбор здесь можно сделать, но сохранить его нельзя — файл остался бы с одним ответом, а экран с другим.",
     areas: {
@@ -292,9 +300,9 @@ const ru: GroupsUi = {
     title: "Языки",
     hint:
       "Языки ЭТОГО сайта — не языки экранов настроек. Каждый выбранный язык умножает число страниц, которые собирает проект, и время каждой сборки.",
-    costTitle: "Выбирайте меньше, чем можете",
+    costTitle: "Выбирайте минимально достаточное количество языков",
     cost:
-      "Язык — не отметка: это каждая страница сайта навсегда и каждая сборка на несколько минут дольше. Два ухоженных языка лучше десяти заброшенных.",
+      "Язык — не отметка в списке. Он стоит переводов, добавляет минуты каждой сборке и умножает сам проект: пятьдесят страниц на одном языке превращаются в пятьсот на десяти. Растёт всё сразу — время сборки, объём проверок, цена каждой правки текста. Берите столько языков, сколько действительно готовы вести, и добавляйте следующий, когда предыдущий ухожен.",
     selected: "выбрано",
     defaultLabel: "основной",
     makeDefault: "Сделать основным",

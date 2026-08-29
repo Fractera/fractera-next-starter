@@ -4,10 +4,12 @@ import { adminUrlFromSite } from "@/lib/site-urls"
 import { getAppConfig } from "@/config/app-config"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { devModeUi } from "../../_i18n/dev-mode.i18n"
-import { devModeOf, devModeChosen, resolveDevMode } from "../../_lib/dev-mode"
+import { devModeOf, devModeChosen, resolveDevMode, migrationOf } from "../../_lib/dev-mode"
 import { LayerMenu } from "../../_components/layer-menu"
 import { DevModeMenu } from "../../_components/dev-mode-menu"
 import { AdviceNote } from "../../_components/advice-note"
+import { ModeCard } from "../../_components/mode-card.client"
+import { MigrationSourceEditor } from "../../_components/migration-source.client"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 
 // РЕЖИМ РАЗРАБОТКИ ВНУТРИ ПРОЕКТА (33-1, 2026-08-29).
@@ -82,11 +84,13 @@ export default async function DevModePage({
 
             <DevModeMenu lang={lang} active={active} current={current} ui={ui} />
 
-            {/* Содержимое вкладки приходит в 33-2; здесь оболочка предъявляется
-                отдельно, чтобы меню и маршрут были доказаны без карточки. */}
-            <section data-mode-card={active} data-mode-current={active === current ? "true" : "false"}>
-              <Small className="max-w-3xl">{words.when}</Small>
-            </section>
+            <ModeCard mode={active} current={current} chosen={chosen} ui={ui} />
+
+            {/* 🔒 ПОЛЕ ИСТОЧНИКА — ТОЛЬКО У ПЕРЕЕЗДА. Показать его на всех вкладках
+                значило бы предложить назвать чужой проект тому, кто никуда не
+                переезжает: рычаг, который в трёх режимах из четырёх ничего не
+                двигает. */}
+            {active === "migration" && <MigrationSourceEditor initial={migrationOf(config)} ui={ui} />}
 
             <AdviceNote probe="mode-law" title={ui.lawTitle} text={ui.law} />
           </div>

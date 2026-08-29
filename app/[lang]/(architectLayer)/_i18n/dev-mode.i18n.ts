@@ -52,6 +52,7 @@ export type DevModeUi = {
   sourceHint: string
   sourceLabel: string
   sourcePlaceholder: string
+  sourceSave: string
   sourceSaved: string
   sourceNoToken: string
 }
@@ -109,6 +110,7 @@ const en: DevModeUi = {
     "The agent starts by reading it. Without a source this mode does not begin at all — that is what separates it from the other three.",
   sourceLabel: "Repository address",
   sourcePlaceholder: "https://github.com/owner/repo",
+  sourceSave: "Save the source",
   sourceSaved: "Source saved",
   sourceNoToken:
     "No token is asked for, on purpose: keep the repository open while the move lasts, and close it again afterwards.",
@@ -167,6 +169,7 @@ const ru: DevModeUi = {
     "С его чтения агент и начинает. Без источника этот режим не начинается вовсе — этим он и отличается от остальных трёх.",
   sourceLabel: "Адрес репозитория",
   sourcePlaceholder: "https://github.com/owner/repo",
+  sourceSave: "Сохранить источник",
   sourceSaved: "Источник сохранён",
   sourceNoToken:
     "Токен не спрашивается намеренно: держите репозиторий открытым, пока идёт переезд, и закройте его снова после.",

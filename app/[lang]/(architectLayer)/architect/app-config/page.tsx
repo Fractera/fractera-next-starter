@@ -21,6 +21,8 @@ import { ALL_LANGUAGE_METADATA } from "@/config/translations/language-metadata"
 import { readEnvValue } from "@/lib/architect/env-writer"
 import { parseNavItems, type NavCandidate } from "../../_lib/nav"
 import { publicSurfaces } from "@/lib/aio/surfaces"
+import { getMenuGroups } from "@/lib/menu/group-menus"
+import { defaultFooterGroups } from "@/lib/menu/nav-config"
 import Link from "next/link"
 import { groupsUi } from "../../_i18n/groups.i18n"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
@@ -117,13 +119,23 @@ export default async function ArchitectAppConfigPage({
   // и тогда сайт строит меню сам. Пустой массив значит «убрал все кнопки».
   const navRaw = (raw.nav as Record<string, unknown> | undefined)?.[navSlot]
   const navConfigured = Array.isArray(navRaw)
-  // Ненастроенное меню показывается тем, что СЕЙЧАС на сайте: иначе страница
+  // 🔒 НЕНАСТРОЕННОЕ МЕНЮ ПОКАЗЫВАЕТСЯ ТЕМ, ЧТО СЕЙЧАС СТОИТ НА САЙТЕ, и берётся
+  // это у САМОГО САЙТА, а не собирается здесь заново.
+  //
+  // ✗ Первая редакция подставляла сюда все публичные поверхности проекта, и это
+  // была ложь ровно того сорта, что труднее всего заметить: список выглядел
+  // правдоподобно — девять настоящих страниц, — но в шапке сайта их не девять.
+  // Верхнее меню ненастроенного проекта строят МАНИФЕСТЫ РАЗДЕЛОВ, подвал —
+  // список правовых страниц. Сохранив показанное, человек не «взял бы меню в свои
+  // руки», а молча заменил бы его семью новыми кнопками.
   // предложила бы настроить пустоту, тогда как в шапке стоят кнопки.
   const navItems = navConfigured
     ? parseNavItems(navRaw)
-    : navCandidates
-        .filter(c => (navSlot === "footer" ? ["privacy", "terms", "cookies", "accessibility"].includes(c.id) : c.id !== "home"))
-        .map((c, i) => ({ id: c.id, href: c.href, order: (i + 1) * 10, label: "" }))
+    : (navSlot === "top" ? getMenuGroups("top", lang) : defaultFooterGroups(lang))
+        // У группы верхнего меню собственного адреса может не быть — тогда он
+        // ведёт на первого ребёнка, ровно как на самом сайте.
+        .map(g => ({ ...g, href: g.href ?? g.children[0]?.href ?? `/${g.slug}` }))
+        .map((g, i) => ({ id: g.slug, href: g.href, order: (i + 1) * 10, label: "" }))
   // 🔒 КАТАЛОГ ЯЗЫКОВ РАЗБИРАЕТСЯ НА СЕРВЕРЕ И УЕЗЖАЕТ ГОТОВЫМИ СТРОКАМИ. В нём
   // 84 записи с флагами, родными именами и регионами; тащить их в браузер незачем —
   // разметку строит сервер, а островку нужны имя, флаг и качество перевода.

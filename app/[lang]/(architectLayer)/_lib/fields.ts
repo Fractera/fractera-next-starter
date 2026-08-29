@@ -67,6 +67,16 @@ export type Field = {
    * человеку и нужен самый быстрый ручной ввод.
    */
   input?: "email" | "url" | "tel"
+  /**
+   * Запертая пропорция кадра у поля-картинки.
+   *
+   * 🔒 ОБРЕЗКА ИДЁТ ВСЕГДА (решение владельца 2026-08-29) — этот признак решает не
+   * «резать ли», а «даём ли выбирать форму». Логотип и портрет автора обязаны быть
+   * квадратными, картинка для соцсетей — горизонтальной: их форму диктует место,
+   * куда они встанут, а не вкус владельца. Где формат свободен, признака нет и
+   * человек выбирает пропорцию сам.
+   */
+  crop?: "square" | "horizontal"
 }
 
 export type Section = {
@@ -108,7 +118,7 @@ export const SECTIONS: readonly Section[] = [
       { path: "author.url", type: "text", input: "url" },
       { path: "author.jobTitle", type: "text", voice: true },
       { path: "author.bio", type: "textarea", voice: true },
-      { path: "author.image", type: "image" },
+      { path: "author.image", type: "image", crop: "square" },
       { path: "author.twitter", type: "text" },
       { path: "author.linkedin", type: "text" },
       { path: "author.facebook", type: "text" },
@@ -178,8 +188,8 @@ export const SECTIONS: readonly Section[] = [
     id: "logoImages",
     group: "metaMedia",
     fields: [
-      { path: "logo", type: "image" },
-      { path: "images.ogImage", type: "image" },
+      { path: "logo", type: "image", crop: "square" },
+      { path: "images.ogImage", type: "image", crop: "horizontal" },
       { path: "images.homePage-light", type: "image" },
       { path: "images.homePage-dark", type: "image" },
       { path: "images.loading-light", type: "image" },

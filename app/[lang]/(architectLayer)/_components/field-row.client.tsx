@@ -11,6 +11,7 @@ import { ImageField } from "./image-field.client"
 import { SocialsField } from "./socials-field.client"
 import { IconsField } from "./icons-field.client"
 import type { Field } from "../_lib/fields"
+import type { CropUi } from "./crop-ui"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
 // ОДНА СТРОКА ФОРМЫ (31-4, 2026-08-28). Порт `field-row.client.tsx` панели —
@@ -52,6 +53,7 @@ export function FieldRow({
   translationMode,
   onChange,
   ui,
+  cropUi,
 }: {
   field: Field
   /** Язык страницы — для слов самого инструмента голоса. */
@@ -63,6 +65,7 @@ export function FieldRow({
   translationMode: boolean
   onChange: (next: string) => void
   ui: FieldsUi
+  cropUi: CropUi
 }) {
   const words = ui.fields[field.path] ?? { label: field.path }
   const id = `field-${field.path.replace(/\./g, "-")}`
@@ -146,9 +149,17 @@ export function FieldRow({
             onCheckedChange={next => onChange(next ? "true" : "false")}
           />
         ) : field.type === "image" ? (
-          <ImageField id={id} value={value} disabled={field.locked} onChange={onChange} ui={ui} />
+          <ImageField
+            id={id}
+            value={value}
+            disabled={field.locked}
+            onChange={onChange}
+            ui={ui}
+            cropUi={cropUi}
+            force={field.crop}
+          />
         ) : field.type === "icons" ? (
-          <IconsField current={value} ui={ui} />
+          <IconsField current={value} ui={ui} cropUi={cropUi} />
         ) : field.type === "socials" ? (
           <SocialsField value={value} disabled={field.locked} onChange={onChange} ui={ui} />
         ) : field.type === "select" ? (

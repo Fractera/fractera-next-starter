@@ -7,6 +7,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Small } from "@/components/ui/typography"
 import type { FieldsUi } from "../_i18n/fields.i18n"
+import { ImageCropper } from "@/_tools/image-crop/client/image-cropper.client"
+import type { CropUi } from "./crop-ui"
 
 // НАБОР ЗНАЧКОВ ПРИЛОЖЕНИЯ (31-8, 2026-08-28).
 //
@@ -20,14 +22,18 @@ import type { FieldsUi } from "../_i18n/fields.i18n"
 export function IconsField({
   current,
   ui,
+  cropUi,
 }: {
   /** Идентификатор действующего набора; пусто — набора нет. */
   current: string
   ui: FieldsUi
+  cropUi: CropUi
 }) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  // Выбранная картинка ждёт обрезки: на сервер ещё ничего не ушло.
+  const [pending, setPending] = useState<{ src: string; name: string } | null>(null)
 
   async function slice(file: File) {
     setBusy(true)
@@ -66,6 +72,25 @@ export function IconsField({
 
   return (
     <div data-icons-field className="flex flex-col gap-2">
+      {pending && (
+        <ImageCropper
+          src={pending.src}
+          labels={cropUi.cropper}
+          dialogUi={cropUi.dialog}
+          force="square"
+          onDone={blob => {
+            const name = pending.name.replace(/.[^.]+$/, "") + ".jpg"
+            URL.revokeObjectURL(pending.src)
+            setPending(null)
+            void slice(new File([blob], name, { type: "image/jpeg" }))
+          }}
+          onCancel={() => {
+            URL.revokeObjectURL(pending.src)
+            setPending(null)
+          }}
+        />
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" disabled={busy} data-icons-slice onClick={() => fileRef.current?.click()}>
           {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Scissors className="size-4" aria-hidden />}
@@ -86,7 +111,11 @@ export function IconsField({
         className="sr-only"
         onChange={e => {
           const file = e.target.files?.[0]
-          if (file) void slice(file)
+          // 🔒 ЗНАЧКИ РЕЖУТСЯ ИЗ КВАДРАТА, И КВАДРАТ ЗАПЕРТ. Пропорция здесь не вкус,
+          // а требование формата: сервер делает из картинки восемь квадратных файлов,
+          // и присланный прямоугольник он всё равно обрежет — вслепую и не там, где
+          // хотел человек.
+          if (file) setPending({ src: URL.createObjectURL(file), name: file.name })
           e.target.value = ""
         }}
       />

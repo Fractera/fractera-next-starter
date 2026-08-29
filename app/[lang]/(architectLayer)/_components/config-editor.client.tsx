@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { H3, Small } from "@/components/ui/typography"
 import { Separator } from "@/components/ui/separator"
 import { FieldRow } from "./field-row.client"
+import type { CropUi } from "./crop-ui"
 import { patchAtPath, mergePatches, typedValue, type Section } from "../_lib/fields"
 import type { FieldsUi } from "../_i18n/fields.i18n"
 
@@ -36,6 +37,7 @@ export function ConfigEditor({
   defaultLang,
   translatedPaths,
   ui,
+  cropUi,
 }: {
   sections: readonly Section[]
   /** Значения полей для выбранного языка настроек: путь → строка. */
@@ -49,6 +51,8 @@ export function ConfigEditor({
   /** Пути, у которых перевод на `editLang` уже есть. */
   translatedPaths: readonly string[]
   ui: FieldsUi
+  /** Слова обрезчика: любая картинка проходит через него. */
+  cropUi: CropUi
 }) {
   const [values, setValues] = useState<Record<string, string>>(initial)
   // 🔒 ЧТО СЧИТАЕТСЯ СОХРАНЁННЫМ — ОТДЕЛЬНОЕ СОСТОЯНИЕ, а не приходящий проп.
@@ -158,6 +162,7 @@ export function ConfigEditor({
                         translated={translatedPaths.includes(field.path)}
                         onChange={next => setValues(v => ({ ...v, [field.path]: next }))}
                         ui={ui}
+                        cropUi={cropUi}
                       />
                     ))}
                   </div>

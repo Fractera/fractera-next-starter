@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Small } from "@/components/ui/typography"
 import type { FieldsUi } from "../_i18n/fields.i18n"
+import { ImageCropper } from "@/_tools/image-crop/client/image-cropper.client"
+import type { CropUi } from "./crop-ui"
 
 // ПОЛЕ-КАРТИНКА (31-7, 2026-08-28).
 //
@@ -29,15 +31,22 @@ export function ImageField({
   disabled,
   onChange,
   ui,
+  cropUi,
+  force,
 }: {
   id: string
   value: string
   disabled?: boolean
   onChange: (next: string) => void
   ui: FieldsUi
+  cropUi: CropUi
+  /** Запертая пропорция там, где форму кадра диктует назначение, а не вкус. */
+  force?: "square" | "horizontal"
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  // Выбранный файл ждёт обрезки: показан кадр, ничего ещё не отправлено.
+  const [pending, setPending] = useState<{ src: string; name: string } | null>(null)
 
   async function upload(file: File) {
     setBusy(true)
@@ -61,6 +70,27 @@ export function ImageField({
 
   return (
     <div data-image-field className="flex flex-col gap-2">
+      {pending && (
+        <ImageCropper
+          src={pending.src}
+          labels={cropUi.cropper}
+          dialogUi={cropUi.dialog}
+          force={force}
+          onDone={blob => {
+            // Обрезчик отдаёт JPEG; имя берём от исходника, чтобы в хранилище
+            // осталось узнаваемое, а не «blob».
+            const name = pending.name.replace(/.[^.]+$/, "") + ".jpg"
+            URL.revokeObjectURL(pending.src)
+            setPending(null)
+            void upload(new File([blob], name, { type: "image/jpeg" }))
+          }}
+          onCancel={() => {
+            URL.revokeObjectURL(pending.src)
+            setPending(null)
+          }}
+        />
+      )}
+
       <div className="flex items-center gap-2">
         <Input
           id={id}
@@ -95,7 +125,11 @@ export function ImageField({
         className="sr-only"
         onChange={e => {
           const file = e.target.files?.[0]
-          if (file) void upload(file)
+          // 🔒 НИ ОДНА КАРТИНКА НЕ УХОДИТ НА СЕРВЕР МИМО ОБРЕЗЧИКА (решение владельца
+          // 2026-08-29). Прежде файл летел в хранилище как есть, и в конфиг попадала
+          // фотография с телефона — четыре мегабайта и произвольная пропорция. Обрезка
+          // здесь не украшение: она задаёт кадр и отдаёт наружу готовый JPEG.
+          if (file) setPending({ src: URL.createObjectURL(file), name: file.name })
           // Один и тот же файл, выбранный дважды подряд, не вызывает событие —
           // сбрасываем значение, иначе повтор загрузки выглядит как отказ.
           e.target.value = ""

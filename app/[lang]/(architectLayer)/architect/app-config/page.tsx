@@ -13,6 +13,8 @@ import { sectionsOfGroup, atPath } from "../../_lib/fields"
 import { LayerMenu } from "../../_components/layer-menu"
 import { EditLangSwitch } from "../../_components/edit-lang-switch"
 import { ConfigEditor } from "../../_components/config-editor.client"
+import { imageCropperUi } from "@/services/upload/image-cropper.i18n"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { RoutingEditor } from "../../_components/routing-editor.client"
 import { FeaturesEditor } from "../../_components/features-editor.client"
 import { NavEditor } from "../../_components/nav-editor.client"
@@ -323,6 +325,9 @@ export default async function ArchitectAppConfigPage({
                   defaultLang={DEFAULT_LANGUAGE}
                   translatedPaths={translatedPaths}
                   ui={fw}
+                  // Словари обрезчика резолвятся здесь, на сервере: клиентскому
+                  // файлу их импортировать нельзя.
+                  cropUi={{ cropper: imageCropperUi(lang), dialog: appDialogUi(lang) }}
                 />
               ) : (
                 <P>{t.appConfigSoon}</P>

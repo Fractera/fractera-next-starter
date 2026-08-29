@@ -69,7 +69,7 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
       <section data-design-field="radius" className="rounded-lg border border-border p-4">
         <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.radiusLabel}</p>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.radiusHint}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-col gap-1.5">
           {Object.entries(RADIUS).map(([key, value]) => (
             <button
               key={key}
@@ -78,7 +78,7 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
               aria-pressed={radius === value}
               style={{ borderRadius: value }}
               className={
-                "border px-3 py-1.5 text-[length:var(--fs-small)] transition-colors " +
+                "w-full border px-3 py-2 text-left text-[length:var(--fs-small)] transition-colors " +
                 (radius === value ? "border-primary/50 bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50")
               }
             >
@@ -113,7 +113,7 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
       <section data-design-field="spaceScale" className="rounded-lg border border-border p-4">
         <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.spaceLabel}</p>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.spaceHint}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-col gap-1.5">
           {Object.entries(SPACE).map(([key, value]) => (
             <button
               key={key}
@@ -121,7 +121,7 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
               onClick={() => set("spaceScale", value)}
               aria-pressed={space === value}
               className={
-                "rounded-md border px-3 py-1.5 text-[length:var(--fs-small)] transition-colors " +
+                "w-full rounded-md border px-3 py-2 text-left text-[length:var(--fs-small)] transition-colors " +
                 (space === value ? "border-primary/50 bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50")
               }
             >

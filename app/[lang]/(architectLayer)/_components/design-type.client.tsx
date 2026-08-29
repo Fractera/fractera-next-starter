@@ -68,7 +68,7 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
       <section data-design-field="scale" className="rounded-lg border border-border p-4">
         <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.scaleLabel}</p>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.scaleHint}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-col gap-1.5">
           {Object.entries(SCALE_PRESETS).map(([key, value]) => (
             <button
               key={key}
@@ -76,7 +76,7 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
               onClick={() => set("scale", value)}
               aria-pressed={scale === value}
               className={
-                "rounded-md border px-3 py-1.5 text-[length:var(--fs-small)] transition-colors " +
+                "w-full rounded-md border px-3 py-2 text-left text-[length:var(--fs-small)] transition-colors " +
                 (scale === value ? "border-primary/50 bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50")
               }
             >
@@ -98,7 +98,7 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
       <section data-design-field="leading" className="rounded-lg border border-border p-4">
         <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.leadingLabel}</p>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.leadingHint}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-col gap-1.5">
           {Object.entries(LEADING_PRESETS).map(([key, value]) => (
             <button
               key={key}
@@ -106,7 +106,7 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
               onClick={() => set("leading", value)}
               aria-pressed={leading === value}
               className={
-                "rounded-md border px-3 py-1.5 text-[length:var(--fs-small)] transition-colors " +
+                "w-full rounded-md border px-3 py-2 text-left text-[length:var(--fs-small)] transition-colors " +
                 (leading === value ? "border-primary/50 bg-primary/5 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50")
               }
             >

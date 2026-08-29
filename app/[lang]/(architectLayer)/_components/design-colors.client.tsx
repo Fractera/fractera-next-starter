@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Undo2 } from "lucide-react"
 import { DesignWorkbench, DesignPreview } from "./design-workbench"
 import { COLOR_SCHEMES, activeScheme } from "@/lib/design/color-schemes"
 import { contrastRatio, verdictOf, onColor } from "@/lib/design/contrast"
@@ -105,7 +106,7 @@ export function DesignColors({ initial, ui }: { initial: State; ui: DesignUi["co
       <section data-design-schemes className="rounded-lg border border-border p-4">
         <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.schemesLabel}</p>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.schemesHint}</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-col gap-1.5">
           {COLOR_SCHEMES.map(scheme => {
             const on = active === scheme.id
             const face = scheme[theme]
@@ -118,7 +119,7 @@ export function DesignColors({ initial, ui }: { initial: State; ui: DesignUi["co
                 aria-pressed={on}
                 title={ui.schemes[scheme.id as keyof typeof ui.schemes]}
                 className={
-                  "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 transition-colors " +
+                  "flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors " +
                   (on ? "border-primary/50 bg-primary/5" : "border-border hover:bg-muted/50")
                 }
               >
@@ -161,29 +162,45 @@ export function DesignColors({ initial, ui }: { initial: State; ui: DesignUi["co
         {ROLES.map(role => {
           const own = state[theme][role]
           return (
-            <section key={role} data-color-role={role} className="flex items-start gap-3 rounded-lg border border-border p-3">
-              <input
-                type="color"
-                aria-label={ui.roles[role].label}
-                value={shown(role)}
-                onChange={e => set(role, e.target.value)}
-                className="mt-0.5 size-8 shrink-0 cursor-pointer rounded border border-border bg-transparent"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.roles[role].label}</p>
-                <p className="mt-0.5 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
-                  {ui.roles[role].description}
+            // 🔒 КАРТОЧКА В ДВЕ СТРОКИ, А НЕ В ТРИ КОЛОНКИ (владелец 2026-08-29):
+            // «верхний ряд — это первая строка карточки, а этот длинный текст —
+            // вторая строка, и чтобы он занял всё пространство карточки».
+            //
+            // Довод типографский: описание роли — самая длинная строка карточки, и
+            // зажатое между образцом цвета слева и кнопкой сброса справа оно
+            // ломалось на четыре-пять коротких обрывков. Ширина у текста должна
+            // быть та же, что у карточки.
+            <section key={role} data-color-role={role} className="flex flex-col gap-2 rounded-lg border border-border p-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  aria-label={ui.roles[role].label}
+                  value={shown(role)}
+                  onChange={e => set(role, e.target.value)}
+                  className="size-8 shrink-0 cursor-pointer rounded border border-border bg-transparent"
+                />
+                <p className="min-w-0 flex-1 truncate text-[length:var(--fs-body)] font-medium text-foreground">
+                  {ui.roles[role].label}
                 </p>
+                {/* 🔒 ЗНАЧОК ВМЕСТО ФРАЗЫ (владелец 2026-08-29): «длинный текст
+                    „вернуться к цветам темы“ — это должна быть просто одна иконка
+                    назад». Подпись никуда не делась: она осталась доступным именем
+                    кнопки, то есть её по-прежнему читают вслух и находят поиском. */}
+                {own && (
+                  <button
+                    type="button"
+                    onClick={() => clear(role)}
+                    aria-label={ui.reset}
+                    title={ui.reset}
+                    className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    <Undo2 className="size-4" aria-hidden />
+                  </button>
+                )}
               </div>
-              {own && (
-                <button
-                  type="button"
-                  onClick={() => clear(role)}
-                  className="shrink-0 text-[length:var(--fs-small)] text-muted-foreground underline hover:text-foreground"
-                >
-                  {ui.reset}
-                </button>
-              )}
+              <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
+                {ui.roles[role].description}
+              </p>
             </section>
           )
         })}

@@ -79,7 +79,15 @@ export function DesignFonts({ initial, ui }: { initial: State; ui: DesignUi["fon
               {ui.roles[role].description}
             </p>
 
-            <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+            {/* 🔒 ОДИН СТОЛБЕЦ, А НЕ ДВА (владелец 2026-08-29): «в левой колонке у тебя
+                также внутри представлен двухколоночный дизайн… это неправильно,
+                представлять здесь карточки везде в один ряд».
+
+                Довод конструктивный: левая колонка сама уже половина верстака, и
+                деление её пополам даёт полосы шириной с телефон на настольном
+                экране — при том, что справа стоит предпросмотр, ради которого место
+                и берегут. */}
+            <div className="mt-3 flex flex-col gap-1.5">
               {options.map(entry => {
                 const active = current?.family === entry.family
                 const system = isSystemFont(entry.family)

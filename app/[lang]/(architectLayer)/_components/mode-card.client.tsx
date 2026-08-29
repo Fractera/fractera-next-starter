@@ -107,19 +107,17 @@ export function ModeCard({
     >
       <div className="flex flex-wrap items-center gap-3">
         <H3 variant="ui">{words.label}</H3>
+        {/* 🔒 БЕЙДЖЕЙ БОЛЬШЕ НЕТ (владелец 2026-08-29: «в проекте есть бейджи,
+            убери все»). СЛОВА ОСТАЛИСЬ: пилюля — форма, а не смысл, и её уход не
+            имеет права уносить с собой информацию. Альфа и «действует сейчас»
+            теперь обычный текст, цветом отличающийся от заголовка. */}
         {isAlphaMode(mode) && (
-          <span
-            data-mode-alpha={mode}
-            className="inline-flex items-center rounded-full bg-destructive px-3 py-1 text-[length:var(--fs-small)] text-destructive-foreground"
-          >
+          <span data-mode-alpha={mode} className="text-[length:var(--fs-small)] text-destructive">
             {ui.alpha}
           </span>
         )}
         {isCurrent && (
-          <span
-            data-mode-current-badge
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[length:var(--fs-small)] text-primary-foreground"
-          >
+          <span data-mode-current-badge className="flex items-center gap-1.5 text-[length:var(--fs-small)] text-primary">
             <Check className="size-3.5" aria-hidden />
             {ui.current}
           </span>
@@ -154,12 +152,12 @@ export function ModeCard({
       {words.requires.length > 0 && (
         <>
           <Separator />
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-col gap-1">
             {words.requires.map(req => (
               <li
                 key={req}
                 data-mode-req
-                className="rounded-md border border-border bg-muted/40 px-3 py-1.5 text-[length:var(--fs-small)] text-muted-foreground"
+                className="text-[length:var(--fs-small)] text-muted-foreground"
               >
                 {req}
               </li>
@@ -178,8 +176,13 @@ export function ModeCard({
           при этом одни и те же — панель пишет в ту же папку продуктов. */}
       {words.door && doorHref(mode, lang, adminUrl) && (
         <div data-mode-door={mode} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
+          {/* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ: это другое приложение и другой
+              домен, и увести туда текущую вкладку значит выбросить человека из его
+              проекта. `noopener` обязателен вместе с `_blank`. */}
           <a
             href={doorHref(mode, lang, adminUrl)}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
             className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
           >
             {words.door.label}
@@ -189,12 +192,18 @@ export function ModeCard({
         </div>
       )}
 
-      <div className="flex items-center gap-3">
-        <Button type="button" onClick={choose} disabled={busy || done} data-mode-choose={mode} className="h-10 px-5">
-          {busy && <Loader2 className="size-4 animate-spin" aria-hidden />}
-          {busy ? ui.saving : done ? ui.chosen : ui.choose}
-        </Button>
-      </div>
+      {/* 🔒 ВЫБРАННЫЙ РЕЖИМ НЕ ПОКАЗЫВАЕТ КНОПКУ ВОВСЕ (владелец 2026-08-29).
+          Погашенная кнопка — обещание действия, которого нет: человек видит её,
+          тянется нажать и получает отказ. Отсутствие кнопки говорит то же самое
+          честнее и короче, а «действует сейчас» уже сказано над карточкой. */}
+      {!done && (
+        <div className="flex items-center gap-3">
+          <Button type="button" onClick={choose} disabled={busy} data-mode-choose={mode} className="h-10 px-5">
+            {busy && <Loader2 className="size-4 animate-spin" aria-hidden />}
+            {busy ? ui.saving : ui.choose}
+          </Button>
+        </div>
+      )}
     </section>
   )
 }

@@ -76,10 +76,10 @@ export function ProductsList({
                 {/* Счёт кейсов — ответ на вопрос «сколько тут работы», читаемый
                     без открытия продукта. */}
                 <span className="flex flex-wrap items-center gap-2">
-                  <span
-                    data-product-phase={p.phase}
-                    className="rounded-full border border-border px-3 py-1 text-[length:var(--fs-small)] text-muted-foreground"
-                  >
+                  {/* 🔒 БЕЗ БЕЙДЖА (владелец 2026-08-29). Пилюля вокруг слова не
+                      добавляет слову смысла, а на карточке из четырёх строк спорит
+                      за внимание с названием продукта. Слово остаётся, форма уходит. */}
+                  <span data-product-phase={p.phase} className="text-[length:var(--fs-small)] text-muted-foreground">
                     {p.phase}
                   </span>
                   <span data-product-cases={p.cases.length} className="text-[length:var(--fs-small)] text-muted-foreground">
@@ -98,8 +98,20 @@ export function ProductsList({
             // ровно то, на что владелец и указал.
             return (
               <li key={p.id} data-product={p.id}>
+                {/* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ (владелец 2026-08-29).
+                    Это переход на ДРУГОЕ приложение и другой домен: увести туда
+                    текущую вкладку значит выбросить человека из его проекта, и
+                    «назад» вернёт его не туда, где он был, а на перезагруженную
+                    страницу слоя. `noopener` обязателен вместе с `_blank`: без
+                    него открытая страница получает ссылку на нашу. */}
                 {href ? (
-                  <a href={href} rel="nofollow" data-product-link={p.id} className={className}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    data-product-link={p.id}
+                    className={className}
+                  >
                     {inner}
                   </a>
                 ) : (

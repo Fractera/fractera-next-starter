@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react"
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, CornerDownRight, CornerLeftUp, Loader2, Plus, X } from "lucide-react"
 import { toast } from "sonner"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -232,11 +231,11 @@ export function NavEditor({
         onChange={e => onChange(e.target.value)}
         className="h-10 text-[length:var(--fs-body)] md:text-[length:var(--fs-body)]"
       />
-      {/* Бэйдж стоит У ПОЛЯ, а не в шапке страницы: правят здесь, и здесь же надо
-          видеть, куда попадёт написанное. */}
-      <Badge data-edit-lang={editLang} variant="secondary" className="shrink-0 uppercase">
+      {/* 🔒 БЕЗ БЕЙДЖА, НО У ПОЛЯ (владелец 2026-08-29). Пилюля убрана, место —
+          нет: правят здесь, и здесь же надо видеть, куда попадёт написанное. */}
+      <span data-edit-lang={editLang} className="shrink-0 text-[length:var(--fs-small)] uppercase text-muted-foreground">
         {editLang}
-      </Badge>
+      </span>
     </div>
   )
 

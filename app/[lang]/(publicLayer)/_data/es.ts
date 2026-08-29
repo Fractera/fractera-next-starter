@@ -74,63 +74,6 @@ export const es: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Primeros pasos',
-    title: 'Cómo empezar',
-    note: 'Todo lo de abajo ya está instalado — lo estás activando, no construyendo. A la izquierda, el camino; a la derecha, lo que evita recorrerlo dos veces.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Siete pasos desde un servidor vacío' },
-          { kind: 'p', text: 'Lanza el [robot instalador](https://www.fractera.ai/deployments/vps) para obtener este proyecto.' },
-          {
-            kind: 'olist',
-            items: [
-          'Abre el panel de control — todo sobre este servidor se configura ahí. [Panel de control]({admin}/{lang})',
-          'Elige los idiomas en los que funcionará tu aplicación. [Idiomas]({admin}/{lang}/languages)',
-          'Usa los ajustes para describir tu proyecto: nombre, descripción, logo, SEO. [Ajustes de la app]({admin}/{lang}/app-settings)',
-          'Conecta GitHub y envía el código del servidor a tu repositorio. [GitHub]({admin}/{lang}/github)',
-          'Clona ese repositorio en tu propia máquina, desarrolla ahí y envía los cambios de vuelta.',
-          'Lleva el archivo de entorno `.env.local` a tu máquina — git nunca lo transporta y sin él la copia local no arranca. [Variables de entorno]({admin}/{lang}/env)',
-          'Pulsa Desplegar en el panel — el servidor toma tu commit y se reconstruye solo. [Despliegues]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Recomendado antes de empezar' },
-          { kind: 'p', text: 'Nada de esto bloquea nada. Los tres ahorran rehacer trabajo.' },
-          {
-            kind: 'list',
-            items: [
-              '**Una clave de OpenAI.** Sin ella el Quiz no hace preguntas, y sin casos el agente programador se niega a construir. El sitio sigue funcionando — solo quedan vacíos la búsqueda vectorial y el grafo de conocimiento. Se introduce una vez; el gasto va directo a tu proveedor de modelo. [Clave OpenAI]({admin}/{lang}/openai)',
-              '**Tu propio dominio.** En una dirección numérica no hay certificado ni aplicación instalable — el navegador solo los concede sobre conexión segura. Mudarse después cambia la dirección de cada página, así que sale más barato antes de que las indexen. [Dominio]({admin}/{lang}/domain)',
-              '**Extensión de Claude para Chrome.** Sin ella el agente solo ve el código: los errores de consola, el comportamiento sin JavaScript y el aspecto real de la página no están escritos en ninguna parte. Con ella abre la página él mismo y arregla lo que hay, no lo que supuso. [Herramientas de desarrollo]({admin}/{lang}/dev-tools)',
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Antes de cualquier código',
-    title: 'Quiz — siete preguntas en vez de una página en blanco',
-    note: 'El error más caro de un proyecto se comete antes de la primera línea de código: se construye lo que no era. No por construir mal, sino porque «por dónde empiezo» es difícil de responder en solitario. Quiz lo convierte en una conversación: tú respondes, el modelo sigue preguntando, y de ahí crece la lista de escenarios con la que luego se construye el proyecto.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'La semilla' }, { kind: 'p', text: 'Siete preguntas breves: qué es el producto, para quién es, con qué debería quedarse una persona. Responde con tus propias palabras — el dictado funciona. Todo lo que sigue crece desde aquí, así que un par de frases da un resultado notablemente mejor que un par de palabras.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'La conversación' }, { kind: 'p', text: 'Después, una pregunta a la vez, en tu idioma. Existe un autoquiz: el modelo hace cinco preguntas nuevas y se las responde él mismo, profundizando la descripción — pero todo lo que haya inventado en tu nombre queda marcado como «Suposición», y tú lo corriges. Una conjetura pasada por hecho aparecería más tarde, dentro de los escenarios terminados.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Los escenarios' }, { kind: 'p', text: 'La conversación se sintetiza en casos numerados: quién llega, qué hace, qué debe ser cierto al final. Los lees y confirmas uno por uno. Un caso sin leer sigue siendo la conjetura del modelo.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'Y esto no es un consejo, sino una regla del producto: mientras quede un solo caso sin confirmar, el panel mantiene la alarma encendida y el agente programador se niega a construir. Construir sobre una conjetura sin leer cuesta más que no construir nada.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Llévatelo gratis y escala' },
   {
     kind: 'cards',

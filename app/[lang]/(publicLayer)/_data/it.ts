@@ -74,63 +74,6 @@ export const it: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Per iniziare',
-    title: 'Come iniziare',
-    note: 'Tutto quanto segue è già installato — lo stai accendendo, non costruendo. A sinistra il percorso; a destra ciò che evita di farlo due volte.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Sette passi da un server vuoto' },
-          { kind: 'p', text: 'Avvia il [robot installatore](https://www.fractera.ai/deployments/vps) per ottenere questo progetto.' },
-          {
-            kind: 'olist',
-            items: [
-          'Apri il pannello di controllo — tutto su questo server si configura lì. [Pannello di controllo]({admin}/{lang})',
-          'Scegli le lingue in cui la tua applicazione sarà disponibile. [Lingue]({admin}/{lang}/languages)',
-          'Usa le impostazioni per descrivere il tuo progetto: nome, descrizione, logo, SEO. [Impostazioni app]({admin}/{lang}/app-settings)',
-          'Collega GitHub e invia il codice del server nel tuo repository. [GitHub]({admin}/{lang}/github)',
-          'Clona quel repository sulla tua macchina, sviluppa lì e rimanda indietro.',
-          "Porta il file di ambiente `.env.local` sulla tua macchina — git non lo trasporta mai e senza di esso la copia locale non si avvia. [Variabili d'ambiente]({admin}/{lang}/env)",
-          'Premi Deploy nel pannello — il server prende il tuo commit e si ricostruisce da solo. [Deployment]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Consigliato prima di iniziare' },
-          { kind: 'p', text: 'Niente di tutto questo blocca nulla. Tutti e tre evitano di rifare il lavoro.' },
-          {
-            kind: 'list',
-            items: [
-              '**Una chiave OpenAI.** Senza di essa il Quiz non fa domande, e senza casi l\'agente programmatore si rifiuta di costruire. Il sito funziona lo stesso — restano vuoti solo la ricerca vettoriale e il grafo della conoscenza. Si inserisce una volta; la spesa va direttamente al tuo fornitore del modello. [Chiave OpenAI]({admin}/{lang}/openai)',
-              '**Un dominio tuo.** Su un indirizzo numerico non c\'è né certificato né app installabile — il browser li concede solo su connessione sicura. Spostarsi dopo cambia l\'indirizzo di ogni pagina: conviene farlo prima dell\'indicizzazione. [Dominio]({admin}/{lang}/domain)',
-              "**Estensione Claude per Chrome.** Senza di essa l'agente vede solo il codice: gli errori di console, il comportamento senza JavaScript e l'aspetto reale della pagina non sono scritti da nessuna parte. Con essa apre la pagina da solo e corregge ciò che c'è, non ciò che ha immaginato. [Strumenti di sviluppo]({admin}/{lang}/dev-tools)",
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Prima di qualsiasi codice',
-    title: 'Quiz — sette domande invece di una pagina bianca',
-    note: 'L\'errore più costoso di un progetto si commette prima della prima riga di codice: si costruisce la cosa sbagliata. Non per una cattiva costruzione, ma perché «da dove comincio» è difficile rispondere da soli. Quiz lo trasforma in una conversazione: tu rispondi, il modello continua a chiedere, e ne cresce la lista degli scenari con cui il progetto viene poi costruito.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'Il seme' }, { kind: 'p', text: 'Sette domande brevi: cos\'è il prodotto, per chi è, cosa una persona dovrebbe portarsi via. Rispondi con parole tue — la dettatura funziona. Tutto ciò che segue cresce da qui, quindi un paio di frasi dà un risultato nettamente migliore di un paio di parole.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'La conversazione' }, { kind: 'p', text: 'Poi una domanda alla volta, nella tua lingua. Esiste un autoquiz: il modello fa cinque nuove domande e se le risponde da solo, approfondendo la descrizione — ma tutto ciò che ha inventato per tuo conto è marcato «Ipotesi», e tu lo correggi. Un\'ipotesi spacciata per fatto emergerebbe più tardi, dentro gli scenari finiti.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Gli scenari' }, { kind: 'p', text: 'La conversazione viene sintetizzata in casi numerati: chi arriva, cosa fa, cosa deve essere vero alla fine. Li leggi e li confermi uno per uno. Un caso non letto resta un\'ipotesi del modello.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'E questa non è una raccomandazione ma una regola del prodotto: finché resta un solo caso non confermato, il pannello tiene accesa l\'allerta e l\'agente programmatore rifiuta di costruire. Costruire su un\'ipotesi non letta costa più che non costruire affatto.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Prendilo gratis e scala' },
   {
     kind: 'cards',

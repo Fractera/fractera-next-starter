@@ -24,6 +24,15 @@ import { featureOn } from '@/config/platform-config'
 const SITE = brand().siteUrl
 
 /** Shape returned by a per-document resolver — the localized page descriptor. */
+// 🔒 В СТРУКТУРИРОВАННЫЕ ДАННЫЕ ОТВЕТ ЕДЕТ БЕЗ РАЗМЕТКИ (2026-08-29, шаг 38).
+// С этого дня ответ FAQ может нести ссылку (`sections/blocks/faq.server.tsx`
+// разбирает `[подпись](адрес)`), а `FAQPage` поисковик читает ДОСЛОВНО — и
+// напечатал бы квадратные скобки в выдаче. Снимаем разметку здесь, а не в
+// словах: словам ссылка нужна, поисковику — нет.
+function plainAnswer(text: string): string {
+  return text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+}
+
 export type ContentPageContent = {
   title: string // H1
   seoTitle?: string
@@ -198,7 +207,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
             mainEntity: faq.map(f => ({
               '@type': 'Question',
               name: f.q,
-              acceptedAnswer: { '@type': 'Answer', text: f.a },
+              acceptedAnswer: { '@type': 'Answer', text: plainAnswer(f.a) },
             })),
           }]
         : []),

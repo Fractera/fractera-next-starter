@@ -74,63 +74,6 @@ export const nl: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Aan de slag',
-    title: 'Hoe te beginnen',
-    note: 'Alles hieronder is al geïnstalleerd — je zet het aan, je bouwt het niet. Links het pad; rechts wat je bespaart om het tweemaal af te leggen.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Zeven stappen vanaf een lege server' },
-          { kind: 'p', text: 'Start de [installatierobot](https://www.fractera.ai/deployments/vps) om dit project te krijgen.' },
-          {
-            kind: 'olist',
-            items: [
-          'Open het configuratiescherm — alles over deze server wordt daar ingesteld. [Configuratiescherm]({admin}/{lang})',
-          'Kies de talen waarin uw toepassing wordt aangeboden. [Talen]({admin}/{lang}/languages)',
-          'Gebruik de instellingen om uw project te beschrijven: naam, beschrijving, logo, SEO. [App-instellingen]({admin}/{lang}/app-settings)',
-          'Koppel GitHub en stuur de code van de server naar uw repository. [GitHub]({admin}/{lang}/github)',
-          'Kloon die repository naar uw eigen machine, ontwikkel daar en stuur terug.',
-          'Breng het omgevingsbestand `.env.local` naar uw machine — git vervoert het nooit, en zonder dit start de lokale kopie niet. [Omgevingsvariabelen]({admin}/{lang}/env)',
-          'Druk op Deploy in het paneel — de server neemt uw commit over en bouwt zichzelf opnieuw op. [Implementaties]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Aanbevolen voordat u begint' },
-          { kind: 'p', text: 'Niets hiervan blokkeert iets. Alle drie besparen herwerk.' },
-          {
-            kind: 'list',
-            items: [
-              '**Een OpenAI-sleutel.** Zonder sleutel stelt de Quiz geen vragen, en zonder cases weigert de codeagent te bouwen. De site werkt gewoon — alleen vectorzoeken en de kennisgraaf blijven leeg. Eenmalig ingevoerd; de kosten gaan rechtstreeks naar je modelaanbieder. [OpenAI-sleutel]({admin}/{lang}/openai)',
-              '**Een eigen domein.** Op een numeriek adres is er geen certificaat en geen installeerbare app — een browser geeft die alleen over een beveiligde verbinding. Later verhuizen verandert elk paginaadres, dus vóór indexering is het goedkoper. [Domein]({admin}/{lang}/domain)',
-              '**Claude-extensie voor Chrome.** Zonder die ziet de agent alleen broncode: consolefouten, gedrag zonder JavaScript en hoe de afgewerkte pagina er werkelijk uitziet staan nergens in de code. Met die opent hij de pagina zelf en repareert wat er is, niet wat hij vermoedde. [Ontwikkelgereedschap]({admin}/{lang}/dev-tools)',
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Vóór welke code dan ook',
-    title: 'Quiz — zeven vragen in plaats van een leeg blad',
-    note: 'De duurste fout van een project wordt gemaakt vóór de eerste regel code: het verkeerde wordt gebouwd. Niet door slecht bouwen, maar omdat «waar begin ik» moeilijk alleen te beantwoorden is. Quiz maakt er een gesprek van: u antwoordt, het model blijft vragen stellen, en daaruit groeit de lijst met scenario\'s waarmee het project vervolgens wordt gebouwd.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'De kiem' }, { kind: 'p', text: 'Zeven korte vragen: wat het product is, voor wie het is, wat iemand ermee moet overhouden. Antwoord in uw eigen woorden — dicteren werkt. Alles daarna groeit hieruit voort, dus een paar zinnen geven een merkbaar beter resultaat dan een paar woorden.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Het gesprek' }, { kind: 'p', text: 'Daarna één vraag tegelijk, in uw taal. Er is een auto-quiz: het model stelt vijf nieuwe vragen en beantwoordt ze zelf, waarbij het de beschrijving verdiept — maar alles wat het namens u heeft bedacht, is gemarkeerd als «Aanname», en u corrigeert het. Een gok die als feit werd voorgesteld, zou later opduiken in de afgewerkte scenario\'s.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'De scenario\'s' }, { kind: 'p', text: 'Het gesprek wordt samengevat in genummerde cases: wie komt binnen, wat doet die persoon, wat moet aan het eind waar zijn. U leest en bevestigt elk apart. Een ongelezen case blijft een gok van het model.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'En dit is geen advies maar een productregel: zolang er één case onbevestigd blijft, houdt het paneel het alarm aan en weigert de codeeragent te bouwen. Bouwen op een ongelezen gok kost meer dan helemaal niet bouwen.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Neem het gratis en schaal op' },
   {
     kind: 'cards',

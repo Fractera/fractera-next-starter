@@ -3,7 +3,7 @@ import type { HomeCell } from './index'
 // Английская основа главной. Слова перенесены из прежнего словаря
 // `home.i18n.json` (шаг 508) — заново не переводились.
 export const en: HomeCell = {
-  title: 'This is your application starter',
+  title: 'From Vibe-Coded MVP to Commercially Ready Product',
   // Описание для ПОИСКА — коротко и по делу. Длинный текст первого экрана живёт
   // в секции `heroSplit` ниже: сниппет обрезается примерно на 160 знаках, и
   // сильный абзац, попав сюда целиком, превратился бы в оборванную фразу.
@@ -13,9 +13,9 @@ export const en: HomeCell = {
   {
     kind: 'heroSplit',
     pill: 'Agentic engineering infrastructure',
-    title: 'This is your application starter',
+    title: 'From Vibe-Coded MVP to Commercially Ready Product',
     description:
-      'Everything is already installed and wired together — authorization, your own database, file storage, vector search and a hundred tools more, organised so a coding agent finds them without being told twice. Build a landing page, a SaaS, or automation that never sleeps, in any of 82 languages, on a skeleton cut for a project that will pass a million lines. Roughly **nine times faster** than assembling the same stack yourself — and nothing here calls home: no vendor, no subscription, nobody to ask for permission. The server is yours, the code is yours, **one hundred percent**.',
+      'Scale 100× without scaling your infrastructure costs — with enterprise-level reliability, security, and compliance.',
     cta: { href: 'https://www.fractera.ai/deployments/vps', label: 'Take it free, scale it up' },
     image: 'homePage',
     imageAlt: 'SaaS starter template',
@@ -81,64 +81,59 @@ export const en: HomeCell = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
+  // 🔒 IN PLACE OF THE QUIZ — TWO COLUMNS OF SELF-SELECTION (owner, 2026-08-29).
+  // The frame is borrowed from «How to start» on his direct instruction («for
+  // compare use … design»): badge, title, note, two toned columns. That section
+  // was removed by the same decision, so its layout moved here rather than died.
   {
     kind: 'cards',
-    badge: 'Getting started',
-    title: 'How to start',
-    note: 'Everything below is already installed — you are switching it on, not building it. The left column is the path; the right one is what saves you from walking it twice.',
+    badge: 'Fit',
+    title: 'Who this is for, and who it is not for',
+    note: 'Two columns, and the second one is meant seriously: if all of it is about you, this platform has nothing to give you. On the left, a reason to look; on the right, a reason not to spend the time.',
     cols: 2,
     children: [
       {
         kind: 'card',
         tone: 'data',
         children: [
-          { kind: 'h3', text: 'Seven steps from a bare server' },
-          { kind: 'p', text: 'Start the [installer robot](https://www.fractera.ai/deployments/vps) to get this project.' },
+          { kind: 'h3', text: 'This is for you if:' },
+          { kind: 'p', text: 'One line is enough — the audit pays for itself in the conversation.' },
           {
             kind: 'olist',
             items: [
-          'Open the control panel — everything about this server is configured there. [Control panel]({admin}/{lang})',
-          'Pick the languages your application will ship in. [Languages]({admin}/{lang}/languages)',
-          'Use the settings to describe your project: name, description, logo, SEO. [App settings]({admin}/{lang}/app-settings)',
-          'Connect GitHub and push the server\'s code into your repository. [GitHub]({admin}/{lang}/github)',
-          'Clone that repository onto your own machine, develop there, and push back.',
-          'Move the environment file `.env.local` to your machine — git never carries it, and without it your local copy will not start. [Environment variables]({admin}/{lang}/env)',
-          'Press Deploy in the panel — the server takes your commit and rebuilds itself. [Deployments]({admin}/{lang}/deployments)',
+              'Your project already eats time and money, while progress somehow slowed down.',
+              'You suspect that not everything was done well.',
+              'You found out that cloud services are free only at the start, and then swallow the whole margin.',
             ],
           },
+          { kind: 'cta', href: '#', label: 'Get a free audit' },
         ],
       },
       {
         kind: 'card',
         tone: 'access',
         children: [
-          { kind: 'h3', text: 'Recommended before you start' },
-          { kind: 'p', text: 'None of these blocks anything. All three save rework.' },
+          { kind: 'h3', text: 'You do not need this if:' },
+          { kind: 'p', text: 'If you can already do all of it, you are the infrastructure we are offering.' },
           {
-            kind: 'list',
+            kind: 'olist',
             items: [
-              '**An OpenAI key.** Without it the Quiz asks no questions, and with no cases the coding agent refuses to build. The site still works — only vector search and the knowledge graph stay empty. Entered once; the cost goes straight to your model provider. [OpenAI key]({admin}/{lang}/openai)',
-              '**Your own domain.** On a numeric address there is no certificate and no installable app — a browser grants those only over a secure connection. Moving later changes every page address, so it is cheaper before they are indexed. [Domain]({admin}/{lang}/domain)',
-              '**Claude extension for Chrome.** Without it the agent sees only source: console errors, behaviour with JavaScript off and how the finished page actually looks are written nowhere in the code. With it he opens the page himself and fixes what is there instead of what he guessed. [Development tools]({admin}/{lang}/dev-tools)',
+              'You understand the difference between static and dynamic routing without losing SEO.',
+              'You know how to make every new AI request cheaper while performance keeps growing.',
+              'You can balance the load and hold the bill under $20 a month with millions of users.',
             ],
           },
+          { kind: 'cta', href: '#', label: 'Get a free audit' },
         ],
       },
     ],
   },
-  {
-    kind: 'cards',
-    badge: 'Before any code',
-    title: 'Quiz — seven questions instead of a blank page',
-    note: 'A project\'s most expensive mistake is made before the first line of code: the wrong thing gets built. Not through poor building, but because «where do I start» is hard to answer alone. Quiz turns it into a conversation: you answer, the model asks further, and out of it grows the list of scenarios the project is then built from.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'The seed' }, { kind: 'p', text: 'Seven short questions: what the product is, who it is for, what a person should walk away with. Answer in your own words — dictation works. Everything after this grows from here, so a couple of sentences yields a markedly better result than a couple of words.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'The conversation' }, { kind: 'p', text: 'Then one question at a time, in your language. There is an auto-quiz: the model asks five new questions and answers them itself, deepening the description — but anything it invented on your behalf is marked «Assumption», and you correct it. A guess passed off as fact would surface later, inside the finished scenarios.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'The scenarios' }, { kind: 'p', text: 'The conversation is synthesised into numbered cases: who arrives, what they do, what must be true at the end. You read and confirm each one separately. An unread case is still the model\'s guess.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'And this is a product rule, not advice: while a single case is unconfirmed the panel keeps its alarm lit and the coding agent refuses to build. Building on an unread guess costs more than not building at all.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Take it free, scale it up' },
+  // 🔒 A DUMMY BUTTON, SAID OUT LOUD (owner, 2026-08-29: «action for new CTA i
+  // will next now dummy button only»). It has no destination yet — the audit page
+  // does not exist, and `href` deliberately leads nowhere. An invented address
+  // would look functional and drop the visitor into a 404.
+  { kind: 'cta', href: '#', label: 'Get a free audit' },
   {
     kind: 'cards',
     badge: 'Architecture',
@@ -235,6 +230,10 @@ export const en: HomeCell = {
     {
       q: 'What if I need more than this?',
       a: 'Your main tool is your own — Claude Code, Codex or another — and it runs on your own machine. The project scales far: the skeleton is cut for millions of lines and stays efficient. And if you need a conceptual change to the architecture at the control-panel level, or building the application is still hard, send a request to admin@fractera.ai and a developer will get in touch and offer a solution.',
+    },
+    {
+      q: 'I already have a site — can I move it to Fractera?',
+      a: 'Yes, and there is a separate working mode for it — «Migration». You name the source: a repository address or a folder on your own machine. From there the agent READS the foreign code as a description rather than running it — capabilities move across, files do not, so a broken or hostile dependency has no way to ride along. The first artefact is the intent tree: what your project becomes on this architecture. Then the capability table, each line ticked off with a proof, and a queue of steps born from the reading rather than from generalities. It all starts with four decisions — the type of application, whether it needs authorization, whether it needs role-based access, and which roles: the answer relays the skeleton rather than edits a page, which is why it is asked before the first line. If you want to know what this means in your case — [get a free audit](#).',
     },
   ],
 }

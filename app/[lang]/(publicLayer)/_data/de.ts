@@ -74,63 +74,6 @@ export const de: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Erste Schritte',
-    title: 'Wie Sie starten',
-    note: 'Alles Folgende ist bereits installiert — Sie schalten es ein, Sie bauen es nicht. Links der Weg; rechts das, was Ihnen erspart, ihn zweimal zu gehen.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Sieben Schritte vom leeren Server' },
-          { kind: 'p', text: 'Starten Sie den [Installations-Roboter](https://www.fractera.ai/deployments/vps), um dieses Projekt zu bekommen.' },
-          {
-            kind: 'olist',
-            items: [
-          'Öffnen Sie das Kontrollzentrum — alles zu diesem Server wird dort konfiguriert. [Kontrollzentrum]({admin}/{lang})',
-          'Wählen Sie die Sprachen, in denen Ihre Anwendung ausgeliefert wird. [Sprachen]({admin}/{lang}/languages)',
-          'Beschreiben Sie Ihr Projekt in den Einstellungen: Name, Beschreibung, Logo, SEO. [App-Einstellungen]({admin}/{lang}/app-settings)',
-          'Verbinden Sie GitHub und übertragen Sie den Server-Code in Ihr Repository. [GitHub]({admin}/{lang}/github)',
-          'Klonen Sie dieses Repository auf Ihre eigene Maschine, entwickeln Sie dort und pushen Sie zurück.',
-          'Übertragen Sie die Umgebungsdatei `.env.local` auf Ihren Rechner — Git transportiert sie niemals, und ohne sie startet die lokale Kopie nicht. [Umgebungsvariablen]({admin}/{lang}/env)',
-          'Drücken Sie Deploy im Panel — der Server holt Ihren Commit und baut sich selbst neu auf. [Deployments]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Empfohlen vor dem Start' },
-          { kind: 'p', text: 'Nichts davon blockiert etwas. Alle drei ersparen Nacharbeit.' },
-          {
-            kind: 'list',
-            items: [
-              '**Ein OpenAI-Schlüssel.** Ohne ihn stellt das Quiz keine Fragen, und ohne Fälle weigert sich der Programmier-Agent zu bauen. Die Website läuft trotzdem — leer bleiben nur die Vektorsuche und der Wissensgraph. Einmal eingegeben; die Kosten gehen direkt an Ihren Modellanbieter. [OpenAI-Schlüssel]({admin}/{lang}/openai)',
-              '**Eine eigene Domain.** Unter einer Zahlenadresse gibt es weder Zertifikat noch installierbare App — der Browser gewährt beides nur über eine sichere Verbindung. Ein späterer Umzug ändert jede Seitenadresse, vor der Indexierung ist er billiger. [Domain]({admin}/{lang}/domain)',
-              '**Claude-Erweiterung für Chrome.** Ohne sie sieht der Agent nur den Quelltext: Konsolenfehler, das Verhalten ohne JavaScript und das fertige Aussehen der Seite stehen nirgendwo im Code. Mit ihr öffnet er die Seite selbst und repariert nach Tatsachen statt nach Vermutung. [Entwicklungswerkzeuge]({admin}/{lang}/dev-tools)',
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Vor jedem Code',
-    title: 'Quiz — sieben Fragen statt einer leeren Seite',
-    note: 'Der teuerste Fehler eines Projekts passiert vor der ersten Codezeile: Es wird das Falsche gebaut. Nicht durch schlechtes Bauen, sondern weil «wo fange ich an» allein schwer zu beantworten ist. Quiz macht daraus ein Gespräch: Sie antworten, das Modell fragt weiter, und daraus wächst die Liste der Szenarien, aus der das Projekt dann gebaut wird.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'Der Keim' }, { kind: 'p', text: 'Sieben kurze Fragen: was das Produkt ist, für wen es ist, was eine Person davon mitnehmen soll. Antworten Sie in eigenen Worten — Diktat funktioniert. Alles Weitere wächst von hier aus, daher ergibt ein paar Sätze ein deutlich besseres Ergebnis als ein paar Wörter.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Das Gespräch' }, { kind: 'p', text: 'Danach eine Frage nach der anderen, in Ihrer Sprache. Es gibt ein Auto-Quiz: Das Modell stellt fünf neue Fragen und beantwortet sie selbst, um die Beschreibung zu vertiefen — aber alles, was es in Ihrem Namen erfunden hat, ist mit «Annahme» markiert, und Sie korrigieren es. Eine als Tatsache ausgegebene Vermutung würde später in den fertigen Szenarien auftauchen.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Die Szenarien' }, { kind: 'p', text: 'Das Gespräch wird zu nummerierten Fällen zusammengefasst: wer kommt, was er tut, was am Ende wahr sein muss. Sie lesen und bestätigen jeden einzeln. Ein ungelesener Fall bleibt eine Vermutung des Modells.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'Und das ist kein Rat, sondern eine Produktregel: Solange auch nur ein Fall unbestätigt ist, hält das Panel den Alarm aufrecht und der Coding-Agent weigert sich zu bauen. Auf einer ungelesenen Vermutung zu bauen kostet mehr, als gar nicht zu bauen.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Gratis holen und skalieren' },
   {
     kind: 'cards',

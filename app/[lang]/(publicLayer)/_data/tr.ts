@@ -74,63 +74,6 @@ export const tr: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Başlangıç',
-    title: 'Nasıl başlanır',
-    note: 'Aşağıdakilerin tamamı zaten kurulu — inşa etmiyor, açıyorsunuz. Solda yol; sağda onu iki kez yürümekten kurtaran şeyler.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Boş sunucudan yedi adım' },
-          { kind: 'p', text: 'Bu projeyi almak için [kurulum robotunu](https://www.fractera.ai/deployments/vps) başlatın.' },
-          {
-            kind: 'olist',
-            items: [
-          'Kontrol panelini açın — bu sunucuyla ilgili her şey orada yapılandırılır. [Kontrol paneli]({admin}/{lang})',
-          'Uygulamanızın sunulacağı dilleri seçin. [Diller]({admin}/{lang}/languages)',
-          'Projenizi ayarlarda tanımlayın: ad, açıklama, logo, SEO. [Uygulama ayarları]({admin}/{lang}/app-settings)',
-          'GitHub\'ı bağlayın ve sunucunun kodunu deponuza gönderin. [GitHub]({admin}/{lang}/github)',
-          'O depoyu kendi makinenize klonlayın, orada geliştirin ve geri gönderin.',
-          'Ortam dosyası `.env.local` dosyasını makinenize taşıyın — git onu asla taşımaz ve o olmadan yerel kopya başlamaz. [Ortam değişkenleri]({admin}/{lang}/env)',
-          'Paneldeki Dağıt düğmesine basın — sunucu commit\'inizi alır ve kendini yeniden inşa eder. [Dağıtımlar]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Başlamadan önce önerilir' },
-          { kind: 'p', text: 'Bunların hiçbiri bir şeyi engellemez. Üçü de yeniden yapmaktan kurtarır.' },
-          {
-            kind: 'list',
-            items: [
-              '**Bir OpenAI anahtarı.** Onsuz Quiz soru sormaz, senaryo olmadan da kodlayan ajan inşa etmeyi reddeder. Site yine de çalışır — yalnızca vektör arama ve bilgi grafiği boş kalır. Bir kez girilir; masraf doğrudan model sağlayıcınıza gider. [OpenAI anahtarı]({admin}/{lang}/openai)',
-              '**Kendi alan adınız.** Sayısal bir adreste ne sertifika ne de kurulabilir uygulama olur — tarayıcı bunları yalnızca güvenli bağlantıda verir. Sonradan taşınmak her sayfanın adresini değiştirir, bu yüzden dizine eklenmeden önce daha ucuza gelir. [Alan adı]({admin}/{lang}/domain)',
-              '**Chrome için Claude eklentisi.** O olmadan ajan yalnızca kaynak kodu görür: konsol hataları, JavaScript kapalıyken davranış ve sayfanın gerçekte nasıl göründüğü kodun hiçbir yerinde yazmaz. Onunla sayfayı kendisi açar ve tahminini değil, gerçeği düzeltir. [Geliştirme araçları]({admin}/{lang}/dev-tools)',
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Herhangi bir koddan önce',
-    title: 'Quiz — boş bir sayfa yerine yedi soru',
-    note: 'Bir projenin en pahalı hatası ilk kod satırından önce yapılır: yanlış şey inşa edilir. Kötü inşa edildiğinden değil, «nereden başlamalıyım» sorusunu tek başına yanıtlamak zor olduğundan. Quiz bunu bir sohbete dönüştürür: siz yanıtlarsınız, model sormaya devam eder ve bundan, projenin sonra inşa edileceği senaryo listesi doğar.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'Çekirdek' }, { kind: 'p', text: 'Yedi kısa soru: ürünün ne olduğu, kimin için olduğu, bir kişinin ondan ne almasi gerektiği. Kendi kelimelerinizle yanıtlayın — dikte etmek işe yarar. Sonrasındaki her şey buradan büyür, bu yüzden birkaç cümle, birkaç kelimeden belirgin biçimde daha iyi bir sonuç verir.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Sohbet' }, { kind: 'p', text: 'Sonra kendi dilinizde, sırayla bir soru. Bir oto-quiz vardır: model beş yeni soru sorar ve açıklamayı derinleştirerek bunları kendisi yanıtlar — ama sizin adınıza uydurduğu her şey «Varsayım» olarak işaretlenir ve siz düzeltirsiniz. Gerçek diye geçirilen bir tahmin, daha sonra tamamlanmış senaryoların içinde ortaya çıkardı.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Senaryolar' }, { kind: 'p', text: 'Sohbet numaralandırılmış vakalar hâlinde sentezlenir: kim gelir, ne yapar, sonunda ne doğru olmalıdır. Her birini okur ve ayrı ayrı onaylarsınız. Okunmamış bir vaka hâlâ modelin bir tahminidir.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'Ve bu bir öneri değil, bir ürün kuralıdır: tek bir vaka bile onaylanmamışken panel alarmını yanık tutar ve kodlama ajanı inşa etmeyi reddeder. Okunmamış bir tahmin üzerine inşa etmek, hiç inşa etmemekten daha pahalıya mal olur.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Ücretsiz al, ölçekle' },
   {
     kind: 'cards',

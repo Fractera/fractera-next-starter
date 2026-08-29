@@ -1,6 +1,7 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { H2 } from '@/components/ui/typography'
 import { getPageUi } from '@/lib/content/page-ui'
+import { inline } from '@/lib/content/blocks/inline'
 
 // ВОПРОСЫ И ОТВЕТЫ — последняя содержательная секция страницы.
 //
@@ -34,7 +35,12 @@ export const faq: SectionRenderer<'faq'> = (b, ctx) => {
         {b.items.map((f, i) => (
           <div key={`${ctx.key}-${i}`} className="rounded-2xl border border-border bg-muted/40 p-5">
             <dt className="text-base font-semibold text-foreground">{f.q}</dt>
-            <dd className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{f.a}</dd>
+            {/* 🔒 ОТВЕТ ПРОХОДИТ ЧЕРЕЗ `inline`, А ВОПРОС — НЕТ (2026-08-29, шаг 38).
+                Ответу нужна ссылка внутри фразы: без разбора разметки `[подпись](адрес)`
+                печаталось бы квадратными скобками прямо на странице. Вопрос — заголовок
+                пары «термин — определение», ссылка в нём разорвала бы связь, которую
+                эта разметка и существует чтобы держать. */}
+            <dd className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{inline(f.a, `${ctx.key}-${i}`)}</dd>
           </div>
         ))}
       </dl>

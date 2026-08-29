@@ -22,6 +22,15 @@ import { featureOn } from '@/config/platform-config'
 // EN-only formats ignore `lang`. The factory never reads or changes a data file.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// 🔒 В СТРУКТУРИРОВАННЫЕ ДАННЫЕ ОТВЕТ ЕДЕТ БЕЗ РАЗМЕТКИ (2026-08-29, шаг 38).
+// С этого дня ответ FAQ может нести ссылку (`sections/blocks/faq.server.tsx`
+// разбирает `[подпись](адрес)`), а `FAQPage` поисковик читает ДОСЛОВНО — и
+// напечатал бы квадратные скобки в выдаче. Снимаем разметку здесь, а не в
+// словах: словам ссылка нужна, поисковику — нет.
+function plainAnswer(text: string): string {
+  return text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
+}
+
 export type PostFormat = 'news' | 'blog' | 'document'
 
 const JSONLD_TYPE: Record<PostFormat, 'NewsArticle' | 'BlogPosting' | 'TechArticle'> = {
@@ -203,7 +212,7 @@ export function createContentPost(config: ContentPostConfig) {
             mainEntity: faq.map(f => ({
               '@type': 'Question',
               name: f.q,
-              acceptedAnswer: { '@type': 'Answer', text: f.a },
+              acceptedAnswer: { '@type': 'Answer', text: plainAnswer(f.a) },
             })),
           }]
         : []),

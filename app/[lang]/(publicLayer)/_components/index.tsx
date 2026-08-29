@@ -3,6 +3,10 @@ import { homePage, homeLead } from '../_data'
 import { meta } from '../_data/meta'
 import { PostBody } from '@/components/content-page/post-body'
 import { SecurityOrbit } from '../_widgets/static/security-orbit'
+import { StarterBanner } from './starter-banner.client'
+import { starterBannerStrings } from './starter-banner.i18n'
+import { adminUrlFromSite } from '@/lib/site-urls'
+import { getAppConfig } from '@/config/app-config'
 
 // Вход главной страницы — ТА ЖЕ ФАБРИКА, ЧТО У ПОСТА И ПРАВОВЫХ СТРАНИЦ.
 //
@@ -40,8 +44,25 @@ const page = createContentPage({
   // отдельным куском по первому нажатию или входу указателя (`swap.client.tsx`).
   // Анимация, поднятая на уровень страницы, увела бы главную в динамику и вместе
   // с ней — поисковую выдачу.
+  // 🔒 БАННЕР СТАРТОВОГО ШАБЛОНА СТОИТ В ЭТОМ СЛОТЕ ТОЛЬКО ПО МЕСТУ В ДЕРЕВЕ
+  // (шаг 38-1). Сам он `position: fixed` и рисуется поверх страницы, поэтому
+  // соседство с лентой ни на что не влияет — важно лишь, что слот исполняется
+  // на сервере и знает язык.
+  //
+  // 🔒 АДРЕС ПАНЕЛИ БЕРЁТСЯ ИЗ НАСТРОЕК, А НЕ ИЗ ОКНА БРАУЗЕРА: главная обязана
+  // отдать ссылку уже в статическом HTML. Пустой адрес — законный исход свежего
+  // сервера, и тогда баннер показывается БЕЗ ссылки: выдуманный адрес панели
+  // хуже отсутствующего (`lib/site-urls.ts`).
   afterHero: (lang: string) => (
     <>
+      <StarterBanner
+        strings={starterBannerStrings(lang)}
+        href={
+          adminUrlFromSite(getAppConfig().url)
+            ? `${adminUrlFromSite(getAppConfig().url)}/${lang}/project-start`
+            : ''
+        }
+      />
       {/* Ряд мер и ярлыки — ВЫШЕ виджетов и вне ленты, но по её ширине: метка
           data-app-column подчиняет их переключателю ширины, как и текст ниже. */}
       <div data-app-column className="px-6">

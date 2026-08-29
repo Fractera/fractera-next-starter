@@ -74,63 +74,6 @@ export const pl: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Start',
-    title: 'Jak zacząć',
-    note: 'Wszystko poniżej jest już zainstalowane — włączasz to, a nie budujesz. Po lewej droga; po prawej to, co oszczędza przejście jej dwa razy.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Siedem kroków od pustego serwera' },
-          { kind: 'p', text: 'Uruchom [robota instalacyjnego](https://www.fractera.ai/deployments/vps), aby otrzymać ten projekt.' },
-          {
-            kind: 'olist',
-            items: [
-          'Otwórz panel sterowania — wszystko o tym serwerze konfiguruje się tam. [Panel sterowania]({admin}/{lang})',
-          'Wybierz języki, w jakich Twoja aplikacja będzie dostępna. [Języki]({admin}/{lang}/languages)',
-          'Użyj ustawień, aby opisać swój projekt: nazwę, opis, logo, SEO. [Ustawienia aplikacji]({admin}/{lang}/app-settings)',
-          'Połącz GitHub i wyślij kod serwera do swojego repozytorium. [GitHub]({admin}/{lang}/github)',
-          'Sklonuj to repozytorium na własną maszynę, pracuj tam i wysyłaj zmiany z powrotem.',
-          'Przenieś plik środowiska `.env.local` na swój komputer — git nigdy go nie przewozi, a bez niego lokalna kopia się nie uruchomi. [Zmienne środowiskowe]({admin}/{lang}/env)',
-          'Naciśnij Wdróż w panelu — serwer pobiera Twój commit i sam się przebudowuje. [Wdrożenia]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Zalecane przed rozpoczęciem' },
-          { kind: 'p', text: 'Nic z tego niczego nie blokuje. Wszystkie trzy oszczędzają poprawki.' },
-          {
-            kind: 'list',
-            items: [
-              '**Klucz OpenAI.** Bez niego Quiz nie zadaje pytań, a bez przypadków agent programujący odmawia budowania. Strona nadal działa — puste zostają tylko wyszukiwanie wektorowe i graf wiedzy. Wpisywany raz; koszt idzie wprost do twojego dostawcy modelu. [Klucz OpenAI]({admin}/{lang}/openai)',
-              '**Własna domena.** Pod adresem liczbowym nie ma ani certyfikatu, ani instalowalnej aplikacji — przeglądarka daje je tylko po bezpiecznym połączeniu. Późniejsza przeprowadzka zmienia adres każdej strony, więc taniej zrobić to przed indeksacją. [Domena]({admin}/{lang}/domain)',
-              '**Rozszerzenie Claude dla Chrome.** Bez niego agent widzi tylko kod: błędów konsoli, zachowania bez JavaScriptu ani rzeczywistego wyglądu gotowej strony nie ma nigdzie w źródłach. Z nim sam otwiera stronę i naprawia to, co jest, a nie to, co zgadł. [Narzędzia programistyczne]({admin}/{lang}/dev-tools)',
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Przed jakimkolwiek kodem',
-    title: 'Quiz — siedem pytań zamiast pustej strony',
-    note: 'Najdroższy błąd projektu popełnia się przed pierwszą linią kodu: buduje się nie to, co trzeba. Nie przez złe budowanie, ale dlatego, że «od czego zacząć» trudno odpowiedzieć samemu. Quiz zamienia to w rozmowę: Ty odpowiadasz, model pyta dalej, i z tego wyrasta lista scenariuszy, z której potem buduje się projekt.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'Zalążek' }, { kind: 'p', text: 'Siedem krótkich pytań: czym jest produkt, dla kogo jest, co osoba powinna z niego wynieść. Odpowiadaj własnymi słowami — dyktowanie działa. Wszystko dalej wyrasta stąd, więc kilka zdań daje wyraźnie lepszy wynik niż kilka słów.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Rozmowa' }, { kind: 'p', text: 'Potem po jednym pytaniu naraz, w Twoim języku. Jest autoquiz: model zadaje pięć nowych pytań i sam na nie odpowiada, pogłębiając opis — ale wszystko, co wymyślił w Twoim imieniu, jest oznaczone jako «Założenie», a Ty to poprawiasz. Domysł podany za fakt wypłynąłby później, w gotowych scenariuszach.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Scenariusze' }, { kind: 'p', text: 'Rozmowa jest syntetyzowana w ponumerowane przypadki: kto przychodzi, co robi, co musi być prawdą na końcu. Czytasz i zatwierdzasz każdy osobno. Nieprzeczytany przypadek pozostaje domysłem modelu.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'I to nie jest rada, lecz reguła produktu: dopóki choć jeden przypadek jest niezatwierdzony, panel utrzymuje włączony alarm, a agent programujący odmawia budowy. Budowanie na nieprzeczytanym domyśle kosztuje więcej niż niebudowanie wcale.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Weź za darmo i skaluj' },
   {
     kind: 'cards',

@@ -74,63 +74,6 @@ export const fr: Partial<HomeCell> = {
   // Раздел описывает НАМЕРЕНИЕ, и это сказано в нём прямо: сегодня шаги, из
   // которых миграция состоит, ещё строятся. Раздел, обещающий готовую кнопку,
   // стоит дороже отсутствующего — за ним приходят и не находят.
-  {
-    kind: 'cards',
-    badge: 'Démarrage',
-    title: 'Comment commencer',
-    note: 'Tout ce qui suit est déjà installé — vous l\'activez, vous ne le construisez pas. À gauche le chemin ; à droite ce qui évite de le parcourir deux fois.',
-    cols: 2,
-    children: [
-      {
-        kind: 'card',
-        tone: 'data',
-        children: [
-          { kind: 'h3', text: 'Sept étapes depuis un serveur vide' },
-          { kind: 'p', text: 'Lancez le [robot installateur](https://www.fractera.ai/deployments/vps) pour obtenir ce projet.' },
-          {
-            kind: 'olist',
-            items: [
-          'Ouvrez le panneau de contrôle — tout ce qui concerne ce serveur s\'y configure. [Panneau de contrôle]({admin}/{lang})',
-          'Choisissez les langues dans lesquelles votre application sera livrée. [Langues]({admin}/{lang}/languages)',
-          'Utilisez les réglages pour décrire votre projet : nom, description, logo, SEO. [Réglages de l\'app]({admin}/{lang}/app-settings)',
-          'Connectez GitHub et envoyez le code du serveur vers votre dépôt. [GitHub]({admin}/{lang}/github)',
-          'Clonez ce dépôt sur votre propre machine, développez-y, puis renvoyez vos changements.',
-          "Transférez le fichier d'environnement `.env.local` sur votre machine — git ne le transporte jamais, et sans lui la copie locale ne démarre pas. [Variables d'environnement]({admin}/{lang}/env)",
-          'Cliquez sur Déployer dans le panneau — le serveur récupère votre commit et se reconstruit lui-même. [Déploiements]({admin}/{lang}/deployments)',
-            ],
-          },
-        ],
-      },
-      {
-        kind: 'card',
-        tone: 'access',
-        children: [
-          { kind: 'h3', text: 'Recommandé avant de commencer' },
-          { kind: 'p', text: 'Rien de tout cela ne bloque quoi que ce soit. Les trois évitent de refaire le travail.' },
-          {
-            kind: 'list',
-            items: [
-              '**Une clé OpenAI.** Sans elle, le Quiz ne pose aucune question, et sans cas l\'agent programmeur refuse de construire. Le site fonctionne quand même — seuls la recherche vectorielle et le graphe de connaissances restent vides. Saisie une fois ; la dépense va directement à votre fournisseur de modèle. [Clé OpenAI]({admin}/{lang}/openai)',
-              '**Votre propre domaine.** Sur une adresse numérique, il n\'y a ni certificat ni application installable — le navigateur ne les accorde que sur connexion sécurisée. Déménager plus tard change l\'adresse de chaque page : c\'est moins cher avant l\'indexation. [Domaine]({admin}/{lang}/domain)',
-              "**Extension Claude pour Chrome.** Sans elle, l'agent ne voit que le code : les erreurs de console, le comportement sans JavaScript et l'aspect réel de la page ne sont écrits nulle part. Avec elle, il ouvre la page lui-même et corrige ce qui est là, pas ce qu'il a supposé. [Outils de développement]({admin}/{lang}/dev-tools)",
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kind: 'cards',
-    badge: 'Avant tout code',
-    title: 'Quiz — sept questions au lieu d\'une page blanche',
-    note: 'L\'erreur la plus coûteuse d\'un projet se commet avant la première ligne de code : on construit la mauvaise chose. Pas par mauvaise construction, mais parce que « par où commencer » est difficile à répondre seul. Quiz transforme cela en conversation : vous répondez, le modèle continue à poser des questions, et il en sort la liste des scénarios avec laquelle le projet est ensuite construit.',
-    children: [
-      { kind: 'card', children: [{ kind: 'h3', text: 'La graine' }, { kind: 'p', text: 'Sept questions courtes : ce qu\'est le produit, à qui il s\'adresse, ce qu\'une personne doit en retirer. Répondez avec vos propres mots — la dictée fonctionne. Tout ce qui suit part de là, donc quelques phrases donnent un résultat nettement meilleur que quelques mots.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'La conversation' }, { kind: 'p', text: 'Ensuite, une question à la fois, dans votre langue. Il existe un auto-quiz : le modèle pose cinq nouvelles questions et y répond lui-même, approfondissant la description — mais tout ce qu\'il a inventé en votre nom est marqué « Hypothèse », et vous le corrigez. Une supposition passée pour un fait réapparaîtrait plus tard, dans les scénarios finis.' }] },
-      { kind: 'card', children: [{ kind: 'h3', text: 'Les scénarios' }, { kind: 'p', text: 'La conversation est synthétisée en cas numérotés : qui arrive, ce qu\'il fait, ce qui doit être vrai à la fin. Vous les lisez et les confirmez un par un. Un cas non lu reste une supposition du modèle.' }] },
-    ],
-  },
-  { kind: 'statement', text: 'Et ceci n\'est pas un conseil mais une règle du produit : tant qu\'un seul cas reste non confirmé, le panneau garde son alarme allumée et l\'agent codeur refuse de construire. Construire sur une supposition non lue coûte plus cher que ne rien construire du tout.' },
   { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: "Prenez-le gratuitement, passez à l'échelle" },
   {
     kind: 'cards',

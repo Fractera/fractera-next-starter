@@ -13,7 +13,7 @@ import { StaticImage } from '@/components/media/static-image.server'
 // 🔒 ЗАГОЛОВКА ЗДЕСЬ НЕТ: его рисует фабрика страницы — одна на посты, правовые
 // страницы и главную. Пока у главной был свой вход, заголовок жил здесь; с
 // переходом на общую фабрику он стал бы вторым H1 на странице.
-export const hero: SectionRenderer<'hero'> = (b, { key: k }) => {
+export const heroBadge: SectionRenderer<'heroBadge'> = (b, { key: k }) => {
   const logo = getLogoPath(getAppConfig())
   // Ни знака, ни лейбла — рисовать нечего, и пустой контейнер лучше не оставлять.
   if (!logo && !b.pill) return null

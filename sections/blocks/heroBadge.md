@@ -1,4 +1,4 @@
-# hero — the mark and the eyebrow above the title
+# heroBadge — the mark and the eyebrow above the title
 
 **Type:** Hero (1). The quietest of the two hero kinds: it carries no words of its own beyond one short
 label.

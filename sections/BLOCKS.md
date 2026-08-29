@@ -28,7 +28,7 @@
 | `founder` | Testimonials and social proof | the owner's quote, signed from settings | text: string | [карточка](blocks/founder.md) |
 | `columns` | Page material | — | children: Block[]; cols?: 2 \| 3 | — |
 | `group` | Page material | — | children: Block[] | — |
-| `hero` | Hero | the mark and the eyebrow above the title | pill?: string | [карточка](blocks/hero.md) |
+| `heroBadge` | Hero | the mark and the eyebrow above the title | pill?: string | [карточка](blocks/heroBadge.md) |
 | `heroSplit` | Hero | the landing first screen: words left, picture right | — | [карточка](blocks/heroSplit.md) |
 | `badges` | Benefits and value | a row of capability labels | items: BadgeItem[] | [карточка](blocks/badges.md) |
 | `panel` | Page material | — | tone?: 'plain' \| 'warn' \| 'accent'; eyebrow?: string; title: string; children: Block[] | — |

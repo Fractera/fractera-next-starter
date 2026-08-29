@@ -230,9 +230,9 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
-    kind: 'hero',
+    kind: 'heroBadge',
     when: 'The project mark and the eyebrow above the H1. The mark comes from settings, never from content; the H1 itself is drawn by the page factory.',
-    blocks: [{ kind: 'hero', pill: 'Eyebrow above the title' }],
+    blocks: [{ kind: 'heroBadge', pill: 'Eyebrow above the title' }],
   },
   {
     kind: 'heroSplit',

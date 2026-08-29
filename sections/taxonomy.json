@@ -190,7 +190,7 @@
     }
   ],
   "kinds": {
-    "hero": {
+    "heroBadge": {
       "id": "0001",
       "type": "hero",
       "shape": "hero"

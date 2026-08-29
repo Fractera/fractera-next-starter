@@ -29,6 +29,7 @@ export function LayerMenu({
   active,
   adminUrl,
   ui,
+  subItems,
 }: {
   lang: string
   /** Открытая группа — её пункт помечен и не является ссылкой. */
@@ -40,6 +41,17 @@ export function LayerMenu({
    */
   adminUrl: string | null
   ui: ArchitectLayerUi
+  /**
+   * Разделы ОТКРЫТОЙ группы — вложенный второй уровень меню (39-2, 2026-08-29).
+   *
+   * 🔒 ПРИХОДЯТ СВЕРХУ, А НЕ ВЫЧИСЛЯЮТСЯ ЗДЕСЬ. Меню рисует, а не решает: знать,
+   * какие разделы есть у группы и какой из них открыт, — дело самой группы. Внеси
+   * это знание сюда — и меню начнёт импортировать карту каждой группы по очереди,
+   * а страница потеряет право показать свой список иначе.
+   *
+   * Пусто или не передано — у группы второго уровня нет, и он не рисуется.
+   */
+  subItems?: readonly { id: string; href: string; label: string; active: boolean }[]
 }) {
   return (
     // 🔒 ОДНО МЕНЮ, ДВА ПОЛОЖЕНИЯ (заказ владельца 2026-08-28): на широком экране
@@ -103,6 +115,43 @@ export function LayerMenu({
                 >
                   {label}
                 </Link>
+                {/* 🔒 ВЛОЖЕННЫЙ СПИСОК — ТОЛЬКО У ОТКРЫТОЙ ГРУППЫ (39-2, 2026-08-29).
+                    Владелец описал экран так: «слева у нас пять разделов, последний
+                    из них называется блок». Разделы принадлежат группе, поэтому и
+                    показываются, пока человек в ней: развернув их у всех десяти
+                    групп сразу, мы получили бы список на полсотни строк, в котором
+                    сами группы перестают читаться.
+
+                    🔒 ВТОРОГО ЛЕВОГО СТОЛБЦА НЕ ЗАВЕДЕНО НАМЕРЕННО. Два меню рядом
+                    читаются как две навигации, и человек перестаёт понимать, какое
+                    из них где он находится, — это уже было сказано о вложении
+                    подвкладок в страницу настроек. Здесь тот же ответ: одно меню,
+                    два уровня, и второй уровень виден там, где он существует.
+
+                    Отступ рисует ЛИНИЯ, а не пустота: она показывает границу
+                    вложенности на телефоне, где ряд горизонтальный и сдвиг влево
+                    ничего не значил бы. */}
+                {isActive && subItems && subItems.length > 0 ? (
+                  <ul className="mt-1 flex gap-1 overflow-x-auto md:ml-3 md:flex-col md:overflow-x-visible md:border-l md:border-border md:pl-2">
+                    {subItems.map(item => (
+                      <li key={item.id} className="shrink-0 md:shrink">
+                        <Link
+                          href={item.href}
+                          data-design-section={item.id}
+                          aria-current={item.active ? "page" : undefined}
+                          className={
+                            "block whitespace-nowrap rounded-md px-3 py-1.5 text-[length:var(--fs-small)] transition-colors md:truncate" +
+                            (item.active
+                              ? " bg-muted font-medium text-foreground"
+                              : " text-muted-foreground hover:bg-muted/60 hover:text-foreground")
+                          }
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </li>
             )
           }

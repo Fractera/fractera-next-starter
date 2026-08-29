@@ -1,4 +1,4 @@
-import { AlertTriangle, Info } from "lucide-react"
+import { AlertTriangle, Info, ThumbsUp } from "lucide-react"
 import { P, Small } from "@/components/ui/typography"
 
 // ЦВЕТНОЙ КОНТЕЙНЕР НАД УПРАВЛЕНИЕМ (31-19, 2026-08-29; второй тон — 31-20).
@@ -19,7 +19,7 @@ import { P, Small } from "@/components/ui/typography"
 // способности ещё нет, и блок исчезнет, когда она появится. Два одинаково оранжевых
 // блока подряд человек читает как один длинный текст и второй пропускает; разные
 // жанры обязаны выглядеть по-разному, иначе тот, что временный, не заметят.
-export type NoteTone = "advice" | "warning"
+export type NoteTone = "advice" | "warning" | "recommended"
 
 const TONE: Record<NoteTone, { box: string; icon: string; title: string; text: string }> = {
   advice: {
@@ -27,6 +27,17 @@ const TONE: Record<NoteTone, { box: string; icon: string; title: string; text: s
     icon: "text-amber-600 dark:text-amber-400",
     title: "text-amber-900 dark:text-amber-100",
     text: "text-amber-800 dark:text-amber-200",
+  },
+  // 🔒 ТРЕТИЙ ТОН — «РЕКОМЕНДОВАНО» (решение владельца 2026-08-29). Он не громче
+  // и не тише двух других: у него ДРУГОЙ жанр. `advice` предупреждает о цене,
+  // `warning` сообщает о состоянии системы, а этот СОВЕТУЕТ — и обязан выглядеть
+  // приглашением, а не предостережением. Оранжевое приглашение человек читает как
+  // «осторожно», и рекомендация начинает отпугивать от того, к чему зовёт.
+  recommended: {
+    box: "border-emerald-500/40 bg-emerald-500/10",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    title: "text-emerald-900 dark:text-emerald-100",
+    text: "text-emerald-800 dark:text-emerald-200",
   },
   warning: {
     box: "border-destructive/40 bg-destructive/10",
@@ -49,7 +60,7 @@ export function AdviceNote({
   tone?: NoteTone
 }) {
   const c = TONE[tone]
-  const Icon = tone === "warning" ? Info : AlertTriangle
+  const Icon = tone === "warning" ? Info : tone === "recommended" ? ThumbsUp : AlertTriangle
   return (
     <div
       data-advice={probe}

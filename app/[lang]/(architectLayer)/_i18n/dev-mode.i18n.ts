@@ -38,6 +38,14 @@ export type ModeWords = {
    */
   advice?: string
   /**
+   * Зелёная карточка «рекомендовано» (решение владельца 2026-08-29).
+   *
+   * 🔒 ОНА ЕСТЬ РОВНО У ОДНОГО РЕЖИМА, И В ЭТОМ ЕЁ СМЫСЛ. Рекомендация, стоящая
+   * у двух режимов из четырёх, перестаёт быть рекомендацией и становится
+   * украшением карточки.
+   */
+  recommend?: string
+  /**
    * Дверь режима: куда идти дальше, когда он выбран.
    *
    * 🔒 ЗАПИСЬ НА РЕЖИМЕ, А НЕ ВЕТКА В КОДЕ — так же, как в панели. Режим без
@@ -70,6 +78,7 @@ export type DevModeUi = {
   current: string
   alpha: string
   adviceTitle: string
+  recommendTitle: string
   /** Обвязка списка продуктов на вкладке кейсов (34-E). */
   products: { title: string; hint: string; empty: string; emptyHint: string; create: string; creating: string; created: string; namePlaceholder: string; phase: string; stage: string }
   choose: string
@@ -102,6 +111,7 @@ const en: DevModeUi = {
   current: "current",
   alpha: "alpha testing",
   adviceTitle: "Before you choose",
+  recommendTitle: "The recommended mode",
   products: {
     title: "Products of this project",
     hint: "A product is the unit of work: one server carries several, and each lives at its own pace. The id (p1, p2) means nothing and never changes — paths hang on it.",
@@ -133,6 +143,8 @@ const en: DevModeUi = {
       body: "The agent breaks the task into numbered steps with sub-steps, and works the queue. What is planned survives the end of a session, because it is written down before it is executed.",
       when: "Take it when the work is longer than one conversation.",
       requires: ["recommended for Opus 5"],
+      recommend:
+        "This is the recommended way to build here. The mode brings its own instructions and skills: the agent plans the work before touching code, reuses the patterns this project has already grown instead of inventing them again, and — if the session breaks or the context runs out — picks the work up from the same place, without losing what was decided.",
       advice:
         "This is the recommended way of working with the Fractera architecture. The project is built in numbered steps, each written down before it is done — so the work survives the end of a session, and you always see where it stands.",
     },
@@ -189,6 +201,7 @@ const ru: DevModeUi = {
   current: "сейчас",
   alpha: "альфа-тестирование",
   adviceTitle: "Прежде чем выбрать",
+  recommendTitle: "Рекомендованный режим разработки",
   products: {
     title: "Продукты этого проекта",
     hint: "Продукт — единица работы: один сервер несёт несколько, и каждый живёт своим темпом. Идентификатор (p1, p2) не значит ничего и не меняется никогда — на нём висят пути.",
@@ -220,6 +233,8 @@ const ru: DevModeUi = {
       body: "Агент раскладывает задачу на нумерованные шаги с подшагами и работает очередь. Запланированное переживает конец сессии, потому что записано до того, как исполнено.",
       when: "Берите, когда работа длиннее одного разговора.",
       requires: ["рекомендуется для модели Opus 5"],
+      recommend:
+        "Это рекомендованный режим разработки. Он включает свои инструкции и навыки: агент планирует работу до того, как трогает код, сам использует ранее созданные в этом проекте паттерны вместо того, чтобы изобретать их заново, и при обрыве сессии или конце контекста продолжает с того же самого места — без потери данных и принятых решений.",
       advice:
         "Это рекомендованный режим работы с архитектурой Fractera. Проект строится нумерованными шагами, и каждый записан до того, как исполнен, — поэтому работа переживает конец сессии, и всегда видно, на чём она стоит.",
     },

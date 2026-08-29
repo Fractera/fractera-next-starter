@@ -127,6 +127,14 @@ export function ModeCard({
           в этом режиме, и прочитать его надо до выбора: под кнопкой он стал бы
           сноской к уже принятому решению. Контейнер общий (`AdviceNote`, тон
           `advice`) — тот же жанр, что «добавляйте по одному слоту». */}
+      {/* 🔒 ЗЕЛЁНАЯ КАРТОЧКА СТОИТ ПЕРВОЙ, ВЫШЕ ОРАНЖЕВОЙ. Порядок отвечает на два
+          разных вопроса по очереди: сначала «стоит ли брать этот режим», потом
+          «как в нём работать». Обратный порядок начинал бы с оговорок к выбору,
+          которого человек ещё не сделал. */}
+      {words.recommend && (
+        <AdviceNote tone="recommended" probe={`mode-recommend-${mode}`} title={ui.recommendTitle} text={words.recommend} />
+      )}
+
       {words.advice && <AdviceNote probe={`mode-advice-${mode}`} title={ui.adviceTitle} text={words.advice} />}
 
       <P className="max-w-3xl text-[length:var(--fs-body)]">{words.body}</P>

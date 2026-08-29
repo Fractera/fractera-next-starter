@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { DesignWorkbench, DesignPreview } from "./design-workbench"
 import type { DesignUi } from "../_i18n/design.i18n"
 
 // ФОРМЫ И ВОЗДУХ (39-3, 2026-08-29).
@@ -61,7 +62,7 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
     }
   }
 
-  return (
+  const controls = (
     <div className="flex flex-col gap-5">
       <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.intro}</p>
 
@@ -141,16 +142,6 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
         />
       </section>
 
-      <section className="rounded-lg border border-border p-4">
-        <p className="text-[length:var(--fs-small)] text-muted-foreground">{ui.preview}</p>
-        <div
-          className="mt-2 border border-border bg-muted/40 p-4"
-          style={{ borderRadius: radius, borderWidth: border, padding: `calc(1rem * ${space})` }}
-        >
-          <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.previewCard}</p>
-          <p className="mt-1 text-[length:var(--fs-small)] text-muted-foreground">{ui.previewBody}</p>
-        </div>
-      </section>
 
       <div className="flex items-center gap-3">
         <button
@@ -169,4 +160,21 @@ export function DesignShape({ initial, ui }: { initial: State; ui: DesignUi["sha
       </div>
     </div>
   )
+
+  // 🔒 ПРЕДПРОСМОТР СПРАВА И ЛИПНЕТ — та же причина, что у шкалы: четыре рычага
+  // формы влияют друг на друга, и увидеть их вместе можно только рядом.
+  const preview = (
+    <DesignPreview label={ui.preview}>
+      <div
+        data-design-preview="shape"
+        className="border border-border bg-muted/40"
+        style={{ borderRadius: radius, borderWidth: border, padding: `calc(1rem * ${space})` }}
+      >
+        <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.previewCard}</p>
+        <p className="mt-1 text-[length:var(--fs-small)] text-muted-foreground">{ui.previewBody}</p>
+      </div>
+    </DesignPreview>
+  )
+
+  return <DesignWorkbench controls={controls} preview={preview} />
 }

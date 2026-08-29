@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { DesignWorkbench, DesignPreview } from "./design-workbench"
 import type { DesignUi } from "../_i18n/design.i18n"
 
 // ШКАЛА ТЕКСТА (39-3, 2026-08-29). Два числа на весь набор.
@@ -60,7 +61,7 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
     }
   }
 
-  return (
+  const controls = (
     <div className="flex flex-col gap-5">
       <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{ui.intro}</p>
 
@@ -124,18 +125,6 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
         </div>
       </section>
 
-      <section className="rounded-lg border border-border p-4">
-        <p className="text-[length:var(--fs-small)] text-muted-foreground">{ui.preview}</p>
-        <p
-          className="mt-2 font-serif font-bold tracking-tight text-foreground"
-          style={{ fontSize: `calc(1.875rem * ${scale})`, lineHeight: 1.15 }}
-        >
-          {ui.previewH1}
-        </p>
-        <p className="mt-2 text-muted-foreground" style={{ fontSize: `calc(1rem * ${scale})`, lineHeight: leading }}>
-          {ui.previewBody}
-        </p>
-      </section>
 
       <div className="flex items-center gap-3">
         <button
@@ -154,4 +143,28 @@ export function DesignType({ initial, ui }: { initial: State; ui: DesignUi["type
       </div>
     </div>
   )
+
+  // 🔒 ПРЕДПРОСМОТР СПРАВА И ЛИПНЕТ. Шкалу крутят числом, а решение принимают
+  // глазами: пока человек ищет нужное значение, ответ обязан оставаться в поле
+  // зрения. Внутри левой колонки он уезжал вверх ровно в момент выбора.
+  const preview = (
+    <DesignPreview label={ui.preview}>
+      <div data-design-preview="type">
+        <p
+          className="font-serif font-bold tracking-tight text-foreground"
+          style={{ fontSize: `calc(1.875rem * ${scale})`, lineHeight: 1.15 }}
+        >
+          {ui.previewH1}
+        </p>
+        <p
+          className="mt-2 text-muted-foreground"
+          style={{ fontSize: `calc(1rem * ${scale})`, lineHeight: leading }}
+        >
+          {ui.previewBody}
+        </p>
+      </div>
+    </DesignPreview>
+  )
+
+  return <DesignWorkbench controls={controls} preview={preview} />
 }

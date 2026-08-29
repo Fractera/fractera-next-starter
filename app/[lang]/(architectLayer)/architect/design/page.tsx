@@ -9,6 +9,7 @@ import { DesignType } from "../../_components/design-type.client"
 import { DesignShape } from "../../_components/design-shape.client"
 import { DesignColors } from "../../_components/design-colors.client"
 import { BlocksCatalogue } from "../../_components/blocks-catalogue"
+import { HelpDetails } from "../../_components/help-details"
 import { DesignTools } from "../../_components/design-tools.client"
 import { featureOn } from "@/config/platform-config"
 import { readRawDesignConfig } from "@/lib/architect/design-config-writer"
@@ -88,6 +89,45 @@ export default async function DesignPage({
                 обязано показываться в том положении, в каком возможность реально
                 работает, — иначе страница спорит с сайтом. */}
             {active === "tools" && <DesignTools initial={featureOn("viewportBadge")} ui={ui} />}
+
+            {/* 🔒 СПРАВКА ЖИВЁТ НА СТРАНИЦЕ, А НЕ ВНУТРИ ОСТРОВКА (перенесено из
+                панели, шаг 42). Она серверная и раскрывается без скриптов; уведи
+                её в островок — и три абзаца текста уедут в браузер вместе с
+                состоянием формы, которое к ним отношения не имеет.
+
+                🔒 У «Инструментов» справки нет намеренно: выключатель объяснён
+                своей же подписью, и раскрывашка под ним обещала бы то, чего в ней
+                не будет. */}
+            {active === "fonts" && (
+              <HelpDetails label={ui.fonts.helpLabel}>
+                <p><strong>{ui.fonts.helpWhereTitle}</strong> {ui.fonts.helpWhere}</p>
+                <p><strong>{ui.fonts.helpHowTitle}</strong> {ui.fonts.helpHow}</p>
+                <p><strong>{ui.fonts.helpPrivacyTitle}</strong> {ui.fonts.helpPrivacy}</p>
+                <p><strong>{ui.fonts.helpAlphabetTitle}</strong> {ui.fonts.helpAlphabet}</p>
+                <p><strong>{ui.fonts.helpSystemTitle}</strong> {ui.fonts.helpSystem}</p>
+              </HelpDetails>
+            )}
+            {active === "type" && (
+              <HelpDetails label={ui.type.helpLabel}>
+                <p><strong>{ui.type.helpWhyTitle}</strong> {ui.type.helpWhy}</p>
+                <p><strong>{ui.type.helpRangeTitle}</strong> {ui.type.helpRange}</p>
+                <p><strong>{ui.type.helpLiveTitle}</strong> {ui.type.helpLive}</p>
+              </HelpDetails>
+            )}
+            {active === "shape" && (
+              <HelpDetails label={ui.shape.helpLabel}>
+                <p><strong>{ui.shape.helpRadiusTitle}</strong> {ui.shape.helpRadius}</p>
+                <p><strong>{ui.shape.helpSpaceTitle}</strong> {ui.shape.helpSpace}</p>
+                <p><strong>{ui.shape.helpWidthTitle}</strong> {ui.shape.helpWidth}</p>
+              </HelpDetails>
+            )}
+            {active === "colors" && (
+              <HelpDetails label={ui.colors.helpLabel}>
+                <p><strong>{ui.colors.helpPairTitle}</strong> {ui.colors.helpPair}</p>
+                <p><strong>{ui.colors.helpThemesTitle}</strong> {ui.colors.helpThemes}</p>
+                <p><strong>{ui.colors.helpContrastTitle}</strong> {ui.colors.helpContrast}</p>
+              </HelpDetails>
+            )}
           </div>
         </div>
       </div>

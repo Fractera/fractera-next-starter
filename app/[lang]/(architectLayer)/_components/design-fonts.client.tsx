@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { DesignWorkbench, DesignPreview } from "./design-workbench"
 import { FONT_CATALOGUE, isSystemFont, type FontEntry } from "@/lib/design/font-catalogue"
 import type { DesignUi } from "../_i18n/design.i18n"
 
@@ -60,7 +61,7 @@ export function DesignFonts({ initial, ui }: { initial: State; ui: DesignUi["fon
     }
   }
 
-  return (
+  const controls = (
     <div className="flex flex-col gap-5">
       {/* Настоящие шрифты в образце: витрина, показывающая выбор чужим шрифтом,
           не показывает ничего. */}
@@ -143,4 +144,36 @@ export function DesignFonts({ initial, ui }: { initial: State; ui: DesignUi["fon
       </div>
     </div>
   )
+
+  // 🔒 ПРЕДПРОСМОТР ПОКАЗЫВАЕТ ТЕКСТ ВЫБРАННЫМИ ШРИФТАМИ, А НЕ ИХ ИМЕНА.
+  // Название семейства не отвечает на вопрос, ради которого человек сюда пришёл:
+  // как это будет читаться. Отвечает только сам текст, набранный этим шрифтом.
+  const preview = (
+    <>
+      <DesignPreview label={ui.preview}>
+        <div data-design-preview="fonts" className="flex flex-col gap-3">
+          <p
+            className="text-[length:var(--fs-h3)] font-bold leading-tight text-foreground"
+            style={{ fontFamily: state.heading?.family }}
+          >
+            {ui.previewText}
+          </p>
+          <p
+            className="text-[length:var(--fs-body)] leading-relaxed text-muted-foreground"
+            style={{ fontFamily: state.body?.family }}
+          >
+            {ui.previewText}
+          </p>
+          <p
+            className="text-[length:var(--fs-small)] text-muted-foreground"
+            style={{ fontFamily: state.mono?.family ?? "ui-monospace, monospace" }}
+          >
+            {ui.previewText}
+          </p>
+        </div>
+      </DesignPreview>
+    </>
+  )
+
+  return <DesignWorkbench controls={controls} preview={preview} />
 }

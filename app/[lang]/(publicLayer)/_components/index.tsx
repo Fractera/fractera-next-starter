@@ -57,6 +57,7 @@ const page = createContentPage({
     <>
       <StarterBanner
         strings={starterBannerStrings(lang)}
+        lang={lang}
         href={
           adminUrlFromSite(getAppConfig().url)
             ? `${adminUrlFromSite(getAppConfig().url)}/${lang}/project-start`

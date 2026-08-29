@@ -753,7 +753,7 @@ a second source of truth, and the second one goes stale silently.
 |---|---|
 | which repository this is | `git remote -v`, or `USER_GITHUB_REPO_URL` in `.env.local` |
 | IP mode or a domain | `FRACTERA_IP_NODOMAIN_MODE` in `.env.local` |
-| the development mode | `developmentMode` in `PLATFORM-CONFIG` — empty means `classic` |
+| the development mode | `developmentMode` in `PLATFORM-CONFIG` — empty means `steps` (default since 2026-08-29) |
 | the language set and the default | `NEXT_PUBLIC_SUPPORTED_LANGUAGES`, `NEXT_PUBLIC_DEFAULT_LOCALE` |
 | the site name, the address, the look | `APP-CONFIG`, `DESIGN-CONFIG` |
 | what is being built and for whom | `PRODUCTS-CONFIG` |

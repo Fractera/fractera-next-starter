@@ -159,6 +159,10 @@ The owner picks one in the panel ("Приложение" → "Режим раз�
 | `cases` | confirmed use cases → products → a queue of steps; every step names the case it serves |
 | `migration` | **an existing project of the owner's**: its code is read as a DESCRIPTION, and the queue of steps is born from that reading |
 
+🔒 **The DEFAULT is `steps`** (owner, 2026-08-29). An empty `PLATFORM-CONFIG` — the state every
+newly deployed server is born in — means `steps`, not `classic`. `classic` was the default from
+2026-08-18 until that day.
+
 Terms that belong to `migration` only:
 
 | Term | What it means |

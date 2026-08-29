@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Github, Linkedin, Facebook, Boxes, SlidersHorizontal, Wrench } from "lucide-react";
-import { BrandX } from "@/components/icons/brand-x";
+import { Boxes, SlidersHorizontal, Wrench } from "lucide-react";
+import { SOCIAL_ICONS, type SocialIconKey } from "@/components/icons/socials";
+import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
 import { resolveSocialLinks, socialHref } from "@/config/app-config.defaults";
 import { getMenuGroups } from "@/lib/menu/group-menus";
@@ -49,22 +50,33 @@ type FooterSocial = { href: string; label: string; Icon: (p: { className?: strin
 
 // Знаки для четырёх исторических сетей остаются встроенными: они уже нарисованы и
 // не требуют похода в медиатеку. Новая запись приносит свой значок полем `icon`.
-const BUILTIN_ICONS: Record<string, (p: { className?: string }) => React.ReactNode> = {
-  github: Github,
-  twitter: BrandX,
-  linkedin: Linkedin,
-  facebook: Facebook,
-};
+// 🔒 ЗНАЧОК БЕРЁТСЯ ИЗ ПОЛЯ `icon`, А НЕ ИЗ `id` (31-26, 2026-08-29). Здесь стояла
+// таблица встроенных знаков, и ключом ей служил `link.id`. Работало это ровно для
+// четырёх исторических записей, у которых `id` случайно совпадал с именем сети;
+// `id` записи, заведённой владельцем, рождается как `s<время>` и не совпадёт
+// НИКОГДА — то есть каждая новая соцсеть получала запасной кубик вместо своего
+// знака. Дефект жил на публичной странице и выглядел как «иконки не работают».
+//
+// Теперь у поля `icon` две формы, и различает их первый знак: путь или адрес —
+// загруженная картинка, всё остальное — ключ каталога (`lib/socials/catalogue.ts`).
+//
+// 🔒 `id` ПРОДОЛЖАЕТ ЧИТАТЬСЯ ЗАПАСНЫМ ПУТЁМ, и это не подстраховка «на всякий
+// случай»: у развёрнутых сайтов в конфиге лежат старые записи `github`, `twitter`,
+// `linkedin`, `facebook` БЕЗ поля `icon`. Перестань читать `id` — и у них значки
+// исчезнут при первой же сборке.
 
 function footerSocials(seo: Parameters<typeof resolveSocialLinks>[0]): FooterSocial[] {
   return resolveSocialLinks(seo).map((link) => {
-    const Builtin = BUILTIN_ICONS[link.id];
-    const Icon = Builtin ?? ((p: { className?: string }) =>
-      link.icon
+    const uploaded = isUploadedIcon(link.icon);
+    // Ключ значка: явно выбранный → историческое имя из `id` → ничего.
+    const key = uploaded ? undefined : (link.icon || link.id);
+    const Chosen = key ? SOCIAL_ICONS[key as SocialIconKey] : undefined;
+    const Icon = Chosen ?? ((p: { className?: string }) =>
+      uploaded
         ? // eslint-disable-next-line @next/next/no-img-element
           <img src={link.icon} alt="" aria-hidden className={p.className} />
         : <Boxes className={p.className} />);
-    return { href: socialHref(link), label: link.name, Icon, icon: (link.id as SocialKey) };
+    return { href: socialHref(link), label: link.name, Icon, icon: (key as SocialKey) };
   });
 }
 

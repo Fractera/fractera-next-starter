@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, X, Github, Linkedin, Facebook } from "lucide-react";
-import { BrandX } from "@/components/icons/brand-x";
+import { Menu, X } from "lucide-react";
+import { SOCIAL_ICONS, socialIcon } from "@/components/icons/socials";
 
 // Mobile-only social collapse (footer). On phones the row of social icons folds
 // into ONE hamburger button that opens a drawer UPWARD listing the available
@@ -13,14 +13,17 @@ import { BrandX } from "@/components/icons/brand-x";
 // Icons cross the server→client boundary as a STRING key (serializable), never as
 // a component reference. UI standard: lucide icons + theme tokens (light + dark).
 
-const SOCIAL_ICONS = { github: Github, twitter: BrandX, linkedin: Linkedin, facebook: Facebook } as const;
+// 🔒 НАБОР ЗНАЧКОВ ОБЩИЙ С ПОДВАЛОМ И С НАСТРОЙКАМИ (31-26, 2026-08-29). Здесь
+// стояла своя таблица из четырёх сетей, и она молча расходилась с той, что рисует
+// значки на широком экране: телефон показывал кубик там, где рабочий стол —
+// знак сети. Один набор на трёх потребителей, и расходиться нечему.
 export type SocialKey = keyof typeof SOCIAL_ICONS;
 
 export function FooterSocialDropdown({
   socials,
   label,
 }: {
-  socials: { href: string; label: string; icon: SocialKey }[];
+  socials: { href: string; label: string; icon: SocialKey | (string & {}) }[];
   label: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -53,7 +56,9 @@ export function FooterSocialDropdown({
       {open && (
         <div className="absolute bottom-full mb-2 right-0 min-w-[180px] rounded-xl border border-border bg-popover shadow-2xl z-50 overflow-hidden ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-1 duration-150 py-1">
           {socials.map(({ href, label: name, icon }) => {
-            const Icon = SOCIAL_ICONS[icon];
+            // Ключ может не совпасть ни с чем: у записи вне каталога значка нет,
+            // и запасной кубик здесь означает «сеть без знака», а не сбой.
+            const Icon = socialIcon(icon);
             return (
               <a
                 key={name}

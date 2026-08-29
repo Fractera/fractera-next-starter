@@ -76,6 +76,8 @@ export type FieldsUi = {
   socialValue: string
   socialTemplate: string
   socialAdd: string
+  socialIcon: string
+  socialIconNone: string
   socialRemove: string
 }
 
@@ -211,6 +213,8 @@ const en: FieldsUi = {
   socialValue: "Handle or address",
   socialTemplate: "Address rule",
   socialAdd: "Add a network",
+  socialIcon: "Icon",
+  socialIconNone: "No icon",
   socialRemove: "Remove the network",
 }
 
@@ -350,6 +354,8 @@ const ru: FieldsUi = {
   socialValue: "Псевдоним или адрес",
   socialTemplate: "Правило адреса",
   socialAdd: "Добавить сеть",
+  socialIcon: "Значок",
+  socialIconNone: "Без значка",
   socialRemove: "Убрать сеть",
 }
 

@@ -77,27 +77,3 @@ export function devModeChosen(config: Record<string, unknown>): boolean {
 export function resolveDevMode(raw: string | undefined, current: DevMode): DevMode {
   return isDevMode(raw) ? raw : current
 }
-
-/**
- * Ветка переезда в конфиге.
- *
- * 🔒 ФОРМА ВЗЯТА У ЧИТАТЕЛЯ, А НЕ ПРИДУМАНА ЗДЕСЬ: её читает агент этого проекта
- * на старте вместе с режимом (`CLAUDE.md`, раздел «Development modes»). Лишнее
- * поле там просто исчезнет при чтении, выглядя как несохранённая настройка.
- */
-export type MigrationSource = {
-  source?: string
-  repositoryUrl?: string
-  declaredAt?: string
-}
-
-export function migrationOf(config: Record<string, unknown>): MigrationSource {
-  const raw = config.migration
-  if (!raw || typeof raw !== "object") return {}
-  const m = raw as Record<string, unknown>
-  return {
-    source: typeof m.source === "string" ? m.source : undefined,
-    repositoryUrl: typeof m.repositoryUrl === "string" ? m.repositoryUrl : undefined,
-    declaredAt: typeof m.declaredAt === "string" ? m.declaredAt : undefined,
-  }
-}

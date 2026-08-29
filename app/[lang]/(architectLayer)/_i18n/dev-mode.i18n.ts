@@ -90,13 +90,6 @@ export type DevModeUi = {
   neverChosen: string
   modes: Record<DevMode, ModeWords>
   /** Поле источника переезда. */
-  sourceTitle: string
-  sourceHint: string
-  sourceLabel: string
-  sourcePlaceholder: string
-  sourceSave: string
-  sourceSaved: string
-  sourceNoToken: string
 }
 
 const en: DevModeUi = {
@@ -171,22 +164,13 @@ const en: DevModeUi = {
         "needs access to your project",
       ],
       door: {
-        label: "Name your project",
-        hint: "The address of the project you are moving from is set on the tab above. The reading itself is done by the agent inside this project.",
+        label: "Set up the move",
+        hint: "The move is set up in the control panel, where this capability already lives and works. The reading of your project is done by the agent inside this project.",
       },
       advice:
         "Move the project piece by piece together with the model, not in one automatic sweep. Read one part, agree on what it becomes here, let it be built — then take the next. A migration that ran unattended is hardest to check exactly where it matters most: in your own data.",
     },
   },
-  sourceTitle: "The project you are moving from",
-  sourceHint:
-    "The agent starts by reading it. Without a source this mode does not begin at all — that is what separates it from the other three.",
-  sourceLabel: "Repository address",
-  sourcePlaceholder: "https://github.com/owner/repo",
-  sourceSave: "Save the source",
-  sourceSaved: "Source saved",
-  sourceNoToken:
-    "No token is asked for, on purpose: keep the repository open while the move lasts, and close it again afterwards.",
 }
 
 const ru: DevModeUi = {
@@ -261,22 +245,13 @@ const ru: DevModeUi = {
         "нужен доступ к вашему проекту",
       ],
       door: {
-        label: "Назвать свой проект",
-        hint: "Адрес проекта, из которого переезжаете, задаётся на этой же вкладке ниже. Само чтение делает агент внутри этого проекта.",
+        label: "Настроить переезд",
+        hint: "Переезд настраивается в панели управления, где эта способность уже живёт и работает. Само чтение вашего проекта делает агент внутри этого проекта.",
       },
       advice:
         "Перевозите проект по частям вместе с моделью, а не одним автоматическим заходом. Прочитали часть, договорились, чем она станет здесь, дали построить — и берите следующую. Переезд, прошедший без присмотра, труднее всего проверить там, где это важнее всего: в ваших собственных данных.",
     },
   },
-  sourceTitle: "Проект, из которого переезжаете",
-  sourceHint:
-    "С его чтения агент и начинает. Без источника этот режим не начинается вовсе — этим он и отличается от остальных трёх.",
-  sourceLabel: "Адрес репозитория",
-  sourcePlaceholder: "https://github.com/owner/repo",
-  sourceSave: "Сохранить источник",
-  sourceSaved: "Источник сохранён",
-  sourceNoToken:
-    "Токен не спрашивается намеренно: держите репозиторий открытым, пока идёт переезд, и закройте его снова после.",
 }
 
 const DICT: Record<string, DevModeUi> = { en, ru }

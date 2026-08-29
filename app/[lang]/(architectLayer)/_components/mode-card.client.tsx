@@ -37,8 +37,11 @@ import type { DevModeUi } from "../_i18n/dev-mode.i18n"
  * переезд — на своей же вкладке.
  */
 function doorHref(mode: DevMode, lang: string, adminUrl: string): string {
-  if (mode === "migration") return `/${lang}/architect/dev-mode?mode=migration`
-  return adminUrl ? `${adminUrl}/${lang}/products` : ""
+  // 🔒 ОБЕ ДВЕРИ ВЕДУТ В ПАНЕЛЬ (решение владельца 2026-08-29): «для навигации
+  // используем новую архитектуру, для работы старую». Пока способность живёт и
+  // работает там, слой обязан вести к ней, а не заводить свою копию.
+  if (!adminUrl) return ""
+  return mode === "migration" ? `${adminUrl}/${lang}/migration` : `${adminUrl}/${lang}/products`
 }
 
 export function ModeCard({

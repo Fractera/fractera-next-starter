@@ -4,15 +4,13 @@ import { adminUrlFromSite } from "@/lib/site-urls"
 import { getAppConfig } from "@/config/app-config"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { devModeUi } from "../../_i18n/dev-mode.i18n"
-import { devModeOf, devModeChosen, resolveDevMode, migrationOf } from "../../_lib/dev-mode"
+import { devModeOf, devModeChosen, resolveDevMode } from "../../_lib/dev-mode"
 import { LayerMenu } from "../../_components/layer-menu"
 import { DevModeMenu } from "../../_components/dev-mode-menu"
 import { AdviceNote } from "../../_components/advice-note"
-import { ProductsBoard, type ProductRow } from "../../_components/products-board.client"
-import { casesUi } from "../../_i18n/cases.i18n"
-import { listProducts } from "@/lib/products/store/product-store"
+import { ProductsList } from "../../_components/products-list"
+import { getProducts } from "@/config/products-config"
 import { ModeCard } from "../../_components/mode-card.client"
-import { MigrationSourceEditor } from "../../_components/migration-source.client"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
 
 // РЕЖИМ РАЗРАБОТКИ ВНУТРИ ПРОЕКТА (33-1, 2026-08-29).
@@ -61,23 +59,11 @@ export default async function DevModePage({
   const active = resolveDevMode(rawMode, current)
   const words = ui.modes[active]
 
-  // 🔒 ПРОДУКТЫ ЧИТАЮТСЯ НА СЕРВЕРЕ ТЕМ ЖЕ ХРАНИЛИЩЕМ, ЧТО ПИШЕТ ДВЕРЬ. Круг по
-  // сети за собственными файлами ради первого показа — пустой экран на время
-  // ответа там, где данные лежат на том же диске.
-  const products: ProductRow[] =
-    active === "cases"
-      ? listProducts().map(p => ({
-          id: p.id,
-          title: p.title,
-          type: p.type,
-          surface: p.surface,
-          route: p.route,
-          phase: p.phase,
-          stage: p.stage,
-          cases: p.cases.map(c => ({ slug: c.slug, title: c.title, summary: c.summary, confirmed: c.confirmed })),
-          steps: p.steps.map(x => ({ number: x.number, title: x.title, status: x.status, kind: x.kind })),
-        }))
-      : []
+  // 🔒 ПРОДУКТЫ ЧИТАЕТ СУЩЕСТВУЮЩИЙ ЧИТАТЕЛЬ СЛОТА, А НЕ СВОЙ. `getProducts()`
+  // жил здесь до этой работы и читает ту же папку, в которую пишет панель.
+  // Второй читатель означал бы вторую правду о том же файле.
+  const products = active === "cases" ? getProducts() : []
+
 
   return (
     <main className="min-h-screen bg-background">
@@ -111,14 +97,10 @@ export default async function DevModePage({
                 значило бы предложить назвать чужой проект тому, кто никуда не
                 переезжает: рычаг, который в трёх режимах из четырёх ничего не
                 двигает. */}
-            {active === "migration" && <MigrationSourceEditor initial={migrationOf(config)} ui={ui} />}
-
-            {/* 🔒 ПОВЕРХНОСТЬ ПРОДУКТОВ — ТОЛЬКО НА ВКЛАДКЕ КЕЙСОВ. Это инструмент
-                режима, а не страницы: показать её на всех вкладках значило бы
-                предложить работу с кейсами тому, кто выбрал классический режим,
-                где кейсов нет по определению. */}
+            {/* 🔒 КАРТОЧКИ ЗДЕСЬ, РАБОТА В ПАНЕЛИ — решение владельца. Нажатие
+                открывает продукт там, где он уже существует и работает. */}
             {active === "cases" && (
-              <ProductsBoard initial={products} lang={lang} ui={casesUi(lang)} words={ui.products} />
+              <ProductsList products={products} lang={lang} adminUrl={adminUrl} ui={ui} />
             )}
 
             <AdviceNote probe="mode-law" title={ui.lawTitle} text={ui.law} />

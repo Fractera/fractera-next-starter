@@ -78,6 +78,15 @@ function fillBlocks(blocks: Block[], admin: string, lang: string): Block[] {
   // пропавший текст.
   return blocks.flatMap<Block>(b => {
     if ('children' in b) return [{ ...b, children: fillBlocks(b.children, admin, lang) }]
+    // 🔒 ПЛАШКИ ТОЖЕ ПРОХОДЯТ ПОДСТАНОВКУ (31-27, 2026-08-29). Их текст лежит не в
+    // `text`, а в `items[].label`, и ветка ниже его не видела: на главной висела
+    // строка «Ролей: {roles}» — незаменённый placeholder на публичной странице,
+    // которую видит покупатель. ✗ дефект прожил незамеченным, потому что механизм
+    // подстановки СУЩЕСТВОВАЛ и работал у всех остальных блоков.
+    if (b.kind === 'badges') {
+      return [{ ...b, items: b.items.map(it => ({ ...it, label: fill(it.label, admin, lang) })) }]
+    }
+
     if (b.kind === 'olist' || b.kind === 'list') return [{ ...b, items: b.items.map(i => fill(i, admin, lang)) }]
     if (b.kind === 'cta') {
       if (admin) return [{ ...b, href: fill(b.href, admin, lang) }]

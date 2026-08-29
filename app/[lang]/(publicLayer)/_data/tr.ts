@@ -54,6 +54,8 @@ export const tr: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Telegram', tone: 'code' },
       { label: 'Fractera mimarisi', tone: 'code' },
+      { label: 'Paralel yönlendirme · 12 slot', tone: 'code' },
+      { label: 'Next 16+', tone: 'code' },
       { label: '100+ daha fazla', tone: 'muted' },
     ],
   },

@@ -54,6 +54,8 @@ export const ru: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Telegram', tone: 'code' },
       { label: 'Архитектура Fractera', tone: 'code' },
+      { label: 'Параллельная маршрутизация · 12 слотов', tone: 'code' },
+      { label: 'Next 16+', tone: 'code' },
       { label: '100+ возможностей', tone: 'muted' },
     ],
   },

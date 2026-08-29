@@ -54,6 +54,8 @@ export const nl: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Telegram', tone: 'code' },
       { label: 'Fractera-architectuur', tone: 'code' },
+      { label: 'Parallelle routing · 12 slots', tone: 'code' },
+      { label: 'Next 16+', tone: 'code' },
       { label: '100+ meer', tone: 'muted' },
     ],
   },

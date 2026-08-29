@@ -54,6 +54,8 @@ export const it: Partial<HomeCell> = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Telegram', tone: 'code' },
       { label: 'Architettura Fractera', tone: 'code' },
+      { label: 'Routing parallelo · 12 slot', tone: 'code' },
+      { label: 'Next 16+', tone: 'code' },
       { label: '100+ altro', tone: 'muted' },
     ],
   },

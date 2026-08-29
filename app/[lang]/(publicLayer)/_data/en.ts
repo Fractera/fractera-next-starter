@@ -61,6 +61,8 @@ export const en: HomeCell = {
       { label: 'GitHub', tone: 'code' },
       { label: 'Telegram', tone: 'code' },
       { label: 'Fractera architecture', tone: 'code' },
+      { label: 'Parallel routing · 12 slots', tone: 'code' },
+      { label: 'Next 16+', tone: 'code' },
       { label: '100+ more', tone: 'muted' },
     ],
   },

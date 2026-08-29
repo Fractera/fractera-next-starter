@@ -152,13 +152,15 @@ export function ModeCard({
       {words.requires.length > 0 && (
         <>
           <Separator />
-          <ul className="flex flex-col gap-1">
+          {/* 🔒 СПИСОК С МАРКЕРАМИ, А НЕ ГАЛОЧКАМИ (владелец 2026-08-29: «as list»).
+              Пустой квадратик читается как «отметь, когда выполнишь» — а отмечать
+              здесь нечего: слой не знает и не может узнать, есть ли у человека
+              подписка. Галочка, которую никто не поставит, обещает работу, которой
+              нет; галочка, которую ставит сам человек, хранится нигде и не значит
+              ничего. Точка ничего не обещает и делает список списком. */}
+          <ul className="flex list-disc flex-col gap-1 ps-5 marker:text-muted-foreground">
             {words.requires.map(req => (
-              <li
-                key={req}
-                data-mode-req
-                className="text-[length:var(--fs-small)] text-muted-foreground"
-              >
+              <li key={req} data-mode-req className="text-[length:var(--fs-small)] text-muted-foreground">
                 {req}
               </li>
             ))}

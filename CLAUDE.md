@@ -389,6 +389,44 @@ language.
   coverage and the enabled set, and the difference IS the debt. A hand-kept registry is the first thing
   to go stale. → `use-multi-lang`
 
+## The architect layer — settings edited inside this project
+
+`/{lang}/architect/app-config` is where the owner changes this project's settings **without leaving
+it**. Eight groups in the left menu: basics · SEO · meta and media · languages · parallel routing ·
+header · footer · cookie banner.
+
+🔒 **THIS IS NOT THE PANEL, AND YOU MAY EDIT IT.** The panel lives outside your repository and is
+invisible to you; this layer is a normal part of the project — routes under
+`app/[lang]/(architectLayer)/`, doors under `app/api/architect/`, writers in `lib/architect/`.
+
+| Where the values live | Applies |
+|---|---|
+| `APP-CONFIG` — identity, `nav.top`, `nav.footer` | on the next page load |
+| `PLATFORM-CONFIG` — feature switches, `routingMode`, `slots` | on the next page load |
+| `.env.local` — the language set | **only after a rebuild** |
+
+🔒 **A PAGE THAT WRITES `.env.local` MUST SAY THAT SAVING IS NOT APPLYING.** The file is baked in at
+build time. A green "Saved" with nothing else is a lie: the owner opens the site, sees the previous
+languages and concludes that saving is broken.
+
+🔒 **WRITE A PATCH, NEVER A SNAPSHOT.** The panel writes to the same two files from another process,
+and `PLATFORM-CONFIG` also holds the development mode and the migration state. A whole-file save wipes
+them on every checkbox. `null` in a patch **deletes** a key — the only way back to a default.
+🔒 **The exception is an ARRAY:** `nav.top` and `nav.footer` are sent whole, because merging arrays by
+index would leave a deleted last item on disk forever.
+
+🔒 **VOICE BELONGS TO WHAT PEOPLE SPEAK, NOT TO EVERYTHING TEXTUAL** (owner, 2026-08-28). ✗ the rule
+"a text field gets a microphone" sounded tidy and handed one to the Yandex verification token, to
+latitude, and to a HEX colour. **A field's TYPE says how it is built and knows nothing about what goes
+into it** — the `voice` flag is set by the field's description. What loses the microphone gains
+something else: a browser keyboard (`input`), a colour swatch, a list with an open input, or an
+example inside the field.
+
+🔒 **THE TRUTH ABOUT AN UNCONFIGURED STATE COMES FROM THE CAPABILITY ITSELF.** ✗ paid for in 31-14: an
+unconfigured menu was assembled "the same way" nearby — from every public surface — and produced a
+plausible lie: nine items where the site's header shows two. Take it from the site
+(`getMenuGroups()`, `defaultFooterGroups()`), never rebuild it beside.
+
 ## The four configs
 
 The panel writes, the application reads on every request, applied without a rebuild.

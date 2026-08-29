@@ -122,10 +122,11 @@ export default async function ArchitectAppConfigPage({
           // молча оказалась бы в кандидатах шапки.
           .filter(s => (group === "header" ? s.section !== "legal" : true))
           .map(s => ({
-          id: s.subPath.replace(/^\//, "") || "home",
-          href: s.subPath || "/",
-          title: s.title,
-        }))
+            id: s.subPath.replace(/^\//, "") || "home",
+            href: s.subPath || "/",
+            title: s.title,
+            section: s.section,
+          }))
       : []
 
   // Ветка меню в СЫРОМ файле: её отсутствие значит «владелец не открывал раздел»,
@@ -293,6 +294,7 @@ export default async function ArchitectAppConfigPage({
                     initial={navItems}
                     configured={navConfigured}
                     candidates={navCandidates}
+                    editLang={editLang}
                     ui={gw}
                   />
                 </FeaturesEditor>

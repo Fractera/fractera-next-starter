@@ -80,6 +80,13 @@ export type GroupsUi = {
     empty: string
     emptyHint: string
     defaultsNotice: string
+    nest: string
+    unnest: string
+    childOf: string
+    nestHint: string
+    editingLang: string
+    expand: string
+    collapse: string
     address: string
   }
 
@@ -195,6 +202,13 @@ const en: GroupsUi = {
     emptyHint: "Add pages from the list on the right; nothing is shown until you save.",
     defaultsNotice:
       "This menu has never been configured, so the site builds it from the project's own sections. What you see below is that set — save it to take it over.",
+    nest: "Nest under the previous",
+    unnest: "Move out",
+    childOf: "inside",
+    nestHint: "An item can be nested under the one above it — on the site it becomes a dropdown. The site shows no more than two levels.",
+    editingLang: "editing",
+    expand: "Expand",
+    collapse: "Collapse",
     address: "Address",
   },
 
@@ -314,6 +328,13 @@ const ru: GroupsUi = {
     emptyHint: "Добавьте страницы из списка справа; до сохранения ничего не меняется.",
     defaultsNotice:
       "Это меню ещё ни разу не настраивали, и сайт собирает его из собственных разделов проекта. Ниже показан именно этот набор — сохраните, чтобы взять его в свои руки.",
+    nest: "Вложить в предыдущий",
+    unnest: "Вынести наружу",
+    childOf: "внутри",
+    nestHint: "Пункт можно вложить в предыдущий — на сайте он станет выпадающим списком. Глубже двух уровней сайт не показывает.",
+    editingLang: "правится",
+    expand: "Раскрыть",
+    collapse: "Свернуть",
     address: "Адрес",
   },
 

@@ -815,9 +815,16 @@ the service worker is not registered.
 The owner chooses in the panel: "Application" → "Development mode". The value is `developmentMode` in
 `PLATFORM-CONFIG`; read it at start.
 
-🔒 **No value means you work as `classic`.** On a fresh server `PLATFORM-CONFIG` is empty and there is
-no code that would substitute a default — you are the only reader, by eye. An empty field means "the
-owner has not spoken", not "guess": he said it, you did it, without cases and without steps.
+🔒 **AN EMPTY VALUE MEANS `steps`, NOT `classic`** (owner, 2026-08-29). Until that day the default was
+`classic` and this paragraph said so; it also said that no code substitutes a default and that you are
+the only reader, by eye. **Both halves are now false.** `devModeOf()` in the architect layer and
+`developmentModeOf()` in the panel both return `steps` for an empty config, so a freshly deployed
+server is born working in steps.
+
+🔒 **"NOT CHOSEN" AND "CHOSE `steps`" ARE STILL DIFFERENT STATES, AND THE CODE KEEPS THEM APART.** The
+effective mode always exists — silence reads as `steps`; whether the owner ever spoke is a separate
+question, answered by the FACT OF A WRITE (`devModeChosen()`), not by the value. Do not tell him he
+picked something he never picked.
 
 | Mode | Where the task comes from | A numbered plan AHEAD? | Skill |
 |---|---|---|---|

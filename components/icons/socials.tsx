@@ -74,10 +74,31 @@ export const SOCIAL_ICONS = {
 
 export type SocialIconKey = keyof typeof SOCIAL_ICONS
 
+/**
+ * Исторические имена, оставшиеся на развёрнутых сайтах.
+ *
+ * 🔒 ОПЛАЧЕНО РЕГРЕССИЕЙ В ЭТОМ ЖЕ ПОДШАГЕ, ПОЙМАННОЙ НЕГАТИВНЫМ КОНТРОЛЕМ.
+ * Прежняя таблица подвала знала ключ `twitter`, новый каталог — `x`: сеть
+ * переименовалась, а записи в чужих конфигах остались старыми. У сайта владельца
+ * была ровно одна соцсеть, и она называлась `twitter` — после переноса её знак стал
+ * запасным кубиком. Заметил не глаз, а зонд, названный заранее.
+ *
+ * Псевдоним живёт ЗДЕСЬ, а не в каталоге: каталог — это то, что предлагают выбрать,
+ * а псевдоним — то, что умеют прочитать. Смешать их значило бы предложить человеку
+ * выбрать «Twitter» в 2026 году.
+ */
+const LEGACY_KEYS: Record<string, SocialIconKey> = { twitter: "x" }
+
+/** Значок по ключу, с учётом исторических имён; `undefined` — знака нет. */
+export function findSocialIcon(key: string | undefined): ((p: IconProps) => React.ReactNode) | undefined {
+  if (!key) return undefined
+  const k = (LEGACY_KEYS[key] ?? key) as SocialIconKey
+  return SOCIAL_ICONS[k]
+}
+
 export const FallbackSocialIcon = Boxes
 
 /** Значок по ключу; неизвестный ключ и пустое значение дают запасной. */
 export function socialIcon(key: string | undefined): (p: IconProps) => React.ReactNode {
-  const Found = key ? SOCIAL_ICONS[key as SocialIconKey] : undefined
-  return Found ?? FallbackSocialIcon
+  return findSocialIcon(key) ?? FallbackSocialIcon
 }

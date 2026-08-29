@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Boxes, SlidersHorizontal, Wrench } from "lucide-react";
-import { SOCIAL_ICONS, type SocialIconKey } from "@/components/icons/socials";
+import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
 import { resolveSocialLinks, socialHref } from "@/config/app-config.defaults";
@@ -70,7 +70,7 @@ function footerSocials(seo: Parameters<typeof resolveSocialLinks>[0]): FooterSoc
     const uploaded = isUploadedIcon(link.icon);
     // Ключ значка: явно выбранный → историческое имя из `id` → ничего.
     const key = uploaded ? undefined : (link.icon || link.id);
-    const Chosen = key ? SOCIAL_ICONS[key as SocialIconKey] : undefined;
+    const Chosen = findSocialIcon(key);
     const Icon = Chosen ?? ((p: { className?: string }) =>
       uploaded
         ? // eslint-disable-next-line @next/next/no-img-element

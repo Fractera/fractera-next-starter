@@ -198,7 +198,7 @@
         {
           "page": "(home)",
           "order": 9,
-          "times": 8
+          "times": 5
         },
         {
           "page": "accessibility",
@@ -292,7 +292,7 @@
         {
           "page": "(home)",
           "order": 8,
-          "times": 5
+          "times": 2
         },
         {
           "page": "architecture",
@@ -318,7 +318,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 34,
+          "order": 26,
           "times": 1
         },
         {
@@ -344,11 +344,6 @@
       "hasCard": false,
       "usedOn": [
         {
-          "page": "(home)",
-          "order": 14,
-          "times": 1
-        },
-        {
           "page": "architecture",
           "order": 6,
           "times": 5
@@ -373,7 +368,7 @@
         {
           "page": "(home)",
           "order": 10,
-          "times": 1
+          "times": 2
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -450,8 +445,8 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 26,
-          "times": 1
+          "order": 11,
+          "times": 4
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -640,7 +635,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 36,
+          "order": 28,
           "times": 1
         }
       ]
@@ -658,7 +653,7 @@
         {
           "page": "(home)",
           "order": 6,
-          "times": 3
+          "times": 2
         }
       ]
     },
@@ -675,7 +670,7 @@
         {
           "page": "(home)",
           "order": 7,
-          "times": 8
+          "times": 5
         }
       ]
     },
@@ -688,13 +683,7 @@
       "title": null,
       "description": null,
       "hasCard": false,
-      "usedOn": [
-        {
-          "page": "(home)",
-          "order": 25,
-          "times": 1
-        }
-      ]
+      "usedOn": []
     },
     {
       "id": "0007",
@@ -708,7 +697,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 35,
+          "order": 27,
           "times": 1
         }
       ]
@@ -747,7 +736,7 @@
       "usedOn": [
         {
           "page": "(home)",
-          "order": 37,
+          "order": 29,
           "times": 1
         }
       ]

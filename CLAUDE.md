@@ -395,6 +395,26 @@ language.
 it**. Eight groups in the left menu: basics · SEO · meta and media · languages · parallel routing ·
 header · footer · cookie banner.
 
+Two more groups have their own routes, because each holds several sections and a second menu inside a
+menu-selected page would be two menus of the same kind side by side:
+
+| Route | What is inside |
+|---|---|
+| `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
+| `/{lang}/architect/design` | **the look of this project** — fonts · type scale · shape · colours · blocks |
+
+🔒 **THE DESIGN GROUP MOVED HERE FROM THE PANEL 2026-08-29, AND THE PANEL NO LONGER HAS IT.** Do not
+send the owner to the control panel for fonts or colours: those pages are deleted. The reason is not
+tidiness — `DESIGN-CONFIG` lives INSIDE this repository while the panel lives outside it, and settings
+edited where the code is not are settings the owner cannot see next to the code.
+
+🔒 **«BLOCKS» IS A CATALOGUE, NOT A SETTING.** The fifth section draws every block kind this project
+can build a page from, with the REAL renderer (`SPECIMEN` + `PostBody`, shared with `/{lang}/blocks`)
+— never a second drawing of your own. A showcase that redraws blocks its own way shows itself, not the
+product, and a defect like "page-coloured text on a coloured fill" stays invisible in it. The type row
+is generated from `sections/SECTIONS.json`, which the build gate keeps honest; a second list of types
+written by hand diverges on the first new kind, and diverges silently.
+
 🔒 **THIS IS NOT THE PANEL, AND YOU MAY EDIT IT.** The panel lives outside your repository and is
 invisible to you; this layer is a normal part of the project — routes under
 `app/[lang]/(architectLayer)/`, doors under `app/api/architect/`, writers in `lib/architect/`.

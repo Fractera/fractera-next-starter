@@ -106,7 +106,6 @@ export const en: HomeCell = {
               'You found out that cloud services are free only at the start, and then swallow the whole margin.',
             ],
           },
-          { kind: 'cta', href: '#', label: 'Get a free audit' },
         ],
       },
       {
@@ -123,12 +122,10 @@ export const en: HomeCell = {
               'You can balance the load and hold the bill under $20 a month with millions of users.',
             ],
           },
-          { kind: 'cta', href: '#', label: 'Get a free audit' },
         ],
       },
     ],
   },
-  { kind: 'cta', href: 'https://www.fractera.ai/deployments/vps', label: 'Take it free, scale it up' },
   // 🔒 A DUMMY BUTTON, SAID OUT LOUD (owner, 2026-08-29: «action for new CTA i
   // will next now dummy button only»). It has no destination yet — the audit page
   // does not exist, and `href` deliberately leads nowhere. An invented address

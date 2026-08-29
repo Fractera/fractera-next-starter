@@ -70,7 +70,7 @@ const H1_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-h1)] font-bold leading
 // такое исключение записывается классами на месте, рядом появляется второе, и
 // шкала перестаёт существовать. Стоит оно у шкалы, посчитано от неё, и видно
 // всякому, кто сюда заглянет.
-const H1_HERO_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-hero)] font-bold leading-tight tracking-tight md:text-[length:var(--fs-hero-md)] lg:text-[length:var(--fs-hero-lg)]`
+const H1_HERO_STYLE = `${CONTENT_FAMILY} text-[length:var(--fs-hero)] font-bold leading-[1.1] tracking-tight md:text-[length:var(--fs-hero-md)] lg:text-[length:var(--fs-hero-lg)]`
 
 // ЧИСЛО-УТВЕРЖДЕНИЕ: множитель в ряду мер, зачёркнутое имя в ряду «счетов, которых
 // нет». Не заголовок — оно ничего не озаглавливает, — но и не текст: это крупный

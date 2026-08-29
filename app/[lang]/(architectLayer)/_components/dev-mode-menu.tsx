@@ -52,16 +52,22 @@ export function DevModeMenu({
                 }
               >
                 {ui.modes[mode].label}
-                {/* 🔒 КРАСНЫЙ БЕЙДЖ АЛЬФЫ СТОИТ ДО ВЫБОРА, А НЕ ВНУТРИ РЕЖИМА.
-                    Человек читает список и решает, куда идти; предупреждение,
-                    спрятанное за щелчком, он увидит уже выбрав. */}
+                {/* 🔒 В МЕНЮ — ТОЛЬКО ТОЧКА, СЛОВО ЖИВЁТ В КАРТОЧКЕ (решение владельца
+                    2026-08-29). Меню — это ряд коротких имён, и слово «альфа-тестирование»
+                    у двух пунктов из четырёх делало их вдвое длиннее соседей: ряд читался
+                    уже не как список режимов, а как список предупреждений.
+
+                    🔒 ТОЧКА НЕ МОЛЧАЛИВАЯ. Своего текста у неё нет, поэтому объяснение
+                    едет в `title` и в `aria-label`: значок, который ничего не говорит ни
+                    курсору, ни читалке, — украшение, а не знак. */}
                 {isAlphaMode(mode) && (
                   <span
                     data-mode-alpha={mode}
-                    className="shrink-0 rounded-full bg-destructive px-2 py-0.5 text-[length:var(--fs-small)] leading-none text-destructive-foreground"
-                  >
-                    {ui.alpha}
-                  </span>
+                    title={ui.alpha}
+                    aria-label={ui.alpha}
+                    role="img"
+                    className="size-2 shrink-0 rounded-full bg-pink-500"
+                  />
                 )}
                 {isCurrent && <Check className="size-4 shrink-0 text-primary" aria-hidden />}
               </Link>

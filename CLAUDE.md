@@ -90,6 +90,16 @@ what grew out of it as a whole. Nowhere else.
 | `development-docs/development-steps/current-steps.md` | one file per project | **where the work is now** — the group of active steps and their closing conditions |
 | `development-docs/reports/` | `<category>-<8+ words with dashes>.md` | the detailed account: one failure (`errors-`) or a **finished feature** (`feature-`) |
 
+🔒 **THERE IS A FOURTH ADDRESS IN THE FEDERAL REPOSITORY, AND YOU DO NOT WRITE TO IT.** `pre-steps/`
+is an inbox for requests placed by EXTERNAL tools — a model that a person told what they wanted. It
+belongs to federal accounting, which you never see, and it is mentioned here for exactly one reason:
+so that you do not build a second one after meeting the name somewhere.
+
+🔒 **A TASK YOU CANNOT DO YOURSELF STILL GOES THE WAY IT ALWAYS DID** — you say so, in words, to the
+person you are working with. A prohibition without an address is cruel and gets worked around; this is the
+address. The inbox is not a channel for you, and putting anything there would be invisible to the
+people who read it.
+
 🔒 **These four addresses arrive EMPTY in a new project, and that is a law (2026-08-24).** They hold
 the steps and reports of THIS project and nothing else. The steps that built the starter itself are a
 foreign history: they name files you do not have and decisions you never took, and they are read at

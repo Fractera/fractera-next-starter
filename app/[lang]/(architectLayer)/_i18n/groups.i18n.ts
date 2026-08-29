@@ -120,7 +120,7 @@ const en: GroupsUi = {
   save: "Save",
   saving: "Saving…",
   saved: "Saved",
-  savedReload: "Saved. Reload the page to see the change.",
+  savedReload: "Saved. Reload the page to see the change; public pages are cached and pick it up within a few minutes.",
   failed: "Could not save",
   nothingToSave: "Nothing changed",
   needsRebuild:
@@ -246,7 +246,7 @@ const ru: GroupsUi = {
   save: "Сохранить",
   saving: "Сохраняем…",
   saved: "Сохранено",
-  savedReload: "Сохранено. Обновите страницу, чтобы увидеть изменения.",
+  savedReload: "Сохранено. Обновите страницу, чтобы увидеть изменения; публичные страницы кэшируются и подхватят их за несколько минут.",
   failed: "Не удалось сохранить",
   nothingToSave: "Ничего не изменилось",
   needsRebuild:

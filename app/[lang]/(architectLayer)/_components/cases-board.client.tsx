@@ -305,7 +305,7 @@ function CaseCard({
               onClick={() => {
                 if (window.confirm(ui.removeConfirm)) void act("delete", { id: row.slug }, row.slug)
               }}
-              className="text-muted-foreground/60 transition-colors hover:text-destructive"
+              className="text-muted-foreground transition-colors hover:text-destructive"
             >
               <Trash2 className="size-4" aria-hidden />
             </button>

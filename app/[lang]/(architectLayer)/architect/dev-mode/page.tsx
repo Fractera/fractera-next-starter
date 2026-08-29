@@ -84,7 +84,7 @@ export default async function DevModePage({
 
             <DevModeMenu lang={lang} active={active} current={current} ui={ui} />
 
-            <ModeCard mode={active} current={current} chosen={chosen} ui={ui} />
+            <ModeCard mode={active} current={current} chosen={chosen} ui={ui} lang={lang} adminUrl={adminUrl} />
 
             {/* 🔒 ПОЛЕ ИСТОЧНИКА — ТОЛЬКО У ПЕРЕЕЗДА. Показать его на всех вкладках
                 значило бы предложить назвать чужой проект тому, кто никуда не

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Loader2 } from "lucide-react"
+import { ArrowRight, Check, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -34,6 +34,8 @@ export function ModeCard({
   current,
   chosen,
   ui,
+  lang,
+  adminUrl,
 }: {
   mode: DevMode
   /** Режим, записанный в конфиге на момент загрузки страницы. */
@@ -41,6 +43,9 @@ export function ModeCard({
   /** Записан ли выбор вообще. */
   chosen: boolean
   ui: DevModeUi
+  lang: string
+  /** Адрес панели. Пусто — настроек ещё нет, и дверь туда не рисуется. */
+  adminUrl: string
 }) {
   const words = ui.modes[mode]
   const [savedMode, setSavedMode] = useState<DevMode>(current)
@@ -138,6 +143,27 @@ export function ModeCard({
             ))}
           </ul>
         </>
+      )}
+
+      {/* 🔒 ДВЕРЬ РЕЖИМА — ГЛАВНОЕ, ЧЕГО НЕ ХВАТАЛО (владелец 2026-08-29: «я не могу
+          провалиться внутрь режима»). Выбрать режим и не иметь, куда пойти дальше, —
+          это выбор без последствия: человек нажал и остался на той же странице.
+
+          🔒 ПОКА ПОВЕРХНОСТЬ КЕЙСОВ ПЕРЕЕЗЖАЕТ, ДВЕРЬ ВЕДЁТ В ПАНЕЛЬ, И ОБ ЭТОМ
+          СКАЗАНО ПРЯМО. Тот же приём, что у неготовой группы меню: пока раздел не
+          переехал, настройка обязана оставаться доступной там, где она есть. Данные
+          при этом одни и те же — панель пишет в ту же папку продуктов. */}
+      {words.door && (words.door.href(lang, adminUrl).startsWith("/") || adminUrl) && (
+        <div data-mode-door={mode} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
+          <a
+            href={words.door.href(lang, adminUrl)}
+            className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
+          >
+            {words.door.label}
+            <ArrowRight className="size-4" aria-hidden />
+          </a>
+          <Small>{words.door.hint}</Small>
+        </div>
       )}
 
       <div className="flex items-center gap-3">

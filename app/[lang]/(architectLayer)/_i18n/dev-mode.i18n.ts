@@ -37,7 +37,14 @@ export type ModeWords = {
    * `AdviceNote` в тоне `advice`, а не второе изобретение того же блока.
    */
   advice?: string
-
+  /**
+   * Дверь режима: куда идти дальше, когда он выбран.
+   *
+   * 🔒 ЗАПИСЬ НА РЕЖИМЕ, А НЕ ВЕТКА В КОДЕ — так же, как в панели. Режим без
+   * двери её просто не имеет: ключа нет. Ветка `if (mode === "cases")` завела бы
+   * частный случай, который при второй двери разваливает карточку надвое.
+   */
+  door?: { label: string; hint: string; href: (lang: string, adminUrl: string) => string }
 }
 
 export type DevModeUi = {
@@ -107,6 +114,11 @@ const en: DevModeUi = {
       body: "The fullest order: the owner confirms use cases, they become products, products become a queue of steps. Nothing is built on a guess, and every step names the case it serves.",
       when: "Take it when a product is being built, not patched.",
       requires: ["minimum requirement: Fable 5+", "recommended: dynamic workflows", "recommended: a Max plan"],
+      door: {
+        label: "Open the use cases",
+        hint: "The surface of products and cases is still being moved into this layer. Until it lands, cases are edited in the control panel — the same files, the same data.",
+        href: (lang, adminUrl) => `${adminUrl}/${lang}/products`,
+      },
       advice:
         "Go through the work with the model step by step rather than switching on a fully automatic run. Confirm one case, look at what the agent built from it, and only then hand over the next. An automatic pass is faster right up until it turns the wrong way — and then you pay for every step it took while nobody was watching.",
     },
@@ -120,6 +132,11 @@ const en: DevModeUi = {
         "recommended: a Max plan",
         "needs access to your project",
       ],
+      door: {
+        label: "Name your project",
+        hint: "The address of the project you are moving from is set on the tab above. The reading itself is done by the agent inside this project.",
+        href: (lang) => `/${lang}/architect/dev-mode?mode=migration`,
+      },
       advice:
         "Move the project piece by piece together with the model, not in one automatic sweep. Read one part, agree on what it becomes here, let it be built — then take the next. A migration that ran unattended is hardest to check exactly where it matters most: in your own data.",
     },
@@ -174,6 +191,11 @@ const ru: DevModeUi = {
       body: "Самый полный порядок: владелец подтверждает кейсы, из них рождаются продукты, из продуктов — очередь шагов. Ничего не строится на догадке, и каждый шаг называет кейс, которому служит.",
       when: "Берите, когда продукт строят, а не латают.",
       requires: ["минимальные требования Fable 5+", "рекомендуется: динамические рабочие процессы", "рекомендуется: тариф Max"],
+      door: {
+        label: "Открыть пользовательские кейсы",
+        hint: "Поверхность продуктов и кейсов ещё переезжает в этот слой. Пока она не приехала, кейсы правятся в панели управления — те же файлы, те же данные.",
+        href: (lang, adminUrl) => `${adminUrl}/${lang}/products`,
+      },
       advice:
         "Проходите работу с моделью постепенно, шаг за шагом, а не включайте полностью автоматический прогон. Подтвердите один кейс, посмотрите, что агент из него построил, и только потом отдавайте следующий. Автоматический проход быстрее ровно до того мгновения, как свернёт не туда, — и тогда вы платите за каждый шаг, сделанный, пока никто не смотрел.",
     },
@@ -187,6 +209,11 @@ const ru: DevModeUi = {
         "рекомендуется: тариф Max",
         "нужен доступ к вашему проекту",
       ],
+      door: {
+        label: "Назвать свой проект",
+        hint: "Адрес проекта, из которого переезжаете, задаётся на этой же вкладке ниже. Само чтение делает агент внутри этого проекта.",
+        href: (lang) => `/${lang}/architect/dev-mode?mode=migration`,
+      },
       advice:
         "Перевозите проект по частям вместе с моделью, а не одним автоматическим заходом. Прочитали часть, договорились, чем она станет здесь, дали построить — и берите следующую. Переезд, прошедший без присмотра, труднее всего проверить там, где это важнее всего: в ваших собственных данных.",
     },

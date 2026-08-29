@@ -39,6 +39,7 @@ export type DevModeUi = {
   law: string
   /** Отметка у режима, который записан в конфиге. */
   current: string
+  alpha: string
   choose: string
   chosen: string
   saving: string
@@ -67,6 +68,7 @@ const en: DevModeUi = {
   law:
     "Static public pages, size limits, translations instead of inline text, settings read from config — these hold in every mode. A law that a mode could switch off would not be a law.",
   current: "current",
+  alpha: "alpha testing",
   choose: "Choose this mode",
   chosen: "This mode is in effect",
   saving: "Saving…",
@@ -126,6 +128,7 @@ const ru: DevModeUi = {
   law:
     "Статика публичных страниц, лимиты размера, переводы вместо вписанного текста, настройки из конфигов — действуют в любом режиме. Закон, который режим мог бы выключить, законом не был бы.",
   current: "сейчас",
+  alpha: "альфа-тестирование",
   choose: "Выбрать этот режим",
   chosen: "Этот режим действует",
   saving: "Сохраняю…",

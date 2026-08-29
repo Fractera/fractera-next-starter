@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
-import type { DevMode } from "../_lib/dev-mode"
+import { isAlphaMode, type DevMode } from "../_lib/dev-mode"
 import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 
 // КАРТОЧКА ОДНОГО РЕЖИМА (33-2 … 33-4, 2026-08-29).
@@ -86,6 +86,14 @@ export function ModeCard({
     >
       <div className="flex flex-wrap items-center gap-3">
         <H3 variant="ui">{words.label}</H3>
+        {isAlphaMode(mode) && (
+          <span
+            data-mode-alpha={mode}
+            className="inline-flex items-center rounded-full bg-destructive px-3 py-1 text-[length:var(--fs-small)] text-destructive-foreground"
+          >
+            {ui.alpha}
+          </span>
+        )}
         {isCurrent && (
           <span
             data-mode-current-badge

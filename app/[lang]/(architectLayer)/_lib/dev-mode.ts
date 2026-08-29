@@ -20,6 +20,24 @@
 export const DEV_MODES = ["classic", "steps", "cases", "migration"] as const
 export type DevMode = (typeof DEV_MODES)[number]
 
+/**
+ * Режимы, ещё не вышедшие из альфа-тестирования (решение владельца 2026-08-29).
+ *
+ * 🔒 ПРИЗНАК ЖИВЁТ ЗДЕСЬ, А НЕ В РАЗМЕТКЕ. Он про САМ режим, а не про то, как его
+ * нарисовали: бейдж стоит и во вкладке, и в карточке, и оба обязаны погаснуть
+ * одновременно — в день, когда режим выйдет из альфы. Два места в разметке
+ * погаснут по отдельности, и одно из них однажды забудут.
+ *
+ * Кейсы и переезд — самые молодые и самые дорогие: у первого разговор с моделью,
+ * у второго чужой проект. Молчать об этом до того, как человек выберет режим,
+ * значит обещать зрелость, которой пока нет.
+ */
+export const ALPHA_MODES: readonly DevMode[] = ["cases", "migration"]
+
+export function isAlphaMode(mode: DevMode): boolean {
+  return ALPHA_MODES.includes(mode)
+}
+
 export function isDevMode(v: unknown): v is DevMode {
   return typeof v === "string" && (DEV_MODES as readonly string[]).includes(v)
 }

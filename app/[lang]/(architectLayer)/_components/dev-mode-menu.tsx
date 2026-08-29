@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Check } from "lucide-react"
-import { DEV_MODES, type DevMode } from "../_lib/dev-mode"
+import { DEV_MODES, isAlphaMode, type DevMode } from "../_lib/dev-mode"
 import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 
 // ЧЕТЫРЕ ПОДВКЛАДКИ РЕЖИМА (33-1, 2026-08-29). Серверный компонент: ничего не
@@ -52,6 +52,17 @@ export function DevModeMenu({
                 }
               >
                 {ui.modes[mode].label}
+                {/* 🔒 КРАСНЫЙ БЕЙДЖ АЛЬФЫ СТОИТ ДО ВЫБОРА, А НЕ ВНУТРИ РЕЖИМА.
+                    Человек читает список и решает, куда идти; предупреждение,
+                    спрятанное за щелчком, он увидит уже выбрав. */}
+                {isAlphaMode(mode) && (
+                  <span
+                    data-mode-alpha={mode}
+                    className="shrink-0 rounded-full bg-destructive px-2 py-0.5 text-[length:var(--fs-small)] leading-none text-destructive-foreground"
+                  >
+                    {ui.alpha}
+                  </span>
+                )}
                 {isCurrent && <Check className="size-4 shrink-0 text-primary" aria-hidden />}
               </Link>
             </li>

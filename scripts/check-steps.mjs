@@ -31,17 +31,28 @@ const NEW = path.join(STEPS, "new-steps")
 const DONE = path.join(STEPS, "completed-steps")
 const CURRENT = path.join(STEPS, "current-steps.md")
 const PASSPORT = path.join(ROOT, "development-docs", "PASSPORT.md")
+// Приёмная заявок (шаг 61). Её отсутствие НЕ дефект: проект живёт без неё, пока
+// никто не нажал кнопку. Дефект — папка БЕЗ своего README: агент найдёт файл, не
+// поймёт, кто его написал, и либо исполнит как задание, либо пройдёт мимо.
+const PRE = path.join(STEPS, "pre-steps")
 
 // Имена, которыми агенты заводят параллельный учёт. Ищем только в корне проекта
 // и в development-docs/: глубже это почти всегда чужой домен (например
 // `app/[lang]/migration/` — законная страница).
-// 🔒 `pre-steps` В ЭТОМ СПИСКЕ — НЕ ОШИБКА И НЕ ЗАПРЕТ САМОЙ СУЩНОСТИ (2026-08-29).
-//    Приёмная заявок существует и работает, но она принадлежит ФЕДЕРАЛЬНОМУ учёту,
-//    который живёт в другом репозитории и этому проекту невидим. Гостевой агент
-//    знает о ней ровно затем, чтобы не завести свою такую же, встретив имя, — а
-//    заведённая здесь она была бы вторым каналом, в который никто не смотрит.
-//    ✗ иначе запрет остаётся словом в инструкции, ничем не проверяемым.
-const RIVAL_NAMES = new Set(["migration", "migrations", "tasks", "plans", "steps", "todo", "todos", "roadmap", "pre-steps", "presteps"])
+// 🪦 ЗАПРЕТ `pre-steps` ОТМЕНЁН 2026-08-30 (шаг 61), И ПРЕЖНИЙ НАЗВАН ЗДЕСЬ ЦЕЛИКОМ.
+//    Он стоял с 2026-08-29 и звучал так: «приёмная принадлежит ФЕДЕРАЛЬНОМУ учёту,
+//    который живёт в другом репозитории и этому проекту невидим; заведённая здесь
+//    она была бы вторым каналом, в который никто не смотрит».
+//
+//    🔒 ОТМЕНЯЕТ ЕГО НЕ ПЕРЕДУМАННОЕ МНЕНИЕ, А ИСЧЕЗНОВЕНИЕ ПОСЫЛКИ. Запрет держался
+//    на «в неё никто не смотрит». Теперь в неё ПИШЕТ страница проекта — каталог
+//    блоков, карандаш у образца и кнопка «создать блок», — а ЧИТАЕТ её агент по
+//    закону, наравне с current-steps.md. Канал перестал быть вторым: он стал
+//    единственным путём, которым просьба владельца доезжает до работы.
+//
+//    Родовые имена параллельного учёта остались под запретом: они по-прежнему
+//    означают попытку завести систему записи рядом с существующей.
+const RIVAL_NAMES = new Set(["migration", "migrations", "tasks", "plans", "steps", "todo", "todos", "roadmap"])
 const SCAN_ROOTS = [ROOT, path.join(ROOT, "development-docs")]
 
 // 🔒 РЕЖИМ РАЗРАБОТКИ ЧИТАЕТСЯ ЗДЕСЬ, И В `classic` СТОРОЖ МОЛЧИТ О ШАГАХ
@@ -83,7 +94,7 @@ function hasMarkdown(dir) {
   return entries.some((e) => e.isFile() && e.name.toLowerCase().endsWith(".md"))
 }
 
-// 1. Параллельный учёт рядом с пятью адресами.
+// 1. Параллельный учёт рядом с шестью адресами.
 for (const root of SCAN_ROOTS) {
   let entries
   try { entries = fs.readdirSync(root, { withFileTypes: true }) } catch { continue }
@@ -116,6 +127,13 @@ if (STEPS_OWED && !fs.existsSync(STEPS)) {
   if (!fs.existsSync(CURRENT)) findings.push({ kind: "missing", rel: "development-docs/development-steps/current-steps.md" })
   for (const [dir, rel] of [[NEW, "new-steps"], [DONE, "completed-steps"]]) {
     if (!fs.existsSync(dir)) findings.push({ kind: "missing", rel: `development-docs/development-steps/${rel}` })
+  }
+  // 🔒 ПРИЁМНАЯ БЕЗ ЗАКОНА ХУЖЕ, ЧЕМ ЕЁ ОТСУТСТВИЕ. Пустой папки здесь не бывает:
+  //    либо её нет вовсе, либо она объяснена. Заявка — единственное место проекта,
+  //    где текст пишет ЧЕЛОВЕК, а читает АГЕНТ; без README он не знает, что это
+  //    данные, а не поручение.
+  if (fs.existsSync(PRE) && !fs.existsSync(path.join(PRE, "README.md"))) {
+    findings.push({ kind: "noreadme", rel: "development-docs/development-steps/pre-steps" })
   }
 }
 
@@ -155,13 +173,14 @@ if (!STEPS_OWED) {
 for (const w of warnings) console.log(`  ⚠️  ${w}`)
 
 if (findings.length === 0) {
-  console.log("  ✓ параллельного учёта рядом с пятью адресами нет")
+  console.log("  ✓ параллельного учёта рядом с шестью адресами нет")
   // 🔒 О ТОМ, ЧЕГО НЕ ПРОВЕРЯЛ, СТОРОЖ НЕ ОТЧИТЫВАЕТСЯ. ✗ поймано при первом же
   //    прогоне освобождения: в classic он печатал «структура памяти на месте» —
   //    и печатал это ДАЖЕ когда папки не было вовсе. Зелёная строка о непроверенном
   //    хуже молчания: по ней принимают решение, что всё в порядке.
   if (STEPS_OWED) {
-    console.log("  ✓ структура памяти на месте: current-steps.md, new-steps/, completed-steps/")
+    const pre = fs.existsSync(PRE) ? ", pre-steps/" : ""
+    console.log(`  ✓ структура памяти на месте: current-steps.md, new-steps/, completed-steps/${pre}`)
   }
   if (warnings.length) {
     console.log("\n  Паспорт — то, что отвечает «что это за проект». Заведите его по образцу")
@@ -173,19 +192,21 @@ if (findings.length === 0) {
 
 console.log("  БЕДА: работа ведётся мимо памяти проекта\n")
 for (const f of findings) {
-  if (f.kind === "rival") console.log(`    ${f.rel} — параллельная система учёта рядом с пятью адресами`)
+  if (f.kind === "rival") console.log(`    ${f.rel} — параллельная система учёта рядом с шестью адресами`)
   if (f.kind === "missing") console.log(`    ${f.rel} — адреса памяти нет на месте`)
   if (f.kind === "planname") console.log(`    ${f.rel} — имя плана не читается как указатель: нужно <номер>-<описание-через-дефис>.md`)
   if (f.kind === "planwords") console.log(`    ${f.rel} — в имени ${f.words} слов(а), нужно 6–8: список папки обязан читаться без открытия файлов`)
   if (f.kind === "both") console.log(`    ${f.rel} — шаг ${f.step} закрыт (${f.step}-main.md), но его план всё ещё в new-steps/`)
+  if (f.kind === "noreadme") console.log(`    ${f.rel} — приёмная есть, а README нет: агент не узнает, что заявка это ДАННЫЕ, а не поручение`)
 }
 console.log(`
-  Память этого проекта живёт по пяти адресам, и других не бывает:
+  Память этого проекта живёт по шести адресам, и других не бывает:
 
     development-docs/PASSPORT.md                          что это за ПРОЕКТ
     development-docs/development-steps/current-steps.md   где работа СЕЙЧАС
     development-docs/development-steps/new-steps/         планы
     development-docs/development-steps/completed-steps/   итоги
+    development-docs/development-steps/pre-steps/         что просят СНАРУЖИ
     development-docs/reports/                             разборы и репорты фич
 
   Своя папка учёта выглядит порядком и им не является: следующая сессия читает

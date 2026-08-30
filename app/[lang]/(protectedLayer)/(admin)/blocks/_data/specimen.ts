@@ -681,6 +681,33 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'featureGrid',
+    when: 'A grid of capabilities: icon, heading, pill label, description. Ported from the storefront — two columns on a phone, three on a monitor, with row gaps deliberately wider than column gaps because nothing but distance separates one cell from the next. Differs from `badges`, which is the labels themselves: here a label is a mark INSIDE a capability that also has a heading, an icon and an explanation.',
+    whenRu: 'Сетка возможностей: значок, заголовок, ярлык-пилюля, описание. Перенесена с витрины — две колонки на телефоне, три на мониторе, и промежутки между строками намеренно шире, чем между колонками: рамок у ячеек нет, и разделяет их только расстояние. От `badges` отличается предметом: там сами ярлыки, здесь ярлык — метка ВНУТРИ возможности, у которой есть ещё заголовок, значок и объяснение.',
+    blocks: [
+      {
+        kind: 'featureGrid',
+        badge: 'Capabilities',
+        title: 'What comes with the server',
+        note: 'Twelve things that are already there — not a roadmap.',
+        items: [
+          { icon: 'agent', tone: 'code', title: 'Agents with memory', label: 'for everyone', text: 'Ready to answer from what the project already knows, without an hour of setup first.' },
+          { icon: 'voice', tone: 'code', title: 'Voice input', label: 'for everyone', text: 'Dictate into any field meant for speech; the rest keep the ordinary keyboard.' },
+          { icon: 'shield', tone: 'access', title: 'Sign-in out of the box', label: 'for everyone', text: 'Email links and Google, with roles and sessions. Nothing to configure to start.' },
+          { icon: 'data', tone: 'data', title: 'Database and storage', label: 'for everyone', text: 'Rows and files on the machine you own, behind one door and one key.' },
+          { icon: 'backup', tone: 'data', title: 'Backups by parts', label: 'for everyone', text: 'Six parts chosen one at a time: people restore one thing, not everything.' },
+          { icon: 'branch', tone: 'code', title: 'Your repository', label: 'for everyone', text: 'The project travels to your GitHub and back with one action.' },
+          { icon: 'speed', tone: 'reach', title: 'Static by default', label: 'for everyone', text: 'Pages are built ahead of time, so a traffic spike costs nothing extra.' },
+          { icon: 'shop', tone: 'reach', title: 'Products on one server', label: 'for everyone', text: 'A landing page today, a scheduled watcher next week — neither can damage the other.' },
+          { icon: 'globe', tone: 'reach', title: 'Many languages', label: 'for everyone', text: 'Enabling one later is a setting, not a rebuild of the way the site works.' },
+          { icon: 'map', tone: 'data', title: 'Maps on your machine', label: 'advanced', text: 'Routes and distances computed on the server, so requests are not metered one by one.' },
+          { icon: 'channel', tone: 'access', title: 'Communication channels', label: 'advanced', text: 'A two-way link with the project, not just the ability to send a message.' },
+          { icon: 'search', tone: 'code', title: 'Search by meaning', label: 'advanced', text: 'Next to the rows it describes: one backup, one access contour, one meaning of deletion.' },
+        ],
+      },
+    ],
+  },
+  {
     kind: 'showcaseCarousel',
     when: 'The showcase carousel, ported one-to-one from the storefront: auto-advance every five seconds with a 700ms crossfade, slides grouped in threes, arrows that shift a whole group, numbered circles that pause on click and show ‖, a progress line that follows the pause, a glow that appears once the image has loaded, lazy loading of the current and next group, and a pause when the section scrolls out of view. Colours come from the theme, not from the storefront palette. Every slide also sits in a hidden block for crawlers — the carousel reveals one at a time through script.',
     whenRu: 'Витринная карусель, перенесённая один в один: автопереход раз в пять секунд с затуханием 700 мс, слайды блоками по три, стрелки листают блок целиком, кружки с номерами ставят паузу и показывают ‖, полоса прогресса следует за паузой, свечение появляется после загрузки картинки, ленивая загрузка текущего и следующего блока, пауза при уходе секции из вида. Цвета берутся из темы, а не из палитры витрины. Все слайды продублированы скрытым блоком для поисковика: карусель раскрывает их по одному скриптом.',

@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **41** · рендереров: **41** · карточек: **19**
+Видов: **42** · рендереров: **42** · карточек: **19**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -66,6 +66,7 @@
 | `carousel01` | `carousel` | How it works | — | title?: string; note?: string; slides: { image?: string; alt?: string; title: string; text?: string }[] | — |
 | `support01` | `support` | Pricing and plans | — | title?: string; note?: string; tiers: { name: string; amount?: string; text: string; href?: string; linkLabel?: string }[] | — |
 | `showcaseCarousel01` | `showcaseCarousel` | How it works | — | badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[] | — |
+| `featureGrid01` | `featureGrid` | Benefits and value | — | badge?: string; title?: string; note?: string; items: { icon?: FeatureIcon; title: string; label?: string; tone?: Tone; text: string }[] | — |
 
 ## Чего в этой таблице нет
 

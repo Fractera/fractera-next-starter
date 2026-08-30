@@ -410,6 +410,11 @@
       "id": "0041",
       "type": "how-it-works",
       "shape": "figure"
+    },
+    "featureGrid": {
+      "id": "0042",
+      "type": "benefits",
+      "shape": "cards"
     }
   }
 }

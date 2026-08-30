@@ -247,7 +247,20 @@ const EN = {
     },
     "blocks": {
       "title": "Blocks",
-      "hint": "Every block this project can build a page from, drawn by the real renderer. Grouped by what the block is for."
+      "hint": "Every block this project can build a page from, drawn by the real renderer. Grouped by what the block is for.",
+      "helpLabel": "How a page in this project is built",
+      "helpWhatTitle": "A block is the unit a page is made of.",
+      "helpWhat": "A page here is not a laid-out file — it is a LIST OF BLOCKS. The renderers are already compiled; the page says which kinds stand on it, in what order and with what text. That is why every page in the project looks like one product rather than like the work of five different people.",
+      "helpThreeTitle": "There is no other way to build a page, and there are exactly three paths.",
+      "helpThree": "Take a kind that fits. Or create a new kind and then take it — it lands in this catalogue and becomes available to every page. Or, if the thing is unique and belongs to a single route, take a widget. There is no fourth path: hand-laid markup outside these three is invisible to the catalogue, cannot be moved to another page, cannot be reordered against the text, and is not translated by a language cell.",
+      "helpWidgetTitle": "Block or widget is decided by REUSE, not by complexity.",
+      "helpWidget": "A kind must suit any page in the project — that is what earns it a place in this catalogue. A widget need suit nobody but its own route: unique graphics, its own behaviour, its own face, and it dies together with that route. So the question to ask is never \"is this hard to build\" but \"will a second page want exactly this drawing\".",
+      "helpMotionTitle": "Motion does not make something a widget.",
+      "helpMotion": "A renderer under sections/ is always a server component, and interactivity arrives as an island mounted inside it: the server prints the resting state, the animated version comes later and only over what is already drawn. The `orbitLayers` kind in \"Product in action\" is exactly that — it was moved here from a widget without losing a single frame of its animation.",
+      "helpRebuildTitle": "What describing a page as DATA gives you — and what it does not give yet.",
+      "helpRebuild": "Because a page is a list of blocks, it can be described by data rather than by code: the renderers are built once, and a new page is a new description. Where that description arrives at runtime — a dynamic route serving pages from the data layer — a page appears WITHOUT a rebuild. Today the project does not use that path yet: block lists live in the language-cell files, that is, in code, and the dynamic product route draws its own components rather than blocks. The capability is what blocks make possible; it is not what the project does at this moment.",
+      "helpCodeTitle": "The code on the badge is the language between you and the agent.",
+      "helpCode": "Every specimen carries a code — `quote01`, `workspace02`, `orbitLayers01`. Name it in a task (\"build a section out of this and this\") and the agent finds the row in the generated summary and takes the fields from it, without opening a single renderer. The code points at a SPECIMEN, not merely at a kind: one kind can have several settings, and the number names the setting."
     },
     "tools": {
       "title": "Tools",
@@ -489,7 +502,20 @@ const RU: typeof EN = {
     },
     "blocks": {
       "title": "Блоки",
-      "hint": "Все блоки, из которых этот проект собирает страницы, нарисованные настоящим рендерером. Сгруппированы по назначению."
+      "hint": "Все блоки, из которых этот проект собирает страницы, нарисованные настоящим рендерером. Сгруппированы по назначению.",
+      "helpLabel": "Как в этом проекте строится страница",
+      "helpWhatTitle": "Блок — это единица, из которой собрана страница.",
+      "helpWhat": "Страница здесь не свёрстанный файл, а СПИСОК БЛОКОВ. Рендереры уже собраны; страница лишь говорит, какие виды на ней стоят, в каком порядке и с каким текстом. Именно поэтому все страницы проекта выглядят одним продуктом, а не работой пяти разных людей.",
+      "helpThreeTitle": "Иначе страницу построить нельзя, и путей ровно три.",
+      "helpThree": "Взять подходящий вид. Либо создать новый вид и потом его взять — он попадёт в этот каталог и станет доступен всем страницам. Либо, если вещь уникальна и принадлежит одному маршруту, взять виджет. Четвёртого пути нет: свёрстанная руками разметка мимо этих трёх невидима каталогу, её нельзя перенести на другую страницу, нельзя переставить относительно текста и не переводит языковая ячейка.",
+      "helpWidgetTitle": "Блок или виджет решает ПЕРЕИСПОЛЬЗОВАНИЕ, а не сложность.",
+      "helpWidget": "Вид обязан подходить любой странице проекта — этим он и заслуживает место в каталоге. Виджету не нужно подходить никому, кроме своего маршрута: уникальная графика, своё поведение, своё лицо, и умирает он вместе с маршрутом. Поэтому спрашивать надо не «сложно ли это построить», а «захочет ли вторая страница ровно этот рисунок».",
+      "helpMotionTitle": "Движение не делает вещь виджетом.",
+      "helpMotion": "Рендерер под sections/ всегда серверный, а интерактивность приходит островком внутри него: сервер печатает состояние покоя, анимированная версия приезжает позже и только поверх уже нарисованного. Вид `orbitLayers` в «Продукте в действии» — ровно такой случай: он перенесён сюда из виджета, не потеряв ни одного кадра анимации.",
+      "helpRebuildTitle": "Что даёт описание страницы ДАННЫМИ — и чего оно пока не даёт.",
+      "helpRebuild": "Раз страница это список блоков, её можно описать данными, а не кодом: рендереры собраны один раз, и новая страница — это новое описание. Там, где описание приезжает в рантайме (динамический маршрут, отдающий страницы из слоя данных), страница появляется БЕЗ пересборки. Сегодня проект этим путём ещё не пользуется: списки блоков лежат в файлах языковых ячеек, то есть в коде, а динамический товарный маршрут рисует свои компоненты, а не блоки. Способность блоками обеспечена — но это не то, что проект делает прямо сейчас.",
+      "helpCodeTitle": "Код на ярлыке — язык между вами и агентом.",
+      "helpCode": "У каждого образца есть код — `quote01`, `workspace02`, `orbitLayers01`. Назовите его в задаче («собери секцию из этого и этого»), и агент найдёт строку в порождённой сводке и возьмёт поля оттуда, не открывая ни одного рендерера. Код указывает на ОБРАЗЕЦ, а не просто на вид: у одного вида бывает несколько настроек, и номер называет настройку."
     },
     "tools": {
       "title": "Инструменты",

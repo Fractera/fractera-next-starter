@@ -113,6 +113,24 @@ export default async function DesignPage({
                 🔒 У «Инструментов» справки нет намеренно: выключатель объяснён
                 своей же подписью, и раскрывашка под ним обещала бы то, чего в ней
                 не будет. */}
+            {/* 🔒 У «БЛОКОВ» СПРАВКА ОБЪЯСНЯЕТ НЕ НАСТРОЙКУ, А ЗАКОН (шаг 59,
+                заказ владельца). У соседних разделов раскрывашка рассказывает,
+                куда уедет значение; здесь настраивать нечего — каталог только
+                показывает. Объяснить надо другое: страницу в этом проекте
+                нельзя построить мимо блоков, и путей ровно три. Человек,
+                который этого не знает, начнёт верстать руками и потеряет
+                перенос, порядок и перевод разом. */}
+            {active === "blocks" && (
+              <HelpDetails label={ui.pages.blocks.helpLabel}>
+                <p><strong>{ui.pages.blocks.helpWhatTitle}</strong> {ui.pages.blocks.helpWhat}</p>
+                <p><strong>{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</p>
+                <p><strong>{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</p>
+                <p><strong>{ui.pages.blocks.helpMotionTitle}</strong> {ui.pages.blocks.helpMotion}</p>
+                <p><strong>{ui.pages.blocks.helpRebuildTitle}</strong> {ui.pages.blocks.helpRebuild}</p>
+                <p><strong>{ui.pages.blocks.helpCodeTitle}</strong> {ui.pages.blocks.helpCode}</p>
+              </HelpDetails>
+            )}
+
             {active === "fonts" && (
               <HelpDetails label={ui.fonts.helpLabel}>
                 <p><strong>{ui.fonts.helpWhereTitle}</strong> {ui.fonts.helpWhere}</p>

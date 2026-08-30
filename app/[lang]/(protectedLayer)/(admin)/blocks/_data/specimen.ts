@@ -979,6 +979,27 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'orbitLayers',
+    when: 'Four layers around a centre: rings, a slowly turning sector and a core icon, with the four cards sitting in the corners from lg up. Take it when a product rests on exactly four independent pillars and you want them seen as ONE construction rather than as a list. The count is geometry, not taste — five cards have nowhere to sit and three leave a corner empty. Motion is optional by construction: the server prints the resting state and the animation arrives only after a pointer enters, on wide screens.',
+    whenRu: 'Четыре слоя вокруг центра: кольца, медленно вращающийся сектор и значок в середине, а от lg карточки стоят по четырём углам. Берут, когда продукт держится ровно на четырёх независимых опорах и показать их надо ОДНОЙ конструкцией, а не списком. Число — геометрия, а не вкус: пятой карточке негде встать, при трёх пустует угол. Движение необязательно по устройству: сервер печатает покой, анимация приходит только после входа указателя и только на широком экране.',
+    blocks: [
+      {
+        kind: 'orbitLayers',
+        badge: 'Why it matters',
+        title: 'Security is built into the',
+        accent: 'foundation',
+        lead: 'Four layers of protection — each one works on its own.',
+        core: 'shield',
+        cards: [
+          { title: 'Made to fit the regulator', text: 'Personal data stays where the law of your country requires it to stay — on your own server, under your own jurisdiction.', chip: "your country's law", icon: 'target' },
+          { title: 'Your data survives you', text: 'Backups, moving to another server, export and import — the project is yours to carry away whole.', chip: 'backups and moving', icon: 'backup' },
+          { title: 'Money with no surprises', text: 'Cloud AI costs and everything else stay on the server you own. Nothing bills you from somewhere else.', chip: 'no surprises', icon: 'shop' },
+          { title: 'Your own authorization', text: 'The whole project is closed by authorization that belongs to you. Security is entirely in your hands.', chip: 'your authorization', icon: 'shield' },
+        ],
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **53** · рендереров: **53** · карточек: **31**
+Видов: **54** · рендереров: **54** · карточек: **32**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -78,6 +78,7 @@
 | `chartRadar01` | `chartRadar` | Charts | лепестковая: профиль по нескольким мерам | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string }; footer?: { note?: string; hint?: string } | [карточка](blocks/chartRadar.md) |
 | `chartRadial01` | `chartRadial` | Charts | радиальные полосы: доля и её величина сразу | title: string; description?: string; shares?: ChartShareRow[]; footer?: { note?: string; hint?: string } | [карточка](blocks/chartRadial.md) |
 | `chartTooltip01` | `chartTooltip` | Charts | подсказка, видимая без наведения | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string }; openAt?: number | [карточка](blocks/chartTooltip.md) |
+| `orbitLayers01` | `orbitLayers` | Product in action | орбита: четыре опоры как одна конструкция | badge?: string; title: string; accent?: string; lead?: string; core?: FeatureIcon; cards: [OrbitLayerCard, OrbitLayerCard, OrbitLayerCard, OrbitLayerCard] | [карточка](blocks/orbitLayers.md) |
 
 ## Чего в этой таблице нет
 

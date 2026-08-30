@@ -486,6 +486,11 @@
       "id": "0053",
       "type": "charts",
       "shape": "chart"
+    },
+    "orbitLayers": {
+      "id": "0054",
+      "type": "product-demo",
+      "shape": "cards"
     }
   }
 }

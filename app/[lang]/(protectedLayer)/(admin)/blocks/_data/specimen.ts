@@ -862,7 +862,7 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'platformGrid',
-    when: 'A grid of platforms where the glow comes out of the SEAMS: the cells sit two pixels apart over a radial backdrop, so the lattice is brighter in the middle and fades at the edges — no borders, no shadows. Ported from the storefront. The cell count is a multiple of six: two columns on a phone, three on a monitor, and only a multiple of six fills both without a stub. Differs from `featureGrid`, which lists what the PRODUCT can do; this lists OTHER PEOPLE'S platforms — hence the company line and the small print about trademarks underneath.',
+    when: 'A grid of platforms where the glow comes out of the SEAMS: the cells sit two pixels apart over a radial backdrop, so the lattice is brighter in the middle and fades at the edges — no borders, no shadows. Ported from the storefront. The cell count is a multiple of six: two columns on a phone, three on a monitor, and only a multiple of six fills both without a stub. Differs from `featureGrid`, which lists what the PRODUCT can do; this lists platforms that belong to OTHER COMPANIES — hence the company line and the small print about trademarks underneath.',
     whenRu: 'Сетка площадок, где свечение идёт ИЗ ЩЕЛЕЙ: ячейки стоят в двух пикселях друг от друга поверх радиальной подложки, поэтому решётка ярче в середине и гаснет к краям — ни рамок, ни теней. Перенесена с витрины. Число ячеек кратно шести: колонок две на телефоне и три на мониторе, и только кратное шести заполняет обе раскладки без обрубка. От `featureGrid` отличается предметом: тот перечисляет умения ПРОДУКТА, этот — ЧУЖИЕ площадки, отсюда строка компании и оговорка о торговых марках внизу.',
     blocks: [
       {

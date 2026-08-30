@@ -78,7 +78,7 @@ export function BlocksCatalogue({
           🔒 ФОН ОБЯЗАТЕЛЕН: прозрачный ряд пропускает под собой уезжающие образцы. */}
       <nav
         data-blocks-types
-        className="slim-scrollbar -mx-1 flex gap-1.5 overflow-x-auto bg-background px-1 pb-1 md:sticky md:top-20 md:z-30 md:py-2"
+        className="slim-scrollbar wsx-strip -mx-1 flex gap-1.5 overflow-x-auto bg-card px-1 pb-1 md:sticky wsx-sticky md:z-30 md:py-3"
       >
         <Link
           href={href("")}

@@ -168,7 +168,7 @@ export function WorkspaceShell({
       <nav
         data-workspace-menu
         aria-label={menuTitle ?? menuWord}
-        className="slim-scrollbar fixed left-0 top-0 z-40 h-dvh w-[90%] -translate-x-full overflow-y-auto border-r border-border bg-card p-4 shadow-xl transition-transform duration-200 peer-checked:translate-x-0 md:static md:z-auto md:h-auto md:max-h-[calc(100dvh-8rem)] md:w-60 md:shrink-0 md:translate-x-0 md:self-start md:shadow-none md:sticky md:top-20"
+        className="slim-scrollbar fixed left-0 top-0 z-40 h-dvh w-[90%] -translate-x-full overflow-y-auto border-r border-border bg-card p-4 shadow-xl transition-transform duration-200 peer-checked:translate-x-0 md:static md:z-auto md:h-auto md:max-h-[calc(100dvh-var(--wsx-top)-2rem)] md:w-60 md:shrink-0 md:translate-x-0 md:self-start md:shadow-none md:sticky wsx-sticky wsx-rule-up"
       >
         <div className="mb-3 flex items-center justify-between gap-2">
           {menuTitle ? <H4 variant="ui">{menuTitle}</H4> : <span aria-hidden />}
@@ -242,7 +242,7 @@ export function WorkspaceShell({
           <nav
             data-workspace-tabs
             aria-label={typeof title === 'string' ? title : menuWord}
-            className="slim-scrollbar -mx-1 flex gap-1.5 overflow-x-auto bg-background px-1 pb-1 md:sticky md:top-20 md:z-30 md:py-2"
+            className="slim-scrollbar wsx-strip -mx-1 flex gap-1.5 overflow-x-auto bg-card px-1 pb-1 md:sticky wsx-sticky md:z-30 md:py-3"
           >
             {tabs.map((tab, i) => (
               <Item

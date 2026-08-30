@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **43** · рендереров: **43** · карточек: **19**
+Видов: **44** · рендереров: **44** · карточек: **20**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -68,6 +68,7 @@
 | `showcaseCarousel01` | `showcaseCarousel` | Use cases | — | badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[] | — |
 | `featureGrid01` | `featureGrid` | Benefits and value | — | badge?: string; title?: string; note?: string; items: { icon?: FeatureIcon; title: string; label?: string; tone?: Tone; text: string }[] | — |
 | `promoBand01` | `promoBand` | Trust and logos | — | title: string; text: string; cta?: { href: string; label: string; icon?: 'github' \| 'link' }; image?: string; alt?: string | — |
+| `priceTable01` | `priceTable` | Pricing and plans | тарифы с переключателем периода | title: string; note?: string; periodLabels?: { monthly: string; yearly: string }; plans: {; name: string; monthlyPrice: string; yearlyPrice?: string; monthlyPeriod?: string; yearlyPeriod?: string; features: string[]; cta?: { href: string; label: string }; highlighted?: boolean; }[] | [карточка](blocks/priceTable.md) |
 
 ## Чего в этой таблице нет
 

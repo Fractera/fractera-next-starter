@@ -681,6 +681,47 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'priceTable',
+    when: 'Plans with a period switch. Ported from an external block library, with its dead weight left behind: eight of its fields were declared and never rendered. Both prices sit in the markup and only one is shown — a crawler reads both, and the yearly price, the one people compare, exists for everyone rather than only for a browser running scripts. The switch is a radio input plus a CSS rule, not an island.',
+    whenRu: 'Тарифы с переключателем периода. Перенесены из внешней библиотеки блоков без её мёртвого груза: восемь полей источника были объявлены и ни разу не отрисованы. Обе цены лежат в разметке, показана одна — поисковик читает обе, и годовая цена, та самая, которую сравнивают, существует для всех, а не только для браузера с работающими скриптами. Переключатель — радиокнопка и правило CSS, а не островок.',
+    blocks: [
+      {
+        kind: 'priceTable',
+        title: 'Simple pricing plans',
+        note: 'Choose the plan that fits your needs. Start free and scale as you grow.',
+        periodLabels: { monthly: 'Monthly', yearly: 'Yearly' },
+        plans: [
+          {
+            name: 'Basic',
+            monthlyPrice: '$0',
+            yearlyPrice: '$0',
+            features: ['Up to 5 components', 'Community support', 'Weekly updates', '100MB storage', 'Basic analytics'],
+            cta: { href: '/en/architecture', label: 'Start for free' },
+          },
+          {
+            name: 'Standard',
+            monthlyPrice: '$20',
+            yearlyPrice: '$200',
+            monthlyPeriod: 'Per month',
+            yearlyPeriod: 'Per year',
+            highlighted: true,
+            features: ['Unlimited components', 'Priority support', 'Daily updates', '10GB storage', 'Advanced analytics'],
+            cta: { href: '/en/architecture', label: 'Get started' },
+          },
+          {
+            name: 'Premium',
+            monthlyPrice: '$80',
+            yearlyPrice: '$800',
+            monthlyPeriod: 'Per month',
+            yearlyPeriod: 'Per year',
+            features: ['Unlimited components', 'Dedicated support', 'Real-time updates', 'Unlimited storage', 'Custom integrations'],
+            cta: { href: '/en/architecture', label: 'Buy now' },
+          },
+        ],
+      },
+    ],
+  },
+  {
     kind: 'promoBand',
     when: 'A band that breaks out of the page column, ruled top and bottom with the accent colour: heading, paragraph and a button on the left, an image on the right. Ported from the storefront. The band shares the page background — what separates it is the two rules and the width, so filling it with another colour turns the device into an ordinary card, only wider. The only kind in the catalogue that leaves the column, and it costs one guard: `overflow-x: clip` on the root, without which the scrollbar gives the WHOLE page a horizontal scroll.',
     whenRu: 'Полоса, выходящая за колонку страницы, с акцентной чертой сверху и снизу: заголовок, абзац и кнопка слева, картинка справа. Перенесена с витрины. Фон полосы совпадает с фоном страницы — отделяют её две черты и ширина, поэтому залить полосу другим цветом значит превратить приём в обычную карточку, только пошире. Единственный вид каталога, выходящий за колонку, и стоит он одной защиты: `overflow-x: clip` у корня, без которого полоса прокрутки даёт горизонтальную прокрутку ВСЕЙ странице.',

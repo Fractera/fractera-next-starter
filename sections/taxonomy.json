@@ -420,6 +420,11 @@
       "id": "0043",
       "type": "trust",
       "shape": "two-columns"
+    },
+    "priceTable": {
+      "id": "0044",
+      "type": "pricing",
+      "shape": "cards"
     }
   }
 }

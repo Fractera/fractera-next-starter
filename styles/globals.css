@@ -726,3 +726,35 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
 html {
   overflow-x: clip;
 }
+
+/* ─── ТАРИФЫ: ПЕРЕКЛЮЧАТЕЛЬ ПЕРИОДА (вид `priceTable`, шаг 56, 2026-08-30) ────
+   🔒 БЕЗ ЕДИНОЙ СТРОКИ JAVASCRIPT — и это не аскеза. Обе цены, месячная и
+   годовая, лежат в разметке: поисковик читает ОБЕ, а человек с выключенными
+   скриптами видит хотя бы одну. Островок нарисовал бы только текущую, и годовая
+   цена — та самая, которую ищут при сравнении тарифов, — не существовала бы ни
+   для кого, кроме браузера с работающим JS.
+
+   🔒 ПЕРЕКЛЮЧАТЕЛЕЙ ДВА, А НЕ ДЕСЯТЬ, поэтому перечисления пар здесь короткое:
+   у периода ровно два состояния, и третьего быть не может. Тот же приём, что у
+   `problemSolution` и `carousel` выше. */
+.pt-yearly { display: none; }
+
+.pt-r:nth-of-type(2):checked ~ .pt-body .pt-monthly { display: none; }
+.pt-r:nth-of-type(2):checked ~ .pt-body .pt-yearly { display: block; }
+
+/* Отмеченная половина переключателя. Пары перечислены так же, как выше: ярлык
+   знает о своём переключателе только через порядок. */
+.pt-r:nth-of-type(1):checked ~ div .pt-tabs .pt-tab:nth-child(1),
+.pt-r:nth-of-type(2):checked ~ div .pt-tabs .pt-tab:nth-child(2) {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+  cursor: default;
+}
+
+/* 🔒 ФОКУС ВИДЕН, ХОТЯ ПЕРЕКЛЮЧАТЕЛЬ СКРЫТ: `sr-only` радиокнопкой по-прежнему
+   управляют с клавиатуры, и без этого правила человек, листающий табом, не
+   видит, где находится. */
+.pt-r:focus-visible ~ div .pt-tabs {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

@@ -203,6 +203,22 @@
         "en": "Without a top row of sections (menu, heading, coloured cards, content) or with one, when the right-hand side itself splits into sections.",
         "ru": "Без верхнего ряда разделов (меню, заголовок, цветные карточки, содержимое) или с ним, когда правая часть сама делится на разделы."
       }
+    },
+    {
+      "id": "charts",
+      "order": 13,
+      "title": {
+        "en": "Charts",
+        "ru": "Диаграммы"
+      },
+      "purpose": {
+        "en": "Numbers shown as a picture: how a value moved over time, how a whole splits into parts, how several measures compare at once.",
+        "ru": "Числа, показанные картинкой: как величина менялась во времени, как целое делится на части, как несколько мер сравниваются разом."
+      },
+      "variants": {
+        "en": "Area, bars and line over a time series; pie and radial bars for shares; a radar for several measures at once; a tooltip-first example.",
+        "ru": "Область, столбцы и линия по ряду времени; круговая и радиальная для долей; лепестковая для нескольких мер сразу; образец, где главное — подсказка."
+      }
     }
   ],
   "kinds": {
@@ -435,6 +451,11 @@
       "id": "0046",
       "type": "benefits",
       "shape": "cards"
+    },
+    "chartArea": {
+      "id": "0047",
+      "type": "charts",
+      "shape": "chart"
     }
   }
 }

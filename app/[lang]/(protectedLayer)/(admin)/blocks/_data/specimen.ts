@@ -882,6 +882,24 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'chartArea',
+    when: 'Two series stacked over a time series, with a range picker in the header. Take it when the question is HOW A TOTAL MOVED and what it was made of — the stack answers both at once. Not for shares of a whole at one moment: that is a pie. Data is optional; without it the view draws the sample, so the catalogue never shows an empty card.',
+    whenRu: 'Два ряда с накоплением по оси времени и выбор отрезка в шапке. Берут, когда вопрос — КАК МЕНЯЛОСЬ ЦЕЛОЕ и из чего оно состояло: накопление отвечает на оба сразу. Не для долей одного момента — это круговая. Данные необязательны: без них вид рисует образец, и карточка каталога не бывает пустой.',
+    blocks: [
+      {
+        kind: 'chartArea',
+        title: 'Area Chart - Interactive',
+        description: 'Showing total visitors for the last 3 months',
+        labels: { a: 'Desktop', b: 'Mobile' },
+        ranges: [
+          { days: 90, label: 'Last 3 months' },
+          { days: 30, label: 'Last 30 days' },
+          { days: 7, label: 'Last 7 days' },
+        ],
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

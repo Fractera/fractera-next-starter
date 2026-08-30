@@ -584,6 +584,29 @@ export type LeafBlock =
        */
       cta?: { page: 'architecture' }
     }
+  // ─── ДИАГРАММЫ (шаг 58) ───────────────────────────────────────────────────
+  //
+  // 🔒 СЕМЬ ВИДОВ, А НЕ ОДИН С ПОЛЕМ «ТИП». Владелец прислал семь образцов и
+  // сказал «по одной диаграмме» на каждый: у них разные данные (ряд времени,
+  // доли, месяцы), разные подписи и разное поведение. Один вид с полем
+  // `variant` пришлось бы кормить объединением всех форм сразу — и материал
+  // перестал бы проверяться типом, ради которого он и объявлен здесь.
+  //
+  // 🔒 ДАННЫЕ НЕОБЯЗАТЕЛЬНЫ У ВСЕХ СЕМИ. Нет строк — рисуются данные образца
+  // из `components/charts/sample-data.ts`. Каталог обязан показывать вид, а не
+  // пустую карточку, и это же делает вид пригодным для страницы без правки типа.
+  //
+  // Диаграмма-область: два ряда с накоплением и выбор отрезка времени.
+  | {
+      kind: 'chartArea'
+      title: string
+      description?: string
+      rows?: ChartRow[]
+      /** Как называются два ряда на легенде и в подсказке. */
+      labels?: { a?: string; b?: string }
+      /** Отрезки выпадающего списка. Пусто — списка нет. */
+      ranges?: ChartRange[]
+    }
 // ── Container blocks (composite layouts) ─────────────────────────────────────
 // Containers hold `children: Block[]` and are rendered recursively through the
 // same registry, so ANY block (including another container) can be nested inside
@@ -707,4 +730,19 @@ export type WorkspaceNote = { tone: 'recommended' | 'advice' | 'warning'; title:
  * совсем, изображение роняет соседнюю половину вверх, и пара перестаёт читаться
  * парой — тот же закон, что у `splitPair`.
  */
+// ФОРМЫ ДАННЫХ ДИАГРАММ (шаг 58).
+//
+// 🔒 ИМЕНА НЕЙТРАЛЬНЫЕ — `x`, `a`, `b`. В образцах shadcn ряды называются
+// `desktop`/`mobile`: это подписи ЕГО примера, а не имена величин. Материал
+// проекта говорит про свои ряды, а как назвать их на экране — решает `labels`.
+
+/** Точка ряда: подпись по оси X и два значения. */
+export type ChartRow = { x: string; a: number; b: number }
+
+/** Доля: имя и величина. Круговая и радиальная берут её. */
+export type ChartShareRow = { name: string; value: number }
+
+/** Отрезок времени в выпадающем списке диаграммы. */
+export type ChartRange = { days: number; label: string }
+
 export type SpotlightHalf = { image?: string; alt?: string; title: string; text: string }

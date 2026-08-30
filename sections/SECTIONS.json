@@ -1005,6 +1005,20 @@
       "description": null,
       "hasCard": false,
       "usedOn": []
+    },
+    {
+      "id": "0041",
+      "codes": [
+        "showcaseCarousel01"
+      ],
+      "kind": "showcaseCarousel",
+      "type": "how-it-works",
+      "shape": "figure",
+      "fields": "badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[]",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
     }
   ]
 }

@@ -405,6 +405,11 @@
       "id": "0040",
       "type": "pricing",
       "shape": "cards"
+    },
+    "showcaseCarousel": {
+      "id": "0041",
+      "type": "how-it-works",
+      "shape": "figure"
     }
   }
 }

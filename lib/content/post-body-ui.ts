@@ -17,19 +17,26 @@ export type PostBodyUi = {
    * назвали бы одну и ту же кнопку десятью способами.
    */
   workspaceMenu: string
+  /**
+   * Подпись под заглушкой картинки в витринной карусели (шаг 53).
+   *
+   * Слово МЕХАНИЗМА по той же причине, что и предыдущее: его печатает вид, когда
+   * у слайда нет картинки, — а не автор страницы.
+   */
+  carouselPlaceholder: string
 }
 
 const UI: Record<string, PostBodyUi> = {
-  en: { fullDocumentation: 'Full documentation', downloadMd: 'Download .md', workspaceMenu: 'Menu' },
-  ru: { fullDocumentation: 'Полная документация', downloadMd: 'Скачать .md', workspaceMenu: 'Меню' },
-  es: { fullDocumentation: 'Documentación completa', downloadMd: 'Descargar .md', workspaceMenu: 'Menú' },
-  fr: { fullDocumentation: 'Documentation complète', downloadMd: 'Télécharger .md', workspaceMenu: 'Menu' },
-  it: { fullDocumentation: 'Documentazione completa', downloadMd: 'Scarica .md', workspaceMenu: 'Menu' },
-  de: { fullDocumentation: 'Vollständige Dokumentation', downloadMd: '.md herunterladen', workspaceMenu: 'Menü' },
-  pt: { fullDocumentation: 'Documentação completa', downloadMd: 'Descarregar .md', workspaceMenu: 'Menu' },
-  pl: { fullDocumentation: 'Pełna dokumentacja', downloadMd: 'Pobierz .md', workspaceMenu: 'Menu' },
-  tr: { fullDocumentation: 'Tam dokümantasyon', downloadMd: '.md indir', workspaceMenu: 'Menü' },
-  nl: { fullDocumentation: 'Volledige documentatie', downloadMd: '.md downloaden', workspaceMenu: 'Menu' },
+  en: { fullDocumentation: 'Full documentation', downloadMd: 'Download .md', workspaceMenu: 'Menu', carouselPlaceholder: 'placeholder — image coming soon' },
+  ru: { fullDocumentation: 'Полная документация', downloadMd: 'Скачать .md', workspaceMenu: 'Меню', carouselPlaceholder: 'заглушка — картинка появится позже' },
+  es: { fullDocumentation: 'Documentación completa', downloadMd: 'Descargar .md', workspaceMenu: 'Menú', carouselPlaceholder: 'marcador — la imagen llegará después' },
+  fr: { fullDocumentation: 'Documentation complète', downloadMd: 'Télécharger .md', workspaceMenu: 'Menu', carouselPlaceholder: 'espace réservé — image à venir' },
+  it: { fullDocumentation: 'Documentazione completa', downloadMd: 'Scarica .md', workspaceMenu: 'Menu', carouselPlaceholder: 'segnaposto — immagine in arrivo' },
+  de: { fullDocumentation: 'Vollständige Dokumentation', downloadMd: '.md herunterladen', workspaceMenu: 'Menü', carouselPlaceholder: 'Platzhalter — Bild folgt' },
+  pt: { fullDocumentation: 'Documentação completa', downloadMd: 'Descarregar .md', workspaceMenu: 'Menu', carouselPlaceholder: 'espaço reservado — imagem em breve' },
+  pl: { fullDocumentation: 'Pełna dokumentacja', downloadMd: 'Pobierz .md', workspaceMenu: 'Menu', carouselPlaceholder: 'symbol zastępczy — obraz wkrótce' },
+  tr: { fullDocumentation: 'Tam dokümantasyon', downloadMd: '.md indir', workspaceMenu: 'Menü', carouselPlaceholder: 'yer tutucu — görsel yakında' },
+  nl: { fullDocumentation: 'Volledige documentatie', downloadMd: '.md downloaden', workspaceMenu: 'Menu', carouselPlaceholder: 'plaatsaanduiding — afbeelding volgt' },
 }
 
 export function getPostBodyUi(lang: string): PostBodyUi {

@@ -681,6 +681,25 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'showcaseCarousel',
+    when: 'The showcase carousel, ported one-to-one from the storefront: auto-advance every five seconds with a 700ms crossfade, slides grouped in threes, arrows that shift a whole group, numbered circles that pause on click and show ‖, a progress line that follows the pause, a glow that appears once the image has loaded, lazy loading of the current and next group, and a pause when the section scrolls out of view. Colours come from the theme, not from the storefront palette. Every slide also sits in a hidden block for crawlers — the carousel reveals one at a time through script.',
+    whenRu: 'Витринная карусель, перенесённая один в один: автопереход раз в пять секунд с затуханием 700 мс, слайды блоками по три, стрелки листают блок целиком, кружки с номерами ставят паузу и показывают ‖, полоса прогресса следует за паузой, свечение появляется после загрузки картинки, ленивая загрузка текущего и следующего блока, пауза при уходе секции из вида. Цвета берутся из темы, а не из палитры витрины. Все слайды продублированы скрытым блоком для поисковика: карусель раскрывает их по одному скриптом.',
+    blocks: [
+      {
+        kind: 'showcaseCarousel',
+        badge: 'Process',
+        title: 'Step by step, how it works',
+        note: 'Five seconds per slide; click a circle to hold it.',
+        slides: [
+          { label: 'Your server', sublabel: 'Credentials — and it is ready', title: 'Infrastructure right after purchase', description: 'A clean machine becomes a working contour: site, panel, agents, memory, database and storage, without anyone configuring them by hand.' },
+          { label: 'Your repository', sublabel: 'The code is yours from day one', title: 'The project arrives in your GitHub', description: 'What travels there is the application; the cockpit stays on the server, which is why an editing mistake cannot break it.' },
+          { label: 'Your address', sublabel: 'One action to publish', title: 'The change is live', description: 'What was edited appears at the address people visit, without a pipeline to configure first.' },
+          { label: 'Your data', sublabel: 'Four stores, one door', title: 'Memory that survives the session', description: 'Rows, files, meaning-search and a graph of connections sit behind one key on the machine you own.' },
+        ],
+      },
+    ],
+  },
+  {
     kind: 'support',
     when: 'Ways to support the project. NOT a price list, and the difference is substantive: a price carries an obligation — pay and you receive what was named — while support is a voluntary contribution, and promising capability for it turns it into a sale without a guarantee. Hence the optional amount and the absence of a purchase button inside the kind.',
     whenRu: 'Варианты поддержки проекта. НЕ прайс-лист, и разница существенная: у цены есть обязанность — заплатив, человек получает названное, — а поддержка это добровольный взнос, и обещать за него возможности значит превратить его в продажу без гарантии. Отсюда необязательная сумма и отсутствие кнопки покупки внутри вида.',

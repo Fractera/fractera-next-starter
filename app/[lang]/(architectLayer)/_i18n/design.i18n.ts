@@ -169,6 +169,26 @@ const EN = {
       "destructive": {
         "label": "Danger",
         "description": "Deletion, errors, anything irreversible."
+      },
+      "chart-1": {
+        "label": "Chart series 1",
+        "description": "The first data series on a chart — and the only colour when a chart has one series."
+      },
+      "chart-2": {
+        "label": "Chart series 2",
+        "description": "The second series. It is read right next to the first, so it has to differ at a glance."
+      },
+      "chart-3": {
+        "label": "Chart series 3",
+        "description": "The third series, for charts that compare more than a pair."
+      },
+      "chart-4": {
+        "label": "Chart series 4",
+        "description": "The fourth series. Pie and radial charts use all five."
+      },
+      "chart-5": {
+        "label": "Chart series 5",
+        "description": "The fifth and last: more than five colours nobody tells apart anyway."
       }
     },
     "contrastOk": "Readable",
@@ -391,6 +411,26 @@ const RU: typeof EN = {
       "destructive": {
         "label": "Опасность",
         "description": "Удаление, ошибки, всё необратимое."
+      },
+      "chart-1": {
+        "label": "Диаграмма, ряд 1",
+        "description": "Первый ряд данных на диаграмме — и единственный цвет, если ряд один."
+      },
+      "chart-2": {
+        "label": "Диаграмма, ряд 2",
+        "description": "Второй ряд. Его читают рядом с первым, поэтому отличаться он обязан с первого взгляда."
+      },
+      "chart-3": {
+        "label": "Диаграмма, ряд 3",
+        "description": "Третий ряд — для диаграмм, где сравнивают больше двух величин."
+      },
+      "chart-4": {
+        "label": "Диаграмма, ряд 4",
+        "description": "Четвёртый ряд. Круговая и радиальная берут все пять."
+      },
+      "chart-5": {
+        "label": "Диаграмма, ряд 5",
+        "description": "Пятый и последний: больше пяти цветов человек всё равно не различает."
       }
     },
     "contrastOk": "Читаемо",

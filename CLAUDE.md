@@ -630,10 +630,15 @@ focus trap, a lost card language, a refusal reason hidden behind "could not".
 **A product is the unit of work; a "project" is not one.** A project has no address, no folder, no
 tables — you cannot build by it. One server carries several products, each living at its own pace.
 
-**The owner creates a product in the panel**, choosing one of twelve structures (shop, landing,
+**The owner creates a product in the panel**, choosing one of **twenty-two** structures (shop, landing,
 company brain, …). The structure answers the first seven intake questions and the default surface.
 Then the dossier `PRODUCTS-CONFIG/<id>.json` is born, and `id` (`p1`, `p2`) means nothing and never
 changes: paths hang on it, while name and address the owner edits freely.
+
+🔒 **THE NUMBER CAME FROM A COMMAND, AND IT USED TO BE WRONG HERE** (2026-08-30). This line said
+"twelve" while `config/project-types.ts` held **22**; the list had grown and the instruction had not.
+Nobody noticed, because a number in prose is read as fact and never re-counted. **Count it when you
+quote it:** the source is `PROJECT_TYPES` in that file, and it is one command away.
 
 | Surface | Where it lives |
 |---|---|
@@ -751,6 +756,19 @@ would suit ANY page → create it (renderer `sections/blocks/<kind>.server.tsx`,
 `check:sections`) · the thing is unique to ONE route → it is a **widget**, with a table in `SCHEMA`
 (`lib/db/index.ts`) and a door `app/api/<name>/route.ts` (named in `PUBLIC_API_PREFIXES` if it serves a
 guest).
+
+🔒 **A KIND LIVES IN SIX PLACES, AND THE LIST ABOVE NAMES FOUR** (measured 2026-08-30 while adding
+`h4` and `h5`). The two that are easy to miss are the ones that fail LATER, not at compile time:
+`sections/taxonomy.json` (the kind's purpose-type; without it the panel files it under a default) and
+the generated pair `sections/SECTIONS.json` + `BLOCKS.md`, refreshed by **`npm run build:blocks-map`**
+and guarded by `check:blocks-map` in `prebuild`. Skip the last one and the build fails with a diff, not
+with your kind's name. If the kind is a heading, there is a seventh: `lib/aio/blocks-to-markdown.ts` —
+otherwise the markdown twin quietly flattens what the page shows as structure.
+
+🔒 **HEADINGS GO TO FIVE LEVELS, AND THE FIFTH IS NOT SMALLER** (owner, 2026-08-30). `h2 … h5` exist;
+there is no `h6` on purpose — an eleven-item enumeration reads better as a list. The fifth level is set
+at body size with caps and letter-spacing: a heading smaller than the prose around it stops reading as
+a heading. The table of contents collects two levels — `h2` with its `h3` children nested under it.
 
 🔒 **A COLUMN added later does NOT travel through `SCHEMA`** — `CREATE TABLE IF NOT EXISTS` does nothing
 where the table already exists, which is every machine but a fresh one. It goes into `LATE_COLUMNS` in

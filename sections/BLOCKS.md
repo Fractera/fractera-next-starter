@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **35** · рендереров: **35** · карточек: **15**
+Видов: **35** · рендереров: **35** · карточек: **18**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -33,10 +33,10 @@
 | `quote01` | `quote` | Page material | — | text: string; cite?: string; lead?: string | — |
 | `list01` | `list` | Page material | — | items: string[] | — |
 | `olist01` | `olist` | Page material | — | items: string[] | — |
-| `figure01` | `figure` | Page material | — | media: 'image' \| 'video'; src: string; alt: string; caption?: string; href?: string | — |
+| `figure01` | `figure` | Page material | картинка или видео с подписью | media: 'image' \| 'video'; src: string; alt: string; caption?: string; href?: string | [карточка](blocks/figure.md) |
 | `code01` | `code` | Page material | — | text: string | — |
 | `note01` | `note` | Page material | — | text: string | — |
-| `cta01` | `cta` | Page material | — | text?: string; href: string; label: string | — |
+| `cta01` | `cta` | Page material | призыв к действию | text?: string; href: string; label: string | [карточка](blocks/cta.md) |
 | `callout01` | `callout` | Page material | — | title: string; text: string | — |
 | `table01` | `table` | Page material | — | headers: string[]; rows: string[][]; caption?: string | — |
 | `docref01` | `docref` | Page material | — | title: string; summary: string; href: string; label?: string; kicker?: string | — |
@@ -52,7 +52,7 @@
 | `problemSolution01` | `problemSolution` | Comparison | cases on the left, the chosen one broken down on the right | badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; \| { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; \| { kind: 'statement'; text: string }; \| {; badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' } | [карточка](blocks/problemSolution.md) |
 | `cards01` | `cards` | Benefits and value | a section made of cards | badge?: string; title: string; note?: string; cols?: 2 \| 3; children: Block[] | [карточка](blocks/cards.md) |
 | `card01` | `card` | Page material | — | tone?: Tone; children: Block[] | — |
-| `statement01` | `statement` | Page material | — | text: string | — |
+| `statement01` | `statement` | Page material | крупное утверждение в разрядку | text: string | [карточка](blocks/statement.md) |
 | `noBill01` | `noBill` | Pricing and plans | the invoices that will not come | badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' } | [карточка](blocks/noBill.md) |
 | `faq01` | `faq` | Page material | questions and answers, last on the page | title?: string; items: FaqPair[] | [карточка](blocks/faq.md) |
 | `toc01` | `toc` | Page material | the table of contents of a page | items: TocItem[] | [карточка](blocks/toc.md) |

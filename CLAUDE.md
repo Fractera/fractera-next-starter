@@ -718,6 +718,15 @@ whether it becomes a rule. The answer goes into the section's card, `sections/bl
 words, dated. ✗ fixing silently means the same correction reaches the next agent and he pays for one
 job twice. What is COUNTED goes into the type and stops compiling; what is JUDGED lives in the card.
 
+🔒 **AND THIS IS NOW CHECKED BY A MACHINE, NOT BY YOUR MEMORY** (51-1, 2026-08-30). `check:sections`
+refuses the build when a renderer cites the owner's decision and `sections/blocks/<kind>.md` does not
+exist, and warns when the card exists without a word of his in it. The rule the owner called the
+"block instruction" therefore cannot settle in a comment and die there — a comment is read by whoever
+already opened that file, the card by **everyone** choosing a kind.
+✗ measured the day the check was written: eleven renderers cited the owner, three had no card at all.
+🔒 Cards are still NOT required of every kind: one written for the sake of a full table teaches nobody.
+The guard asks for a card exactly where there is something to record.
+
 🔒 **Every block on one page is original.** A section kind never appears twice on a page: the eye
 recognises the drawing before it reads the words. Not caught by a gate but by a question to yourself
 before reaching for a ready kind — *is this drawing already on the page?* Counted for standalone

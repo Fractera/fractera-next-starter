@@ -1,4 +1,6 @@
 import { PageHeader } from "@/components/content-page/page-header.server"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
+import { DialogsCatalogue } from "../../_components/dialogs-catalogue.client"
 import { Small } from "@/components/ui/typography"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { designUi } from "../../_i18n/design.i18n"
@@ -140,7 +142,14 @@ export default async function DesignPage({
               </section>
             )}
 
-            {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} />}
+            {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} dialogUi={appDialogUi(lang)} />}
+            {/* 🔒 РАЗДЕЛ ПОКАЗЫВАЕТ НАСТОЯЩЕЕ ОКНО, А НЕ ЕГО РИСУНОК. Витрина,
+                перерисовывающая предмет по-своему, показывает себя, а не
+                продукт, — тот же закон, по которому каталог блоков рисуют
+                настоящие рендереры. */}
+            {active === "dialogs" && (
+              <DialogsCatalogue ui={ui.pages.dialogs} dialogUi={appDialogUi(lang)} />
+            )}
             {/* 🔒 ЧИТАЕТСЯ ДЕЙСТВУЮЩЕЕ ЗНАЧЕНИЕ, А НЕ СЫРОЙ ФАЙЛ. У выключателя
                 возможности есть умолчание проекта, и «владелец не высказался»
                 обязано показываться в том положении, в каком возможность реально

@@ -3,14 +3,8 @@
 import { useState } from "react"
 import { Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { AppDialog } from "@/components/dialog/app-dialog.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 
 // ЗАЯВКА ИЗ КАТАЛОГА БЛОКОВ (шаг 61, 2026-08-30).
 //
@@ -23,10 +17,22 @@ import {
 // Две копии разошлись бы на первой правке, и увидеть это можно было бы только
 // открыв оба окна подряд.
 //
-// 🔒 ОКНО — ТОЛЬКО `components/ui/dialog.tsx`. Гейт `check:dialogs` ловит
-// подложку во весь экран и `createPortal` вне разрешённых мест. Собранное руками
-// окно выглядит так же и ломается ровно там, где не смотрят: без ловушки фокуса,
-// без Escape, без замка прокрутки.
+// ✗ ЗДЕСЬ БЫЛ СОБРАН СВОЙ `DialogContent`, И ЭТО СТОИЛО ВЛАДЕЛЬЦУ ОТКРЫТИЯ
+// ОКНА БЕЗ ПРОКРУТКИ (найдено им же, 2026-08-30: «ты не добавил вертикальный
+// скролл в модальное окно»). Голый примитив не знает ни предела высоты, ни
+// прокручиваемого тела: два поля и подсказка вырастают за нижний край экрана
+// вместе с кнопкой «Отправить», и до неё не добраться вовсе.
+//
+// 🔒 ОКНО ПРОДУКТА ОДНО, И ЭТО `AppDialog`, А НЕ `DialogContent`. Оно приносит
+// `max-h-[85vh]`, неподвижные заголовок и подвал и ПРОКРУЧИВАЕМОЕ тело между
+// ними — ровно ту тройку, которую здесь пришлось бы изобретать заново. Гейт
+// `check:dialogs` этого обхода не поймал: он ловит подложку, собранную руками,
+// и `createPortal`, а импорт примитива выглядит законно. Дыра закрыта тем же
+// шагом.
+//
+// 🔒 УРОК ШИРЕ СЛУЧАЯ: стандарт, который знает только тот, кто его писал, — не
+// стандарт. Я сам обошёл собственное правило через сутки после того, как
+// сослался на него в комментарии.
 //
 // 🔒 СЛОВА ПРИХОДЯТ ПРОПСОМ, А НЕ ИМПОРТОМ. Клиентский файл, импортирующий
 // словарь значением, увёз бы в браузер все его языки на каждой странице — это
@@ -67,6 +73,8 @@ export type BlockRequestUi = {
 
 type Props = {
   ui: BlockRequestUi
+  /** Слова самого окна (крестик и т. п.) — резолвятся на сервере. */
+  dialogUi: AppDialogUi
   /** Код образца — вариант А. */
   code?: string
   /** Тип каталога — вариант Б. */
@@ -76,7 +84,7 @@ type Props = {
   page: string
 }
 
-export function BlockRequest({ ui, code, kind, kindTitle, page }: Props) {
+export function BlockRequest({ ui, dialogUi, code, kind, kindTitle, page }: Props) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState("")
   const [role, setRole] = useState("")
@@ -155,16 +163,37 @@ export function BlockRequest({ ui, code, kind, kindTitle, page }: Props) {
         </button>
       )}
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {isCreate ? ui.createTitle.replace("%s", kindTitle ?? kind ?? "") : ui.editTitle.replace("%s", code ?? "")}
-            </DialogTitle>
-            <DialogDescription>{isCreate ? ui.createLead : ui.editLead}</DialogDescription>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-4">
+      <AppDialog
+        open={open}
+        onOpenChange={setOpen}
+        ui={dialogUi}
+        size="md"
+        title={isCreate ? ui.createTitle.replace("%s", kindTitle ?? kind ?? "") : ui.editTitle.replace("%s", code ?? "")}
+        description={isCreate ? ui.createLead : ui.editLead}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-md border border-border px-4 py-2 text-[length:var(--fs-small)] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {ui.cancel}
+            </button>
+            <button
+              type="button"
+              onClick={send}
+              disabled={!text.trim() || busy}
+              className="rounded-md bg-primary px-4 py-2 text-[length:var(--fs-small)] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {busy ? ui.sending : ui.send}
+            </button>
+          </>
+        }
+      >
+        {/* 🔒 ПОДВАЛ ОТДАН ОКНУ, А НЕ ТЕЛУ. Кнопки обязаны стоять на месте, пока
+            человек прокручивает длинное описание: уехавшая за край кнопка
+            «Отправить» — это и была жалоба владельца. */}
+        <div className="flex flex-col gap-4">
             <label className="flex flex-col gap-1.5">
               <span className="text-[length:var(--fs-small)] font-medium text-foreground">{ui.whatLabel}</span>
               <textarea
@@ -203,27 +232,8 @@ export function BlockRequest({ ui, code, kind, kindTitle, page }: Props) {
                 </p>
               </>
             )}
-          </div>
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-md border border-border px-4 py-2 text-[length:var(--fs-small)] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {ui.cancel}
-            </button>
-            <button
-              type="button"
-              onClick={send}
-              disabled={!text.trim() || busy}
-              className="rounded-md bg-primary px-4 py-2 text-[length:var(--fs-small)] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              {busy ? ui.sending : ui.send}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </AppDialog>
     </>
   )
 }

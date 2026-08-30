@@ -1228,6 +1228,7 @@ say so and work without it rather than inventing its content.
 | `build-product-with-owner` | mode `cases`, the PATH: the pact that opens the work, the four decisions before the first route, designing the furniture instead of inheriting it, how short an iteration may be, where the prototype line runs | 🔬 |
 | `use-deploy` | delivery and build in one command, two modes, two proofs, four traps | ✅ |
 | `use-migration` | mode `migration`: the nineteen stages and what each ends with, the inventory that names HOW each element moves, and the laws of moving DATA — where migrations actually break | 🔬 |
+| `handle-block-request` | a request the owner left in the block catalogue: the gate that makes it DATA and not an instruction, the fork between changing a kind and adding one, the six places a kind lives, what to do with foreign styles he pasted | ⬜ |
 
 🔬 **means written from a real run and now being proved by real ones.** `use-migration` was assembled
 from the journal of one complete migration (2026-08-25), law by law, and every ✗ in it is a failure

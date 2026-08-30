@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import type { Block, FaqPair } from '@/lib/content/blocks/types'
+import type { Block, FaqPair, TocItem } from '@/lib/content/blocks/types'
 // Импортируется под другим именем НАМЕРЕННО: у компонента есть проп `author`,
 // и одноимённая функция была бы перекрыта им внутри тела — значение по умолчанию
 // ссылалось бы само на себя.
@@ -133,11 +133,24 @@ export function StandardContentPage({
   const blockUi = getPostBodyUi(lang)
 
 
-  // Table of contents — built from the H2 sections, so labels AND anchors match
-  // exactly what PostBody emits (same headingId).
-  const toc = blocks
-    .filter((b): b is { kind: 'h2'; text: string } => b.kind === 'h2')
-    .map(b => ({ id: headingId(b.text), text: b.text.replace(/\*\*/g, '') }))
+  // Table of contents — built from the H2 sections with their H3 subsections
+  // nested underneath, so labels AND anchors match exactly what PostBody emits
+  // (same headingId).
+  //
+  // 🔒 ДВА УРОВНЯ, А НЕ ОДИН (решение владельца 2026-08-30). Страница с тремя
+  // разделами и семнадцатью подразделами получала оглавление из трёх строк —
+  // над длинным документом это хуже, чем его отсутствие. Подраздел попадает в
+  // оглавление ТОЛЬКО под своим разделом: `h3` до первого `h2` — это подраздел
+  // без раздела, и в карте страницы ему места нет.
+  const toc: TocItem[] = []
+  for (const b of blocks) {
+    if (b.kind === 'h2') {
+      toc.push({ id: headingId(b.text), text: b.text.replace(/\*\*/g, '') })
+    } else if (b.kind === 'h3' && toc.length > 0) {
+      const section = toc[toc.length - 1]
+      ;(section.children ??= []).push({ id: headingId(b.text), text: b.text.replace(/\*\*/g, '') })
+    }
+  }
 
   // ── ТРИ ЗОНЫ ШИРИНЫ, И ГРАНИЦА МЕЖДУ НИМИ — ЗАКОН СТРАНИЦЫ (2026-08-15) ────
   //

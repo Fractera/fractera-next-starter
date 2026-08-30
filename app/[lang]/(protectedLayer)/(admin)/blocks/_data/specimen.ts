@@ -41,7 +41,7 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'h3',
-    when: 'Sub-heading inside a section. Never in the table of contents.',
+    when: 'Sub-heading inside a section. It becomes the second level of the table of contents, nested under its own h2.',
     blocks: [{ kind: 'h3', text: 'A sub-heading' }],
   },
   {

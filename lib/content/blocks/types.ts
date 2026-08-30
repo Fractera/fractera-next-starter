@@ -112,7 +112,14 @@ export type LeafBlock =
   //
   // 🔒 ЗАГОЛОВОК САМОГО ОГЛАВЛЕНИЯ ЗДЕСЬ НЕ ЛЕЖИТ — это слово механизма («На этой
   // странице»), одно на весь сайт и уже переведённое в `lib/content/page-ui.ts`.
-  | { kind: 'toc'; items: { id: string; text: string }[] }
+  //
+  // 🔒 ДВА УРОВНЯ, А НЕ ОДИН (решение владельца 2026-08-30). Пока разделов было
+  // по десятку на страницу, хватало `h2`. Документ, у которого разделов ТРИ, а
+  // подразделов семнадцать, получал оглавление из трёх строк — над длинным
+  // текстом это хуже, чем его отсутствие. Второй уровень собирается из `h3`,
+  // идущих за своим `h2`; глубже не идём — оглавление перестало бы быть картой
+  // и стало бы вторым документом.
+  | { kind: 'toc'; items: TocItem[] }
   // 🪦 REMOVED ON THE WAY IN (2026-08-11): block kind `inquiry`. It rendered the
   // platform's own consultation CTA — a client button that opened an inquiry
   // drawer and posted to an endpoint that exists only on the marketing site. A
@@ -352,3 +359,12 @@ export type ContainerBlock =
 export type Block = LeafBlock | ContainerBlock
 
 export type FaqPair = { q: string; a: string }
+
+/**
+ * Строка оглавления. `children` — подразделы (`h3`), собранные фабрикой под
+ * своим разделом.
+ *
+ * 🔒 ВЛОЖЕННОСТЬ РОВНО ОДНА. Третий уровень сюда не приходит: оглавление есть
+ * карта страницы, а карта в масштабе один к одному — это сама страница.
+ */
+export type TocItem = { id: string; text: string; children?: { id: string; text: string }[] }

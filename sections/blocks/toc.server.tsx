@@ -27,17 +27,34 @@ export const toc: SectionRenderer<'toc'> = (b, ctx) => {
   return (
     <nav key={ctx.key} aria-label="Contents" className="mt-8 rounded-2xl border border-border bg-muted/40 p-5">
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-        {ui.tocHeading} · {b.items.length}
+        {ui.tocHeading} · {b.items.reduce((n, i) => n + 1 + (i.children?.length ?? 0), 0)}
       </p>
       <ol className="mt-3 flex flex-col gap-2">
         {b.items.map((item, i) => (
-          <li key={item.id} className="flex gap-3 text-[15px] leading-snug">
-            <span aria-hidden className="select-none font-mono text-sm text-muted-foreground">
-              {String(i + 1).padStart(2, '0')}
+          <li key={item.id} className="flex flex-col gap-2 text-[15px] leading-snug">
+            <span className="flex gap-3">
+              <span aria-hidden className="select-none font-mono text-sm text-muted-foreground">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <a href={`#${item.id}`} className="text-muted-foreground transition-colors hover:text-primary">
+                {item.text}
+              </a>
             </span>
-            <a href={`#${item.id}`} className="text-muted-foreground transition-colors hover:text-primary">
-              {item.text}
-            </a>
+            {/* Второй уровень: подразделы своего раздела. Номера им не даются —
+                нумерация «01.03» превращает карту в оглавление книги, а отступа
+                и точки достаточно, чтобы уровень читался. */}
+            {item.children && item.children.length > 0 && (
+              <ul className="ml-9 flex flex-col gap-1.5">
+                {item.children.map(sub => (
+                  <li key={sub.id} className="flex gap-2 text-sm leading-snug">
+                    <span aria-hidden className="select-none text-muted-foreground">·</span>
+                    <a href={`#${sub.id}`} className="text-muted-foreground transition-colors hover:text-primary">
+                      {sub.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ol>

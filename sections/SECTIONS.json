@@ -208,7 +208,7 @@
         {
           "page": "architecture",
           "order": 1,
-          "times": 37
+          "times": 4
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -249,8 +249,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 2,
-          "times": 11
+          "order": 4,
+          "times": 3
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -296,8 +296,8 @@
         },
         {
           "page": "architecture",
-          "order": 52,
-          "times": 3
+          "order": 5,
+          "times": 18
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -315,7 +315,13 @@
       "title": null,
       "description": null,
       "hasCard": false,
-      "usedOn": []
+      "usedOn": [
+        {
+          "page": "architecture",
+          "order": 8,
+          "times": 14
+        }
+      ]
     },
     {
       "id": "0034",
@@ -326,7 +332,13 @@
       "title": null,
       "description": null,
       "hasCard": false,
-      "usedOn": []
+      "usedOn": [
+        {
+          "page": "architecture",
+          "order": 20,
+          "times": 3
+        }
+      ]
     },
     {
       "id": "0015",
@@ -367,8 +379,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 6,
-          "times": 5
+          "order": 3,
+          "times": 2
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -445,8 +457,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 7,
-          "times": 6
+          "order": 6,
+          "times": 18
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -500,8 +512,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 4,
-          "times": 4
+          "order": 35,
+          "times": 1
         }
       ]
     },
@@ -740,7 +752,7 @@
       "kind": "toc",
       "type": "page-material",
       "shape": "toc",
-      "fields": "items: { id: string; text: string }[]",
+      "fields": "items: TocItem[]",
       "title": "the table of contents of a page",
       "description": "**Type:** Page material (11). Built by the page factory, never by the author — the one kind of the\ncatalogue whose content is computed rather than written.\n\n## You do not fill it in\n\n`items` are derived from the `h2` blocks of the body, with the same `headingId` the headings\nthemselves print. Two consequences follow, and both are the reason the kind works at all:\n\n- **The anchors match by construction.** A second way of turning a heading into an address diverges\n  on the first text with punctuation, and then the contents lead nowhere — a defect nobody notices,\n  because the link still scrolls, just to the wrong place or to none.\n- **The words cannot go stale.** Written by hand, the list becomes a second copy of the headings. Fix\n  a heading, forget the copy, and the page keeps a working link with a wrong label on it.\n\n**Decision of the owner, 2026-08-22: the table of contents stays automatic.** It appears whenever the\nbody has `h2` headings, and no page declares it. That is exactly how it behaved before step 542; what\nchanged is only who draws it — a catalogue kind instead of layout written inside the factory.\n\n## What it draws\n\nA bordered plate above the body: an uppercase lead line — the mechanism's own words (\"On this page\")\nplus the number of entries — then a numbered list of links. The number is a **sign, not text**:\n`aria-hidden` keeps it out of screen readers, where \"01\" before a section name says nothing and gets\nin the way. Its contrast was raised to full `muted-foreground` after an accessibility check\n(2026-08-13): at `/70` the ratio fell below the threshold.\n\nAn empty list draws nothing at all, rather than an empty plate.\n\n## Only `h2` gets in\n\n`h3` does not, and that is a rule of the page rather than of this kind: a table of contents of two\nlevels stops being scannable at about seven entries, which is where most pages already are. A section\nthat deserves its own line in the contents deserves an `h2`.\n\n## Known debt\n\n`aria-label=\"Contents\"` is in English in every language. It was carried over verbatim in step 542 so\nthat the move stayed a move; it is fixed together with the rest of the mechanism's labels, not here.\n\n## When NOT to take it\n\n- Placing it by hand to move it elsewhere on the page — the factory adds its own, and you would get\n  two.\n- A list of links to OTHER pages — that is `list` with links, or a section of cards. This kind means\n  \"the sections of this page\" and its anchors point inside the page.",
       "hasCard": true,

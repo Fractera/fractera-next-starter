@@ -42,7 +42,7 @@
 | `statement` | Page material | — | text: string | — |
 | `noBill` | Pricing and plans | the invoices that will not come | — | [карточка](blocks/noBill.md) |
 | `faq` | Page material | questions and answers, last on the page | title?: string; items: FaqPair[] | [карточка](blocks/faq.md) |
-| `toc` | Page material | the table of contents of a page | items: { id: string; text: string }[] | [карточка](blocks/toc.md) |
+| `toc` | Page material | the table of contents of a page | items: TocItem[] | [карточка](blocks/toc.md) |
 | `languageMarquee` | Trust and logos | the language ribbon, closing the page | title: string; note?: string | [карточка](blocks/languageMarquee.md) |
 | `projectTypeMarquee` | Trust and logos | the ribbon of directions | title?: string; note?: string | [карточка](blocks/projectTypeMarquee.md) |
 | `voiceField` | Page material | a text field that can be dictated | variant?: 'line' \| 'area'; title: string; hint?: string; comment?: string; placeholder?: string | [карточка](blocks/voiceField.md) |

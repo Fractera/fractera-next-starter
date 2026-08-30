@@ -740,6 +740,30 @@ later, when five such pages exist and all differ. Specimen: `projectTypeMarquee`
 server (1.8 KB of one language in the browser instead of 306 KB of the corpus), island in
 `components/` receiving finished strings as props.
 
+🔒 **A BLOCK MAY MOVE, AND CHARTS ARE THE PROOF** (step 58, 2026-08-30). Seven kinds of the type
+`charts` — `chartArea`, `chartBar`, `chartLine`, `chartPie`, `chartRadar`, `chartRadial`,
+`chartTooltip` — are each a thin SERVER renderer under `sections/` that mounts a client island in
+`components/charts/*.client.tsx`. So "it has motion" never decides block against widget: **reuse**
+does. A drawing that suits any page in the project is a kind; one that belongs to a single route
+is a widget.
+
+🔒 **A CHART TAKES ITS COLOURS FROM THE PALETTE, NEVER FROM ITS OWN CODE** (owner, 2026-08-30:
+"chart colours are part of the design palette"). Five roles `chart-1` … `chart-5` live in
+`DESIGN-CONFIG.colors`, are edited at `/{lang}/architect/design?section=colors`, and apply without
+a rebuild. Series read `var(--chart-1)`; the theme holds only the DEFAULT. A colour written into a
+block would survive a palette change and stay the last patch of the old look.
+🔒 **Five is the ceiling for slices:** a sixth share would have no variable of its own and would be
+drawn in a colour that belongs to nobody. Fold the tail into "Other".
+
+🔒 **DATA IS OPTIONAL FOR EVERY CHART KIND.** No rows — the view draws the sample from
+`components/charts/sample-data.ts`. An empty card in the catalogue reads as a broken kind rather
+than as missing material.
+
+🔒 **"DRAWN" AND "VISIBLE" ARE DIFFERENT CLAIMS, AND GREP ANSWERS ONLY THE FIRST.** ✗ paid the day
+the charts shipped: every markup counter was green and the first series was nearly invisible — the
+source palette puts its lightest value first, and an area fades from 0.8 to 0.1 opacity. The markup
+is identical either way. For anything visible, look at it in a browser.
+
 🔒 **No file under `sections/` carries `"use client"`** — a property of the layer. The renderer is always
 a server component; interactivity lives in the island it mounts.
 

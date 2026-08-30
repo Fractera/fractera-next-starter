@@ -98,6 +98,41 @@ export default async function DesignPage({
             {active === "type" && <DesignType initial={type} ui={ui.type} />}
             {active === "shape" && <DesignShape initial={shape} ui={ui.shape} />}
             {active === "colors" && <DesignColors initial={colors} ui={ui.colors} />}
+            {/* ✗ ЭТО ОБЪЯСНЕНИЕ УЖЕ СТОЯЛО НА СТРАНИЦЕ И ЕГО НЕ ВИДЕЛ НИКТО
+                (найдено 2026-08-30 тем, что владелец попросил его ТРЕТИЙ раз).
+                Оно лежало свёрнутой раскрывашкой ПОСЛЕ каталога — то есть за
+                полусотней образцов блоков, каждый из которых рисуется настоящим
+                рендерером во весь рост. Долистать туда невозможно, и раскрыть
+                тоже: сначала надо догадаться, что там что-то есть.
+
+                🔒 МЕСТО ТЕКСТА — ЧАСТЬ ТЕКСТА. Объяснение, которое читают ПЕРЕД
+                работой, стоит перед работой и раскрыто. Свёрнутая подсказка
+                годится для того, что уточняют ПО ХОДУ, — у соседних разделов
+                это «куда уедет значение», и там она на месте.
+
+                🔒 ПОЧЕМУ ЭТО ВООБЩЕ ЗДЕСЬ, А НЕ В ДОКУМЕНТАЦИИ. Каталог
+                показывает, ЧТО есть, и молчит о том, что мимо него страницу в
+                этом проекте не построить. Человек, который этого не знает,
+                начнёт верстать руками и потеряет перенос, порядок и перевод
+                разом — причём узнает об этом через месяц. */}
+            {active === "blocks" && (
+              <section data-blocks-intro className="rounded-lg border border-border bg-card p-4 sm:p-5">
+                <div className="flex flex-col gap-3">
+                  <Small><strong className="text-foreground">{ui.pages.blocks.helpWhatTitle}</strong> {ui.pages.blocks.helpWhat}</Small>
+                  <Small><strong className="text-foreground">{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</Small>
+                  <Small><strong className="text-foreground">{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</Small>
+                </div>
+                {/* Три абзаца ниже уточняют, а не вводят: их читают, когда
+                    вопрос уже возник. Поэтому они свёрнуты — но стоят ЗДЕСЬ, а
+                    не за каталогом. */}
+                <HelpDetails label={ui.pages.blocks.helpLabel}>
+                  <p><strong>{ui.pages.blocks.helpMotionTitle}</strong> {ui.pages.blocks.helpMotion}</p>
+                  <p><strong>{ui.pages.blocks.helpRebuildTitle}</strong> {ui.pages.blocks.helpRebuild}</p>
+                  <p><strong>{ui.pages.blocks.helpCodeTitle}</strong> {ui.pages.blocks.helpCode}</p>
+                </HelpDetails>
+              </section>
+            )}
+
             {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} />}
             {/* 🔒 ЧИТАЕТСЯ ДЕЙСТВУЮЩЕЕ ЗНАЧЕНИЕ, А НЕ СЫРОЙ ФАЙЛ. У выключателя
                 возможности есть умолчание проекта, и «владелец не высказался»
@@ -113,23 +148,6 @@ export default async function DesignPage({
                 🔒 У «Инструментов» справки нет намеренно: выключатель объяснён
                 своей же подписью, и раскрывашка под ним обещала бы то, чего в ней
                 не будет. */}
-            {/* 🔒 У «БЛОКОВ» СПРАВКА ОБЪЯСНЯЕТ НЕ НАСТРОЙКУ, А ЗАКОН (шаг 59,
-                заказ владельца). У соседних разделов раскрывашка рассказывает,
-                куда уедет значение; здесь настраивать нечего — каталог только
-                показывает. Объяснить надо другое: страницу в этом проекте
-                нельзя построить мимо блоков, и путей ровно три. Человек,
-                который этого не знает, начнёт верстать руками и потеряет
-                перенос, порядок и перевод разом. */}
-            {active === "blocks" && (
-              <HelpDetails label={ui.pages.blocks.helpLabel}>
-                <p><strong>{ui.pages.blocks.helpWhatTitle}</strong> {ui.pages.blocks.helpWhat}</p>
-                <p><strong>{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</p>
-                <p><strong>{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</p>
-                <p><strong>{ui.pages.blocks.helpMotionTitle}</strong> {ui.pages.blocks.helpMotion}</p>
-                <p><strong>{ui.pages.blocks.helpRebuildTitle}</strong> {ui.pages.blocks.helpRebuild}</p>
-                <p><strong>{ui.pages.blocks.helpCodeTitle}</strong> {ui.pages.blocks.helpCode}</p>
-              </HelpDetails>
-            )}
 
             {active === "fonts" && (
               <HelpDetails label={ui.fonts.helpLabel}>

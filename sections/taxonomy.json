@@ -425,6 +425,11 @@
       "id": "0044",
       "type": "pricing",
       "shape": "cards"
+    },
+    "spotlightPair": {
+      "id": "0045",
+      "type": "comparison",
+      "shape": "two-columns"
     }
   }
 }

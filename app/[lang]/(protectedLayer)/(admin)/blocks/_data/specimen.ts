@@ -799,6 +799,29 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'spotlightPair',
+    when: 'Two halves with the spotlight moving between them: the active one takes 7/10 of the width, its neighbour 3/10, and a bar under the heading counts the nine seconds down. Ported from the storefront. It differs from `splitPair` by BEHAVIOUR, not by drawing: take `splitPair` to show a product from two equal sides, take this one to set two things against each other so the reader looks at one at a time. Not a line of script: the movement is a CSS animation, the choice is a radio input, and clicking a half stops the spotlight on it for good.',
+    whenRu: 'Две половины, между которыми ходит подсветка: активная занимает 7/10 ширины, соседняя 3/10, а полоса под заголовком отсчитывает девять секунд. Перенесена с витрины. От `splitPair` отличается ПОВЕДЕНИЕМ, а не рисунком: `splitPair` берут, чтобы показать продукт с двух равных сторон, этот вид — чтобы противопоставить две вещи и заставить смотреть на одну за раз. Ни строки скрипта: движение делает анимация, выбор — радиокнопка, и нажатие на половину останавливает подсветку на ней навсегда.',
+    blocks: [
+      {
+        kind: 'spotlightPair',
+        badge: 'Production AI Development',
+        title: 'Two halves of the same day',
+        note: 'The spotlight moves on its own every nine seconds. Click a half and it stops there.',
+        left: {
+          alt: 'AI coding in the browser',
+          title: 'AI Coding in Browser',
+          text: 'Open a tab, speak your intent, watch code appear. No IDE, no local setup — the terminals run in the browser too.',
+        },
+        right: {
+          alt: 'Live in production',
+          title: 'Live in Production. Instantly.',
+          text: 'Your server launches in seconds. One click deploys your changes live — no CI pipeline, no hosting configuration.',
+        },
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

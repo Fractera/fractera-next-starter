@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **44** · рендереров: **44** · карточек: **20**
+Видов: **45** · рендереров: **45** · карточек: **21**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -69,6 +69,7 @@
 | `featureGrid01` | `featureGrid` | Benefits and value | — | badge?: string; title?: string; note?: string; items: { icon?: FeatureIcon; title: string; label?: string; tone?: Tone; text: string }[] | — |
 | `promoBand01` | `promoBand` | Trust and logos | — | title: string; text: string; cta?: { href: string; label: string; icon?: 'github' \| 'link' }; image?: string; alt?: string | — |
 | `priceTable01` | `priceTable` | Pricing and plans | тарифы с переключателем периода | title: string; note?: string; periodLabels?: { monthly: string; yearly: string }; plans: {; name: string; monthlyPrice: string; yearlyPrice?: string; monthlyPeriod?: string; yearlyPeriod?: string; features: string[]; cta?: { href: string; label: string }; highlighted?: boolean; }[] | [карточка](blocks/priceTable.md) |
+| `spotlightPair01` | `spotlightPair` | Comparison | пара, между которой ходит подсветка | badge?: string; title?: string; note?: string; left: SpotlightHalf; right: SpotlightHalf | [карточка](blocks/spotlightPair.md) |
 
 ## Чего в этой таблице нет
 

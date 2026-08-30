@@ -758,3 +758,59 @@ html {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* ─── ПАРА С ПОДВИЖНОЙ ПОДСВЕТКОЙ (вид `spotlightPair`, шаг 57, 2026-08-30) ───
+   Перенос формы `double-presentation.tsx` витрины. Там движение держат `useState`
+   и два таймера; здесь его делает анимация, а выбор — радиокнопка, и обе половины
+   целиком лежат в серверной разметке.
+
+   🔒 ЦИКЛ ВОСЕМНАДЦАТЬ СЕКУНД, ПО ДЕВЯТЬ НА ПОЛОВИНУ — как в источнике. Переход
+   занимает четыре процента цикла (≈0.7 с): в источнике это `transition: flex .5s`,
+   и на глаз разница неразличима, а лишнего механизма нет. */
+@keyframes sp-left  { 0%, 48% { flex-grow: 7 } 52%, 100% { flex-grow: 3 } }
+@keyframes sp-right { 0%, 48% { flex-grow: 3 } 52%, 100% { flex-grow: 7 } }
+@keyframes sp-bar-left  { 0% { width: 0 } 48% { width: 100% } 50%, 100% { width: 0 } }
+@keyframes sp-bar-right { 0%, 50% { width: 0 } 98% { width: 100% } 100% { width: 0 } }
+
+/* 🔒 ДВИЖЕНИЕ ТОЛЬКО ТАМ, ГДЕ ЕСТЬ РЯД. На телефоне половины стоят друг под
+   другом, и «широкая» с «узкой» не значат ничего: ширина у них одна. */
+@media (min-width: 768px) {
+  .sp-body .sp-card { flex-grow: 5; flex-basis: 0; transition: flex-grow 0.5s ease }
+  .sp-body .sp-card:nth-child(1) { animation: sp-left 18s infinite }
+  .sp-body .sp-card:nth-child(2) { animation: sp-right 18s infinite }
+  .sp-body .sp-card:nth-child(1) .sp-bar { animation: sp-bar-left 18s linear infinite }
+  .sp-body .sp-card:nth-child(2) .sp-bar { animation: sp-bar-right 18s linear infinite }
+}
+
+/* 🔒 ЗАПРЕТИЛИ ДВИЖЕНИЕ — ПОЛОВИНЫ ПРОСТО РАВНЫ. Не «замерли на первой»: замершая
+   подсветка утверждает, что одна половина важнее, а этого источник не говорил. */
+@media (prefers-reduced-motion: reduce) {
+  .sp-body .sp-card { animation: none }
+  .sp-body .sp-bar { animation: none; width: 0 }
+}
+
+/* 🔒 ВЫБОР ЧЕЛОВЕКА ОСТАНАВЛИВАЕТ ДВИЖЕНИЕ НАВСЕГДА — закон владельца из шага 52:
+   движение, которое нельзя остановить, отнимает право дочитать. Правила стоят
+   ПОСЛЕ анимации намеренно: выбранное человеком обязано перебивать заводское. */
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card,
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-bar { animation: none }
+
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(1),
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(2) { flex-grow: 7 }
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(2),
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(1) { flex-grow: 3 }
+
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(1) .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(2) .sp-bar { width: 100% }
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(2) .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(1) .sp-bar { width: 0 }
+
+/* 🔒 ФОКУС ВИДЕН, ХОТЯ ПЕРЕКЛЮЧАТЕЛЬ СКРЫТ: `sr-only` радиокнопкой остаётся, её
+   получает клавиатура, а рамку рисуем вокруг той половины, которой она правит. */
+.sp-r:nth-of-type(1):focus-visible ~ .sp-body .sp-card:nth-child(1),
+.sp-r:nth-of-type(2):focus-visible ~ .sp-body .sp-card:nth-child(2) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

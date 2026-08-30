@@ -2,7 +2,7 @@ import type { SectionRenderer } from '@/sections/contract'
 import type { WorkspaceItem, WorkspaceNote } from '@/lib/content/blocks/types'
 import { H3, H4, P, Small } from '@/components/ui/typography'
 import { inline } from '@/lib/content/blocks/inline'
-import { Menu } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 
 // РАБОЧИЙ ЭКРАН: меню слева, содержимое справа (шаг 48, 2026-08-30).
 //
@@ -145,13 +145,30 @@ export const workspace: SectionRenderer<'workspace'> = (b, { key: k, renderBlock
       {b.menuTitle ?? ui.workspaceMenu}
     </label>
 
-    {/* Затемнение под ящиком: клик мимо меню тоже закрывает — привычка, которую
-        человек приносит с собой, и обманывать её незачем. */}
-    <label
-      htmlFor={drawer}
-      aria-hidden
-      className="fixed inset-0 z-30 hidden bg-foreground/40 peer-checked:block md:peer-checked:hidden"
-    />
+    {/* 🪦 ЗАТЕМНЕНИЯ ПОД ЯЩИКОМ ЗДЕСЬ НЕТ, И ЭТО РЕШЕНИЕ, А НЕ ПРОПУСК (48-1).
+        Оно тут стояло — растянутая на весь экран полупрозрачная подложка, — и
+        сторож окон отказал: «подложка во весь экран собрана руками; модальное
+        окно продукта одно, боковая панель — components/ui/sheet.tsx».
+        Сторож прав дважды.
+
+        🔒 КЛАССЫ ТОЙ ПОДЛОЖКИ ЗДЕСЬ НЕ ПРИВЕДЕНЫ ДОСЛОВНО НАМЕРЕННО: сторож
+        читает файл целиком и комментарий от кода не отличает. Процитируешь
+        запрещённое сочетание в объяснении — и сборка падает на объяснении того,
+        почему запрещённого в коде нет.
+
+        Первое: у продукта действительно есть `Sheet`, и своя подложка рядом с ним
+        — начало второго стандарта. Второе, важнее: **затемнения владелец не
+        просил**. Он назвал три вещи — ящик на 90 %, закрытие от нажатия на любой
+        пункт и область кнопки, — а подложку добавил я, «по привычке человека».
+        Список исключений у этого сторожа пуст намеренно, и вносить себя в него
+        ради необязательной детали значило бы завести первое исключение под то,
+        чего не заказывали.
+
+        Взамен ящик закрывается двумя способами, оба заказаны: нажатием на любой
+        пункт меню и крестиком в его шапке. Перевести ящик на `Sheet` целиком
+        нельзя без потери: `Sheet` клиентский, и меню исчезло бы из серверной
+        разметки — а на широком экране это обычная колонка, которая обязана быть
+        в ней всегда. */}
 
     {/* ЛЕВАЯ ЧАСТЬ — МЕНЮ.
         До `md` это ящик шириной 90 %, уехавший за левый край; `peer-checked`
@@ -172,11 +189,23 @@ export const workspace: SectionRenderer<'workspace'> = (b, { key: k, renderBlock
       // — воздух внутри рамки карточки, и ни одна ширина не проигрывает.
       className="fixed left-0 top-0 z-40 h-dvh w-[90%] -translate-x-full overflow-y-auto border-r border-border bg-card p-4 shadow-xl transition-transform duration-200 peer-checked:translate-x-0 md:static md:z-auto md:h-auto md:max-h-[calc(100dvh-8rem)] md:w-60 md:shrink-0 md:translate-x-0 md:self-start md:shadow-none md:sticky md:top-20"
     >
-      {b.menuTitle && (
-        <H4 variant="ui" className="mb-3">
-          {inline(b.menuTitle, `${k}-mt`)}
-        </H4>
-      )}
+      {/* Шапка ящика: подпись и крестик. Крестик существует только до `md` — на
+          широком экране закрывать нечего, колонка стоит на месте всегда. */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        {b.menuTitle ? (
+          <H4 variant="ui">{inline(b.menuTitle, `${k}-mt`)}</H4>
+        ) : (
+          <span aria-hidden />
+        )}
+        <label
+          htmlFor={drawer}
+          data-workspace-close
+          aria-label={ui.workspaceMenu}
+          className="shrink-0 cursor-pointer rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground md:hidden"
+        >
+          <X size={16} aria-hidden />
+        </label>
+      </div>
       {/* 🪦 ГОРИЗОНТАЛЬНОЙ ЛЕНТЫ НА ТЕЛЕФОНЕ БОЛЬШЕ НЕТ (48-1). Здесь стояло
           `flex gap-1 overflow-x-auto … md:flex-col`: до `md` меню становилось
           верхним рядом. Владелец назвал это неправильным — и он прав по

@@ -824,29 +824,51 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
   background: radial-gradient(circle at center, var(--primary) 0%, transparent 99%);
 }
 
-/* 🔒 ПОДСВЕТКА СМОТРИТ В ЦЕНТР ПО КОЛОНКЕ, А НЕ ПО НОМЕРУ ЯЧЕЙКИ. В источнике
-   направления раздаются по индексу из массива на шесть — седьмая ячейка не
-   получит ничего. Колонка же известна разметке всегда: `nth-child` считает её
-   сам, и правило переживает любое число ячеек. */
+/* 🔒 ПОДСВЕТКА ЯЧЕЙКИ СМОТРИТ В ЦЕНТР СЕТКИ ПО ОБЕИМ ОСЯМ — СЛОВАМИ ВЛАДЕЛЬЦА
+   2026-08-30, перечислившего все шесть направлений образца:
+
+     верх слева   → правый нижний угол     верх центр   → понизу
+     верх справа  → левый нижний угол      низ слева    → правый верхний угол
+     низ центр    → поверху                низ справа   → левый верхний угол
+
+   ✗ В прошлой правке я перенёс только горизонтальную составляющую, а
+   вертикальную отбросил «потому что число строк разметке неизвестно». Оно и
+   правда неизвестно — но известно ДРУГОЕ: первая строка это `nth-child(-n+N)`,
+   последняя `nth-last-child(-n+N)`, где N — число колонок. Этого достаточно,
+   чтобы получить ровно шесть направлений источника и не сломаться на девяти
+   ячейках: средние строки светят из середины.
+
+   🔒 ПОЛОЖЕНИЕ ХРАНИТСЯ В ДВУХ ПЕРЕМЕННЫХ, А НЕ В ШЕСТИ КОПИЯХ ГРАДИЕНТА.
+   Заливка написана один раз и читает `--pg-x` и `--pg-y`; правила ниже только
+   назначают эти числа. Иначе цвет пришлось бы править в шести местах, и они
+   разошлись бы молча — та же болезнь, что у карты тонов. */
+.pg-glow {
+  background: radial-gradient(
+    circle at var(--pg-x, 50%) var(--pg-y, 50%),
+    color-mix(in srgb, var(--primary) 45%, transparent) 0%,
+    transparent 70%
+  );
+}
 .pg-cell:hover .pg-glow { opacity: 1 }
 
-.pg-grid .pg-cell:nth-child(2n + 1) .pg-glow {
-  background: radial-gradient(circle at 100% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
-}
-.pg-grid .pg-cell:nth-child(2n) .pg-glow {
-  background: radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
-}
+/* Телефон: две колонки. Горизонталь — от края к середине. */
+.pg-grid .pg-cell { --pg-x: 50%; --pg-y: 50% }
+.pg-grid .pg-cell:nth-child(odd) { --pg-x: 100% }
+.pg-grid .pg-cell:nth-child(even) { --pg-x: 0% }
+.pg-grid .pg-cell:nth-child(-n + 2) { --pg-y: 100% }
+.pg-grid .pg-cell:nth-last-child(-n + 2) { --pg-y: 0% }
+/* Ячейка, попавшая и в первую строку, и в последнюю, — сетка из одной строки:
+   светить ей неоткуда, кроме середины. Правило стоит последним намеренно. */
+.pg-grid .pg-cell:nth-child(-n + 2):nth-last-child(-n + 2) { --pg-y: 50% }
 
+/* Монитор: три колонки, и это ровно раскладка образца. */
 @media (min-width: 768px) {
-  .pg-grid .pg-cell:nth-child(3n + 1) .pg-glow {
-    background: radial-gradient(circle at 100% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
-  }
-  .pg-grid .pg-cell:nth-child(3n + 2) .pg-glow {
-    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
-  }
-  .pg-grid .pg-cell:nth-child(3n) .pg-glow {
-    background: radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
-  }
+  .pg-grid .pg-cell:nth-child(3n + 1) { --pg-x: 100% }
+  .pg-grid .pg-cell:nth-child(3n + 2) { --pg-x: 50% }
+  .pg-grid .pg-cell:nth-child(3n) { --pg-x: 0% }
+  .pg-grid .pg-cell:nth-child(-n + 3) { --pg-y: 100% }
+  .pg-grid .pg-cell:nth-last-child(-n + 3) { --pg-y: 0% }
+  .pg-grid .pg-cell:nth-child(-n + 3):nth-last-child(-n + 3) { --pg-y: 50% }
 }
 
 /* Движение запрещено — подсветка появляется мгновенно, а не выцветает. */

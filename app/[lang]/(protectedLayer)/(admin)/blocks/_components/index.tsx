@@ -1,5 +1,6 @@
 import { PostBody } from '@/components/content-page/post-body'
-import { SPECIMEN } from '../_data/specimen'
+import { SPECIMEN, SPECIMEN_CODES } from '../_data/specimen'
+import { KindBadge } from '@/components/catalogue/kind-badge'
 import { blocksCatalogueUi } from '../_data/ui.i18n'
 import { H1 } from '@/components/ui/typography'
 import { PageHeader } from "@/components/content-page/page-header.server"
@@ -31,12 +32,21 @@ export default function BlocksCatalogue({ lang }: { lang: string }) {
             второго места у неё нет. */}
         <FormElements lang={lang} />
 
-        {SPECIMEN.map(section => (
-          <section key={section.kind} className="flex flex-col gap-4">
+        {SPECIMEN.map((section, i) => (
+          <section key={SPECIMEN_CODES[i]} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1 border-l-2 border-primary/40 pl-4">
-              {/* Имя вида — машинная строка: она и есть значение в данных
-                  материала, поэтому не переводится ни на один язык. */}
-              <code className="font-mono text-sm font-semibold text-primary">kind: &apos;{section.kind}&apos;</code>
+              {/* 🔒 КОД ОБРАЗЦА — МЕТКА, А НЕ СТРОЧКА (заказ владельца 2026-08-30):
+                  коды «должны быть подсвечены несколько более крупным шрифтом
+                  в[нутри] контейнера с фирменным цветом… очень чётко отделяться от
+                  основного дизайна». Один компонент на оба каталога: здесь код
+                  печатался как `kind: '…'`, а в слое архитектора просто именем —
+                  две записи одного и того же уже разошлись.
+                  Имя вида не переводится ни на один язык: это машинная строка, она
+                  и есть значение в данных материала. */}
+              <div className="flex flex-wrap items-center gap-2">
+                <KindBadge code={SPECIMEN_CODES[i]} />
+                {section.label && <span className="text-sm text-muted-foreground">{section.label}</span>}
+              </div>
               <p className="text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{ui.whenLabel}: </span>
                 {section.when}

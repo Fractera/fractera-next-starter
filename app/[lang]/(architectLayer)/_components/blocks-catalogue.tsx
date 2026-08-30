@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { PostBody } from "@/components/content-page/post-body"
-import { SPECIMEN } from "@/app/[lang]/(protectedLayer)/(admin)/blocks/_data/specimen"
+import { SPECIMEN, SPECIMEN_CODES } from "@/app/[lang]/(protectedLayer)/(admin)/blocks/_data/specimen"
+import { KindBadge } from "@/components/catalogue/kind-badge"
 import SECTIONS from "@/sections/SECTIONS.json"
 import type { DesignUi } from "../_i18n/design.i18n"
 
@@ -43,7 +44,13 @@ export function BlocksCatalogue({
 }) {
   const known = TYPES.some(t => t.id === kind)
   const active = known ? kind : ""
-  const shown = active ? SPECIMEN.filter(s => TYPE_OF.get(s.kind) === active) : SPECIMEN
+  // 🔒 КОД ПРИКРЕПЛЯЕТСЯ К ОБРАЗЦУ ДО ФИЛЬТРА, А НЕ ИЩЕТСЯ ПОСЛЕ НЕГО. Искать
+  // индекс отфильтрованного образца в исходном списке — значит завести вторую
+  // связь между теми же данными: она работает, пока образцы различимы по
+  // ссылке, и ломается в тот день, когда два образца окажутся одинаковыми.
+  const shown = SPECIMEN.map((section, i) => ({ section, code: SPECIMEN_CODES[i] })).filter(
+    ({ section }) => !active || TYPE_OF.get(section.kind) === active,
+  )
   const label = (t: SectionType) => t.title[lang] ?? t.title.en ?? t.id
 
   const href = (id: string) =>
@@ -100,16 +107,25 @@ export function BlocksCatalogue({
             такой список ведёт непредсказуемо, а увидеть это глазами нельзя.
             Индекс добавлен третьей опорой: он не даёт совпасть даже двум
             образцам без подписи. */}
-        {shown.map((section, i) => (
-          <section
-            key={`${section.kind}-${section.label ?? ''}-${i}`}
-            data-block-kind={section.kind}
-            className="flex flex-col gap-3"
-          >
+        {/* Ключ — код образца: он уникален по построению, и второй опоры ему не
+            нужно. Прежний ключ строился из одного лишь `kind`, и два образца
+            `workspace` получали ОДИН И ТОТ ЖЕ — React такой список ведёт
+            непредсказуемо, а увидеть это глазами нельзя. */}
+        {shown.map(({ section, code }) => (
+          <section key={code} data-block-kind={section.kind} className="flex flex-col gap-3">
             <div>
-              <p className="font-mono text-[length:var(--fs-small)] text-muted-foreground">
-                {section.label ?? section.kind}
-              </p>
+              {/* Код вида — метка фирменного цвета: каталог сначала называет вид,
+                  и только потом объясняет его. Подпись образца стоит рядом,
+                  приглушённой: она различает образцы ОДНОГО вида и потому не
+                  спорит с кодом за внимание. */}
+              <div className="flex flex-wrap items-center gap-2">
+                <KindBadge code={code} />
+                {section.label && (
+                  <span className="text-[length:var(--fs-small)] text-muted-foreground">
+                    {section.label}
+                  </span>
+                )}
+              </div>
               {/* 🔒 ОПИСАНИЕ ПЕРЕВОДИТСЯ, СОДЕРЖИМОЕ ОБРАЗЦА — НЕТ (решение
                   владельца 2026-08-30). Описание объясняет, когда вид уместен, и
                   читает его человек; содержимое образца — демонстрация вида, и

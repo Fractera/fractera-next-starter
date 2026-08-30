@@ -106,16 +106,92 @@ export const en: FooterPageCell = {
 
     // ── СТОЛП ВТОРОЙ ──────────────────────────────────────────────────────────
     { kind: 'h2', text: 'The starter template' },
+    {
+      kind: 'p',
+      text: 'You are reading this page from inside the starter template. It is not a set of ready-made pages but a set of mandatory principles and working examples: every class of thing in the project already has a specimen, and anything new is made by copying something that works. The shape therefore holds by construction, not by the discipline of whoever is writing.',
+    },
+
     { kind: 'h3', text: 'Ready for high load' },
+    {
+      kind: 'p',
+      text: 'Load is survived not by the size of the server but by the fact that almost all the work is already done. Serving a finished page costs the same for ten visitors and for ten thousand.',
+    },
     { kind: 'h4', text: 'Static page generation' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Pages are generated ahead of time, not assembled per request. That is not a performance detail — it is the reason for three properties at once:',
+    },
+    {
+      kind: 'list',
+      items: [
+        'the site stays cheap under load: a traffic spike costs nothing extra;',
+        'a search engine receives finished markup instead of an empty page it has to wait for;',
+        'navigation works with JavaScript switched off — the routing is server-side.',
+      ],
+    },
+    {
+      kind: 'p',
+      text: 'Only what depends on WHO is looking is built per request: an account, a work screen. Everything else is regenerated on a schedule, and refreshing one page does not rebuild the site.',
+    },
+
     { kind: 'h3', text: 'Special architectural instructions' },
+    {
+      kind: 'p',
+      text: 'A coding agent starts every session with no memory of the last one. What survives is written down, inside the project, next to the code. This corpus is as much a part of the architecture as the ports are — it is what makes the second session no worse than the first.',
+    },
+    {
+      kind: 'table',
+      headers: ['Document', 'What it is for'],
+      rows: [
+        ['The project passport', 'What the product is, which roles, which languages, what the owner decided — in his words and dated. While an unanswered question stands in the passport, work does not start.'],
+        ['Development steps', 'The work as files: a step is opened before it is done and closed with a report. A session that dies loses nothing — the next one resumes from the files.'],
+        ['Testing', 'How a step is proven: two independent proofs from different planes. A green build is never one of them — its log looks identical whether the capability works or not.'],
+        ['Anti-patterns', 'Approaches that already cost time here, each with the mechanism of the failure. The agent appends to it the moment a dead end is understood.'],
+        ['The glossary', 'The words of the project. A term that means different things to two sessions is two different projects.'],
+      ],
+    },
     { kind: 'h4', text: 'Four development modes' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A mode answers one question: where the task comes from. It is chosen in the project settings and can be changed at any time.',
+    },
+    {
+      kind: 'list',
+      items: [
+        '**Classic** — the task arrives from you in words. No plan ahead, no accounting.',
+        '**Steps** — a queue of numbered steps, each described before it is done. This is the default.',
+        '**Cases** — work starts only from a confirmed product scenario, and every step names its own.',
+        '**Migration** — the queue is born from reading a project that already works.',
+      ],
+    },
+
     { kind: 'h3', text: 'Products — the unit of work' },
+    {
+      kind: 'p',
+      text: 'One server carries several products: a landing page today, a scheduled watcher next week, the company brain after that. Each lives at its own pace and cannot quietly damage its neighbour — it has its own pages, its own logic, its own tables and its own scenarios.',
+    },
+    {
+      kind: 'p',
+      text: 'A product is created in the control panel: you pick one of twenty-two structures — a landing page, a shop, delivery, a company brain and so on — and it answers the first questions for you. The product then passes four phases: intake, decomposition into steps, development, and a review of what was built.',
+    },
     { kind: 'h4', text: 'Why not simply call it a project' },
+    {
+      kind: 'p',
+      text: 'Because a project is not a place. It has no address, no folder and no tables, so a scenario attached to it cannot be executed: the agent still has to guess where the work goes. A product has all three, and that is the whole difference. Its internal id means nothing and never changes — the paths hang off it, while the name and the address are yours to edit.',
+    },
     { kind: 'h4', text: 'Not every product has a page' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A product declares one of three surfaces, and the default always leans towards closed:',
+    },
+    {
+      kind: 'list',
+      items: [
+        '**Public** — it has an address and visitors reach it;',
+        '**Private** — it lives as a tab in your control panel, and the outside world has no way in;',
+        '**Headless** — it has no screen at all: it works on a schedule and through communication channels, and you meet it in Telegram or in its report.',
+      ],
+    },
     { kind: 'h3', text: 'Design' },
     { kind: 'h4', text: 'The sections of design' },
     { kind: 'h4', text: 'Blocks' },

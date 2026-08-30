@@ -2,6 +2,8 @@ import type { SectionSet } from './contract'
 import { p } from './blocks/p.server'
 import { h2 } from './blocks/h2.server'
 import { h3 } from './blocks/h3.server'
+import { h4 } from './blocks/h4.server'
+import { h5 } from './blocks/h5.server'
 import { quote } from './blocks/quote.server'
 import { list } from './blocks/list.server'
 import { olist } from './blocks/olist.server'
@@ -47,5 +49,5 @@ import { voiceField } from './blocks/voice-field.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, heroBadge, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, toc, languageMarquee, projectTypeMarquee, voiceField,
+  p, h2, h3, h4, h5, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, heroBadge, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, toc, languageMarquee, projectTypeMarquee, voiceField,
 }

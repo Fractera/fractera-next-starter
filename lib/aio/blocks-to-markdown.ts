@@ -32,6 +32,13 @@ function lines(block: Block): string[] {
       return [`## ${block.text}`]
     case 'h3':
       return [`### ${block.text}`]
+    // Четвёртый и пятый уровни (шаг 30-1). Модель обязана видеть ТУ ЖЕ глубину,
+    // что человек: markdown-версия страницы существует ради структуры, и
+    // уплощённые здесь заголовки превратили бы дерево документа в плоский список.
+    case 'h4':
+      return [`#### ${block.text}`]
+    case 'h5':
+      return [`##### ${block.text}`]
     case 'p':
       return [block.text]
     case 'note':

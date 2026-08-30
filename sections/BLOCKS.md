@@ -8,13 +8,15 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **32** · рендереров: **32** · карточек: **14**
+Видов: **34** · рендереров: **34** · карточек: **14**
 
 | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|
 | `p` | Page material | — | text: string | — |
 | `h2` | Page material | — | text: string | — |
 | `h3` | Page material | — | text: string | — |
+| `h4` | Page material | — | text: string | — |
+| `h5` | Page material | — | text: string | — |
 | `quote` | Page material | — | text: string; cite?: string; lead?: string | — |
 | `list` | Page material | — | items: string[] | — |
 | `olist` | Page material | — | items: string[] | — |

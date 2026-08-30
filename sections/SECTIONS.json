@@ -307,6 +307,28 @@
       ]
     },
     {
+      "id": "0033",
+      "kind": "h4",
+      "type": "page-material",
+      "shape": "heading",
+      "fields": "text: string",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
+    },
+    {
+      "id": "0034",
+      "kind": "h5",
+      "type": "page-material",
+      "shape": "heading",
+      "fields": "text: string",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
+    },
+    {
       "id": "0015",
       "kind": "quote",
       "type": "page-material",

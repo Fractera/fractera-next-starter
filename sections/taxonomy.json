@@ -260,6 +260,16 @@
       "type": "page-material",
       "shape": "heading"
     },
+    "h4": {
+      "id": "0033",
+      "type": "page-material",
+      "shape": "heading"
+    },
+    "h5": {
+      "id": "0034",
+      "type": "page-material",
+      "shape": "heading"
+    },
     "quote": {
       "id": "0015",
       "type": "page-material",

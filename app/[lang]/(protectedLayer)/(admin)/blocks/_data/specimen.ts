@@ -45,6 +45,16 @@ export const SPECIMEN: SpecimenSection[] = [
     blocks: [{ kind: 'h3', text: 'A sub-heading' }],
   },
   {
+    kind: 'h4',
+    when: 'Fourth level — a topic inside a sub-heading. For documents that are genuinely three levels deep.',
+    blocks: [{ kind: 'h4', text: 'A fourth-level heading' }],
+  },
+  {
+    kind: 'h5',
+    when: 'Fifth and deepest level: a label for a short enumeration. Same size as body text, set apart by caps — a heading smaller than prose stops reading as a heading.',
+    blocks: [{ kind: 'h5', text: 'A fifth-level label' }],
+  },
+  {
     kind: 'p',
     when: 'Ordinary prose. Supports **bold** and [links](https://example.com).',
     blocks: [

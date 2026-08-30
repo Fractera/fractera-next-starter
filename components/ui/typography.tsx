@@ -101,6 +101,22 @@ const H4_STYLES: Record<Variant, string> = {
   ui: `${UI_FAMILY} text-[length:var(--fs-small)] font-semibold`,
 }
 
+// 🔒 ПЯТАЯ СТУПЕНЬ ОТЛИЧАЕТСЯ НАЧЕРТАНИЕМ, А НЕ РАЗМЕРОМ (шаг 30-1, 2026-08-30).
+//
+// Заголовок мельче основного текста перестаёт быть заголовком: глаз читает его
+// как подпись и проскакивает. Но и повторить размер четвёртого уровня нельзя —
+// два соседних уровня обязаны различаться, иначе иерархия существует только в
+// разметке. Поэтому пятый уровень взят РОВНО с телом текста и отделён капителью
+// и разрядкой: это ярлык раздела, и он читается как ярлык на любом экране.
+//
+// Новой переменной `--fs-*` здесь не заводится намеренно: шкала принадлежит слою
+// дизайна и считается от множителя `--type-scale`, а своя ступень рядом с ней —
+// ещё один способ развалить пропорции, за который уже платили.
+const H5_STYLES: Record<Variant, string> = {
+  content: `${UI_FAMILY} text-[length:var(--fs-body)] font-semibold uppercase tracking-wide`,
+  ui: `${UI_FAMILY} text-[length:var(--fs-small)] font-semibold uppercase tracking-wide`,
+}
+
 type HeadingProps = ComponentProps<"h1"> & { variant?: Variant }
 
 /**
@@ -123,6 +139,10 @@ export function H3({ variant = "content", className, ...props }: HeadingProps) {
 
 export function H4({ variant = "content", className, ...props }: HeadingProps) {
   return <h4 className={cn(H4_STYLES[variant], "text-foreground", className)} {...props} />
+}
+
+export function H5({ variant = "content", className, ...props }: HeadingProps) {
+  return <h5 className={cn(H5_STYLES[variant], "text-foreground", className)} {...props} />
 }
 
 /**

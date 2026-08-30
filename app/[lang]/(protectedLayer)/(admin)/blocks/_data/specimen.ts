@@ -900,6 +900,85 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'chartBar',
+    when: 'Bars over a time series with a switch in the header: two totals, one series drawn at a time. Take it when values are compared point by point and the exact height matters. Two series as bars over ninety days turn into noise — that is why the source switches instead of stacking.',
+    whenRu: 'Столбцы по ряду времени с переключателем в шапке: два итога, рисуется один ряд. Берут, когда величины сравнивают поточечно и важна ровно высота. Два ряда столбиками за девяносто дней превращаются в кашу — поэтому источник переключает, а не накапливает.',
+    blocks: [
+      {
+        kind: 'chartBar',
+        title: 'Bar Chart - Interactive',
+        description: 'Showing total visitors for the last 3 months',
+        labels: { a: 'Desktop', b: 'Mobile' },
+      },
+    ],
+  },
+  {
+    kind: 'chartLine',
+    when: 'A line over a time series with the same header switch as the bars. Take it when the SHAPE of the movement matters — growth, dips, seasonality — rather than the height of a single value. Points are hidden on purpose: ninety-one dots read as a dotted line, not as a curve.',
+    whenRu: 'Линия по ряду времени с тем же переключателем в шапке, что у столбцов. Берут, когда важна ФОРМА движения — рост, провалы, сезонность, — а не высота отдельного значения. Точки скрыты намеренно: девяносто одна точка читается пунктиром, а не кривой.',
+    blocks: [
+      {
+        kind: 'chartLine',
+        title: 'Line Chart - Interactive',
+        description: 'Showing total visitors for the last 3 months',
+        labels: { a: 'Desktop', b: 'Mobile' },
+      },
+    ],
+  },
+  {
+    kind: 'chartPie',
+    when: 'A whole split into parts at ONE moment, with the share labels sitting on the sectors. Take it when the question is what the total is made of. Never for movement over time: a pie has no time axis, and two pies side by side are read as one picture, not as change.',
+    whenRu: 'Целое, разделённое на части в ОДИН момент, подписи долей стоят прямо на секторах. Берут, когда вопрос — из чего состоит целое. Никогда для движения во времени: у круговой нет оси времени, а две круговые рядом читаются как одна картинка, а не как изменение.',
+    blocks: [
+      {
+        kind: 'chartPie',
+        title: 'Pie Chart - Label',
+        description: 'January - June 2024',
+        footer: { note: 'Trending up by 5.2% this month', hint: 'Showing total visitors for the last 6 months' },
+      },
+    ],
+  },
+  {
+    kind: 'chartRadar',
+    when: 'Several measures at once, each on its own axis around a circle, with two series laid over each other. Take it when the shape of a profile matters — where a thing is strong and where it sags — rather than exact values. Six axes is the ceiling: beyond it the labels collide.',
+    whenRu: 'Несколько мер сразу, у каждой своя ось по кругу, два ряда наложены друг на друга. Берут, когда важна форма профиля — где сильно, где проседает, — а не точные значения. Шесть осей — потолок: дальше подписи наезжают друг на друга.',
+    blocks: [
+      {
+        kind: 'chartRadar',
+        title: 'Radar Chart - Legend',
+        description: 'Showing total visitors for the last 6 months',
+        labels: { a: 'Desktop', b: 'Mobile' },
+        footer: { note: 'Trending up by 5.2% this month', hint: 'January - June 2024' },
+      },
+    ],
+  },
+  {
+    kind: 'chartRadial',
+    when: 'The same shares as a pie, but each one gets its own track: the bar is read against the track, so the absolute size shows as well as the ratio. Labels sit on the bars themselves and survive any palette, because they blend by luminosity.',
+    whenRu: 'Те же доли, что у круговой, но у каждой своя дорожка: полосу читают относительно дорожки, поэтому видно и абсолютную величину, а не только соотношение. Подписи лежат на самих полосах и переживают любую палитру — они смешиваются по яркости.',
+    blocks: [
+      {
+        kind: 'chartRadial',
+        title: 'Radial Chart - Label',
+        description: 'January - June 2024',
+        footer: { note: 'Trending up by 5.2% this month', hint: 'Showing total visitors for the last 6 months' },
+      },
+    ],
+  },
+  {
+    kind: 'chartTooltip',
+    when: 'A short stack of bars whose point is the TOOLTIP: no indicator, no cursor highlight, and it is open from the first frame rather than waiting for a hover. Take it to show what a tooltip looks like, or on a page read from a phone, where hovering does not exist.',
+    whenRu: 'Короткая стопка столбцов, смысл которой — ПОДСКАЗКА: без указателя, без подсветки курсора и открыта с первого кадра, а не по наведению. Берут, чтобы показать вид подсказки, и на страницах, которые читают с телефона, где наведения не существует.',
+    blocks: [
+      {
+        kind: 'chartTooltip',
+        title: 'Tooltip - No Indicator',
+        description: 'Tooltip with no indicator.',
+        labels: { a: 'Running', b: 'Swimming' },
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

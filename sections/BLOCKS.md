@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **47** · рендереров: **47** · карточек: **25**
+Видов: **53** · рендереров: **53** · карточек: **31**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -72,6 +72,12 @@
 | `spotlightPair01` | `spotlightPair` | Comparison | пара, между которой ходит подсветка | badge?: string; title?: string; note?: string; left: SpotlightHalf; right: SpotlightHalf | [карточка](blocks/spotlightPair.md) |
 | `platformGrid01` | `platformGrid` | Benefits and value | сетка площадок, светящаяся из щелей | badge?: string; title: string; note?: string; cards: { title: string; subtitle: string; company?: string }[]; disclaimer?: string | [карточка](blocks/platformGrid.md) |
 | `chartArea01` | `chartArea` | Charts | область: как менялось целое и из чего оно состояло | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string }; ranges?: ChartRange[] | [карточка](blocks/chartArea.md) |
+| `chartBar01` | `chartBar` | Charts | столбцы: сравнить величины поточечно | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string } | [карточка](blocks/chartBar.md) |
+| `chartLine01` | `chartLine` | Charts | линия: увидеть форму движения | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string } | [карточка](blocks/chartLine.md) |
+| `chartPie01` | `chartPie` | Charts | круговая: из чего состоит целое | title: string; description?: string; shares?: ChartShareRow[]; footer?: { note?: string; hint?: string } | [карточка](blocks/chartPie.md) |
+| `chartRadar01` | `chartRadar` | Charts | лепестковая: профиль по нескольким мерам | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string }; footer?: { note?: string; hint?: string } | [карточка](blocks/chartRadar.md) |
+| `chartRadial01` | `chartRadial` | Charts | радиальные полосы: доля и её величина сразу | title: string; description?: string; shares?: ChartShareRow[]; footer?: { note?: string; hint?: string } | [карточка](blocks/chartRadial.md) |
+| `chartTooltip01` | `chartTooltip` | Charts | подсказка, видимая без наведения | title: string; description?: string; rows?: ChartRow[]; labels?: { a?: string; b?: string }; openAt?: number | [карточка](blocks/chartTooltip.md) |
 
 ## Чего в этой таблице нет
 

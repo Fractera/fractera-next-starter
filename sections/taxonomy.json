@@ -456,6 +456,36 @@
       "id": "0047",
       "type": "charts",
       "shape": "chart"
+    },
+    "chartBar": {
+      "id": "0048",
+      "type": "charts",
+      "shape": "chart"
+    },
+    "chartLine": {
+      "id": "0049",
+      "type": "charts",
+      "shape": "chart"
+    },
+    "chartPie": {
+      "id": "0050",
+      "type": "charts",
+      "shape": "chart"
+    },
+    "chartRadar": {
+      "id": "0051",
+      "type": "charts",
+      "shape": "chart"
+    },
+    "chartRadial": {
+      "id": "0052",
+      "type": "charts",
+      "shape": "chart"
+    },
+    "chartTooltip": {
+      "id": "0053",
+      "type": "charts",
+      "shape": "chart"
     }
   }
 }

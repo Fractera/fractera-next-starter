@@ -3,6 +3,7 @@ import { PostBody } from "@/components/content-page/post-body"
 import { SPECIMEN, SPECIMEN_CODES } from "@/app/[lang]/(protectedLayer)/(admin)/blocks/_data/specimen"
 import { KindBadge } from "@/components/catalogue/kind-badge"
 import { BlockRequest } from "./block-request.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import SECTIONS from "@/sections/SECTIONS.json"
 import type { DesignUi } from "../_i18n/design.i18n"
 
@@ -37,11 +38,20 @@ export function BlocksCatalogue({
   lang,
   kind,
   ui,
+  dialogUi,
 }: {
   lang: string
   /** Выбранный тип; пусто или неизвестное — показываются все. */
   kind: string | undefined
   ui: DesignUi
+  /**
+   * Слова самого модального окна — крестик и подписи для читалок.
+   *
+   * 🔒 РЕЗОЛВИТ СЕРВЕР И ПЕРЕДАЁТ ПРОПСОМ. Клиентский файл, импортирующий
+   * словарь окна значением, увёз бы в браузер все его языки на каждой
+   * странице — это ловит `check:dialogs`.
+   */
+  dialogUi: AppDialogUi
 }) {
   const known = TYPES.some(t => t.id === kind)
   const active = known ? kind : ""
@@ -152,7 +162,7 @@ export function BlocksCatalogue({
                     🔒 КОД БЕРЁТСЯ ИЗ ПОРОЖДЁННОГО КАТАЛОГА, а не склеивается из
                     имени вида: у `workspace` два образца, и номер называет
                     настройку. Склейка `kind + "01"` соврала бы на втором молча. */}
-                <BlockRequest ui={ui.pages.blocks.request} code={code} page={page} />
+                <BlockRequest ui={ui.pages.blocks.request} dialogUi={dialogUi} code={code} page={page} />
                 {section.label && (
                   <span className="text-[length:var(--fs-small)] text-muted-foreground">
                     {section.label}
@@ -191,6 +201,7 @@ export function BlocksCatalogue({
             второй список разошёлся бы с первым на первом же новом типе. */}
         <BlockRequest
           ui={ui.pages.blocks.request}
+          dialogUi={dialogUi}
           kind={active === "all" ? undefined : active}
           kindTitle={activeTitle}
           page={page}

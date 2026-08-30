@@ -1012,7 +1012,7 @@
         "showcaseCarousel01"
       ],
       "kind": "showcaseCarousel",
-      "type": "how-it-works",
+      "type": "use-cases",
       "shape": "figure",
       "fields": "badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[]",
       "title": null,

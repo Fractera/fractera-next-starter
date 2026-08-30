@@ -408,7 +408,7 @@
     },
     "showcaseCarousel": {
       "id": "0041",
-      "type": "how-it-works",
+      "type": "use-cases",
       "shape": "figure"
     },
     "featureGrid": {

@@ -65,7 +65,7 @@
 | `logoCards01` | `logoCards` | Cases and portfolio | — | title?: string; note?: string; items: { title: string; text: string; source?: string }[] | — |
 | `carousel01` | `carousel` | How it works | — | title?: string; note?: string; slides: { image?: string; alt?: string; title: string; text?: string }[] | — |
 | `support01` | `support` | Pricing and plans | — | title?: string; note?: string; tiers: { name: string; amount?: string; text: string; href?: string; linkLabel?: string }[] | — |
-| `showcaseCarousel01` | `showcaseCarousel` | How it works | — | badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[] | — |
+| `showcaseCarousel01` | `showcaseCarousel` | Use cases | — | badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[] | — |
 | `featureGrid01` | `featureGrid` | Benefits and value | — | badge?: string; title?: string; note?: string; items: { icon?: FeatureIcon; title: string; label?: string; tone?: Tone; text: string }[] | — |
 | `promoBand01` | `promoBand` | Trust and logos | — | title: string; text: string; cta?: { href: string; label: string; icon?: 'github' \| 'link' }; image?: string; alt?: string | — |
 

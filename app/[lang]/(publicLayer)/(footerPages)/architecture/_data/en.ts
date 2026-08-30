@@ -59,11 +59,50 @@ export const en: FooterPageCell = {
 
     // ── СТОЛП ПЕРВЫЙ ──────────────────────────────────────────────────────────
     { kind: 'h2', text: 'The Fractera installer robot' },
+    {
+      kind: 'p',
+      text: 'A server is not configured by hand. The installer takes a clean Ubuntu machine and leaves a working system behind it. It reports its progress step by step, so you can see where the installation is — and where it stopped, if it stopped.',
+    },
+    {
+      kind: 'list',
+      items: [
+        'system packages, Node 22 and a process manager;',
+        'seven processes: the application, authorization, the panel, the data layer, the map, channels, the knowledge graph;',
+        'the application, authorization and panel built — plus a copy of the first good build, so there is always something to roll back to;',
+        'a swap file if the machine has less than two gigabytes of memory: without it the installation dies halfway on a small server.',
+      ],
+    },
+
     { kind: 'h3', text: 'Installing by cloning the repository through an MCP server' },
+    {
+      kind: 'p',
+      text: 'The path for those who raise a server with a tool rather than by hand: an agent talks to the platform over the MCP protocol and installs the project itself.',
+    },
     { kind: 'note', text: 'More on this shortly.' },
+
     { kind: 'h3', text: 'Launching through the web interface' },
+    {
+      kind: 'p',
+      text: 'The main path. The control panel carries a project-launch section: eleven steps from an empty GitHub repository to the first change you have seen at your own address.',
+    },
+    {
+      kind: 'p',
+      text: 'The steps are of two kinds, and the difference matters. Some are closed by the machine — the repository answered, the key was issued, the project was pushed; such a tick cannot be given out of politeness. The others you tick yourself: the panel has no eyes on your computer, and pretending it can see a folder you created would be a lie. Your own tick can be removed, and the step opens again.',
+    },
+
     { kind: 'h4', text: 'Migrating from any other framework' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A project that already works is not moved by rewriting its files. Its code is read as a description of what it does; from that description a queue of steps is born, and the skeleton comes first — addresses, tables, sign-in, permissions. An incompatible stack is therefore not an obstacle: what moves is the meaning of a capability, not its files.',
+    },
+    {
+      kind: 'p',
+      text: 'Four questions are answered before the first route: what kind of application this is, whether there will be a sign-in, whether there will be role-based access, and which roles restrict what. The answer decides the whole layout — which layer a page lives in, what lock its door carries, what a guest sees. A mistake here relays the skeleton rather than fixing a page.',
+    },
+    {
+      kind: 'p',
+      text: 'Data moves last, as a separate step under separate access. Defects of the original are named out loud along the way and are not repeated in the new one.',
+    },
 
     // ── СТОЛП ВТОРОЙ ──────────────────────────────────────────────────────────
     { kind: 'h2', text: 'The starter template' },

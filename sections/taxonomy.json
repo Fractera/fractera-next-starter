@@ -425,6 +425,16 @@
       "id": "0044",
       "type": "pricing",
       "shape": "cards"
+    },
+    "spotlightPair": {
+      "id": "0045",
+      "type": "comparison",
+      "shape": "two-columns"
+    },
+    "platformGrid": {
+      "id": "0046",
+      "type": "benefits",
+      "shape": "cards"
     }
   }
 }

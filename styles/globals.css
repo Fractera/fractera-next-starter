@@ -709,23 +709,23 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
   outline-offset: 2px;
 }
 
-/* ─── ЗАЩИТА ПОЛОСЫ ВО ВСЮ ШИРИНУ (вид `promoBand`, шаг 55, 2026-08-30) ───────
-   🔒 БЕЗ ЭТОЙ СТРОКИ ОДИН БЛОК ЛОМАЕТ ВСЮ СТРАНИЦУ. Полоса выходит за колонку
-   приёмом `width: 100vw` плюс отрицательный отступ; но `100vw` в большинстве
-   браузеров считается ВМЕСТЕ с вертикальной полосой прокрутки. Значит блок
-   оказывается на 15–17 пикселей шире видимой области, и внизу появляется
-   горизонтальная прокрутка — у всей страницы, а не только у него.
+/* 🪦 ЗАЩИТА ПОЛОСЫ ВО ВСЮ ШИРИНУ (`html { overflow-x: clip }`) СНЯТА 2026-08-30
+   ВМЕСТЕ С ПРИЁМОМ, РАДИ КОТОРОГО СТОЯЛА. Полоса `promoBand` выходила за колонку
+   через `w-screen` плюс отрицательный отступ, и владелец, увидев её в каталоге,
+   сказал прямо: «эта секция внутри нашей страницы ломает разметку… она не
+   находится внутри своего собственного контейнера, а выходит наружу за его
+   пределы… если секция промобанд01 имеет в своих стилях специальный способ
+   сломать вёрстку — это неправильно».
 
-   🔒 ИМЕННО `clip`, А НЕ `hidden`, И РАЗНИЦА ЗДЕСЬ РЕШАЮЩАЯ. `overflow: hidden`
-   делает элемент контейнером прокрутки, и `position: sticky` внутри него
-   перестаёт работать МОЛЧА — а на липкой колонке стоит меню рабочего экрана
-   (вид `workspace` и обе страницы слоя архитектора). `clip` обрезает, не создавая
-   контейнера прокрутки, и sticky остаётся жив.
+   Довод владельца — соседний вид: `languageMarquee` тоже занимает всю ширину и
+   при этом остаётся в своём контейнере. Значит полная ширина не требует выхода
+   за колонку, и разница была не в задаче, а в приёме.
 
-   Стоит на `html`, а не на `body`: полосу прокрутки страницы рисует корень. */
-html {
-  overflow-x: clip;
-}
+   Защита снята намеренно, а не забыта: правило на корне маскировало бы любое
+   ДРУГОЕ горизонтальное переполнение, а такое переполнение — дефект, который
+   лучше видеть. Понадобится вернуть выход за колонку — возвращается вместе с
+   этой строкой, а не отдельно от неё.
+   → закон в `sections/blocks/promoBand.md` */
 
 /* ─── ТАРИФЫ: ПЕРЕКЛЮЧАТЕЛЬ ПЕРИОДА (вид `priceTable`, шаг 56, 2026-08-30) ────
    🔒 БЕЗ ЕДИНОЙ СТРОКИ JAVASCRIPT — и это не аскеза. Обе цены, месячная и
@@ -757,4 +757,99 @@ html {
 .pt-r:focus-visible ~ div .pt-tabs {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+/* ─── ПАРА С ПОДВИЖНОЙ ПОДСВЕТКОЙ (вид `spotlightPair`, шаг 57, 2026-08-30) ───
+   Перенос формы `double-presentation.tsx` витрины. Там движение держат `useState`
+   и два таймера; здесь его делает анимация, а выбор — радиокнопка, и обе половины
+   целиком лежат в серверной разметке.
+
+   🔒 ЦИКЛ ВОСЕМНАДЦАТЬ СЕКУНД, ПО ДЕВЯТЬ НА ПОЛОВИНУ — как в источнике. Переход
+   занимает четыре процента цикла (≈0.7 с): в источнике это `transition: flex .5s`,
+   и на глаз разница неразличима, а лишнего механизма нет. */
+@keyframes sp-left  { 0%, 48% { flex-grow: 7 } 52%, 100% { flex-grow: 3 } }
+@keyframes sp-right { 0%, 48% { flex-grow: 3 } 52%, 100% { flex-grow: 7 } }
+@keyframes sp-bar-left  { 0% { width: 0 } 48% { width: 100% } 50%, 100% { width: 0 } }
+@keyframes sp-bar-right { 0%, 50% { width: 0 } 98% { width: 100% } 100% { width: 0 } }
+
+/* 🔒 ДВИЖЕНИЕ ТОЛЬКО ТАМ, ГДЕ ЕСТЬ РЯД. На телефоне половины стоят друг под
+   другом, и «широкая» с «узкой» не значат ничего: ширина у них одна. */
+@media (min-width: 768px) {
+  .sp-body .sp-card { flex-grow: 5; flex-basis: 0; transition: flex-grow 0.5s ease }
+  .sp-body .sp-card:nth-child(1) { animation: sp-left 18s infinite }
+  .sp-body .sp-card:nth-child(2) { animation: sp-right 18s infinite }
+  .sp-body .sp-card:nth-child(1) .sp-bar { animation: sp-bar-left 18s linear infinite }
+  .sp-body .sp-card:nth-child(2) .sp-bar { animation: sp-bar-right 18s linear infinite }
+}
+
+/* 🔒 ЗАПРЕТИЛИ ДВИЖЕНИЕ — ПОЛОВИНЫ ПРОСТО РАВНЫ. Не «замерли на первой»: замершая
+   подсветка утверждает, что одна половина важнее, а этого источник не говорил. */
+@media (prefers-reduced-motion: reduce) {
+  .sp-body .sp-card { animation: none }
+  .sp-body .sp-bar { animation: none; width: 0 }
+}
+
+/* 🔒 ВЫБОР ЧЕЛОВЕКА ОСТАНАВЛИВАЕТ ДВИЖЕНИЕ НАВСЕГДА — закон владельца из шага 52:
+   движение, которое нельзя остановить, отнимает право дочитать. Правила стоят
+   ПОСЛЕ анимации намеренно: выбранное человеком обязано перебивать заводское. */
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card,
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-bar { animation: none }
+
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(1),
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(2) { flex-grow: 7 }
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(2),
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(1) { flex-grow: 3 }
+
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(1) .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(2) .sp-bar { width: 100% }
+.sp-r:nth-of-type(1):checked ~ .sp-body .sp-card:nth-child(2) .sp-bar,
+.sp-r:nth-of-type(2):checked ~ .sp-body .sp-card:nth-child(1) .sp-bar { width: 0 }
+
+/* 🔒 ФОКУС ВИДЕН, ХОТЯ ПЕРЕКЛЮЧАТЕЛЬ СКРЫТ: `sr-only` радиокнопкой остаётся, её
+   получает клавиатура, а рамку рисуем вокруг той половины, которой она правит. */
+.sp-r:nth-of-type(1):focus-visible ~ .sp-body .sp-card:nth-child(1),
+.sp-r:nth-of-type(2):focus-visible ~ .sp-body .sp-card:nth-child(2) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ─── СЕТКА ПЛОЩАДОК (вид `platformGrid`, 2026-08-30) ────────────────────────
+   🔒 СВЕЧЕНИЕ ИДЁТ ИЗ ЩЕЛЕЙ, А НЕ ОТ РАМОК. Подложка сетки — радиальная заливка
+   акцентным цветом от центра; ячейки непрозрачны и стоят с промежутком в два
+   пикселя. Видно ровно эти два пикселя, и они ярче в середине. Так в источнике;
+   разница одна — цвет берётся у токена темы, а не зашит фиолетовым витрины. */
+.pg-grid {
+  background: radial-gradient(circle at center, var(--primary) 0%, transparent 99%);
+}
+
+/* 🔒 ПОДСВЕТКА СМОТРИТ В ЦЕНТР ПО КОЛОНКЕ, А НЕ ПО НОМЕРУ ЯЧЕЙКИ. В источнике
+   направления раздаются по индексу из массива на шесть — седьмая ячейка не
+   получит ничего. Колонка же известна разметке всегда: `nth-child` считает её
+   сам, и правило переживает любое число ячеек. */
+.pg-cell:hover .pg-glow { opacity: 1 }
+
+.pg-grid .pg-cell:nth-child(2n + 1) .pg-glow {
+  background: radial-gradient(circle at 100% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
+}
+.pg-grid .pg-cell:nth-child(2n) .pg-glow {
+  background: radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
+}
+
+@media (min-width: 768px) {
+  .pg-grid .pg-cell:nth-child(3n + 1) .pg-glow {
+    background: radial-gradient(circle at 100% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
+  }
+  .pg-grid .pg-cell:nth-child(3n + 2) .pg-glow {
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
+  }
+  .pg-grid .pg-cell:nth-child(3n) .pg-glow {
+    background: radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--primary) 45%, transparent) 0%, transparent 70%);
+  }
+}
+
+/* Движение запрещено — подсветка появляется мгновенно, а не выцветает. */
+@media (prefers-reduced-motion: reduce) {
+  .pg-glow { transition: none }
 }

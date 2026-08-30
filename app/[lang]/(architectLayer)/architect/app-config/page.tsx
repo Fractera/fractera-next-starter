@@ -10,7 +10,8 @@ import { fieldsUi } from "../../_i18n/fields.i18n"
 import { resolveGroup, sourceOfGroup } from "../../_lib/architect-menu"
 import { modeOf, activeSlots } from "../../_lib/routing"
 import { sectionsOfGroup, atPath } from "../../_lib/fields"
-import { LayerMenu } from "../../_components/layer-menu"
+import { WorkspaceShell } from "@/components/workspace/workspace-shell"
+import { ARCHITECT_GROUPS, hrefOfGroup } from "../../_lib/architect-menu"
 import { EditLangSwitch } from "../../_components/edit-lang-switch"
 import { ConfigEditor } from "../../_components/config-editor.client"
 import { imageCropperUi } from "@/services/upload/image-cropper.i18n"
@@ -218,17 +219,43 @@ export default async function ArchitectAppConfigPage({
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
+        {/* 🔒 ЗАГОЛОВОК СТРАНИЦЫ И ЗАГОЛОВОК РАЗДЕЛА РАЗВЕДЕНЫ (шаг 49). До
+            переноса шапка печатала имя ОТКРЫТОЙ ГРУППЫ, потому что другого места
+            для него не было. Теперь оно есть — заголовок правой части рабочего
+            экрана, — и оставить имя группы в шапке значило бы напечатать его
+            дважды подряд. Шапка отвечает на вопрос «где я» (крошки и страница),
+            рабочий экран — «что я открыл». */}
         <PageHeader
           lang={lang}
           breadcrumbs={[{ label: t.layer }, { label: t.appConfigTitle }, { label: groupTitle }]}
           eyebrow={t.layer}
-          title={groupTitle}
+          title={t.appConfigTitle}
           subtitle={t.appConfigSubtitle}
         />
 
-        <div className="mt-8 flex flex-col gap-8 md:flex-row md:gap-10">
-          <LayerMenu lang={lang} active={group} adminUrl={adminUrl} ui={t} />
+        {/* 🔒 РАСКЛАДКА — ОБЩАЯ С ВИДОМ `workspace` (шаг 49, 2026-08-30, заказ
+            владельца: «перенеси страницу настройки проекта на этот блок»).
+            Здесь стояла своя пара «меню плюс колонка» — та самая, с которой вид и
+            был срисован. Пока копий было две, они совпадали; третья страница
+            развела бы их молча, а на телефоне они уже разошлись: у вида ящик, у
+            страницы оставалась горизонтальная лента, которую владелец назвал
+            неправильной.
 
+            🔒 МЕНЮ ПРИХОДИТ ДАННЫМИ, А НЕ КОМПОНЕНТОМ. `LayerMenu` рисовал те же
+            восемь пунктов сам; теперь страница отдаёт их раскладке списком, и
+            подпись каждого по-прежнему считает она — раскладка не знает ни про
+            группы, ни про их адреса, и знать не должна. */}
+        <WorkspaceShell
+          id="app-config"
+          menuTitle={t.menuTitle}
+          menuWord={t.menuTitle}
+          menu={ARCHITECT_GROUPS.map(g => ({
+            label: t.groups[g.id] ?? g.id,
+            href: hrefOfGroup(lang, g.id),
+            active: g.id === group,
+          }))}
+          title={groupTitle}
+        >
           <div className="min-w-0 flex-1">
             {/* 🔒 ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА НАСТРОЕК — ТОЛЬКО У НАСТРОЕК ПРИЛОЖЕНИЯ.
                 Он переключает язык ЗНАЧЕНИЙ (имя сайта по-русски и по-английски),
@@ -347,7 +374,7 @@ export default async function ArchitectAppConfigPage({
               )}
             </div>
           </div>
-        </div>
+        </WorkspaceShell>
       </div>
     </main>
   )

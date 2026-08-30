@@ -3,7 +3,7 @@ import { Small } from "@/components/ui/typography"
 import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { designUi } from "../../_i18n/design.i18n"
 import { DESIGN_SECTIONS, resolveDesignSection, hrefOfDesignSection } from "../../_lib/design-sections"
-import { DesignMenu } from "../../_components/design-menu"
+import { WorkspaceShell } from "@/components/workspace/workspace-shell"
 import { DesignFonts } from "../../_components/design-fonts.client"
 import { DesignType } from "../../_components/design-type.client"
 import { DesignShape } from "../../_components/design-shape.client"
@@ -66,18 +66,33 @@ export default async function DesignPage({
           lang={lang}
           breadcrumbs={[{ label: t.layer }, { label: t.groups.design }, { label: ui.pages[active].title }]}
           eyebrow={t.layer}
-          title={ui.pages[active].title}
-          subtitle={ui.pages[active].hint}
+          title={t.groups.design}
+          subtitle={t.appConfigSubtitle}
         />
 
-        <div className="mt-8 flex flex-col gap-8 md:flex-row md:gap-10">
-          <DesignMenu lang={lang} active={active} ui={ui} title={t.groups.design} />
+        {/* 🔒 ТА ЖЕ РАСКЛАДКА, ЧТО У НАСТРОЕК ПРОЕКТА И У ВИДА `workspace`
+            (шаг 49, 2026-08-30). Здесь стояла ТРЕТЬЯ копия пары «меню плюс
+            колонка» — со своим меню-компонентом, своими отступами и своей
+            горизонтальной лентой на телефоне. Третья копия и есть тот порог, за
+            которым расхождение перестаёт замечаться глазами.
 
+            🔒 РАЗДЕЛЫ ДИЗАЙНА ИДУТ В МЕНЮ, А НЕ ВО ВКЛАДКИ. Вкладки — второй
+            уровень ВНУТРИ раздела; здесь же это сам выбор раздела, то есть
+            первый. Ряд типов блоков остаётся внутри каталога, где ему и место:
+            он вкладки СВОЕГО раздела, а не страницы. */}
+        <WorkspaceShell
+          id="design"
+          menuTitle={t.groups.design}
+          menuWord={t.menuTitle}
+          menu={DESIGN_SECTIONS.map(id => ({
+            label: ui.pages[id].title,
+            href: hrefOfDesignSection(lang, id),
+            active: id === active,
+          }))}
+          title={ui.pages[active].title}
+          lead={ui.pages[active].hint}
+        >
           <div data-design-page data-design-section={active} className="flex min-w-0 flex-1 flex-col gap-6">
-            {/* 🔒 ЧИТАЕТСЯ НА КАЖДОМ ЗАПРОСЕ — И ОБ ЭТОМ СКАЗАНО СЛОВАМИ. Без этой
-                строки зелёное «Сохранено» двусмысленно: человек не знает, нужна ли
-                ему пересборка. Здесь она не нужна, и молчать об этом нельзя. */}
-            <Small className="max-w-3xl">{t.appConfigSubtitle}</Small>
 
             {active === "fonts" && <DesignFonts initial={fonts} ui={ui.fonts} />}
             {active === "type" && <DesignType initial={type} ui={ui.type} />}
@@ -129,7 +144,7 @@ export default async function DesignPage({
               </HelpDetails>
             )}
           </div>
-        </div>
+        </WorkspaceShell>
       </div>
     </main>
   )

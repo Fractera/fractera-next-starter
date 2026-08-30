@@ -33,6 +33,7 @@ import { statement } from './blocks/statement.server'
 import { faq } from './blocks/faq.server'
 import { toc } from './blocks/toc.server'
 import { voiceField } from './blocks/voice-field.server'
+import { workspace } from './blocks/workspace.server'
 
 // НАБОР СЕКЦИЙ ПРОЕКТА — единственный, и это осознанное решение (2026-08-14).
 //
@@ -49,5 +50,5 @@ import { voiceField } from './blocks/voice-field.server'
 // и лежат по файлу на вид. Разбор того сценария сохранён в `SECTIONS.md`, чтобы
 // следующая сессия не проектировала его заново.
 export const SECTIONS: SectionSet = {
-  p, h2, h3, h4, h5, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, heroBadge, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, toc, languageMarquee, projectTypeMarquee, voiceField,
+  p, h2, h3, h4, h5, quote, list, olist, figure, code, note, cta, callout, table, docref, founder, columns, group, heroBadge, heroSplit, badges, panel, metrics, flow, problemSolution, cards, card, statement, noBill, faq, toc, languageMarquee, projectTypeMarquee, voiceField, workspace,
 }

@@ -182,6 +182,22 @@
         "en": "Not a landing section at all — building material that lives inside any of the ten above.",
         "ru": "Не лендинговая секция вовсе — материал, который живёт внутри любого из десяти типов выше."
       }
+    },
+    {
+      "id": "workspace",
+      "order": 12,
+      "title": {
+        "en": "Workspace",
+        "ru": "Рабочий экран"
+      },
+      "purpose": {
+        "en": "A working screen rather than a page to read: a menu on the left, content on the right. This is what dashboards and project tools are built from.",
+        "ru": "Рабочий экран, а не страница для чтения: меню слева, содержимое справа. Из него строятся дашборды и инструменты проекта."
+      },
+      "variants": {
+        "en": "Without a top row of sections (menu, heading, coloured cards, content) or with one, when the right-hand side itself splits into sections.",
+        "ru": "Без верхнего ряда разделов (меню, заголовок, цветные карточки, содержимое) или с ним, когда правая часть сама делится на разделы."
+      }
     }
   ],
   "kinds": [
@@ -800,6 +816,17 @@
       "fields": "variant?: 'line' | 'area'; title: string; hint?: string; comment?: string; placeholder?: string",
       "title": "a text field that can be dictated",
       "description": "**Type:** Page material (11). The first kind of the catalogue that TAKES something from a visitor\ninstead of showing them something. Everything below follows from that one difference.\n\n## Two sizes, one kind\n\n`variant: 'line'` is a single-line input with the microphone built into the same frame; `variant:\n'area'` is a text area with a full-width microphone button underneath. The default is `line` — a\nshort answer is needed more often than a long one.\n\nThey are the same field, which is why they are one kind and not two. Two kinds would mean two cards,\ntwo taxonomy entries and two registry lines that must change in pairs — and the first edit to one of\nthem would drift from the other silently.\n\n## It has no receiver, and that is a decision\n\n**Owner's decision, 2026-08-28**, chosen out of two named options: the dictated text lives in the\nbrowser and disappears on reload. The block renders the field and works by voice; where the text goes\nis separate work with its own table, its own door and its own spam protection.\n\nSo: this kind is **not a contact form**. It does not submit, it does not store, it does not email.\nPutting it on a public page and expecting to read the answers later is the one way to be wrong about\nit. When the receiver is built, it arrives as fields on this same kind, not as a second kind.\n\n## What it draws\n\n`H3` title, a hint underneath, the field with its microphone, and — under the whole area — the\ncomment. While recording, an equaliser bar appears below the field; when recording stops, the bar is\n**replaced in the same place** by the transcript, which the visitor edits and then accepts or\ndiscards. One state at a time: showing the bar and the transcript together would claim a person is\nspeaking and correcting what they said at once.\n\nThree refusals get their own line rather than a button tooltip: no API key, the browser denied the\nmicrophone, the connection is not secure. A tooltip does not exist on a phone.\n\n## What it needs to actually transcribe\n\nHTTPS, a signed-in session and an OpenAI key on the server — the door is `/api/transcribe` and it\nchecks the role. Without them the field still works as an ordinary text field and says why the\nmicrophone is unavailable. That is deliberate: a control that silently does nothing teaches nobody.\n\n## When NOT to take it\n\n- **As a comment form or a lead form.** It has no receiver — see above.\n- **Inside an article, to look interactive.** It is form material: it belongs on a page that asks the\n  visitor for something, next to the rest of that form.\n- **For a value you already have.** The field starts empty and owns its own state; it is not bound to\n  settings, to a product or to a record.",
+      "hasCard": true,
+      "usedOn": []
+    },
+    {
+      "id": "0035",
+      "kind": "workspace",
+      "type": "workspace",
+      "shape": "two-columns",
+      "fields": "",
+      "title": "рабочий экран",
+      "description": "Меню слева, содержимое справа. Из него строятся дашборды, инструменты проекта и\nслужебные разделы — всё, что человек **использует**, а не читает.\n\n## Правила владельца\n\n**Решение 2026-08-30, дословно:** «я веду речь о том чтобы блок передавал интерфейс двух колоночного\nмакета в котором существует левая часть как меню, и правой часть контент… чтобы мы могли просто\nподключать эту сущность к проекту используя его параметры настраивать».\n\n**Два случая содержимого, названные им же:**\n\n1. заголовок · описание · три цветные карточки · содержимое проекта;\n2. то же самое **плюс верхний ряд разделов** — когда правая часть сама делится на разделы.\n\n🔒 **Это ОДИН вид, а не два.** Разница между случаями — поле `tabs`, а рисунок тот же. Второй вид\nразошёлся бы с первым на первой правке темы; тот же закон, по которому `quote` не разделилась надвое\nиз-за необязательной первой строки.\n\n## Три тона карточек различаются жанром, а не громкостью\n\n| Тон | Цвет | Что говорит |\n|---|---|---|\n| `recommended` | зелёный | **советует** — обязан выглядеть приглашением, а не предостережением |\n| `advice` | жёлтый | называет **цену решения** до того, как его приняли; остаётся верным всегда |\n| `warning` | красный | сообщает **состояние системы** сейчас; исчезнет, когда состояние изменится |\n\nДва одинаково окрашенных блока подряд человек читает как один длинный текст и второй пропускает.\n\n## Что легко сделать неправильно\n\n🔒 **Мёртвая ссылка хуже её отсутствия.** `href` у пункта необязателен: есть адрес — ссылка, нет —\nотмеченный текущий пункт. Проставить `href=\"#\"` всем пунктам ради «настоящего вида» значит обещать\nпереход, которого нет.\n\n🔒 **`active` ставится ровно одному пункту.** Экранный диктор читает `aria-current` как «текущая\nстраница»; два таких пункта означают, что человек находится в двух местах сразу.\n\n🔒 **Меню — навигация, а не содержание.** В машинной версии страницы оно не печатается намеренно:\nмодель, прочитав список из восьми пунктов, пересказала бы его как содержание экрана.\n\n🔒 **Раскладка снята с живого меню слоя архитектора.** До `md` — горизонтальная лента, с `md` —\nлипкая колонка `w-60`; разделитель едет вслед за меню. `self-start` у липкой колонки обязателен:\nбез него flex растягивает её на всю высоту строки и `sticky` **молча** перестаёт работать.",
       "hasCard": true,
       "usedOn": []
     }

@@ -8,7 +8,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **34** · рендереров: **34** · карточек: **14**
+Видов: **35** · рендереров: **35** · карточек: **15**
 
 | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|
@@ -46,6 +46,7 @@
 | `languageMarquee` | Trust and logos | the language ribbon, closing the page | title: string; note?: string | [карточка](blocks/languageMarquee.md) |
 | `projectTypeMarquee` | Trust and logos | the ribbon of directions | title?: string; note?: string | [карточка](blocks/projectTypeMarquee.md) |
 | `voiceField` | Page material | a text field that can be dictated | variant?: 'line' \| 'area'; title: string; hint?: string; comment?: string; placeholder?: string | [карточка](blocks/voiceField.md) |
+| `workspace` | Workspace | рабочий экран | — | [карточка](blocks/workspace.md) |
 
 ## Чего в этой таблице нет
 

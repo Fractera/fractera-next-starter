@@ -496,4 +496,97 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'workspace',
+    when: 'A working screen rather than a page to read: a menu on the left, content on the right. Dashboards and project tools are built from this — the layout is taken from the architect layer that already runs on it, not invented here. The left column sticks on a wide screen and becomes a scrolling strip on a phone. Menu entries are links only when they carry an address; without one they are plain marks, because a dead link in a catalogue is worse than no link.',
+    blocks: [
+      {
+        kind: 'workspace',
+        menuTitle: 'Project settings',
+        menu: [
+          { label: 'Basics', active: true },
+          { label: 'Search' },
+          { label: 'Meta and media' },
+          { label: 'Languages' },
+          { label: 'Parallel routing' },
+          { label: 'Header' },
+          { label: 'Footer' },
+          { label: 'Cookie banner' },
+        ],
+        title: 'Languages',
+        lead: 'Which languages the site speaks. Enabling one later is a setting, not a rebuild of the way the site works.',
+        notes: [
+          {
+            tone: 'recommended',
+            title: 'Add one language at a time',
+            text: 'Each language is its own set of prerendered pages. Adding them one by one keeps a build failure attributable to a single change.',
+          },
+          {
+            tone: 'advice',
+            title: 'A language costs pages, not speed',
+            text: 'Serving a prerendered page is the same work regardless of how many languages exist beside it — but every language multiplies what has to be generated.',
+          },
+          {
+            tone: 'warning',
+            title: 'Saving is not applying',
+            text: 'The language set lives in the environment file and is baked in at build time. Until the project is rebuilt, the site keeps serving the previous set.',
+          },
+        ],
+        children: [
+          { kind: 'h4', text: 'Enabled languages' },
+          {
+            kind: 'p',
+            text: 'This is the part a project fills with whatever it needs: fields, a table, an island. The block gives the frame and the rules; the content is yours.',
+          },
+          {
+            kind: 'list',
+            items: ['English — the base language', 'Russian — the owner’s translation'],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'workspace',
+    when: 'The same kind with the optional top row of sections — the second case, and it is a FIELD rather than a second kind. The drawing is identical; only `tabs` appears. Two kinds would have drifted apart on the first theme change, exactly as a quote with a lead would have.',
+    blocks: [
+      {
+        kind: 'workspace',
+        menuTitle: 'Design',
+        menu: [
+          { label: 'Fonts' },
+          { label: 'Type scale' },
+          { label: 'Shape' },
+          { label: 'Colour' },
+          { label: 'Blocks', active: true },
+          { label: 'Tools' },
+        ],
+        title: 'Blocks',
+        lead: 'The catalogue of what pages are built from. The type answers what to put here; the kind answers what draws it.',
+        notes: [
+          {
+            tone: 'advice',
+            title: 'The catalogue is closed',
+            text: 'A kind not declared in the set does not exist for the application, and the build refuses. That is the whole reason two pages of one site cannot drift apart.',
+          },
+        ],
+        tabs: [
+          { label: 'All', active: true },
+          { label: 'Hero' },
+          { label: 'Benefits' },
+          { label: 'How it works' },
+          { label: 'Use cases' },
+          { label: 'Pricing' },
+          { label: 'Page material' },
+          { label: 'Workspace' },
+        ],
+        children: [
+          {
+            kind: 'p',
+            text: 'Below the row goes whatever the section is about — here a catalogue, on a dashboard a chart, in a tool its own controls.',
+          },
+        ],
+      },
+    ],
+  },
 ]

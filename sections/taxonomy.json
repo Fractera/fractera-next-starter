@@ -187,6 +187,22 @@
         "en": "Not a landing section at all — building material that lives inside any of the ten above.",
         "ru": "Не лендинговая секция вовсе — материал, который живёт внутри любого из десяти типов выше."
       }
+    },
+    {
+      "id": "workspace",
+      "order": 12,
+      "title": {
+        "en": "Workspace",
+        "ru": "Рабочий экран"
+      },
+      "purpose": {
+        "en": "A working screen rather than a page to read: a menu on the left, content on the right. This is what dashboards and project tools are built from.",
+        "ru": "Рабочий экран, а не страница для чтения: меню слева, содержимое справа. Из него строятся дашборды и инструменты проекта."
+      },
+      "variants": {
+        "en": "Without a top row of sections (menu, heading, coloured cards, content) or with one, when the right-hand side itself splits into sections.",
+        "ru": "Без верхнего ряда разделов (меню, заголовок, цветные карточки, содержимое) или с ним, когда правая часть сама делится на разделы."
+      }
     }
   ],
   "kinds": {
@@ -359,6 +375,11 @@
       "id": "0032",
       "type": "page-material",
       "shape": "text"
+    },
+    "workspace": {
+      "id": "0035",
+      "type": "workspace",
+      "shape": "two-columns"
     }
   }
 }

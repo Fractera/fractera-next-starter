@@ -320,6 +320,10 @@ export const en: FooterPageCell = {
 
     // ── СТОЛП ТРЕТИЙ ──────────────────────────────────────────────────────────
     { kind: 'h2', text: 'The infrastructure shell' },
+    {
+      kind: 'p',
+      text: 'Everything that governs the project lives outside the project itself. What travels to your repository is the application; the control panel, authorization and the data stay on the server. The reason is not secrecy: editing the code must not be able to break the thing that governs the code. Breaking the shell by hand is possible — it is your server — and then the consequences are yours.',
+    },
 
     // 🔒 ФРАГМЕНТ ПРО ПОРТЫ ПЕРЕНЕСЁН ДОСЛОВНО (владелец, 2026-08-30: «этот
     // фрагмент я бы оставил без изменения как патерн документа»). Изменился
@@ -355,19 +359,76 @@ export const en: FooterPageCell = {
     },
 
     { kind: 'h4', text: 'Each layer survives the others' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Separate processes are not a diagram — they are what happens on a bad day. Any one of the four can stop without taking the rest down with it.',
+    },
+    {
+      kind: 'table',
+      headers: ['If this stops', 'What still works'],
+      rows: [
+        ['Your application', 'The panel, the data and the accounts are untouched; only the site is down.'],
+        ['Control panel', 'The site keeps serving visitors; only changes have to wait.'],
+        ['Data layer', 'Pages generated ahead of time still open — that is what static generation is for.'],
+        ['Authorization', 'Public pages are unaffected; only what sits behind a sign-in closes.'],
+      ],
+    },
+
     { kind: 'h3', text: 'Working with GitHub' },
+    {
+      kind: 'p',
+      text: 'The repository is yours. The project is pushed to it and pulled back with a button in the panel; the repository address and the access token live on the server rather than in the code, so they do not travel with the project and do not end up in anyone else’s hands along with it.',
+    },
     { kind: 'h4', text: 'The way out' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Leaving the platform is a legitimate scenario, not a breakage. The application is an ordinary project: remove its dependency on the panel and it runs anywhere. You lose what lives on the server — settings without a rebuild, the data layer and search by meaning, authorization in 82 languages, the deployment history with a rollback, the map and the channels. The code stays with you in full.',
+    },
+
     { kind: 'h3', text: 'Your own domain and certificates' },
+    {
+      kind: 'p',
+      text: 'A project runs in one of two modes. At the start it is an IP address over an unprotected protocol — convenient for getting to know the project, and honest about the browser capabilities that are unavailable in it. The second mode is your own domain, HTTPS and strict role checking; you move to it as soon as you decide to develop the project in earnest.',
+    },
+    {
+      kind: 'p',
+      text: 'Connecting a domain is described in the panel: a wizard of five steps and five records at your registrar — the domain itself, `www`, and three service names for sign-in, the panel and the data. The certificate is then issued automatically.',
+    },
     { kind: 'h4', text: 'Security certificates' },
+    {
+      kind: 'p',
+      text: 'The certificate is issued and renewed without a human: renewal is handled by a system timer that wakes twice a day and renews whatever is due. The panel shows the expiry date and the names the certificate covers, and next to it stands a manual renewal button — for the case where waiting is not an option.',
+    },
     { kind: 'h5', text: 'The automatic certificate' },
+    {
+      kind: 'p',
+      text: 'Free, from Let’s Encrypt. It is valid for 90 days and is renewed ahead of time rather than on the last day. What matters is what it actually attests: **control over the domain, not your organisation.** Such a certificate carries no company check — Let’s Encrypt does not issue organisation-validated certificates at all.',
+    },
     { kind: 'h5', text: 'Your own certificate' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Uploaded as a certificate-and-key pair and replaces the automatic one. It is needed when your company or an external regulator requires it: when the certificate must come from a particular authority, say, or carry an organisation check. The panel shows its expiry and covered names in the same way.',
+    },
+
     { kind: 'h3', text: 'Authorization' },
+    {
+      kind: 'p',
+      text: 'Accounts, sessions and roles live in a separate service rather than inside the application. The sign-in interface is translated into 82 languages: a customer arrives from a country you did not choose and in a language you did not plan for.',
+    },
     { kind: 'h4', text: 'Signing in by email' },
+    {
+      kind: 'p',
+      text: 'The default, and enough for a prototype: a person enters an address and receives a link by email — there is no password, so there is nothing to forget and nothing to steal. It is switched on with a mail-service key you paste into the panel.',
+    },
     { kind: 'h4', text: 'Signing in with Google' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Switched on with an id-and-secret pair from the Google console; the panel hands you the return address ready to copy. Beyond these two, **more than eighty** preconfigured sign-in providers are available: connecting any of them is a support request, not development work.',
+    },
+    {
+      kind: 'p',
+      text: 'And the point of it all: signing in does not exist for its own sake. It returns a **role** — the very thing the route layers and the locks on the data doors stand on. The way in changes; what a person receives afterwards does not.',
+    },
     { kind: 'h3', text: 'Memory' },
     { kind: 'h4', text: 'The database' },
     { kind: 'h4', text: 'The object store' },

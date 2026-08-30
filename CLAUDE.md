@@ -750,6 +750,16 @@ back link are deliberately not kinds: they are not **chosen** in a block list �
 page has an author, a cover and a level above. A kind that cannot be placed lies about what the
 catalogue is for. So the catalogue stays about CONTENT and chrome lives in `components/content-page/`.
 
+🔒 **THE OWNER NAMES A BLOCK BY ITS CODE — `quote01`, `workspace02` — AND THE CODE IS IN
+`sections/BLOCKS.md`, FIRST COLUMN.** He reads it off the blocks showcase, where it is printed as a
+coloured badge, and says "build me a section out of this and this". Find the row, take the kind and the
+fields from it; that is enough to build without opening a single renderer.
+🔒 **The code points at a SPECIMEN, not at a kind, and that changes the answer.** `workspace01` is the
+working screen WITHOUT the top row of sections, `workspace02` is the same kind WITH it — one kind, one
+differing field. Hearing `workspace02`, you may not take "just workspace": the number names the setting.
+🔒 Not to be confused with the numeric `id` (`0015`) in `SECTIONS.json` — that is the control panel's
+internal key, not a language. Owner's decision, 2026-08-30. → `use-sections`, "Как назван блок"
+
 **Three cases after you answer:** a fitting kind exists → put it in the list · none exists and the kind
 would suit ANY page → create it (renderer `sections/blocks/<kind>.server.tsx`, shape in
 `lib/content/blocks/types.ts`, entry in `sections/index.ts`, specimen in the catalogue —

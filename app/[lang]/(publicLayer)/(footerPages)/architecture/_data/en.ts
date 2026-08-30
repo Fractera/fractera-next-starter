@@ -193,19 +193,129 @@ export const en: FooterPageCell = {
       ],
     },
     { kind: 'h3', text: 'Design' },
+    {
+      kind: 'p',
+      text: 'Colour, type and spacing are not chosen per page. The scale lives in one place, the palette in another, and a hand-written heading fails a check before it ever reaches the site. The law behind it is short: **nothing about how a page looks depends on who may open it.** A storefront and an admin table are set the same way; access decides what a person sees, never how it is set.',
+    },
     { kind: 'h4', text: 'The sections of design' },
+    {
+      kind: 'p',
+      text: 'The look is edited inside the project itself, in six sections. A change is visible on the next page load — no rebuild required.',
+    },
+    {
+      kind: 'list',
+      items: [
+        '**Fonts** — which families set the headings and the body;',
+        '**Type scale** — every size at once, by a single multiplier: the whole set grows or shrinks keeping its proportions;',
+        '**Shape** — radii, borders, density;',
+        '**Colour** — a palette of roles rather than values: light and dark are the same roles with different values, not two designs to keep in step by hand;',
+        '**Blocks** — the catalogue of what pages are built from;',
+        '**Tools** — service switches, such as the screen-width indicator.',
+      ],
+    },
     { kind: 'h4', text: 'Blocks' },
+    {
+      kind: 'p',
+      text: 'A page is a list of blocks, not a laid-out file. The catalogue is closed: a kind not declared in it does not exist for the application, and the build refuses. There are more than thirty kinds, and each has a specimen you can open and look at — a kind you cannot see anywhere is not "unused" but unverified.',
+    },
+    {
+      kind: 'p',
+      text: 'A new block is created with the help of artificial intelligence, including from code samples, and is then **standardised** — it enters that same catalogue instead of staying as the markup of one page. From there it is reused across every project: drawn once, verified once, taken ready afterwards.',
+    },
     { kind: 'h5', text: 'Types of block' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'The catalogue answers "what exists", and for choosing that is not enough. So blocks carry a type — by purpose rather than by construction: you pick the type first and the kind only inside it.',
+    },
+    {
+      kind: 'list',
+      items: [
+        'hero · benefits and value · how it works · product demo · use cases;',
+        'comparison · pricing · testimonials · showcase · trust;',
+        'page material — headings, paragraphs, lists, tables, notes: half the catalogue is this one.',
+      ],
+    },
     { kind: 'h3', text: 'Four configuration files' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A large part of the project changes by editing four files — with no rebuild and no artificial intelligence involved. The application reads them on every request, so a change is visible on the next page load.',
+    },
+    {
+      kind: 'table',
+      headers: ['File', 'What is in it'],
+      rows: [
+        ['Application', 'Name, description, address, logo and images, icons, author, social profiles, search, analytics, currency.'],
+        ['Platform', 'Which capabilities are on: the switches, the development mode, parallel routes.'],
+        ['Design', 'Fonts, scale, shape, colour.'],
+        ['Products', 'The registry of products, one dossier each.'],
+      ],
+    },
+    {
+      kind: 'note',
+      text: 'There is one exception, and it is worth knowing in advance: the language set and the access keys live in the environment file, and that one is baked in at build time. Saving a value there without rebuilding the project changes nothing.',
+    },
+
     { kind: 'h3', text: 'Many languages' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'You enable the languages your market speaks and the rest wait. Enabling one later is a setting, not a rebuild of the way the site works. What matters more is what adding a language does NOT do:',
+    },
+    {
+      kind: 'list',
+      items: [
+        'it does not turn any page dynamic: every language gets its own pages, generated ahead of time — ten languages means ten sets of finished pages, not one page assembled on the fly;',
+        'it does not dilute search ranking: each page declares itself the original in its own language and names its translations, so a search engine sees one page in ten languages rather than ten near-duplicates competing with each other;',
+        'it does not cost speed: serving a prerendered page is the same work regardless of how many languages exist beside it.',
+      ],
+    },
+    {
+      kind: 'note',
+      text: 'A single-language site is a case in its own right, not a stripped-down version: the language disappears from the addresses entirely, and the site stops advertising translations it does not have.',
+    },
+
     { kind: 'h3', text: 'Found by search engines, readable by models' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Two readers arrive at a modern site and they want different things. A search engine sends a person to a page. A model comes itself, reads, and retells. The product is built for both, and the two are not the same job.',
+    },
+    {
+      kind: 'p',
+      text: 'The search engine gets finished markup: each page declares its own canonical address, translations name each other, and structured data, sitemaps and robots rules ship by default. Machine checks refuse a page that breaks any of it.',
+    },
+    {
+      kind: 'p',
+      text: 'The model gets the same text without the markup: a map at `/llms.txt`, the whole corpus at `/llms-full.txt`, and a markdown version beside each page. That matters because page markup is half noise to a model — menus, footer, consent banner, scripts — and it spends its attention on all of it.',
+    },
+    {
+      kind: 'note',
+      text: 'Until the semantic structure of your project is ready, it is worth closing it to indexing: the setting lives in the application settings, section "Search". Both forms of the page are built from the SAME content — there is no separate "version for AI" to drift out of step.',
+    },
+
     { kind: 'h3', text: 'Role-based access out of the box' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'Roles are not built for a project — they are already there. Three of them decide access: a guest, a signed-in user, and the architect, meaning the owner of the server. The remaining twelve are a vocabulary for business: buyer, subscriber, manager, support, delivery, finance, editor, administrator.',
+    },
+    {
+      kind: 'p',
+      text: 'It is enough to say which layer a page needs. The lock sits on the route layer rather than in the markup of each page, and the door to the data is no softer than the page above it: closing a page while leaving its door open is the most common way to build leaky access.',
+    },
+
     { kind: 'h3', text: 'Parallel routing' },
+    {
+      kind: 'p',
+      text: 'A page can be made not of one tree but of several named areas drawn at the same time: header, footer, left and right panels, the centre with its own header and footer, a promo screen, breadcrumbs, notifications, a modal window. This is how a deep interface for a professional is assembled without turning the site into an application.',
+    },
+    {
+      kind: 'list',
+      items: [
+        'an area has its own pages and its own addresses — it is a tree of its own, not a piece of markup;',
+        'an area has its own error boundary: a failed area shows its own error while the rest of the page keeps working;',
+        'an area is switched on and off, and a switched-off one is not drawn at all;',
+        'there are three kinds of route: an ordinary page, a slide-out panel, and a modal window over the page — and the address stays real, so such a link can be sent to someone;',
+        'search optimisation and prerendered pages are preserved, and changes apply without rebuilding the project.',
+      ],
+    },
     { kind: 'note', text: 'More on this shortly.' },
 
     // ── СТОЛП ТРЕТИЙ ──────────────────────────────────────────────────────────

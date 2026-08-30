@@ -26,21 +26,37 @@ import type { DesignUi } from "../_i18n/design.i18n"
 // 🔒 КОНТРАСТ ПОКАЗЫВАЕТСЯ ЧИСЛОМ, А НЕ ЗНАЧКОМ: по «4.3:1» видно, насколько
 // промахнулись, а по жёлтому треугольнику — нет.
 
-type Role = "primary" | "accent" | "background" | "foreground" | "muted" | "border" | "destructive"
+type Role =
+  | "primary" | "accent" | "background" | "foreground" | "muted" | "border" | "destructive"
+  // Пять рядов диаграммы (шаг 58). Имена с дефисом — они же имена токенов темы.
+  | "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5"
 type Theme = "light" | "dark"
 type State = Record<Theme, Partial<Record<Role, string>>>
 
-const ROLES: Role[] = ["primary", "accent", "background", "foreground", "muted", "border", "destructive"]
+const ROLES: Role[] = [
+  "primary", "accent", "background", "foreground", "muted", "border", "destructive",
+  // 🔒 ДИАГРАММЫ ИДУТ ПОСЛЕДНИМИ И ПОДРЯД. Порядок списка — порядок полей на
+  // экране, а ряды диаграммы читаются как одна шкала: разорви их ролями темы,
+  // и человек перестанет видеть, что правит именно шкалу.
+  "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+]
 
 /** Запасные значения темы — только чтобы было что показать в предпросмотре. */
 const FALLBACK: Record<Theme, Record<Role, string>> = {
   light: {
     primary: "#343434", accent: "#f7f7f7", background: "#ffffff", foreground: "#252525",
     muted: "#f7f7f7", border: "#ebebeb", destructive: "#c33a2b",
+    // Те же значения, что в теме, переведённые в #hex: поле выбора цвета в
+    // браузере другой записи не понимает, а показывать ПУСТОЕ поле там, где
+    // цвет на самом деле есть, — врать о ненастроенном состоянии.
+    "chart-1": "#d4d4d4", "chart-2": "#737373", "chart-3": "#525252",
+    "chart-4": "#404040", "chart-5": "#262626",
   },
   dark: {
     primary: "#ebebeb", accent: "#444444", background: "#252525", foreground: "#fbfbfb",
     muted: "#444444", border: "#3a3a3a", destructive: "#e5533d",
+    "chart-1": "#d4d4d4", "chart-2": "#b4b4b4", "chart-3": "#949494",
+    "chart-4": "#737373", "chart-5": "#525252",
   },
 }
 

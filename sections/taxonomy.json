@@ -415,6 +415,11 @@
       "id": "0042",
       "type": "benefits",
       "shape": "cards"
+    },
+    "promoBand": {
+      "id": "0043",
+      "type": "trust",
+      "shape": "two-columns"
     }
   }
 }

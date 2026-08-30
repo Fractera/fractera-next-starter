@@ -1033,6 +1033,20 @@
       "description": null,
       "hasCard": false,
       "usedOn": []
+    },
+    {
+      "id": "0043",
+      "codes": [
+        "promoBand01"
+      ],
+      "kind": "promoBand",
+      "type": "trust",
+      "shape": "two-columns",
+      "fields": "title: string; text: string; cta?: { href: string; label: string; icon?: 'github' | 'link' }; image?: string; alt?: string",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
     }
   ]
 }

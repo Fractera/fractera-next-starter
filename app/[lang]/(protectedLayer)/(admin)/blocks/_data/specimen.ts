@@ -681,6 +681,21 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'promoBand',
+    when: 'A band that breaks out of the page column, ruled top and bottom with the accent colour: heading, paragraph and a button on the left, an image on the right. Ported from the storefront. The band shares the page background — what separates it is the two rules and the width, so filling it with another colour turns the device into an ordinary card, only wider. The only kind in the catalogue that leaves the column, and it costs one guard: `overflow-x: clip` on the root, without which the scrollbar gives the WHOLE page a horizontal scroll.',
+    whenRu: 'Полоса, выходящая за колонку страницы, с акцентной чертой сверху и снизу: заголовок, абзац и кнопка слева, картинка справа. Перенесена с витрины. Фон полосы совпадает с фоном страницы — отделяют её две черты и ширина, поэтому залить полосу другим цветом значит превратить приём в обычную карточку, только пошире. Единственный вид каталога, выходящий за колонку, и стоит он одной защиты: `overflow-x: clip` у корня, без которого полоса прокрутки даёт горизонтальную прокрутку ВСЕЙ странице.',
+    blocks: [
+      {
+        kind: 'promoBand',
+        title: 'Your own white-label platform on Open Code',
+        text: 'The sources are open. Fork the repository, raise your own instance and build products with AI — for yourself or as a business: deploying servers for clients and consulting alongside.',
+        cta: { href: 'https://github.com/Fractera/Agent-Engineering-Infrastructure', label: 'View on GitHub', icon: 'github' },
+        image: '/git.png',
+        alt: 'Fractera',
+      },
+    ],
+  },
+  {
     kind: 'featureGrid',
     when: 'A grid of capabilities: icon, heading, pill label, description. Ported from the storefront — two columns on a phone, three on a monitor, with row gaps deliberately wider than column gaps because nothing but distance separates one cell from the next. Differs from `badges`, which is the labels themselves: here a label is a mark INSIDE a capability that also has a heading, an icon and an explanation.',
     whenRu: 'Сетка возможностей: значок, заголовок, ярлык-пилюля, описание. Перенесена с витрины — две колонки на телефоне, три на мониторе, и промежутки между строками намеренно шире, чем между колонками: рамок у ячеек нет, и разделяет их только расстояние. От `badges` отличается предметом: там сами ярлыки, здесь ярлык — метка ВНУТРИ возможности, у которой есть ещё заголовок, значок и объяснение.',

@@ -431,7 +431,7 @@ menu-selected page would be two menus of the same kind side by side:
 | Route | What is inside |
 |---|---|
 | `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
-| `/{lang}/architect/design` | **the look of this project** — fonts · type scale · shape · colours · blocks |
+| `/{lang}/architect/design` | **the look of this project** — fonts · type scale · shape · colours · blocks · **dialogs** |
 
 🔒 **DESIGN HAS ITS OWN ENTRY IN THE SITE FOOTER, NOT A ROW IN THE SETTINGS MENU** (owner, 2026-08-29).
 It moved out of the control panel the same day, and the panel no longer has those pages: do not send
@@ -441,6 +441,19 @@ the switch for the screen-width badge, and it therefore writes to `PLATFORM-CONF
 send the owner to the control panel for fonts or colours: those pages are deleted. The reason is not
 tidiness — `DESIGN-CONFIG` lives INSIDE this repository while the panel lives outside it, and settings
 edited where the code is not are settings the owner cannot see next to the code.
+
+🔒 **«DIALOGS» IS THE SECOND CATALOGUE, AND IT EXISTS BECAUSE A RULE NOBODY CAN SEE IS NOT A RULE**
+(step 62, 2026-08-30, owner's order). This project has exactly ONE modal window —
+`components/dialog/app-dialog.client.tsx` (`AppDialog`) — and the section opens four REAL instances
+of it: plain, with a footer, long, and one that cannot be dismissed. Never `DialogContent` straight
+from `components/ui/dialog.tsx`: the primitive knows neither a height limit nor a scrollable body,
+so a long form grows past the bottom of the screen together with its confirm button.
+
+✗ **PAID FOR BY THE AGENT WHO WROTE THIS CORPUS.** He imported the primitive directly one day after
+citing the dialog gate in a neighbouring file, and the owner found the window without a scrollbar.
+The rule existed, a gate enforced part of it, the instruction named it — and there was nowhere to
+SEE it. `check:dialogs` now also refuses a direct `DialogContent` import, and the long specimen in
+the section is long on purpose: a three-line window looks correct under any implementation.
 
 🔒 **«BLOCKS» IS A CATALOGUE, NOT A SETTING.** The fifth section draws every block kind this project
 can build a page from, with the REAL renderer (`SPECIMEN` + `PostBody`, shared with `/{lang}/blocks`)

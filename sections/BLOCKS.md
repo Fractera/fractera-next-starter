@@ -44,22 +44,22 @@
 | `columns01` | `columns` | Page material | — | children: Block[]; cols?: 2 \| 3 | — |
 | `group01` | `group` | Page material | — | children: Block[] | — |
 | `heroBadge01` | `heroBadge` | Hero | the mark and the eyebrow above the title | pill?: string | [карточка](blocks/heroBadge.md) |
-| `heroSplit01` | `heroSplit` | Hero | the landing first screen: words left, picture right | — | [карточка](blocks/heroSplit.md) |
+| `heroSplit01` | `heroSplit` | Hero | the landing first screen: words left, picture right | title: string; description: string; pill?: string; image: 'homePage'; imageAlt: string; mark?: boolean; cta?: { href: string; label: string } | [карточка](blocks/heroSplit.md) |
 | `badges01` | `badges` | Benefits and value | a row of capability labels | items: BadgeItem[] | [карточка](blocks/badges.md) |
 | `panel01` | `panel` | Page material | — | tone?: 'plain' \| 'warn' \| 'accent'; eyebrow?: string; title: string; children: Block[] | — |
 | `metrics01` | `metrics` | Trust and logos | the numbers that prove it | items: { value: string; label: string }[] | [карточка](blocks/metrics.md) |
 | `flow01` | `flow` | How it works | how it works, step by step | badge?: string; title: string; note?: string; steps: { title: string; text: string }[] | [карточка](blocks/flow.md) |
-| `problemSolution01` | `problemSolution` | Comparison | cases on the left, the chosen one broken down on the right | — | [карточка](blocks/problemSolution.md) |
+| `problemSolution01` | `problemSolution` | Comparison | cases on the left, the chosen one broken down on the right | badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; \| { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; \| { kind: 'statement'; text: string }; \| {; badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' } | [карточка](blocks/problemSolution.md) |
 | `cards01` | `cards` | Benefits and value | a section made of cards | badge?: string; title: string; note?: string; cols?: 2 \| 3; children: Block[] | [карточка](blocks/cards.md) |
 | `card01` | `card` | Page material | — | tone?: Tone; children: Block[] | — |
 | `statement01` | `statement` | Page material | — | text: string | — |
-| `noBill01` | `noBill` | Pricing and plans | the invoices that will not come | — | [карточка](blocks/noBill.md) |
+| `noBill01` | `noBill` | Pricing and plans | the invoices that will not come | badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' } | [карточка](blocks/noBill.md) |
 | `faq01` | `faq` | Page material | questions and answers, last on the page | title?: string; items: FaqPair[] | [карточка](blocks/faq.md) |
 | `toc01` | `toc` | Page material | the table of contents of a page | items: TocItem[] | [карточка](blocks/toc.md) |
 | `languageMarquee01` | `languageMarquee` | Trust and logos | the language ribbon, closing the page | title: string; note?: string | [карточка](blocks/languageMarquee.md) |
 | `projectTypeMarquee01` | `projectTypeMarquee` | Trust and logos | the ribbon of directions | title?: string; note?: string | [карточка](blocks/projectTypeMarquee.md) |
 | `voiceField01` | `voiceField` | Page material | a text field that can be dictated | variant?: 'line' \| 'area'; title: string; hint?: string; comment?: string; placeholder?: string | [карточка](blocks/voiceField.md) |
-| `workspace01` `workspace02` | `workspace` | Workspace | рабочий экран | — | [карточка](blocks/workspace.md) |
+| `workspace01` `workspace02` | `workspace` | Workspace | рабочий экран | menuTitle?: string; menu: WorkspaceItem[]; title: string; lead?: string; notes?: WorkspaceNote[]; tabs?: WorkspaceItem[]; children: Block[] | [карточка](blocks/workspace.md) |
 
 ## Чего в этой таблице нет
 

@@ -98,11 +98,24 @@
    подложке; конкретный цвет пришлось бы повторять в каждом месте, где полоса
    ляжет на карточку или панель, и он разошёлся бы с темой при первой её смене.
 
-   Стрелки убираются `::-webkit-scrollbar-button`: в Firefox их нет вовсе, а
-   `scrollbar-width: thin` там же отвечает и за толщину. */
-.slim-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-muted-foreground) transparent;
+   ✗ СТРЕЛКИ ВЕРНУЛИСЬ, ХОТЯ ПРАВИЛО ПРОТИВ НИХ ЗДЕСЬ СТОЯЛО (2026-08-30,
+   найдено владельцем глазами: «в дизайне сильно мешаются кнопки управления
+   влево и вправо, которые расположены на скролл-баре — оставь только бегунок»).
+
+   🔒 ПРИЧИНА НЕ В ПРАВИЛЕ, А В ТОМ, ЧТО ЕГО НИКТО НЕ ЧИТАЛ. Chrome, увидев
+   СТАНДАРТНЫЕ свойства `scrollbar-width` и `scrollbar-color`, рисует
+   стандартную полосу и ИГНОРИРУЕТ весь набор `::-webkit-scrollbar-*` для этого
+   элемента целиком — вместе с правилом, прятавшим стрелки. Правило оставалось
+   в файле, доезжало до браузера и не значило ничего.
+
+   Поэтому стандартные свойства отданы ТОЛЬКО тем, у кого нет вебкитовых
+   псевдоэлементов, — то есть Firefox. Chrome попадает в вебкитовую ветку, где
+   толщину задаёт `::-webkit-scrollbar`, а стрелок нет по правилу ниже. */
+@supports not selector(::-webkit-scrollbar) {
+  .slim-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted-foreground) transparent;
+  }
 }
 .slim-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
 .slim-scrollbar::-webkit-scrollbar-track { background: transparent; }

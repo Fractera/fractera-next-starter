@@ -380,6 +380,31 @@
       "id": "0035",
       "type": "workspace",
       "shape": "two-columns"
+    },
+    "benefitCards": {
+      "id": "0036",
+      "type": "benefits",
+      "shape": "cards"
+    },
+    "splitPair": {
+      "id": "0037",
+      "type": "product-demo",
+      "shape": "two-columns"
+    },
+    "logoCards": {
+      "id": "0038",
+      "type": "showcase",
+      "shape": "cards"
+    },
+    "carousel": {
+      "id": "0039",
+      "type": "how-it-works",
+      "shape": "figure"
+    },
+    "support": {
+      "id": "0040",
+      "type": "pricing",
+      "shape": "cards"
     }
   }
 }

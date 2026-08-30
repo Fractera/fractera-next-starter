@@ -653,3 +653,58 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
 @media (prefers-reduced-motion: reduce) {
   .ps-panel { transition: none; transform: none; }
 }
+
+/* ─── КАРУСЕЛЬ (вид `carousel`, шаг 52, 2026-08-30) ──────────────────────────
+   Форма перенесена с главной витрины, где слайды листаются САМИ. Здесь они
+   листаются человеком, и это осознанное отличие: движение, которое нельзя
+   остановить, отнимает право дочитать — вернулся к слайду, а тот сменился.
+
+   🔒 ЛИСТАНИЕ БЕЗ ЕДИНОЙ СТРОКИ JAVASCRIPT — тот же приём, что у вида
+   `problemSolution` выше: скрытый переключатель плюс правило `:checked ~`.
+   Все слайды лежат в разметке и видны поисковику; скрыты они только визуально.
+
+   🔒 ПРЕДЕЛ — ДЕСЯТЬ СЛАЙДОВ, И ЭТО НЕ ЛЕНЬ, А ЧЕСТНАЯ ГРАНИЦА ПРИЁМА. Правило
+   строится перечислением пар «переключатель → слайд»; бесконечным оно быть не
+   может. Десять — столько же, сколько у `problemSolution`, и столько, сколько
+   человек соглашается пролистать. Нужно больше — это не карусель, а список.  */
+.cr-slide {
+  display: none;
+}
+
+.cr-r:nth-of-type(1):checked ~ .cr-body .cr-slide:nth-child(1),
+.cr-r:nth-of-type(2):checked ~ .cr-body .cr-slide:nth-child(2),
+.cr-r:nth-of-type(3):checked ~ .cr-body .cr-slide:nth-child(3),
+.cr-r:nth-of-type(4):checked ~ .cr-body .cr-slide:nth-child(4),
+.cr-r:nth-of-type(5):checked ~ .cr-body .cr-slide:nth-child(5),
+.cr-r:nth-of-type(6):checked ~ .cr-body .cr-slide:nth-child(6),
+.cr-r:nth-of-type(7):checked ~ .cr-body .cr-slide:nth-child(7),
+.cr-r:nth-of-type(8):checked ~ .cr-body .cr-slide:nth-child(8),
+.cr-r:nth-of-type(9):checked ~ .cr-body .cr-slide:nth-child(9),
+.cr-r:nth-of-type(10):checked ~ .cr-body .cr-slide:nth-child(10) {
+  display: block;
+}
+
+/* Активная точка. Ярлык знает о своём переключателе только через порядок —
+   поэтому пары перечислены так же, как выше. */
+.cr-r:nth-of-type(1):checked ~ .cr-dots .cr-dot:nth-child(1),
+.cr-r:nth-of-type(2):checked ~ .cr-dots .cr-dot:nth-child(2),
+.cr-r:nth-of-type(3):checked ~ .cr-dots .cr-dot:nth-child(3),
+.cr-r:nth-of-type(4):checked ~ .cr-dots .cr-dot:nth-child(4),
+.cr-r:nth-of-type(5):checked ~ .cr-dots .cr-dot:nth-child(5),
+.cr-r:nth-of-type(6):checked ~ .cr-dots .cr-dot:nth-child(6),
+.cr-r:nth-of-type(7):checked ~ .cr-dots .cr-dot:nth-child(7),
+.cr-r:nth-of-type(8):checked ~ .cr-dots .cr-dot:nth-child(8),
+.cr-r:nth-of-type(9):checked ~ .cr-dots .cr-dot:nth-child(9),
+.cr-r:nth-of-type(10):checked ~ .cr-dots .cr-dot:nth-child(10) {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  cursor: default;
+}
+
+/* 🔒 ФОКУС ВИДЕН, ХОТЯ ПЕРЕКЛЮЧАТЕЛЬ СКРЫТ. Скрытый `sr-only` радиокнопкой
+   по-прежнему управляют с клавиатуры; без этого правила человек, листающий
+   табом, не видит, где находится. */
+.cr-r:focus-visible ~ .cr-dots .cr-dot {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

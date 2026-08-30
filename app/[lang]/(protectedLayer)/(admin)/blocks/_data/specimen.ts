@@ -617,6 +617,86 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'benefitCards',
+    when: 'A row of capability cards, each ending in a link. Differs from `cards` by drawing rather than by fields: the order inside is fixed — heading, rule, text, link — and the link is pushed to the bottom, so in a row of three the links sit on one line however uneven the text.',
+    whenRu: 'Ряд карточек-возможностей, каждая заканчивается ссылкой. От `cards` отличается рисунком, а не полями: порядок внутри закреплён — заголовок, черта, текст, ссылка, — и ссылка прижата к низу, поэтому в ряду из трёх все ссылки стоят на одной линии, как бы ни различалась длина текста.',
+    blocks: [
+      {
+        kind: 'benefitCards',
+        title: 'What the server brings',
+        note: 'Three capabilities that arrive together, not one after another.',
+        items: [
+          { title: 'Orchestration', text: 'Several agent platforms share one context, so a task started in one continues in another.', href: '/en/architecture', linkLabel: 'Read more' },
+          { title: 'Persistent memory', text: 'What the project already knows stays in context between sessions instead of being re-read every time.', href: '/en/architecture', linkLabel: 'Read more' },
+          { title: 'One machine', text: 'Everything runs on the server you own. No cloud accounts to open, no per-token bill to watch.', href: '/en/architecture', linkLabel: 'Read more' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'splitPair',
+    when: 'Two halves with pictures — the product shown from two sides. The first kind of the `product-demo` family, which stood empty. Exactly two: the form rests on balance, and a third cell turns the pair into a row, for which `cards` already exists.',
+    whenRu: 'Две половины с картинками — продукт, показанный с двух сторон. Первый вид семейства «демонстрация продукта», которое стояло пустым. Ровно две: форма держится на равновесии, а третья ячейка превращает пару в ряд, для которого уже есть `cards`.',
+    blocks: [
+      {
+        kind: 'splitPair',
+        title: 'Two sides of the same day',
+        left: { alt: 'editor screenshot', title: 'Writing', text: 'Open a tab and describe what is needed. No local environment to prepare first.' },
+        right: { alt: 'live site screenshot', title: 'Shipping', text: 'One action moves the change to the address people visit. No pipeline to configure.' },
+      },
+    ],
+  },
+  {
+    kind: 'logoCards',
+    when: 'A row of cards that name whose thing each one is. The first kind of the `showcase` family, which stood empty. The third line is what the kind exists for — without it the card is indistinguishable from `cards`; with it the row answers the question a showcase gets first: whose is this?',
+    whenRu: 'Ряд карточек, называющих, чья каждая вещь. Первый вид семейства «витрина», которое стояло пустым. Третья строка — то, ради чего вид существует: без неё карточка неотличима от `cards`, с ней ряд отвечает на вопрос, который витрине задают первым, — «а это чьё?».',
+    blocks: [
+      {
+        kind: 'logoCards',
+        title: 'What is already connected',
+        items: [
+          { title: 'Coding agent', text: 'Writes, runs and fixes code in a terminal.', source: 'Anthropic' },
+          { title: 'Browser agent', text: 'Keeps the whole project in context while working in a tab.', source: 'OpenAI' },
+          { title: 'Local runner', text: 'Runs on the machine without sending anything outward.', source: 'in-house' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'carousel',
+    when: 'Slides the reader turns. NO auto-advance, deliberately different from the showcase it was taken from: motion that cannot be stopped takes away the right to finish reading. Turning is a radio input plus a CSS rule, so it works with JavaScript switched off, and every slide sits in the markup where a crawler sees it. Limit: ten slides.',
+    whenRu: 'Слайды, которые листает человек. БЕЗ автоперехода — осознанное отличие от витрины, откуда взята форма: движение, которое нельзя остановить, отнимает право дочитать. Листание — переключатель и правило CSS, поэтому работает при выключенном JavaScript, а все слайды лежат в разметке, где их видит поисковик. Предел — десять слайдов.',
+    blocks: [
+      {
+        kind: 'carousel',
+        title: 'Step by step',
+        note: 'Each slide is one move; nothing advances on its own.',
+        slides: [
+          { alt: 'first step', title: 'The server is born', text: 'A clean machine becomes a working contour without anyone configuring it by hand.' },
+          { alt: 'second step', title: 'The project arrives', text: 'The repository is yours; the code travels to it and back with one action.' },
+          { alt: 'third step', title: 'The change is live', text: 'What was edited appears at the address people visit.' },
+        ],
+      },
+    ],
+  },
+  {
+    kind: 'support',
+    when: 'Ways to support the project. NOT a price list, and the difference is substantive: a price carries an obligation — pay and you receive what was named — while support is a voluntary contribution, and promising capability for it turns it into a sale without a guarantee. Hence the optional amount and the absence of a purchase button inside the kind.',
+    whenRu: 'Варианты поддержки проекта. НЕ прайс-лист, и разница существенная: у цены есть обязанность — заплатив, человек получает названное, — а поддержка это добровольный взнос, и обещать за него возможности значит превратить его в продажу без гарантии. Отсюда необязательная сумма и отсутствие кнопки покупки внутри вида.',
+    blocks: [
+      {
+        kind: 'support',
+        title: 'Support the project',
+        note: 'Open code lives on contributions, not on licences.',
+        tiers: [
+          { name: 'One-off', amount: 'any amount', text: 'A single contribution, without obligations on either side.', href: '/en/architecture', linkLabel: 'Contribute' },
+          { name: 'Monthly', amount: 'from a small sum', text: 'A regular contribution that makes planning possible.', href: '/en/architecture', linkLabel: 'Contribute' },
+          { name: 'Code', text: 'Time instead of money: a fix, a translation, a card for a block kind.', href: '/en/architecture', linkLabel: 'Read how' },
+        ],
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

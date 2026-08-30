@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **35** · рендереров: **35** · карточек: **18**
+Видов: **40** · рендереров: **40** · карточек: **19**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -49,7 +49,7 @@
 | `panel01` | `panel` | Page material | — | tone?: 'plain' \| 'warn' \| 'accent'; eyebrow?: string; title: string; children: Block[] | — |
 | `metrics01` | `metrics` | Trust and logos | the numbers that prove it | items: { value: string; label: string }[] | [карточка](blocks/metrics.md) |
 | `flow01` | `flow` | How it works | how it works, step by step | badge?: string; title: string; note?: string; steps: { title: string; text: string }[] | [карточка](blocks/flow.md) |
-| `problemSolution01` | `problemSolution` | Comparison | cases on the left, the chosen one broken down on the right | badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; \| { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; \| { kind: 'statement'; text: string }; \| {; badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' } | [карточка](blocks/problemSolution.md) |
+| `problemSolution01` | `problemSolution` | Comparison | cases on the left, the chosen one broken down on the right | badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; \| { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; \| { kind: 'statement'; text: string }; \| {; title?: string; note?: string; cols?: 2 \| 3; items: { title: string; text: string; href?: string; linkLabel?: string }[] | [карточка](blocks/problemSolution.md) |
 | `cards01` | `cards` | Benefits and value | a section made of cards | badge?: string; title: string; note?: string; cols?: 2 \| 3; children: Block[] | [карточка](blocks/cards.md) |
 | `card01` | `card` | Page material | — | tone?: Tone; children: Block[] | — |
 | `statement01` | `statement` | Page material | крупное утверждение в разрядку | text: string | [карточка](blocks/statement.md) |
@@ -60,6 +60,11 @@
 | `projectTypeMarquee01` | `projectTypeMarquee` | Trust and logos | the ribbon of directions | title?: string; note?: string | [карточка](blocks/projectTypeMarquee.md) |
 | `voiceField01` | `voiceField` | Page material | a text field that can be dictated | variant?: 'line' \| 'area'; title: string; hint?: string; comment?: string; placeholder?: string | [карточка](blocks/voiceField.md) |
 | `workspace01` `workspace02` | `workspace` | Workspace | рабочий экран | menuTitle?: string; menu: WorkspaceItem[]; title: string; lead?: string; notes?: WorkspaceNote[]; tabs?: WorkspaceItem[]; children: Block[] | [карточка](blocks/workspace.md) |
+| `benefitCards01` | `benefitCards` | Benefits and value | карточки возможностей со ссылкой | title?: string; note?: string; cols?: 2 \| 3; items: { title: string; text: string; href?: string; linkLabel?: string }[] | [карточка](blocks/benefitCards.md) |
+| `splitPair01` | `splitPair` | Product in action | — | title?: string; note?: string; left: { image?: string; alt?: string; title: string; text: string }; right: { image?: string; alt?: string; title: string; text: string } | — |
+| `logoCards01` | `logoCards` | Cases and portfolio | — | title?: string; note?: string; items: { title: string; text: string; source?: string }[] | — |
+| `carousel01` | `carousel` | How it works | — | title?: string; note?: string; slides: { image?: string; alt?: string; title: string; text?: string }[] | — |
+| `support01` | `support` | Pricing and plans | — | title?: string; note?: string; tiers: { name: string; amount?: string; text: string; href?: string; linkLabel?: string }[] | — |
 
 ## Чего в этой таблице нет
 

@@ -753,7 +753,7 @@
       "kind": "problemSolution",
       "type": "comparison",
       "shape": "two-columns",
-      "fields": "badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; | { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; | { kind: 'statement'; text: string }; | {; badge?: string; heading: string; note?: string; items: { vendor: string; text: string; badge: BadgeItem }[]; title: string; text: string; cta?: { page: 'architecture' }",
+      "fields": "badge?: string; title: string; note?: string; demandLabel: string; answerLabel: string; items: { title: string; demand: string; answer: string }[] }; | { kind: 'flow'; badge?: string; title: string; note?: string; steps: { title: string; text: string }[] }; | { kind: 'statement'; text: string }; | {; title?: string; note?: string; cols?: 2 | 3; items: { title: string; text: string; href?: string; linkLabel?: string }[]",
       "title": "cases on the left, the chosen one broken down on the right",
       "description": "**Type:** Comparison (6). The only kind in this type today.\n\n## What it actually draws\n\nTwo halves: a list of cases on the left, and on the right the one selected — \"what you do\" on top,\n\"why it works here\" below.\n\n🔒 **Not a single line of script, and that is the main decision of this kind.** The example it was taken\nfrom switches tabs with React state: without JavaScript there is not one case on the page, and the\ncrawler gets a separate invisible copy of the text — an admission that the visible version does not\nserve it. Here the switching is done by the browser itself: the list is `radio` inputs, the labels are\ntheir labels, and showing the right half is a `:checked` rule in `styles/globals.css`.\n\nWhat that buys at once: the text of ALL cases sits in the server markup; a person without scripts uses\nthe section fully, not \"tolerably\"; the keyboard works because it is a real form control.\n\n## When to take it\n\nTwo things set against each other — old way versus new, us versus them, before versus after. Or several\ncases where the visitor picks the one that is his.\n\n## When NOT to take it\n\n- The pieces are not opposed, they simply differ — that is `cards`.\n- It is a real table of ticks and crosses — that is `table`.\n- There is only one case: the left column becomes a list of one, and the section looks broken.",
       "hasCard": true,
@@ -934,6 +934,76 @@
       "title": "рабочий экран",
       "description": "Меню слева, содержимое справа. Из него строятся дашборды, инструменты проекта и\nслужебные разделы — всё, что человек **использует**, а не читает.\n\n## Правила владельца\n\n**Решение 2026-08-30, дословно:** «я веду речь о том чтобы блок передавал интерфейс двух колоночного\nмакета в котором существует левая часть как меню, и правой часть контент… чтобы мы могли просто\nподключать эту сущность к проекту используя его параметры настраивать».\n\n**Два случая содержимого, названные им же:**\n\n1. заголовок · описание · три цветные карточки · содержимое проекта;\n2. то же самое **плюс верхний ряд разделов** — когда правая часть сама делится на разделы.\n\n🔒 **Это ОДИН вид, а не два.** Разница между случаями — поле `tabs`, а рисунок тот же. Второй вид\nразошёлся бы с первым на первой правке темы; тот же закон, по которому `quote` не разделилась надвое\nиз-за необязательной первой строки.\n\n## Три тона карточек различаются жанром, а не громкостью\n\n| Тон | Цвет | Что говорит |\n|---|---|---|\n| `recommended` | зелёный | **советует** — обязан выглядеть приглашением, а не предостережением |\n| `advice` | жёлтый | называет **цену решения** до того, как его приняли; остаётся верным всегда |\n| `warning` | красный | сообщает **состояние системы** сейчас; исчезнет, когда состояние изменится |\n\nДва одинаково окрашенных блока подряд человек читает как один длинный текст и второй пропускает.\n\n## Что легко сделать неправильно\n\n🔒 **Мёртвая ссылка хуже её отсутствия.** `href` у пункта необязателен: есть адрес — ссылка, нет —\nотмеченный текущий пункт. Проставить `href=\"#\"` всем пунктам ради «настоящего вида» значит обещать\nпереход, которого нет.\n\n🔒 **`active` ставится ровно одному пункту.** Экранный диктор читает `aria-current` как «текущая\nстраница»; два таких пункта означают, что человек находится в двух местах сразу.\n\n🔒 **Меню — навигация, а не содержание.** В машинной версии страницы оно не печатается намеренно:\nмодель, прочитав список из восьми пунктов, пересказала бы его как содержание экрана.\n\n🔒 **Раскладка снята с живого меню слоя архитектора.** До `md` — горизонтальная лента, с `md` —\nлипкая колонка `w-60`; разделитель едет вслед за меню. `self-start` у липкой колонки обязателен:\nбез него flex растягивает её на всю высоту строки и `sticky` **молча** перестаёт работать.",
       "hasCard": true,
+      "usedOn": []
+    },
+    {
+      "id": "0036",
+      "codes": [
+        "benefitCards01"
+      ],
+      "kind": "benefitCards",
+      "type": "benefits",
+      "shape": "cards",
+      "fields": "title?: string; note?: string; cols?: 2 | 3; items: { title: string; text: string; href?: string; linkLabel?: string }[]",
+      "title": "карточки возможностей со ссылкой",
+      "description": "Ряд ячеек: заголовок · черта · текст · ссылка внизу. Форма перенесена с главной витрины\n(шаг 52, 2026-08-30) — там ею показывают, из чего состоит продукт.\n\n## Чем отличается от `cards`, раз тот тоже рисует ряд ячеек\n\n| | `cards` | `benefitCards` |\n|---|---|---|\n| что внутри ячейки | **любые блоки** — это контейнер | закреплённый порядок: заголовок, черта, текст, ссылка |\n| кто решает порядок | автор материала | вид |\n| ссылка | обычный блок среди прочих | прижата к низу ячейки |\n\n🔒 **РАДИ ПОСЛЕДНЕЙ СТРОКИ ВИД И СУЩЕСТВУЕТ.** В ряду из трёх карточек текст всегда разной длины;\n`h-full` и `justify-between` ставят все ссылки на одну линию. Собранная из контейнеров, такая карточка\nвыравнивается только случайно — и расходится на первой же правке текста.\n\n## Правило владельца, которое здесь НЕ действует, и почему\n\n**Решение владельца 2026-08-20:** кнопка вида `cta` стоит **по центру** — прижатая влево, она читается\nкак продолжение абзаца, а не как приглашение.\n\n🔒 **Внутри карточки это правило не применяется, и это не обход.** У `cta` центр обязателен потому,\nчто кнопка принадлежит РАЗДЕЛУ и должна выделиться из текста вокруг. Здесь кнопки нет вовсе: есть\nтекстовая ссылка в углу ячейки, и она принадлежит СВОЕЙ ячейке. Поставленная по центру, она разорвала\nбы карточку пополам.\n\nЕсли понадобится кнопка под всем рядом — это `cta` отдельным блоком, и там центр обязателен.\n\n## Когда не брать\n\nЯчейки без ссылок — это `cards`: пустой угол там, где ждут ссылку, читается как недоделка.\nЯчеек больше шести — ряд перестаёт читаться, и это уже список.",
+      "hasCard": true,
+      "usedOn": []
+    },
+    {
+      "id": "0037",
+      "codes": [
+        "splitPair01"
+      ],
+      "kind": "splitPair",
+      "type": "product-demo",
+      "shape": "two-columns",
+      "fields": "title?: string; note?: string; left: { image?: string; alt?: string; title: string; text: string }; right: { image?: string; alt?: string; title: string; text: string }",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
+    },
+    {
+      "id": "0038",
+      "codes": [
+        "logoCards01"
+      ],
+      "kind": "logoCards",
+      "type": "showcase",
+      "shape": "cards",
+      "fields": "title?: string; note?: string; items: { title: string; text: string; source?: string }[]",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
+    },
+    {
+      "id": "0039",
+      "codes": [
+        "carousel01"
+      ],
+      "kind": "carousel",
+      "type": "how-it-works",
+      "shape": "figure",
+      "fields": "title?: string; note?: string; slides: { image?: string; alt?: string; title: string; text?: string }[]",
+      "title": null,
+      "description": null,
+      "hasCard": false,
+      "usedOn": []
+    },
+    {
+      "id": "0040",
+      "codes": [
+        "support01"
+      ],
+      "kind": "support",
+      "type": "pricing",
+      "shape": "cards",
+      "fields": "title?: string; note?: string; tiers: { name: string; amount?: string; text: string; href?: string; linkLabel?: string }[]",
+      "title": null,
+      "description": null,
+      "hasCard": false,
       "usedOn": []
     }
   ]

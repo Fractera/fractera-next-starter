@@ -723,8 +723,8 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'promoBand',
-    when: 'A band that breaks out of the page column, ruled top and bottom with the accent colour: heading, paragraph and a button on the left, an image on the right. Ported from the storefront. The band shares the page background — what separates it is the two rules and the width, so filling it with another colour turns the device into an ordinary card, only wider. The only kind in the catalogue that leaves the column, and it costs one guard: `overflow-x: clip` on the root, without which the scrollbar gives the WHOLE page a horizontal scroll.',
-    whenRu: 'Полоса, выходящая за колонку страницы, с акцентной чертой сверху и снизу: заголовок, абзац и кнопка слева, картинка справа. Перенесена с витрины. Фон полосы совпадает с фоном страницы — отделяют её две черты и ширина, поэтому залить полосу другим цветом значит превратить приём в обычную карточку, только пошире. Единственный вид каталога, выходящий за колонку, и стоит он одной защиты: `overflow-x: clip` у корня, без которого полоса прокрутки даёт горизонтальную прокрутку ВСЕЙ странице.',
+    when: 'A wide band ruled top and bottom with the accent colour: heading, paragraph and a button on the left, an image on the right. Ported from the storefront. It takes the FULL WIDTH OF ITS CONTAINER and not a pixel more — the breakout trick it used to carry (`w-screen` plus a negative margin) was removed by the owner on 2026-08-30 because it broke the layout of the page around it. Where it belongs is part of the kind: the bottom of a page that is itself full-width. The band shares the page background — what separates it is the two rules and the width.',
+    whenRu: 'Широкая полоса с акцентной чертой сверху и снизу: заголовок, абзац и кнопка слева, картинка справа. Перенесена с витрины. Занимает ВСЮ ШИРИНУ СВОЕГО КОНТЕЙНЕРА и ни пикселем больше — приём выхода за колонку (`w-screen` плюс отрицательный отступ) снят владельцем 2026-08-30: он ломал разметку страницы вокруг. Где полосе место — часть описания вида: нижняя часть страницы, которая сама растянута на всю ширину. Фон полосы совпадает с фоном страницы, отделяют её две черты и ширина.',
     blocks: [
       {
         kind: 'promoBand',
@@ -784,18 +784,56 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'support',
-    when: 'Ways to support the project. NOT a price list, and the difference is substantive: a price carries an obligation — pay and you receive what was named — while support is a voluntary contribution, and promising capability for it turns it into a sale without a guarantee. Hence the optional amount and the absence of a purchase button inside the kind.',
-    whenRu: 'Варианты поддержки проекта. НЕ прайс-лист, и разница существенная: у цены есть обязанность — заплатив, человек получает названное, — а поддержка это добровольный взнос, и обещать за него возможности значит превратить его в продажу без гарантии. Отсюда необязательная сумма и отсутствие кнопки покупки внутри вида.',
+    when: 'Support tiers, ported from the storefront one to one: a row of three, each with a large amount and its period on one baseline, a sub-label, perks marked with a star and a button at the bottom. One tier carries a label ABOVE the card and is filled in — and the label is the only thing that makes it the highlighted one, so a tier cannot be singled out without saying what for. Below the row: a line of small print and a wide link to the people who already support the project. NOT a price list: a price obliges, a contribution does not, so the button leads to where contributions are taken rather than to a checkout.',
+    whenRu: 'Тарифы поддержки, перенесены с витрины один в один: ряд из трёх, у каждого крупная сумма с периодом по одной базовой линии, подпись, достоинства со звёздочкой и кнопка внизу. Один тариф несёт ярлык НАД карточкой и залит — и ярлык единственное, что делает его выделенным: выделить тариф, не объяснив за что, нельзя. Под рядом — строка условия и широкая ссылка на тех, кто уже поддерживает. НЕ прайс-лист: цена обязывает, взнос нет, поэтому кнопка ведёт туда, где принимают взносы, а не в оплату.',
     blocks: [
       {
         kind: 'support',
-        title: 'Support the project',
-        note: 'Open code lives on contributions, not on licences.',
-        tiers: [
-          { name: 'One-off', amount: 'any amount', text: 'A single contribution, without obligations on either side.', href: '/en/architecture', linkLabel: 'Contribute' },
-          { name: 'Monthly', amount: 'from a small sum', text: 'A regular contribution that makes planning possible.', href: '/en/architecture', linkLabel: 'Contribute' },
-          { name: 'Code', text: 'Time instead of money: a fix, a translation, a card for a block kind.', href: '/en/architecture', linkLabel: 'Read how' },
+        badge: 'Support the project',
+        title: 'Support Open Code agentic engineering',
+        body: [
+          'This project is built by one person. Many features are still ahead — and your support keeps the lights on.',
+          'If you have the means to help, your name appears on the «Sponsors» page of the project, here and on GitHub.',
         ],
+        tiers: [
+          {
+            amount: '$1',
+            period: '/mo',
+            sublabel: 'Coffee tier — every dollar counts',
+            perks: [
+              'Your name listed on the Sponsors page, here and on GitHub',
+              'A direct line to submit feature requests',
+            ],
+            cta: { href: '/en/architecture', label: 'Sponsor · $1/mo →' },
+          },
+          {
+            amount: '$5',
+            period: '/mo',
+            sublabel: 'Supporter — fuel the roadmap',
+            badge: 'Popular',
+            perks: [
+              'Access to the private sponsors-only group',
+              'Instructions to remove the white-label badge',
+            ],
+            cta: { href: '/en/architecture', label: 'Sponsor · $5/mo →' },
+          },
+          {
+            amount: '$20',
+            period: '/mo',
+            sublabel: 'Champion — featured on the Sponsors page',
+            perks: [
+              'Personal one-on-one access to the founder',
+              'Access to all VIP features and skills',
+            ],
+            cta: { href: '/en/architecture', label: 'Sponsor · $20/mo →' },
+          },
+        ],
+        note: 'Sign in first to become a sponsor.',
+        link: {
+          label: 'Our sponsors',
+          text: 'See everyone who supports the project →',
+          href: '/en/architecture',
+        },
       },
     ],
   },
@@ -819,6 +857,28 @@ export const SPECIMEN: SpecimenSection[] = [
           title: 'Live in Production. Instantly.',
           text: 'Your server launches in seconds. One click deploys your changes live — no CI pipeline, no hosting configuration.',
         },
+      },
+    ],
+  },
+  {
+    kind: 'platformGrid',
+    when: 'A grid of platforms where the glow comes out of the SEAMS: the cells sit two pixels apart over a radial backdrop, so the lattice is brighter in the middle and fades at the edges — no borders, no shadows. Ported from the storefront. The cell count is a multiple of six: two columns on a phone, three on a monitor, and only a multiple of six fills both without a stub. Differs from `featureGrid`, which lists what the PRODUCT can do; this lists OTHER PEOPLE'S platforms — hence the company line and the small print about trademarks underneath.',
+    whenRu: 'Сетка площадок, где свечение идёт ИЗ ЩЕЛЕЙ: ячейки стоят в двух пикселях друг от друга поверх радиальной подложки, поэтому решётка ярче в середине и гаснет к краям — ни рамок, ни теней. Перенесена с витрины. Число ячеек кратно шести: колонок две на телефоне и три на мониторе, и только кратное шести заполняет обе раскладки без обрубка. От `featureGrid` отличается предметом: тот перечисляет умения ПРОДУКТА, этот — ЧУЖИЕ площадки, отсюда строка компании и оговорка о торговых марках внизу.',
+    blocks: [
+      {
+        kind: 'platformGrid',
+        badge: 'AI Platforms',
+        title: 'Five agent platforms, one environment',
+        note: 'No API keys, no local setup — all five run on your server with full terminal access and shared memory.',
+        cards: [
+          { title: 'Claude Code', subtitle: 'Writes, runs and fixes code in your terminal. The gold standard for AI-assisted development.', company: 'Anthropic' },
+          { title: 'Codex', subtitle: 'Browser-native coding agent. Full project context, no terminal required.', company: 'OpenAI' },
+          { title: 'Gemini CLI', subtitle: 'Long-context coding agent. Understands the whole project structure in one prompt.', company: 'Google' },
+          { title: 'Qwen Code', subtitle: 'Open-source coding agent. No subscription lock-in — powerful and free.', company: 'Alibaba' },
+          { title: 'Kimi Code', subtitle: 'Context-first model for large codebases. Excellent for refactoring and architecture work.', company: 'Moonshot' },
+          { title: 'LightRAG', subtitle: 'Your company brain: persistent vector memory shared across all five platforms.', company: 'Fractera' },
+        ],
+        disclaimer: '* The project runs on your own subscriptions to these platforms — no additional fees or commissions are charged for their use. Connect one, several or all of them, at your own discretion.',
       },
     ],
   },

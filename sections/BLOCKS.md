@@ -21,7 +21,7 @@
 и только карточка говорит, что он выдержит** — сколько элементов, что ломается за пределом, когда
 его не брать. Есть карточка — прочти её перед использованием.
 
-Видов: **45** · рендереров: **45** · карточек: **21**
+Видов: **46** · рендереров: **46** · карточек: **24**
 
 | Код | Вид | Семейство | Что это | Поля | Правила владельца |
 |---|---|---|---|---|---|
@@ -64,12 +64,13 @@
 | `splitPair01` | `splitPair` | Product in action | — | title?: string; note?: string; left: { image?: string; alt?: string; title: string; text: string }; right: { image?: string; alt?: string; title: string; text: string } | — |
 | `logoCards01` | `logoCards` | Cases and portfolio | — | title?: string; note?: string; items: { title: string; text: string; source?: string }[] | — |
 | `carousel01` | `carousel` | How it works | — | title?: string; note?: string; slides: { image?: string; alt?: string; title: string; text?: string }[] | — |
-| `support01` | `support` | Pricing and plans | — | title?: string; note?: string; tiers: { name: string; amount?: string; text: string; href?: string; linkLabel?: string }[] | — |
+| `support01` | `support` | Pricing and plans | поддержка проекта: ряд тарифов со звёздочками | badge?: string; title: string; body?: string[]; tiers: {; amount: string; period?: string; sublabel: string; badge?: string; perks: string[]; cta?: { href: string; label: string }; }[]; note?: string; link?: { label: string; text: string; href: string } | [карточка](blocks/support.md) |
 | `showcaseCarousel01` | `showcaseCarousel` | Use cases | — | badge?: string; title?: string; note?: string; slides: {; image?: string; label: string; sublabel: string; title: string; description: string; }[] | — |
 | `featureGrid01` | `featureGrid` | Benefits and value | — | badge?: string; title?: string; note?: string; items: { icon?: FeatureIcon; title: string; label?: string; tone?: Tone; text: string }[] | — |
-| `promoBand01` | `promoBand` | Trust and logos | — | title: string; text: string; cta?: { href: string; label: string; icon?: 'github' \| 'link' }; image?: string; alt?: string | — |
+| `promoBand01` | `promoBand` | Trust and logos | полоса с текстом слева и картинкой справа | title: string; text: string; cta?: { href: string; label: string; icon?: 'github' \| 'link' }; image?: string; alt?: string | [карточка](blocks/promoBand.md) |
 | `priceTable01` | `priceTable` | Pricing and plans | тарифы с переключателем периода | title: string; note?: string; periodLabels?: { monthly: string; yearly: string }; plans: {; name: string; monthlyPrice: string; yearlyPrice?: string; monthlyPeriod?: string; yearlyPeriod?: string; features: string[]; cta?: { href: string; label: string }; highlighted?: boolean; }[] | [карточка](blocks/priceTable.md) |
 | `spotlightPair01` | `spotlightPair` | Comparison | пара, между которой ходит подсветка | badge?: string; title?: string; note?: string; left: SpotlightHalf; right: SpotlightHalf | [карточка](blocks/spotlightPair.md) |
+| `platformGrid01` | `platformGrid` | Benefits and value | сетка площадок, светящаяся из щелей | badge?: string; title: string; note?: string; cards: { title: string; subtitle: string; company?: string }[]; disclaimer?: string | [карточка](blocks/platformGrid.md) |
 
 ## Чего в этой таблице нет
 

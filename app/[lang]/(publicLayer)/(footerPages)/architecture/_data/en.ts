@@ -430,18 +430,72 @@ export const en: FooterPageCell = {
       text: 'And the point of it all: signing in does not exist for its own sake. It returns a **role** — the very thing the route layers and the locks on the data doors stand on. The way in changes; what a person receives afterwards does not.',
     },
     { kind: 'h3', text: 'Memory' },
+    {
+      kind: 'p',
+      text: 'Memory is the heart of the project, and there is more than one of it. Four stores of different kinds sit behind **one door** and open with one key. For an artificial-intelligence agent this is the difference between finding by word and understanding what is meant: without such memory it starts from nothing every time.',
+    },
     { kind: 'h4', text: 'The database' },
+    {
+      kind: 'p',
+      text: 'The rows of the application: users, orders, records, the build journal. A new table is declared in one place and appears the same way on your machine and on the server — there are no separate migrations to remember and run.',
+    },
     { kind: 'h4', text: 'The object store' },
+    {
+      kind: 'p',
+      text: 'Files and what is known about them: images, video, documents, icon sets. A file is addressed by name rather than by number, so a link to it reads as human text and survives a move. Video is trimmed on the server, and the resulting duration is measured rather than assumed.',
+    },
     { kind: 'h4', text: 'The vector store' },
+    {
+      kind: 'p',
+      text: 'Search by meaning rather than by matching words. It lives next to the rows it describes: one backup, one access contour, one meaning of deletion. Split them across services and one day a deleted record stays in the search.',
+    },
     { kind: 'h4', text: 'The agentic RAG' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A graph of connections: it stores not chunks of text but how entities relate to each other. It answers questions that have no single source of answer. Switched on with a toggle, and it deliberately has no interface of its own — you talk to it with questions, not with your eyes.',
+    },
+    {
+      kind: 'p',
+      text: 'You can try the memory without programming anything: **the Telegram bot answers by asking the knowledge graph** — you write a question, it answers from the loaded documents, and if the base is empty it says honestly that it has nothing to answer from. A voice message it transcribes by itself.',
+    },
+
     { kind: 'h3', text: 'Communication channels' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'One channel is built in deeply so far — Telegram. "Deeply" means a two-way link rather than the ability to send: incoming messages land in a shared inbox, files are accepted, voice is transcribed, and the answer comes from the project’s memory. One service reads the bot, and only one: Telegram hands each message to exactly one reader, and a second poller would silently eat half the conversation.',
+    },
+    {
+      kind: 'p',
+      text: 'The next channel — email, a messenger, a widget on the site — is added by a developer as another entry in the same service rather than as a second service. Channels inside the application itself the architect builds without us: the platform is needed where a channel must be shared by the whole server.',
+    },
+
     { kind: 'h3', text: 'The map' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'A map in the platform is not "show a pin on a tile". It is routes between addresses, distance matrices across dozens of points, address lookup by name, and visiting order: delivery, couriers, call-outs, site rounds — any process that has geography in it.',
+    },
+    {
+      kind: 'p',
+      text: 'What makes it different is **where** it is computed: the mapping engines run on your own server rather than in someone else’s cloud. Two consequences follow — requests are not metered one by one, and your customers’ addresses do not travel to a third party to come back as a distance.',
+    },
     { kind: 'h3', text: 'The control panel' },
+    {
+      kind: 'p',
+      text: 'The panel is deliberately shrinking: its sections move one by one into the project itself, next to the code. But part of the work will stay there for good — the part that must survive a breakage of the application. A broken application cannot repair itself from the inside.',
+    },
     { kind: 'h4', text: 'Backups' },
+    {
+      kind: 'p',
+      text: 'A copy is taken in parts, chosen one at a time: the database with the vector memory · files and what is known about them · the knowledge graph · the application settings · the channels · the environment file. Six parts instead of one big button — because people restore one thing rather than everything, and bringing settings back without touching today’s orders is impossible otherwise.',
+    },
     { kind: 'h4', text: 'Deployment and errors' },
-    { kind: 'note', text: 'More on this shortly.' },
+    {
+      kind: 'p',
+      text: 'The build journal keeps what was built, when, how long it took, how it ended and the whole output. A failed build does not leave the project in an undefined state: the last good one is restored and the site keeps working.',
+    },
+    {
+      kind: 'p',
+      text: 'You can use all this by hand, but usually you do not need to: deployment and error triage are driven through the coding agent, and the panel stays as the safety net and the observation post — the place you come to when something has gone wrong.',
+    },
   ],
 }

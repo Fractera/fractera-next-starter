@@ -208,7 +208,7 @@
         {
           "page": "architecture",
           "order": 1,
-          "times": 4
+          "times": 61
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -296,8 +296,8 @@
         },
         {
           "page": "architecture",
-          "order": 5,
-          "times": 18
+          "order": 7,
+          "times": 19
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -318,8 +318,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 8,
-          "times": 14
+          "order": 13,
+          "times": 18
         }
       ]
     },
@@ -335,7 +335,7 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 20,
+          "order": 47,
           "times": 3
         }
       ]
@@ -380,7 +380,7 @@
         {
           "page": "architecture",
           "order": 3,
-          "times": 2
+          "times": 10
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -457,8 +457,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 6,
-          "times": 18
+          "order": 9,
+          "times": 6
         },
         {
           "page": "blog/the-end-of-prompt-engineering",
@@ -512,8 +512,8 @@
       "usedOn": [
         {
           "page": "architecture",
-          "order": 35,
-          "times": 1
+          "order": 27,
+          "times": 4
         }
       ]
     },

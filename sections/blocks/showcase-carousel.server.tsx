@@ -1,7 +1,7 @@
 import type { SectionRenderer } from '@/sections/contract'
 import { inline } from '@/lib/content/blocks/inline'
 import { SectionHead } from '@/sections/section-head.server'
-import { ShowcaseCarousel } from './showcase-carousel.client'
+import { ShowcaseCarousel } from '@/components/carousel/showcase-carousel.client'
 
 // ВИТРИННАЯ КАРУСЕЛЬ — ПЕРЕНОС ФОРМЫ ИЗ `loop-showcase.tsx` (шаг 53, 2026-08-30).
 //

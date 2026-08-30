@@ -121,15 +121,22 @@ export default async function DesignPage({
                   <Small><strong className="text-foreground">{ui.pages.blocks.helpWhatTitle}</strong> {ui.pages.blocks.helpWhat}</Small>
                   <Small><strong className="text-foreground">{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</Small>
                   <Small><strong className="text-foreground">{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</Small>
+                  {/* 🔒 ЧЕТВЁРТЫЙ АБЗАЦ ВИДИМ, А НЕ СВЁРНУТ (заказ владельца
+                      2026-08-30). Он отвечает на вопрос, ради которого страницу
+                      и открывают дважды: «а пересобирать проект каждый раз
+                      придётся?». Свёрнутый ответ на такой вопрос равен
+                      отсутствующему — это уже оплачено в 59-2.
+
+                      🔒 УТВЕРЖДЕНИЕ ИЗМЕРЕНО ПО ЭТАЛОННОМУ ПРИЛОЖЕНИЮ, А НЕ
+                      ВЗЯТО ИЗ ГОЛОВЫ: у страницы слота `generateStaticParams`
+                      возвращает пустой список, `dynamicParams` true,
+                      `revalidate 300`, а маршруты и блоки читаются из базы на
+                      запросе. Состояние стартера на сегодня в текст НЕ вынесено
+                      по слову владельца: эталон и есть источник, откуда код
+                      будет перенесён. Сам факт записан в итоге шага. */}
+                  <Small><strong className="text-foreground">{ui.pages.blocks.helpParallelTitle}</strong> {ui.pages.blocks.helpParallel}</Small>
                 </div>
-                {/* Три абзаца ниже уточняют, а не вводят: их читают, когда
-                    вопрос уже возник. Поэтому они свёрнуты — но стоят ЗДЕСЬ, а
-                    не за каталогом. */}
-                <HelpDetails label={ui.pages.blocks.helpLabel}>
-                  <p><strong>{ui.pages.blocks.helpMotionTitle}</strong> {ui.pages.blocks.helpMotion}</p>
-                  <p><strong>{ui.pages.blocks.helpRebuildTitle}</strong> {ui.pages.blocks.helpRebuild}</p>
-                  <p><strong>{ui.pages.blocks.helpCodeTitle}</strong> {ui.pages.blocks.helpCode}</p>
-                </HelpDetails>
+
               </section>
             )}
 

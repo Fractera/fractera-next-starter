@@ -28,8 +28,32 @@ import type { Block } from '@/lib/content/blocks/types'
 export type SpecimenSection = {
   /** Вид секции, который показывает этот образец. */
   kind: Block['kind']
-  /** Одна фраза: когда этот вид уместен. */
+  /**
+   * Подпись образца. Нет — печатается сам `kind`.
+   *
+   * 🔒 ПОЯВИЛАСЬ, КОГДА У ОДНОГО ВИДА СТАЛО ДВА ОБРАЗЦА (шаг 48-1, 2026-08-30).
+   * У `workspace` их два — со вкладками и без, — и оба были подписаны словом
+   * «workspace»: человек видел два одинаково названных блока и не понимал, чем
+   * они различаются. Заодно это чинило дефект, который иначе не виден вовсе:
+   * ключ списка в каталоге строится из `kind`, и два образца одного вида давали
+   * React ОДИН И ТОТ ЖЕ ключ.
+   */
+  label?: string
+  /** Одна фраза: когда этот вид уместен. Английская основа. */
   when: string
+  /**
+   * Перевод описания.
+   *
+   * 🔒 ПЕРЕВОДИТСЯ ОПИСАНИЕ, А НЕ СОДЕРЖИМОЕ ОБРАЗЦА (решение владельца
+   * 2026-08-30, дословно): «сами секции внутри пусть остаются на английском но
+   * описание на русском». Разница содержательная: содержимое образца — это
+   * ДЕМОНСТРАЦИЯ вида, и переводить её значило бы переводить макет; описание —
+   * объяснение того, когда вид уместен, и читает его человек.
+   *
+   * Нет перевода — печатается английская основа, тем же поключевым правилом,
+   * которым живут языковые ячейки страниц.
+   */
+  whenRu?: string
   blocks: Block[]
 }
 
@@ -498,7 +522,9 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'workspace',
-    when: 'A working screen rather than a page to read: a menu on the left, content on the right. Dashboards and project tools are built from this — the layout is taken from the architect layer that already runs on it, not invented here. The left column sticks on a wide screen and becomes a scrolling strip on a phone. Menu entries are links only when they carry an address; without one they are plain marks, because a dead link in a catalogue is worse than no link.',
+    label: 'workspace · без верхнего ряда',
+    when: 'A working screen rather than a page to read: a menu on the left, content on the right. Dashboards and project tools are built from this — the layout is taken from the architect layer that already runs on it, not invented here. On a phone the left column becomes a drawer that opens to 90% of the width and closes on any click. Menu entries are links only when they carry an address; without one they are plain marks, because a dead link in a catalogue is worse than no link.',
+    whenRu: 'Рабочий экран, а не страница для чтения: меню слева, содержимое справа. Из него строятся дашборды и инструменты проекта. Раскладка взята у слоя архитектора, который на ней уже работает, а не придумана заново. На телефоне левая колонка превращается в выдвижной ящик: он открывается на 90 % ширины и закрывается от нажатия на любой пункт. Пункт становится ссылкой только там, где у него есть адрес: мёртвая ссылка в каталоге хуже её отсутствия.',
     blocks: [
       {
         kind: 'workspace',
@@ -548,6 +574,8 @@ export const SPECIMEN: SpecimenSection[] = [
   },
   {
     kind: 'workspace',
+    label: 'workspace · с верхним рядом',
+    whenRu: 'Тот же вид с необязательным верхним рядом разделов — второй случай, и он сделан ПОЛЕМ, а не вторым видом. Рисунок остаётся тем же, добавляется одно поле. Два отдельных вида разошлись бы между собой на первой же правке темы — ровно так же, как разошлась бы цитата, у которой необязательную первую строку сделали бы отдельным видом.',
     when: 'The same kind with the optional top row of sections — the second case, and it is a FIELD rather than a second kind. The drawing is identical; only `tabs` appears. Two kinds would have drifted apart on the first theme change, exactly as a quote with a lead would have.',
     blocks: [
       {

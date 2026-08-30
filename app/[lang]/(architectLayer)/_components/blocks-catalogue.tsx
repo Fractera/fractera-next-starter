@@ -95,11 +95,30 @@ export function BlocksCatalogue({
       </nav>
 
       <div data-blocks-list className="flex flex-col gap-10">
-        {shown.map(section => (
-          <section key={section.kind} data-block-kind={section.kind} className="flex flex-col gap-3">
+        {/* 🔒 КЛЮЧ БЕРЁТ ПОДПИСЬ, А НЕ ВИД (48-1, 2026-08-30). У `workspace` два
+            образца, и ключ из одного лишь `kind` был бы у них ОДИНАКОВЫМ — React
+            такой список ведёт непредсказуемо, а увидеть это глазами нельзя.
+            Индекс добавлен третьей опорой: он не даёт совпасть даже двум
+            образцам без подписи. */}
+        {shown.map((section, i) => (
+          <section
+            key={`${section.kind}-${section.label ?? ''}-${i}`}
+            data-block-kind={section.kind}
+            className="flex flex-col gap-3"
+          >
             <div>
-              <p className="font-mono text-[length:var(--fs-small)] text-muted-foreground">{section.kind}</p>
-              <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">{section.when}</p>
+              <p className="font-mono text-[length:var(--fs-small)] text-muted-foreground">
+                {section.label ?? section.kind}
+              </p>
+              {/* 🔒 ОПИСАНИЕ ПЕРЕВОДИТСЯ, СОДЕРЖИМОЕ ОБРАЗЦА — НЕТ (решение
+                  владельца 2026-08-30). Описание объясняет, когда вид уместен, и
+                  читает его человек; содержимое образца — демонстрация вида, и
+                  переводить её значило бы переводить макет. Нет перевода —
+                  печатается английская основа: то же поключевое правило, которым
+                  живут языковые ячейки страниц. */}
+              <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
+                {(lang === 'ru' && section.whenRu) || section.when}
+              </p>
             </div>
             {/* Рисует НАСТОЯЩИЙ рендерер — тот же, что рисует статью. */}
             <div className="rounded-lg border border-border p-4">

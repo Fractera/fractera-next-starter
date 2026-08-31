@@ -1244,6 +1244,7 @@ say so and work without it rather than inventing its content.
 | `use-route-parameters` | one address or one per record: the question hidden in "make a client page", what to tell the owner before he answers, and what to count before REMOVING a parameter that exists | 🔬 |
 | `use-sections` | the section layer: the catalogue closed by type, kind against widget, colour only by token | ✅ |
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
+| `explain-this-project` | answering «how does this work»: three circles of sight, measure before claiming, the boundary said out loud, and where to read the platform | ✅ |
 | `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
 | `shadcn` | **foreign, shadcn/ui, vendored**: the components, the CLI, registries, styling and composition rules. Provenance and the update command in its `SOURCE.md`; never hand-edited | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { DesignUi } from "../_i18n/design.i18n"
+import { H3 } from "@/components/ui/typography"
 
 // ИНСТРУМЕНТЫ РАЗРАБОТЧИКА ПОВЕРХ САЙТА (шаг 41, 2026-08-29).
 //
@@ -20,13 +20,33 @@ import type { DesignUi } from "../_i18n/design.i18n"
 // получает обратное значение. При отказе положение возвращается назад и об этом
 // говорится словом.
 
+/**
+ * Слова ЭТОГО островка, перечисленные поимённо.
+ *
+ * ✗ 🔒 ЗДЕСЬ СТОЯЛ ВЕСЬ `DesignUi`, И ЗАМЕР 76-4 ПОКАЗАЛ ЦЕНУ. Тип не сужает
+ * рантайм: по проводу уезжает всё переданное, даже неотрисованное, — закон,
+ * оплаченный ещё шагом 25. Пока раздел был одним выключателем, лишнее не бросалось
+ * в глаза; 76-2 и 76-3 добавили в словарь справку раздела, подписи витрины и слова
+ * заявки — и каждая из них поехала в браузер второй раз, вместе с чужими разделами.
+ * Теперь островок получает шесть строк, а не словарь.
+ */
+export type DesignToolsUi = {
+  instrumentsTitle: string
+  instrumentsLead: string
+  label: string
+  hint: string
+  on: string
+  off: string
+  failed: string
+}
+
 export function DesignTools({
   initial,
   ui,
 }: {
   /** Действующее значение выключателя: умолчание проекта или решение владельца. */
   initial: boolean
-  ui: DesignUi
+  ui: DesignToolsUi
 }) {
   const [on, setOn] = useState(initial)
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "failed">("idle")
@@ -54,13 +74,29 @@ export function DesignTools({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div data-tools-instruments className="flex flex-col gap-3">
+      {/* 🔒 ИСКЛЮЧЕНИЕ НАЗЫВАЕТСЯ ИСКЛЮЧЕНИЕМ, И ЭТО НЕ ВЕЖЛИВОСТЬ (76-4).
+          Раздел с 76-3 называет себя витриной переиспользуемых инструментов.
+          Прибор, оставленный внутри неё молча, объявляется инструментом — и
+          следующий агент построит седьмую карточку по его образцу. Владелец
+          сказал прямо: «по сути не является инструмент, но в порядке исключения
+          мы его оставим здесь».
+
+          🔒 РАЗДЕЛИТЕЛЬ ЗДЕСЬ НЕСЁТ СМЫСЛ, А НЕ ВИД: он и есть граница между
+          тем, что берут в код, и тем, что смотрят глазами. */}
+      <div className="border-t border-border pt-5">
+        <H3 variant="ui">{ui.instrumentsTitle}</H3>
+        <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
+          {ui.instrumentsLead}
+        </p>
+      </div>
+
       <section data-tool="viewportBadge" className="rounded-lg border border-border p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.viewportBadgeLabel}</p>
+            <p className="text-[length:var(--fs-body)] font-medium text-foreground">{ui.label}</p>
             <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
-              {ui.viewportBadgeHint}
+              {ui.hint}
             </p>
           </div>
           <button
@@ -83,8 +119,8 @@ export function DesignTools({
           </button>
         </div>
         <p className="mt-3 text-[length:var(--fs-small)] text-muted-foreground">
-          {on ? ui.toolsOn : ui.toolsOff}
-          {status === "failed" && ` · ${ui.colors.failed}`}
+          {on ? ui.on : ui.off}
+          {status === "failed" && ` · ${ui.failed}`}
         </p>
       </section>
     </div>

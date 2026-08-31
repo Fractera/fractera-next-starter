@@ -4,7 +4,14 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
-// СПРАВКА «КАК СТРОИТСЯ СТРАНИЦА» — СВЁРНУТА ПО УМОЛЧАНИЮ (2026-08-31).
+// СВЁРНУТАЯ СПРАВКА РАЗДЕЛА — ОБЩАЯ НА ВЕСЬ СЛОЙ (2026-08-31).
+//
+// 🔒 ПОДНЯТА, А НЕ СКОПИРОВАНА (76-2). Раньше файл назывался `blocks-intro` и
+// принадлежал одному разделу. Потребителей стало двое — «Блоки» и
+// «Инструменты», — и вторая редакция того же островка разошлась бы с первой на
+// первой же правке текста, причём разошлась бы в том разделе, который реже
+// открывают. Единственное, что стало настраиваемым, — имя в `data-section-intro`:
+// по нему замер отличает справку одного раздела от справки другого.
 //
 // Заказ владельца дословно: «на странице про блоки мы добавили информацию, но она
 // занимает очень много пространства — сделай по умолчанию, чтобы было видно три
@@ -34,12 +41,15 @@ import type { ReactNode } from "react";
 // перенос — но работает по одному текстовому блоку, и потому свёрнутым показан
 // ровно один: тот, который отвечает на вопрос «что такое блок».
 
-export function BlocksIntro({
+export function SectionIntro({
+  name,
   summary,
   rest,
   moreLabel,
   lessLabel,
 }: {
+  /** Чей это раздел — уезжает в `data-section-intro` и больше ни на что не влияет. */
+  name: string;
   /** Первый абзац: он и виден в свёрнутом виде, обрезанный тремя строками. */
   summary: ReactNode;
   /** Всё остальное — появляется только по нажатию. */
@@ -51,7 +61,7 @@ export function BlocksIntro({
 
   return (
     <section
-      data-blocks-intro
+      data-section-intro={name}
       data-open={open ? "true" : "false"}
       className="rounded-lg border border-border bg-card p-4 sm:p-5"
     >
@@ -64,7 +74,7 @@ export function BlocksIntro({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        data-blocks-intro-toggle
+        data-section-intro-toggle={name}
         className="mt-3 inline-flex items-center gap-1.5 text-[length:var(--fs-small)] text-muted-foreground transition-colors hover:text-foreground"
       >
         <ChevronDown

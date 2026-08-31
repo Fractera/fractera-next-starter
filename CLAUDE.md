@@ -556,8 +556,28 @@ writing anything, check whether a switch already does it.
 
 ## Tools — `_tools/`
 
-Five ready pieces, a folder each: voice input, image cropping, video trimming, syntax-highlighted code
-view, translations dialog. **Look here BEFORE building anything similar** → `use-tools`.
+**Six** ready pieces, a folder each: `voice-input`, `image-crop`, `video-trim`, `code-view`,
+`translations-dialog`, `socials-ai`. **Look here BEFORE building anything similar** → `use-tools`.
+The catalogue that shows them to a human lives at **`/{lang}/architect/design?section=tools`**, and a
+tool you are missing is **asked for from there** — a card at the bottom of the column writes a request
+into `development-docs/development-steps/pre-steps/`.
+
+🪦 **This line said "Five" until 2026-08-31, and the sixth had been there for two days.** `socials-ai`
+arrived, was wired into the socials field, and was named nowhere — not here, not in the panel's
+registry. Nobody was careless: **a list written by hand diverges from the folder silently**, and
+nothing wakes up, because there is nothing to wake. That is the whole reason for the law below, and
+the reason the number above is no longer maintained by hand.
+
+🔒 **THE CATALOGUE IS GENERATED FROM `_tools/`, AND A SECOND LIST IS FORBIDDEN.** Every tool carries a
+`tool.json` beside its code — entry file, `needs`, `npmDeps`, who already calls it, and its `title` /
+`what` / `how` / `value` in `en` and `ru`. `npm run build:tools-map` renders `_tools/TOOLS.json` from
+those cards; `check:tools-map` fails the build when a folder has no card, when a card promises a file
+that is not on disk, or when the generated map is stale. **A tool without `tool.json` does not reach
+the showcase** — and a tool nobody can find is the same as a tool that does not exist.
+
+🔒 **The description lives NEXT TO the tool, not in the page's dictionary.** Text torn from its code
+goes stale on the day the tool is edited, and goes stale silently. The dictionary holds only the
+field labels — they belong to the page, not to the tool.
 
 🔒 **A tool lives HERE, in your repository, and that is what makes it yours.** The application must not
 depend on the panel at runtime, or the owner's right to walk away dies with that dependency.
@@ -571,9 +591,13 @@ decides the rule is not for him; neither follows from the text.
 import is lazy and inside `try/catch`, so without the package highlighting silently becomes plain
 text. That is a legal state: unhighlighted code is readable, an empty screen is not.
 
-**Five is today, not forever.** Image or video generation, document recognition, maps, payment,
+**Six is today, not forever.** Image or video generation, document recognition, maps, payment,
 signature — every such capability lands HERE, not in the folder of the page that needed it first.
 ✗ a tool left living at its first caller is found only by someone who remembers it is there.
+🔒 **And the owner asks for those from the showcase, not from you directly.** The card at the bottom
+of the column writes a request that names, in the file itself, the patterns you are bound by — the
+folder shape, the `tool.json` card, the generated catalogue, and this skill. A request does not start
+you: it waits until the owner asks you to take it.
 
 🔒 **Tool or widget is decided BEFORE the first line.** Both are "a piece of React that can do
 something" and look alike. One question separates them, and it is not about complexity:
@@ -1308,7 +1332,7 @@ say so and work without it rather than inventing its content.
 | `use-platform-config` | eleven switches: what is read, what it does not decide, how to see the change | ✅ |
 | `use-app-config` | the application's identity: a field in four places, socials as a record with a rule, the cache | ✅ |
 | `place-page-in-menu` | a page into the top menu or the footer: search first, rights before building, two menu sources, the manifest shape | ✅ |
-| `use-tools` | the ready pieces: where they live, why two homes, why to look before building | ✅ |
+| `use-tools` | the six ready pieces: where they live, the showcase and how a new one is asked for, the `tool.json` card, why to look before building | ✅ |
 | `use-design` | nine levers of the look: functional against authored, foreign design skills, `DESIGN-CONFIG`, where external code lands, motion | ✅ |
 | `manage-app-settings` | application settings in the panel | ✅ |
 | `expand-site-language` | adding a language to a finished site | ✅ |

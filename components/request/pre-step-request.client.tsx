@@ -97,6 +97,28 @@ export type BlockWordsUi = {
 /** Прежнее имя — полный набор каталога блоков; его словарь уже такой. */
 export type BlockRequestUi = RequestCommonUi & BlockWordsUi
 
+/**
+ * Слова варианта Г — заявка на новый ИНСТРУМЕНТ (76-5).
+ *
+ * 🔒 ЧЕТВЁРТЫЙ ТИП СЛОВ, А НЕ ЧЕТВЁРТЫЙ КОМПОНЕНТ — та же развилка, что в 69.
+ * Предмет другой: инструменту не нужны ни «роль блока», ни подсказка о
+ * переиспользовании чужих стилей, а нужен свой вопрос — ГДЕ его будут применять.
+ * Это не оформление: именно этот вопрос отличает инструмент от виджета, и
+ * задать его надо в ту минуту, когда человек формулирует просьбу, а не потом.
+ */
+export type ToolWordsUi = {
+  createLabel: string
+  createTitle: string
+  createLead: string
+  whereLabel: string
+  whereHint: string
+  wherePlaceholder: string
+  /** Подпись карандаша для читалки: «предложить правку инструмента %s». */
+  editLabel: string
+  editTitle: string
+  editLead: string
+}
+
 type Props = {
   /** Слова каталога блоков. У варианта В их нет: он берёт свои сам. */
   ui?: RequestCommonUi
@@ -116,17 +138,42 @@ type Props = {
   pageTitle?: string
   /** Язык страницы: слова варианта В островок берёт сам (см. page-request.words). */
   pageLang?: string
+  /**
+   * Вариант Г — заявка на новый ИНСТРУМЕНТ (76-5).
+   *
+   * 🔒 ПРИЗНАК ОТДЕЛЬНЫЙ, А НЕ «КОДА И ТИПА НЕТ». Вариант Б узнаётся именно по
+   * отсутствию кода, и молчаливо занять четвёртым предметом ту же пустоту значило
+   * бы объявить любую заявку без кода заявкой на инструмент. Предмет называется
+   * прямо — тем же способом, каким назван `pageSlug`.
+   */
+  tool?: boolean
+  /**
+   * Какой именно инструмент правим — `_tools/code-view`.
+   *
+   * 🔒 ЕГО НАЛИЧИЕ И ЕСТЬ РАЗНИЦА МЕЖДУ «ПРАВКОЙ» И «НОВЫМ», ровно как у блоков:
+   * там код образца отличает карандаш от кнопки создания. Один и тот же признак
+   * на два предмета — не совпадение, а то, что делает каталоги одинаковыми на
+   * ощупь.
+   */
+  toolId?: string
+  /** Слова варианта Г. Обязательны там, где предмет — инструмент. */
+  toolUi?: ToolWordsUi
   page: string
 }
 
-export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageLang, page }: Props) {
+export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageLang, tool, toolId, toolUi, page }: Props) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState("")
   const [role, setRole] = useState("")
   const [busy, setBusy] = useState(false)
 
-  // Три предмета, и признак у каждого свой: кода нет и типа нет — значит это
-  // страница. Порядок проверок здесь и есть определение вариантов.
+  // Четыре предмета, и признак у каждого свой. Порядок проверок здесь и есть
+  // определение вариантов: инструмент и страница объявляются прямо, правка
+  // образца узнаётся по коду, новый блок остаётся тем, что не подошло никуда.
+  const isTool = Boolean(tool)
+  // Правка существующего инструмента против просьбы о новом — та же развилка,
+  // что у блоков: назван предмет — карандаш, не назван — карточка создания.
+  const isToolEdit = isTool && Boolean(toolId)
   const isPage = Boolean(pageSlug)
   // 🔒 СЛОВА ВАРИАНТА В РЕЗОЛВЯТСЯ ЗДЕСЬ, В БРАУЗЕРЕ, А НЕ ПРИЕЗЖАЮТ ПРОПСОМ.
   // Иначе они уезжают в полезной нагрузке каждому посетителю статической
@@ -136,7 +183,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
   // страницы подвала берутся здесь же. Один островок, два источника — потому что
   // словари принадлежат разным группам прав и объединить их нечем.
   const u = ui ?? w
-  const isCreate = !code && !isPage
+  const isCreate = !code && !isPage && !isTool
 
   async function send() {
     if (!text.trim() || busy) return
@@ -145,7 +192,12 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
       const res = await fetch("/api/architect/pre-step", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, code, kind, pageSlug, role: role || undefined, page }),
+        // 🔒 ВТОРОЕ ПОЛЕ ЕДЕТ ОДНИМ КЛЮЧОМ `role`, А ПОДПИСЬ ЕМУ ДАЁТ ПРЕДМЕТ.
+        // У блока это «роль и ограничения», у инструмента — «где будете
+        // применять»; вопросы разные, а место в заявке одно. Второй ключ ради
+        // подписи развёл бы форму и файл: писателю пришлось бы знать оба и
+        // выбирать, а он и так знает предмет.
+        body: JSON.stringify({ text, code, kind, pageSlug, tool: tool || undefined, toolId, role: role || undefined, page }),
       })
       const data = (await res.json().catch(() => null)) as { ok?: boolean; file?: string } | null
 
@@ -186,25 +238,27 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
 
   return (
     <>
-      {isPage || isCreate ? (
+      {isPage || isCreate || (isTool && !isToolEdit) ? (
 
         <button
           type="button"
           data-create-block={isCreate ? kind : undefined}
           data-request-page={isPage ? pageSlug : undefined}
+          data-create-tool={isTool ? "" : undefined}
           onClick={() => setOpen(true)}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-6 text-[length:var(--fs-body)] font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground"
         >
           <Plus size={16} aria-hidden />
-          {isPage ? w.label : (blockUi?.createLabel ?? "")}
+          {isTool ? (toolUi?.createLabel ?? "") : isPage ? w.label : (blockUi?.createLabel ?? "")}
         </button>
       ) : (
         <button
           type="button"
-          data-edit-block={code}
+          data-edit-block={isToolEdit ? undefined : code}
+          data-edit-tool={isToolEdit ? toolId : undefined}
           onClick={() => setOpen(true)}
-          aria-label={(blockUi?.editLabel ?? "").replace("%s", code ?? "")}
-          title={(blockUi?.editLabel ?? "").replace("%s", code ?? "")}
+          aria-label={isToolEdit ? (toolUi?.editLabel ?? "").replace("%s", toolId ?? "") : (blockUi?.editLabel ?? "").replace("%s", code ?? "")}
+          title={isToolEdit ? (toolUi?.editLabel ?? "").replace("%s", toolId ?? "") : (blockUi?.editLabel ?? "").replace("%s", code ?? "")}
           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
         >
           <Pencil size={12} aria-hidden />
@@ -216,8 +270,8 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
         onOpenChange={setOpen}
         ui={dialogUi}
         size="md"
-        title={isPage ? w.title.replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
-        description={isPage ? w.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
+        title={isToolEdit ? (toolUi?.editTitle ?? "").replace("%s", toolId ?? "") : isTool ? (toolUi?.createTitle ?? "") : isPage ? w.title.replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
+        description={isToolEdit ? (toolUi?.editLead ?? "") : isTool ? (toolUi?.createLead ?? "") : isPage ? w.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
         footer={
           <>
             <button
@@ -279,6 +333,36 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
                   {(blockUi?.stylesHint ?? "")}
                 </p>
               </>
+            )}
+
+            {/* 🔒 У ИНСТРУМЕНТА ВТОРОЙ ВОПРОС ДРУГОЙ, И ЭТО НЕ ПЕРЕИМЕНОВАНИЕ
+                ПОЛЯ. «Где будете применять» — тот самый вопрос, который решает
+                «инструмент или виджет»: захочет ли ВТОРОЙ вызывающий ровно эту
+                вещь. Задать его надо в минуту, когда человек формулирует
+                просьбу, — потом он ответит уже под влиянием построенного.
+
+                🔒 ПОДСКАЗКИ О ЧУЖИХ СТИЛЯХ ЗДЕСЬ НЕТ НАМЕРЕННО. Она про блок:
+                вид можно повторить по CSS. У инструмента предмет — работа, а не
+                облик, и обещание «пришлите стили» увело бы разговор не туда.
+
+                🔒 У ПРАВКИ СУЩЕСТВУЮЩЕГО ИНСТРУМЕНТА ЭТОГО ПОЛЯ НЕТ, и это не
+                экономия: он уже где-то применяется, и спрашивать «где будете
+                применять» значило бы задать вопрос, на который отвечает сама
+                карточка строкой «Уже применяется». Тот же порядок у блоков:
+                карандаш спрашивает одно, кнопка создания — два. */}
+            {isTool && !isToolEdit && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[length:var(--fs-small)] font-medium text-foreground">{(toolUi?.whereLabel ?? "")}</span>
+                <span className="text-[length:var(--fs-small)] text-muted-foreground">{(toolUi?.whereHint ?? "")}</span>
+                <textarea
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                  rows={3}
+                  maxLength={2000}
+                  placeholder={(toolUi?.wherePlaceholder ?? "")}
+                  className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-[length:var(--fs-small)] leading-relaxed outline-none focus:border-primary/50"
+                />
+              </label>
             )}
         </div>
       </AppDialog>

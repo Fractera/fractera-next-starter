@@ -1,0 +1,19 @@
+{
+  "id": "voice-input",
+  "entry": "client/voice-input.client.tsx",
+  "needs": ["browser", "https", "openai-key"],
+  "npmDeps": [],
+  "usedBy": ["manage/products/form", "components/form/voice-control"],
+  "en": {
+    "title": "Voice input",
+    "what": "A small button beside a field: hold it and it records, release it and the recording goes off to be transcribed. While recording, a 40-pixel bar shows the incoming sound with the elapsed time in its middle. It remembers the caret — the transcript lands where the cursor stood, not at the end of the field.",
+    "how": "Since 32-2 this file holds only the appearance; the mechanics — microphone permission, recording, level bars, timer, transcription, caret memory — live in `client/use-voice-recorder.ts`, one copy for every look. Building a second appearance means calling that hook, never copying the work with `AudioContext`. There is deliberately no shadcn, no lucide and no sonner inside: the tool has to stay an archive that works wherever the folder is unpacked, so a refusal is shown as a line under the button rather than as a platform toast.",
+    "value": "Dictation instead of typing on the fields where a person actually speaks — a description, a text, an answer. That is also its boundary: the microphone belongs to what is spoken, not to everything textual. A confirmation code, coordinates and a HEX colour get a keyboard, and this is the owner's decision of 2026-08-28."
+  },
+  "ru": {
+    "title": "Голосовой ввод",
+    "what": "Маленькая кнопка рядом с полем: удерживаешь — идёт запись, отпустил — уходит на расшифровку. Во время записи полоса в 40 пикселей показывает приходящий звук, а в её центре идёт время. Помнит курсор: расшифровка встаёт туда, где он стоял, а не в конец поля.",
+    "how": "С шага 32-2 в этом файле только облик; механика — разрешение микрофона, запись, столбики уровня, таймер, расшифровка, память курсора — живёт в `client/use-voice-recorder.ts`, одна на все интерфейсы. Строя второй облик, зовут этот хук, а не копируют работу с `AudioContext`. Внутри намеренно нет ни shadcn, ни lucide, ни sonner: инструмент обязан оставаться архивом, который работает там, куда распакована папка, — поэтому отказ показывается строкой под кнопкой, а не тостом платформы.",
+    "value": "Диктовка вместо набора там, где человек действительно говорит: описание, текст, ответ. Здесь же его граница — микрофон принадлежит тому, что произносят, а не всему текстовому: код подтверждения, координаты и HEX-цвет получают клавиатуру, и это решение владельца от 2026-08-28."
+  }
+}

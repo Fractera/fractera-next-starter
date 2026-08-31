@@ -1,0 +1,19 @@
+{
+  "id": "image-crop",
+  "entry": "client/image-cropper.client.tsx",
+  "needs": ["browser"],
+  "npmDeps": [],
+  "usedBy": ["architect/image-field", "architect/icons-field"],
+  "en": {
+    "title": "Image cropping",
+    "what": "Lets a person choose the visible part of a picture before it is saved and returns a ready JPEG. The frame sets a proportion — 16:9, 1:1 or 9:16 — not a size; the longer side is capped at 1200 pixels. All the work happens in the browser: canvas, dragging, a zoom slider. The server only learns the result.",
+    "how": "Open it over any field that accepts a picture, hand it a `blob:` link to the file just chosen or the address of a stored one, and take the blob in `onDone` — the tool saves nothing itself. Labels are optional: it carries English defaults so it can be installed into a project that has no dictionary of ours.",
+    "value": "A picture that arrives already framed instead of one uploaded whole and cropped by CSS. It is why avatars, logos and covers keep one proportion across the site — and why the file is measured in kilobytes rather than megabytes. It cannot keep transparency: JPEG has none, so a logo on a transparent background is not its case."
+  },
+  "ru": {
+    "title": "Обрезка изображения",
+    "what": "Даёт человеку выбрать видимую часть картинки до того, как она сохранена, и отдаёт готовый JPEG. Рамка задаёт пропорцию — 16:9, 1:1 или 9:16, — а не размер; большая сторона ограничена 1200 пикселями. Работа целиком в браузере: холст, перетаскивание, ползунок масштаба. Сервер узнаёт только результат.",
+    "how": "Открывается поверх любого поля, принимающего картинку: ему отдают `blob:`-ссылку на только что выбранный файл или адрес уже сохранённого, а результат забирают в `onDone` — сам инструмент ничего не сохраняет. Подписи необязательны: у него есть английские значения по умолчанию, поэтому его можно поставить в проект, где нашего словаря нет.",
+    "value": "Картинка приезжает уже кадрированной, а не загруженной целиком и обрезанной стилями. Отсюда одинаковые пропорции у аватаров, логотипов и обложек по всему сайту — и вес файла в килобайтах вместо мегабайт. Прозрачность он сохранить не может: её нет в JPEG, и логотип на прозрачном фоне — не его случай."
+  }
+}

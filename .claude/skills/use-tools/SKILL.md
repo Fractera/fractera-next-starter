@@ -5,8 +5,9 @@ description: >
   optional. Load this BEFORE building any interface piece that feels generic: a picker, a cropper,
   a dialog for translations, a microphone, a code viewer, a media trimmer. Also load it when the
   owner says "we already made that", "why is there no window", "use the tool we built" — that
-  sentence usually means a tool exists and was not found. Tools live in `_tools/<id>/` and are
-  listed in the panel's registry; anything built beside them is a second copy nobody asked for.
+  sentence usually means a tool exists and was not found. Tools live in `_tools/<id>/` and appear in
+  the showcase at `/{lang}/architect/design?section=tools`; anything built beside them is a second
+  copy nobody asked for.
 ---
 
 # use-tools
@@ -14,9 +15,31 @@ description: >
 > Informational, not binding. **Know a better way for the case in front of you — do it your way and
 > say so.** You are trusted with the creative work on this project.
 
-A tool here is a small reusable piece with a home: one folder, one entry in the registry, one page
-on the panel's showcase that says what it does and what it needs. Not a helper hidden in a feature
-folder — those are invisible, and invisible is the same as absent.
+A tool here is a small reusable piece with a home: one folder, one `tool.json` card beside its code,
+one place in the showcase that says what it does, how to use it and what it needs. Not a helper
+hidden in a feature folder — those are invisible, and invisible is the same as absent.
+
+## Where to look, in this repository
+
+**The showcase: `/{lang}/architect/design?section=tools`.** One column, one card per tool: what it
+does, how to use it, what it gives you, what it needs (browser, HTTPS, an OpenAI key, ffmpeg), which
+package must be installed, and who already calls it. A pencil beside each asks for a change to it; a
+card at the bottom asks for a tool that does not exist yet.
+
+🔒 **THE CATALOGUE IS GENERATED FROM THE FOLDER, AND A SECOND LIST IS FORBIDDEN.** Each tool carries
+`_tools/<id>/tool.json`; `npm run build:tools-map` renders `_tools/TOOLS.json` from those cards and
+`check:tools-map` fails the build when a folder has no card, when a card promises an entry file that
+is not on disk, or when the map is stale. So the honest answer to "what tools does this project
+have?" is the folder — never a list in prose.
+
+✗ **This is not a precaution, it is a repair.** Until 2026-08-31 this project's own `CLAUDE.md` said
+"Five ready pieces" while `_tools/` held six: `socials-ai` had arrived, was wired into the socials
+field, and was named nowhere. A hand-written list diverges silently, and nothing wakes up, because
+there is nothing to wake.
+
+🔒 **THE DESCRIPTION LIVES IN `tool.json`, NEXT TO THE CODE.** Editing what a tool does means editing
+its card in the same commit — text torn from its code goes stale on the day the tool changes. The
+page's dictionary holds only field labels.
 
 ## 🔒 Прочитай соседний инструмент прежде, чем писать свой
 
@@ -36,15 +59,27 @@ translatable fields". It was written for the footer and menu sections specifical
 translate button in those very sections was built, it was built from scratch: a call to the door
 and one line of text — no language cards, no manual editing, no per-language save.
 
-Nobody was lazy. The tool sat in `components/i18n/`, not in `_tools/`, and the registry did not
-list it. **There was nowhere to look.** That is the whole lesson: a tool without a home does not
-exist, no matter how good it is.
+Nobody was lazy. The tool sat in `components/i18n/`, not in `_tools/`, and no catalogue listed it.
+**There was nowhere to look.** That is the whole lesson: a tool without a home does not exist, no
+matter how good it is.
 
-So: before writing an interface piece that feels generic, read the registry
-(`bridges/app/lib/tools-registry.ts`) and the tool pages. It costs one file read. Building the
-second copy costs a day, and the copies drift apart quietly afterwards.
+So: before writing an interface piece that feels generic, open the showcase — or read
+`_tools/TOOLS.json`, which is what the showcase reads. It costs one file read. Building the second
+copy costs a day, and the copies drift apart quietly afterwards.
 
-## Two homes on purpose, and neither is redundant
+✗ **This paragraph used to send you to `bridges/app/lib/tools-registry.ts`, and that file does not
+exist in this repository** (corrected 2026-08-31). It is the panel's, and the panel lives outside
+your repository. Exactly the failure the removed "two homes" law caused, in the same skill: an agent
+reading it either hunts for something absent or decides the rule is not for him.
+
+## Two homes on purpose — and only one of them is yours
+
+🔒 **THE MIRROR IS THE PLATFORM'S BUSINESS, NOT YOURS.** Some tools also exist in the panel, outside
+your repository, and the section below explains why that duplication is deliberate. Read it as
+background, not as an instruction: **you can neither see nor edit the panel's copy**, and the same
+correction was already made once in `CLAUDE.md`, where a federal law about "two homes" stood in the
+guest's document until 2026-08-24. Your side of it is one sentence — a tool lives in `_tools/<id>/`,
+in your repository, and that is what makes it yours.
 
 The same tool is copied on both sides: `bridges/app/_tools/` (panel) and the app's `_tools/`.
 Deleting one of the two breaks something real:
@@ -66,10 +101,21 @@ or drifting silently between what is installed and what runs.
 
 ## What a tool must carry to count as one
 
-An entry in the registry with its real files, its honest `needs` (browser, HTTPS, OpenAI key,
-ffmpeg), and its true `npmDeps` — a package the starter lacks is a decision the owner must make
-before installing, not a surprise at build time. A page on the showcase. A documented contract in
-`lib/tools-doc.ts`: purpose, mechanics, params, limits. And a mirror in the other home.
+**`_tools/<id>/` with `client` / `server` / `types`** — one folder, so that "take the tool" means
+"copy the folder" and not "hunt seven files across the tree".
+
+**`_tools/<id>/tool.json` beside it**, and this is the part that is easy to skip and fatal to skip:
+
+| Field | What goes in it |
+|---|---|
+| `entry` | the file a caller imports; the gate checks it exists on disk |
+| `needs` | honest requirements — `browser`, `https`, `openai-key`, `ffmpeg` |
+| `npmDeps` | packages this repository lacks; a missing package is a decision for the owner **before** installing, not a surprise at build time |
+| `usedBy` | who already calls it. Empty is legal and is said in words ("not used by anything yet"), never left blank |
+| `en` / `ru` | `title` · `what` it does · `how` to use it · `value` it gives. Written for a person, not a changelog |
+
+Then `npm run build:tools-map`, and the tool appears in the showcase by itself — there is no list to
+add yourself to. `check:tools-map` refuses the build if the card is missing or stale.
 
 Half of that is not a tool. It is a component someone will fail to find.
 
@@ -93,14 +139,21 @@ execute, this one about what it may hide.
 ## When you build a new one
 
 Ask first whether the thing is genuinely reusable or belongs to one screen. A tool that serves one
-caller is a component in that caller's folder, and pretending otherwise adds a registry entry
-nobody reads.
+caller is a component in that caller's folder, and pretending otherwise puts a card in the showcase
+that nobody reads.
+
+🔒 **THE REQUEST FORM ASKS THAT QUESTION FOR YOU, AND ITS ANSWER TRAVELS TO YOU.** The card at the
+bottom of the showcase has a second field — *where will you use it* — precisely because that is what
+separates a tool from a widget: will a SECOND caller want exactly this thing. When a request reaches
+`pre-steps/` with that field empty, it is not a formality you may skip; it is the question to ask
+before the first line.
 
 If it is a tool: put the words on the server and hand them to the island as props — the panel's
 dictionary is 82 languages and never travels to the browser. Take the owner's existing pieces
 rather than adding your own: the microphone, the cropper and the code viewer are already there.
 Name refusals plainly and link to where they are cured; "could not" tells a person nothing about
-what to do next.
+what to do next. And write the `tool.json` card **in the same commit as the code** — a card added
+later is a card written from memory.
 
 ## If a tool was deleted, do not rebuild it from memory
 

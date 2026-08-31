@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Pencil, Plus, Sparkles } from "lucide-react"
+import { Pencil, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { AppDialog } from "@/components/dialog/app-dialog.client"
 import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
@@ -186,29 +186,17 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
 
   return (
     <>
-      {isPage ? (
-        /* 🔒 КНОПКА СТРАНИЦЫ ВЫГЛЯДИТ КАК ДЕЙСТВИЕ, А НЕ КАК ПУСТОЕ МЕСТО. У
-           категории каталога кнопка пунктирная — она стоит в ряду карточек и
-           говорит «здесь можно добавить». Здесь она стоит под готовым абзацем
-           заглушки и предлагает единственное осмысленное действие на странице. */
+      {isPage || isCreate ? (
+
         <button
           type="button"
-          data-request-page={pageSlug}
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-[length:var(--fs-body)] font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Sparkles size={16} aria-hidden />
-          {w.label}
-        </button>
-      ) : isCreate ? (
-        <button
-          type="button"
-          data-create-block={kind}
+          data-create-block={isCreate ? kind : undefined}
+          data-request-page={isPage ? pageSlug : undefined}
           onClick={() => setOpen(true)}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-6 text-[length:var(--fs-body)] font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground"
         >
           <Plus size={16} aria-hidden />
-          {(blockUi?.createLabel ?? "")}
+          {isPage ? w.label : (blockUi?.createLabel ?? "")}
         </button>
       ) : (
         <button

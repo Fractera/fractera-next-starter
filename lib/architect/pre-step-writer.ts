@@ -29,7 +29,7 @@ import { join } from "path"
 const INBOX = join(process.cwd(), "development-docs", "development-steps", "pre-steps")
 
 /** Разумные пределы полей. Не защита от злого умысла, а защита от случайности. */
-const LIMITS = { text: 4000, code: 64, kind: 64, role: 2000 } as const
+const LIMITS = { text: 4000, code: 64, kind: 64, role: 2000, pageSlug: 64 } as const
 
 export type PreStepRequest = {
   /** Дословные слова человека: что он хочет изменить или построить. */
@@ -38,6 +38,8 @@ export type PreStepRequest = {
   code?: string
   /** Тип каталога — `trust`. Есть только у заявки на новый блок. */
   kind?: string
+  /** Имя страницы подвала — третий повод заявки (69): текст документа. */
+  pageSlug?: string
   /** Роль и ограничения будущего блока. Необязательное поле варианта Б. */
   role?: string
   /** Адрес страницы, с которой пришла заявка. */
@@ -88,24 +90,29 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
   const code = typeof body.code === "string" ? body.code.trim().slice(0, LIMITS.code) : ""
   const kind = typeof body.kind === "string" ? body.kind.trim().slice(0, LIMITS.kind) : ""
   const role = typeof body.role === "string" ? body.role.trim().slice(0, LIMITS.role) : ""
+  const pageSlug = typeof body.pageSlug === "string" ? body.pageSlug.trim().slice(0, LIMITS.pageSlug) : ""
   const page = typeof body.page === "string" ? body.page.trim().slice(0, 200) : ""
 
-  // Заявка либо про существующий образец, либо про новый блок в типе. Ни то ни
-  // другое — значит форма прислала мусор, и агенту будет нечего искать.
-  if (!code && !kind) return { ok: false, reason: "bad-body", detail: "code or kind is required" }
+  // Заявка про существующий образец, про новый блок в типе ИЛИ про текст страницы
+  // подвала. Ни одно из трёх — значит форма прислала мусор, и агенту будет нечего
+  // искать.
+  if (!code && !kind && !pageSlug) {
+    return { ok: false, reason: "bad-body", detail: "code, kind or pageSlug is required" }
+  }
 
   const { file: base, human } = stamp(now)
 
   const lines = [
-    `источник:      каталог блоков · слой архитектора`,
+    `источник:      ${pageSlug ? "страница подвала · публичный слой" : "каталог блоков · слой архитектора"}`,
     `когда:         ${human}`,
     `где:           ${page || "/architect/design?section=blocks"}${code ? `, образец ${code}` : ""}`,
   ]
   if (kind) lines.push(`тип:           ${kind}`)
+  if (pageSlug) lines.push(`страница:      ${pageSlug}`)
   lines.push(`что просят:    «${quote(text)}»`)
   if (role) lines.push(`роль и ограничения: «${quote(role)}»`)
   lines.push(
-    `чем вызвано:   ${code ? `нажатие карандаша на образце ${code}` : `кнопка «создать блок» в типе ${kind}`}`,
+    `чем вызвано:   ${pageSlug ? `кнопка «написать текст» на странице ${pageSlug}` : code ? `нажатие карандаша на образце ${code}` : `кнопка «создать блок» в типе ${kind}`}`,
   )
   lines.push("")
   lines.push(

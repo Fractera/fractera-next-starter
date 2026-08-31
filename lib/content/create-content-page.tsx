@@ -99,6 +99,8 @@ export type ContentPageConfig<C extends ContentPageContent> = {
    * что показать, решает вход маршрута.
    */
   afterHero?: (lang: string) => ReactNode
+  /** Разметка после тела: слот появился в 69 ради кнопки заявки под заглушкой. */
+  afterBody?: (lang: string) => ReactNode
   /**
    * Optional hero override, rendered directly under the H1 in place of the default
    * `meta.heroImage` figure (e.g. the MCP step-by-step carousel at the top of
@@ -112,7 +114,7 @@ function abs(path: string): string {
 }
 
 export function createContentPage<C extends ContentPageContent>(config: ContentPageConfig<C>) {
-  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero, afterHero, titleInBody = false } = config
+  const { resolve, chrome, meta, jsonLdType = 'Article', sections, hero, afterHero, afterBody, titleInBody = false } = config
 
   async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
     const { lang } = await params
@@ -227,6 +229,7 @@ export function createContentPage<C extends ContentPageContent>(config: ContentP
           heroAlt={c.title}
           hero={hero?.(lang)}
           afterHero={afterHero?.(lang)}
+          afterBody={afterBody?.(lang)}
           blocks={c.blocks}
           faq={faq}
           backHref={backHref}

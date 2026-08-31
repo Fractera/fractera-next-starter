@@ -2,7 +2,7 @@ import Link from "next/link"
 import { PostBody } from "@/components/content-page/post-body"
 import { SPECIMEN, SPECIMEN_CODES } from "@/app/[lang]/(protectedLayer)/(admin)/blocks/_data/specimen"
 import { KindBadge } from "@/components/catalogue/kind-badge"
-import { BlockRequest } from "./block-request.client"
+import { PreStepRequest } from "@/components/request/pre-step-request.client"
 import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import SECTIONS from "@/sections/SECTIONS.json"
 import type { DesignUi } from "../_i18n/design.i18n"
@@ -162,7 +162,7 @@ export function BlocksCatalogue({
                     🔒 КОД БЕРЁТСЯ ИЗ ПОРОЖДЁННОГО КАТАЛОГА, а не склеивается из
                     имени вида: у `workspace` два образца, и номер называет
                     настройку. Склейка `kind + "01"` соврала бы на втором молча. */}
-                <BlockRequest ui={ui.pages.blocks.request} dialogUi={dialogUi} code={code} page={page} />
+                <PreStepRequest ui={ui.pages.blocks.request} blockUi={ui.pages.blocks.request} dialogUi={dialogUi} code={code} page={page} />
                 {section.label && (
                   <span className="text-[length:var(--fs-small)] text-muted-foreground">
                     {section.label}
@@ -199,8 +199,8 @@ export function BlocksCatalogue({
 
             🔒 ТИП БЕРЁТСЯ ИЗ ПОРОЖДЁННОЙ `SECTIONS.json`, а не из списка в коде:
             второй список разошёлся бы с первым на первом же новом типе. */}
-        <BlockRequest
-          ui={ui.pages.blocks.request}
+        <PreStepRequest
+          ui={ui.pages.blocks.request} blockUi={ui.pages.blocks.request}
           dialogUi={dialogUi}
           kind={active === "all" ? undefined : active}
           kindTitle={activeTitle}

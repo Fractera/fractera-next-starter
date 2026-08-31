@@ -3,6 +3,7 @@ import { brand } from '@/lib/brand'
 import { footerPage, panelNotice } from '@/lib/pages/footer-page'
 import { noticeUi } from '@/lib/pages/notice.i18n'
 import { data } from '../_data'
+import { PageTextRequest } from '@/components/request/page-text-request.server'
 
 // Точка входа страницы подвала. Всё, что делает статику и SEO — предрендер по
 // языкам, hreflang, OpenGraph, JSON-LD, хлебные крошки, — приходит из
@@ -27,6 +28,13 @@ const page = createContentPage({
       blocks: [panelNotice(lang, ui), ...content.blocks],
     }
   },
+  // 🔒 КНОПКА ЗАЯВКИ СТОИТ ПОСЛЕ ТЕКСТА ЗАГЛУШКИ (69, слово владельца: «вместо
+  // текста „что здесь должно быть“, а лучше ПОСЛЕ этого текста»). Слот `afterBody`
+  // заведён ради неё и рисует ровно между телом и завершающей секцией.
+  //
+  // 🔒 СТАТИКА НЕ ТЕРЯЕТСЯ: сервер сессию не спрашивает, HTML одинаков для всех, а
+  // видимость решает островок после гидратации. Посетитель не видит ничего.
+  afterBody: lang => <PageTextRequest lang={lang} slug={data.meta.slug} title={footerPage(data, lang).title} />,
   chrome: (lang, content) => ({
     // Корень сайта в путь НЕ вписывается: его печатает сам компонент крошек
     // (`components/nav/breadcrumbs.server.tsx`). Пока он стоял здесь, страница

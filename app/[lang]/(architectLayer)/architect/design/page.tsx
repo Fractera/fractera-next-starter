@@ -190,7 +190,23 @@ export default async function DesignPage({
                 выше того, что оставлено здесь исключением. Обратный порядок
                 объявил бы прибор главным предметом страницы. */}
             {active === "tools" && <ToolsCatalogue lang={lang} ui={ui} />}
-            {active === "tools" && <DesignTools initial={featureOn("viewportBadge")} ui={ui} />}
+            {/* 🔒 ОСТРОВКУ ОТДАЮТСЯ ТОЛЬКО ЕГО СЛОВА, ПЕРЕЧИСЛЕННЫЕ ПОИМЁННО
+                (76-4). Здесь стоял весь `ui`, и это уезжало в браузер целиком —
+                включая справку раздела, подписи витрины и слова заявки. */}
+            {active === "tools" && (
+              <DesignTools
+                initial={featureOn("viewportBadge")}
+                ui={{
+                  instrumentsTitle: ui.pages.tools.instrumentsTitle,
+                  instrumentsLead: ui.pages.tools.instrumentsLead,
+                  label: ui.viewportBadgeLabel,
+                  hint: ui.viewportBadgeHint,
+                  on: ui.toolsOn,
+                  off: ui.toolsOff,
+                  failed: ui.colors.failed,
+                }}
+              />
+            )}
 
             {/* 🔒 СПРАВКА ЖИВЁТ НА СТРАНИЦЕ, А НЕ ВНУТРИ ОСТРОВКА (перенесено из
                 панели, шаг 42). Она серверная и раскрывается без скриптов; уведи

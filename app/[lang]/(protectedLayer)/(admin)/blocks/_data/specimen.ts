@@ -435,6 +435,18 @@ export const SPECIMEN: SpecimenSection[] = [
     ],
   },
   {
+    kind: 'invite',
+    when: 'An invitation in a dashed frame: here is a place that is still EMPTY and can be taken. Not `cta` — that one is a solid button about a ready action, while the dashes say the opposite: nothing is here yet. The whole card is the link, so hitting it is as easy as missing it is hard. The drawing is shared with the request card standing on the footer placeholder pages (`lib/ui/dashed-card.ts`): there it is a BUTTON and opens a window, here it is a LINK and leads to an address — different natures, one look, one class in one file so the two cannot drift apart.',
+    whenRu: 'Приглашение в пунктирной рамке: здесь пока ПУСТО, и это место можно занять. Не `cta` — та сплошная и про готовое действие, а пунктир говорит обратное: ничего ещё нет. Ссылка — вся карточка целиком: попасть по ней должно быть так же легко, как промахнуться трудно. Рисунок общий с карточкой заявки на страницах подвала (`lib/ui/dashed-card.ts`): там она КНОПКА и открывает окно, здесь ССЫЛКА и ведёт по адресу — природа разная, вид один, и класс живёт в одном файле, чтобы они не разошлись.',
+    blocks: [
+      {
+        kind: 'invite',
+        href: '/en/blocks',
+        label: 'Add a block to this page',
+      },
+    ],
+  },
+  {
     kind: 'noBill',
     when: 'The bills that will not arrive: the section is NAMED by an H2 on top, then a struck-through vendor with a badge saying what you stopped buying, then the conclusion as an H3. The vendor is a SEPARATE field because it is the one word never translated — merge it into the sentence and the renderer no longer knows what to strike; the badge beside it IS translated, because "a database" is what a person understands without knowing the name "Neon". The conclusion sits AFTER the list on purpose: the struck names are the evidence, the sentence is what follows from them. The strike runs 2px past each word through padding, never through blank characters typed into the data.',
     blocks: [

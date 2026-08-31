@@ -54,7 +54,23 @@ export function DesignTools({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div data-tools-instruments className="flex flex-col gap-3">
+      {/* 🔒 ИСКЛЮЧЕНИЕ НАЗЫВАЕТСЯ ИСКЛЮЧЕНИЕМ, И ЭТО НЕ ВЕЖЛИВОСТЬ (76-4).
+          Раздел с 76-3 называет себя витриной переиспользуемых инструментов.
+          Прибор, оставленный внутри неё молча, объявляется инструментом — и
+          следующий агент построит седьмую карточку по его образцу. Владелец
+          сказал прямо: «по сути не является инструмент, но в порядке исключения
+          мы его оставим здесь».
+
+          🔒 РАЗДЕЛИТЕЛЬ ЗДЕСЬ НЕСЁТ СМЫСЛ, А НЕ ВИД: он и есть граница между
+          тем, что берут в код, и тем, что смотрят глазами. */}
+      <div className="border-t border-border pt-5">
+        <h3 className="text-[length:var(--fs-h3)] font-medium text-foreground">{ui.pages.tools.instrumentsTitle}</h3>
+        <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
+          {ui.pages.tools.instrumentsLead}
+        </p>
+      </div>
+
       <section data-tool="viewportBadge" className="rounded-lg border border-border p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

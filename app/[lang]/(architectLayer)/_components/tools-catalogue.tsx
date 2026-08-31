@@ -1,5 +1,8 @@
 import TOOLS from "@/_tools/TOOLS.json"
 import { H3, H4 } from "@/components/ui/typography"
+import { KindBadge } from "@/components/catalogue/kind-badge"
+import { PreStepRequest } from "@/components/request/pre-step-request.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import type { DesignUi } from "../_i18n/design.i18n"
 
 // ВИТРИНА ИНСТРУМЕНТОВ ПРОЕКТА (76-3, 2026-08-31).
@@ -42,7 +45,21 @@ type ToolEntry = {
 
 const LIST = (TOOLS as { tools: ToolEntry[] }).tools
 
-export function ToolsCatalogue({ lang, ui }: { lang: string; ui: DesignUi }) {
+export function ToolsCatalogue({
+  lang,
+  ui,
+  dialogUi,
+}: {
+  lang: string
+  ui: DesignUi
+  /**
+   * Слова самого окна заявки — резолвит сервер и передаёт пропсом.
+   *
+   * 🔒 Клиентский файл, импортирующий словарь окна значением, увёз бы в браузер
+   * все его языки на каждой странице; это ловит `check:dialogs`.
+   */
+  dialogUi: AppDialogUi
+}) {
   const w = ui.pages.tools
   // 🔒 НЕТ ПЕРЕВОДА — ПЕЧАТАЕТСЯ АНГЛИЙСКАЯ ОСНОВА, а не пустая карточка. То же
   // поключевое правило, которым живут языковые ячейки страниц: отсутствие
@@ -66,11 +83,20 @@ export function ToolsCatalogue({ lang, ui }: { lang: string; ui: DesignUi }) {
               data-tool-id={tool.id}
               className="rounded-lg border border-border bg-card p-4"
             >
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              {/* 🔒 МЕТКА ТА ЖЕ, ЧТО У КОДА ВИДА В КАТАЛОГЕ БЛОКОВ — заказ
+                  владельца 2026-08-31. Взят САМ КОМПОНЕНТ `KindBadge`, а не его
+                  классы: у метки уже было два каталога, они однажды разошлись
+                  молча (`kind: 'workspace'` против `workspace`), и третья копия
+                  классов разошлась бы снова.
+
+                  🔒 СНАЧАЛА ИМЯ, ПОТОМ ПОЯСНЕНИЕ — тот же довод, которым метка
+                  заведена: каталог это справочник, и по нему инструмент называют
+                  в задаче. Пока путь набран серым наравне с описанием, взгляд
+                  его не находит, и инструмент называют по смыслу — «тот, что
+                  режет видео». */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <KindBadge code={tool.dir} />
                 <H4 variant="ui">{t.title}</H4>
-                {/* Идентификатор — он же имя папки: по нему инструмент ищут в
-                    дереве, и потому он стоит рядом с названием, а не спрятан. */}
-                <code className="text-[length:var(--fs-small)] text-muted-foreground">{tool.dir}</code>
               </div>
 
               <dl className="mt-3 flex flex-col gap-2">
@@ -126,6 +152,26 @@ export function ToolsCatalogue({ lang, ui }: { lang: string; ui: DesignUi }) {
             </article>
           )
         })}
+
+        {/* 🔒 ТА ЖЕ КАРТОЧКА, ЧТО ВНИЗУ КАТАЛОГА БЛОКОВ — прямая просьба
+            владельца: «внизу традиционно создать карточку такую же, как в
+            блоках». Взят тот же островок заявки четвёртым РЕЖИМОМ, а не
+            построен второй: три предмета уже живут в нём, и четвёртая копия
+            разошлась бы с ними на первой правке формы.
+
+            🔒 ЗАЯВКА НЕ ЗАПУСКАЕТ АГЕНТА. Приёмная — канал просьб, а не пульт
+            исполнения; что с заявкой станет, решает владелец в разговоре.
+
+            🔒 ТРЕБОВАНИЕ О ПАТТЕРНАХ `_tools` И НАВЫКЕ `use-tools` УЕЗЖАЕТ В ДВА
+            АДРЕСА: в лид окна (его читает человек) и в сам файл заявки (его
+            читает агент). Один адрес оставил бы вторую сторону в неведении. */}
+        <PreStepRequest
+          tool
+          toolUi={w.request}
+          ui={w.request}
+          dialogUi={dialogUi}
+          page={`/${lang}/architect/design?section=tools`}
+        />
       </div>
     </section>
   )

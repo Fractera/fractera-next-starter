@@ -1,0 +1,19 @@
+{
+  "id": "translations-dialog",
+  "entry": "client/translations-dialog.client.tsx",
+  "needs": ["browser", "openai-key"],
+  "npmDeps": [],
+  "usedBy": ["manage/products", "manage/products/[productId]"],
+  "en": {
+    "title": "Translations dialog",
+    "what": "A window that any entity with translatable fields can open: a product today, a category and a page tomorrow. One card per language, automatic translation, saving one language at a time. A single-language application never sees it — the check stands on the first line, so the caller does not have to remember it.",
+    "how": "Languages come from the application's own `translations.config`, and the translating door is `/api/i18n/translate`. The whole dialog is limited to 80% of the window height while only the list of languages scrolls: the header with the translate buttons and the footer with saving stay in place. The cross means «skip», not «cancel» — the record already exists in the interface language, and translations are added later from the card.",
+    "value": "The reason this tool has a home at all: it lived in `components/i18n/` for months, was not in any registry, and the translate button in the panel was therefore built from scratch — one line of text where a window belonged. A tool without a home does not exist, however good it is."
+  },
+  "ru": {
+    "title": "Диалог переводов",
+    "what": "Окно, которое подключает любая сущность с переводимыми полями: продукт сегодня, категория и страница завтра. Карточка на язык, автоперевод, сохранение по одному языку. Одноязычное приложение этого диалога не видит — проверка стоит первой строкой, и вызывающему о ней помнить не надо.",
+    "how": "Языки берутся из `translations.config` самого приложения, дверь перевода — `/api/i18n/translate`. Весь диалог ограничен 80% высоты окна, а прокручивается только список языков: шапка с кнопками перевода и подвал с сохранением остаются на месте. Крестик значит «пропустить», а не «отменить» — запись уже существует значением языка интерфейса, переводы добавляются позже с карточки.",
+    "value": "Ради него у инструментов и появился дом: он месяцами лежал в `components/i18n/`, не значился ни в одном реестре — и кнопку перевода в панели построили заново, строкой текста вместо окна. Инструмент без дома не существует, как бы хорош он ни был."
+  }
+}

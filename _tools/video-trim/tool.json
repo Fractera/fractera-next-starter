@@ -1,0 +1,19 @@
+{
+  "id": "video-trim",
+  "entry": "client/video-trimmer.client.tsx",
+  "needs": ["browser", "ffmpeg"],
+  "npmDeps": [],
+  "usedBy": [],
+  "en": {
+    "title": "Video trimming",
+    "what": "Keeps the middle of a clip and cuts off the head and the tail. The browser only picks two points on a timeline; the cutting is done by the data layer with ffmpeg and `-c copy` — the streams are copied without re-encoding, so it is instant, lossless and costs the owner's machine nothing.",
+    "how": "The file is uploaded first and trimmed in place, so a person edits what actually lies in storage and can come back to it later from the same row. After a successful cut the tool calls `router.refresh()`: the row's data comes from the server rather than being patched in the browser's memory.",
+    "value": "Editing without a 30 MB wasm editor in the page and without re-encoding on a laptop. The price is the honest requirement below: ffmpeg lives in the data layer, so a project running without it gets a refusal, not a silent no-op."
+  },
+  "ru": {
+    "title": "Монтаж видео",
+    "what": "Оставляет середину ролика, отрезая начало и конец. Браузер лишь выбирает две точки на шкале; режет слой данных, ffmpeg с `-c copy` — потоки копируются без перекодировки, поэтому мгновенно, без потерь и без нагрузки на машину владельца.",
+    "how": "Файл сначала загружается и режется на месте: человек монтирует то, что действительно лежит в хранилище, и может вернуться к монтажу позже из той же строки. После успешной резки инструмент зовёт `router.refresh()` — данные строки приходят с сервера, а не правятся в памяти браузера.",
+    "value": "Монтаж без wasm-редактора на 30 МБ в странице и без перекодировки на ноутбуке. Цена — честное требование ниже: ffmpeg живёт в слое данных, и проект без него получит отказ, а не тихое бездействие."
+  }
+}

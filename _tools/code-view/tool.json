@@ -1,0 +1,19 @@
+{
+  "id": "code-view",
+  "entry": "client/code-view.client.tsx",
+  "needs": ["browser"],
+  "npmDeps": ["shiki"],
+  "usedBy": [],
+  "en": {
+    "title": "Code view",
+    "what": "Shows source code with real highlighting. The engine is Shiki: it parses the actual grammar of the language instead of matching regular expressions, so CSS nested inside HTML or a generic in TypeScript is coloured correctly rather than almost correctly. The language is taken from an explicit prop or guessed from the file name.",
+    "how": "Shiki is imported lazily and only when there is something to show — a static import would make every page that merely might need the viewer pay for the language grammars. Both themes are produced at once (`defaultColor: false` puts light and dark colours into the markup as CSS variables), so switching the theme repaints the code instantly without parsing it again.",
+    "value": "One highlighter in the product instead of two. This is the only tool that needs a package, and the package is not in this repository: without `shiki` the import fails inside `try/catch` and the highlighting degrades silently into plain text. That is a lawful state — unhighlighted code is readable, an empty screen is not."
+  },
+  "ru": {
+    "title": "Просмотр кода",
+    "what": "Показывает исходный код с настоящей подсветкой. Движок — Shiki: он разбирает грамматику языка, а не подбирает регулярные выражения, поэтому вложенный в HTML CSS или дженерик в TypeScript окрашиваются верно, а не «почти верно». Язык берётся из явного пропса или угадывается по имени файла.",
+    "how": "Shiki грузится лениво и только когда есть что показать: статический импорт заставил бы платить за грамматики языков каждую страницу, где просмотрщик всего лишь может понадобиться. Обе темы получаются сразу (`defaultColor: false` кладёт светлые и тёмные цвета в разметку переменными CSS), поэтому переключение темы перекрашивает код мгновенно и без повторного разбора.",
+    "value": "Один подсветчик в продукте вместо двух. Это единственный инструмент, которому нужен пакет, и пакета в этом репозитории нет: без `shiki` импорт падает внутри `try/catch`, и подсветка молча деградирует в обычный текст. Состояние законное — неподсвеченный код читается, пустой экран нет."
+  }
+}

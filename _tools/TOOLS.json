@@ -1,0 +1,154 @@
+{
+  "tools": [
+    {
+      "id": "code-view",
+      "entry": "client/code-view.client.tsx",
+      "dir": "_tools/code-view",
+      "needs": [
+        "browser"
+      ],
+      "npmDeps": [
+        "shiki"
+      ],
+      "usedBy": [],
+      "en": {
+        "title": "Code view",
+        "what": "Shows source code with real highlighting. The engine is Shiki: it parses the actual grammar of the language instead of matching regular expressions, so CSS nested inside HTML or a generic in TypeScript is coloured correctly rather than almost correctly. The language is taken from an explicit prop or guessed from the file name.",
+        "how": "Shiki is imported lazily and only when there is something to show — a static import would make every page that merely might need the viewer pay for the language grammars. Both themes are produced at once (`defaultColor: false` puts light and dark colours into the markup as CSS variables), so switching the theme repaints the code instantly without parsing it again.",
+        "value": "One highlighter in the product instead of two. This is the only tool that needs a package, and the package is not in this repository: without `shiki` the import fails inside `try/catch` and the highlighting degrades silently into plain text. That is a lawful state — unhighlighted code is readable, an empty screen is not."
+      },
+      "ru": {
+        "title": "Просмотр кода",
+        "what": "Показывает исходный код с настоящей подсветкой. Движок — Shiki: он разбирает грамматику языка, а не подбирает регулярные выражения, поэтому вложенный в HTML CSS или дженерик в TypeScript окрашиваются верно, а не «почти верно». Язык берётся из явного пропса или угадывается по имени файла.",
+        "how": "Shiki грузится лениво и только когда есть что показать: статический импорт заставил бы платить за грамматики языков каждую страницу, где просмотрщик всего лишь может понадобиться. Обе темы получаются сразу (`defaultColor: false` кладёт светлые и тёмные цвета в разметку переменными CSS), поэтому переключение темы перекрашивает код мгновенно и без повторного разбора.",
+        "value": "Один подсветчик в продукте вместо двух. Это единственный инструмент, которому нужен пакет, и пакета в этом репозитории нет: без `shiki` импорт падает внутри `try/catch`, и подсветка молча деградирует в обычный текст. Состояние законное — неподсвеченный код читается, пустой экран нет."
+      }
+    },
+    {
+      "id": "image-crop",
+      "entry": "client/image-cropper.client.tsx",
+      "dir": "_tools/image-crop",
+      "needs": [
+        "browser"
+      ],
+      "npmDeps": [],
+      "usedBy": [
+        "architect/image-field",
+        "architect/icons-field"
+      ],
+      "en": {
+        "title": "Image cropping",
+        "what": "Lets a person choose the visible part of a picture before it is saved and returns a ready JPEG. The frame sets a proportion — 16:9, 1:1 or 9:16 — not a size; the longer side is capped at 1200 pixels. All the work happens in the browser: canvas, dragging, a zoom slider. The server only learns the result.",
+        "how": "Open it over any field that accepts a picture, hand it a `blob:` link to the file just chosen or the address of a stored one, and take the blob in `onDone` — the tool saves nothing itself. Labels are optional: it carries English defaults so it can be installed into a project that has no dictionary of ours.",
+        "value": "A picture that arrives already framed instead of one uploaded whole and cropped by CSS. It is why avatars, logos and covers keep one proportion across the site — and why the file is measured in kilobytes rather than megabytes. It cannot keep transparency: JPEG has none, so a logo on a transparent background is not its case."
+      },
+      "ru": {
+        "title": "Обрезка изображения",
+        "what": "Даёт человеку выбрать видимую часть картинки до того, как она сохранена, и отдаёт готовый JPEG. Рамка задаёт пропорцию — 16:9, 1:1 или 9:16, — а не размер; большая сторона ограничена 1200 пикселями. Работа целиком в браузере: холст, перетаскивание, ползунок масштаба. Сервер узнаёт только результат.",
+        "how": "Открывается поверх любого поля, принимающего картинку: ему отдают `blob:`-ссылку на только что выбранный файл или адрес уже сохранённого, а результат забирают в `onDone` — сам инструмент ничего не сохраняет. Подписи необязательны: у него есть английские значения по умолчанию, поэтому его можно поставить в проект, где нашего словаря нет.",
+        "value": "Картинка приезжает уже кадрированной, а не загруженной целиком и обрезанной стилями. Отсюда одинаковые пропорции у аватаров, логотипов и обложек по всему сайту — и вес файла в килобайтах вместо мегабайт. Прозрачность он сохранить не может: её нет в JPEG, и логотип на прозрачном фоне — не его случай."
+      }
+    },
+    {
+      "id": "socials-ai",
+      "entry": "client/socials-ai-dialog.client.tsx",
+      "dir": "_tools/socials-ai",
+      "needs": [
+        "browser",
+        "openai-key"
+      ],
+      "npmDeps": [],
+      "usedBy": [
+        "architect/socials-field"
+      ],
+      "en": {
+        "title": "Social links from a phrase",
+        "what": "A person writes a phrase — a company name, a nickname, a line about themselves — and the tool proposes several social profiles that could be theirs. Every candidate is checked by an actual request to the network, and the three outcomes look different rather than being shades of one: found, not found, and «the network refuses strangers».",
+        "how": "The model only proposes; the person picks. Automatic selection of the most likely candidate would be wrong silently — and a link in the site footer would point at somebody else's profile until a human noticed. `closed` is not «no such profile»: Instagram and LinkedIn shut bots out regardless of whether the profile exists, and the words say so.",
+        "value": "Filling in the footer's social links without hunting for each address by hand. It is also the one tool that arrived from the panel and was visibly rebuilt for this project — the owner's words: «it needs its styles adapted to the existing standards of this application». That is what an imported tool is supposed to look like afterwards."
+      },
+      "ru": {
+        "title": "Соцсети из фразы",
+        "what": "Человек пишет фразу — название компании, псевдоним, строку о себе, — и инструмент предлагает несколько профилей в соцсетях, которые могут быть его. Каждый кандидат проверяется настоящим обращением к сети, и три исхода выглядят по-разному, а не оттенками одного: найден, не найден и «сеть не отвечает посторонним».",
+        "how": "Модель только предлагает, выбирает человек. Автоматический выбор самого вероятного ошибётся молча — и ссылка в подвале сайта будет вести на чужой профиль, пока кто-нибудь этого не заметит. `closed` — не «профиля нет»: Instagram и LinkedIn закрываются от ботов независимо от существования профиля, и слова говорят об этом прямо.",
+        "value": "Заполнение соцсетей в подвале без ручного поиска каждого адреса. Он же единственный инструмент, приехавший из панели и заметно переделанный под этот проект — по словам владельца: «он требует адаптации стилей нашим существующим стандартам этого приложения». Так и должен выглядеть перенесённый инструмент после переноса."
+      }
+    },
+    {
+      "id": "translations-dialog",
+      "entry": "client/translations-dialog.client.tsx",
+      "dir": "_tools/translations-dialog",
+      "needs": [
+        "browser",
+        "openai-key"
+      ],
+      "npmDeps": [],
+      "usedBy": [
+        "manage/products",
+        "manage/products/[productId]"
+      ],
+      "en": {
+        "title": "Translations dialog",
+        "what": "A window that any entity with translatable fields can open: a product today, a category and a page tomorrow. One card per language, automatic translation, saving one language at a time. A single-language application never sees it — the check stands on the first line, so the caller does not have to remember it.",
+        "how": "Languages come from the application's own `translations.config`, and the translating door is `/api/i18n/translate`. The whole dialog is limited to 80% of the window height while only the list of languages scrolls: the header with the translate buttons and the footer with saving stay in place. The cross means «skip», not «cancel» — the record already exists in the interface language, and translations are added later from the card.",
+        "value": "The reason this tool has a home at all: it lived in `components/i18n/` for months, was not in any registry, and the translate button in the panel was therefore built from scratch — one line of text where a window belonged. A tool without a home does not exist, however good it is."
+      },
+      "ru": {
+        "title": "Диалог переводов",
+        "what": "Окно, которое подключает любая сущность с переводимыми полями: продукт сегодня, категория и страница завтра. Карточка на язык, автоперевод, сохранение по одному языку. Одноязычное приложение этого диалога не видит — проверка стоит первой строкой, и вызывающему о ней помнить не надо.",
+        "how": "Языки берутся из `translations.config` самого приложения, дверь перевода — `/api/i18n/translate`. Весь диалог ограничен 80% высоты окна, а прокручивается только список языков: шапка с кнопками перевода и подвал с сохранением остаются на месте. Крестик значит «пропустить», а не «отменить» — запись уже существует значением языка интерфейса, переводы добавляются позже с карточки.",
+        "value": "Ради него у инструментов и появился дом: он месяцами лежал в `components/i18n/`, не значился ни в одном реестре — и кнопку перевода в панели построили заново, строкой текста вместо окна. Инструмент без дома не существует, как бы хорош он ни был."
+      }
+    },
+    {
+      "id": "video-trim",
+      "entry": "client/video-trimmer.client.tsx",
+      "dir": "_tools/video-trim",
+      "needs": [
+        "browser",
+        "ffmpeg"
+      ],
+      "npmDeps": [],
+      "usedBy": [],
+      "en": {
+        "title": "Video trimming",
+        "what": "Keeps the middle of a clip and cuts off the head and the tail. The browser only picks two points on a timeline; the cutting is done by the data layer with ffmpeg and `-c copy` — the streams are copied without re-encoding, so it is instant, lossless and costs the owner's machine nothing.",
+        "how": "The file is uploaded first and trimmed in place, so a person edits what actually lies in storage and can come back to it later from the same row. After a successful cut the tool calls `router.refresh()`: the row's data comes from the server rather than being patched in the browser's memory.",
+        "value": "Editing without a 30 MB wasm editor in the page and without re-encoding on a laptop. The price is the honest requirement below: ffmpeg lives in the data layer, so a project running without it gets a refusal, not a silent no-op."
+      },
+      "ru": {
+        "title": "Монтаж видео",
+        "what": "Оставляет середину ролика, отрезая начало и конец. Браузер лишь выбирает две точки на шкале; режет слой данных, ffmpeg с `-c copy` — потоки копируются без перекодировки, поэтому мгновенно, без потерь и без нагрузки на машину владельца.",
+        "how": "Файл сначала загружается и режется на месте: человек монтирует то, что действительно лежит в хранилище, и может вернуться к монтажу позже из той же строки. После успешной резки инструмент зовёт `router.refresh()` — данные строки приходят с сервера, а не правятся в памяти браузера.",
+        "value": "Монтаж без wasm-редактора на 30 МБ в странице и без перекодировки на ноутбуке. Цена — честное требование ниже: ffmpeg живёт в слое данных, и проект без него получит отказ, а не тихое бездействие."
+      }
+    },
+    {
+      "id": "voice-input",
+      "entry": "client/voice-input.client.tsx",
+      "dir": "_tools/voice-input",
+      "needs": [
+        "browser",
+        "https",
+        "openai-key"
+      ],
+      "npmDeps": [],
+      "usedBy": [
+        "manage/products/form",
+        "components/form/voice-control"
+      ],
+      "en": {
+        "title": "Voice input",
+        "what": "A small button beside a field: hold it and it records, release it and the recording goes off to be transcribed. While recording, a 40-pixel bar shows the incoming sound with the elapsed time in its middle. It remembers the caret — the transcript lands where the cursor stood, not at the end of the field.",
+        "how": "Since 32-2 this file holds only the appearance; the mechanics — microphone permission, recording, level bars, timer, transcription, caret memory — live in `client/use-voice-recorder.ts`, one copy for every look. Building a second appearance means calling that hook, never copying the work with `AudioContext`. There is deliberately no shadcn, no lucide and no sonner inside: the tool has to stay an archive that works wherever the folder is unpacked, so a refusal is shown as a line under the button rather than as a platform toast.",
+        "value": "Dictation instead of typing on the fields where a person actually speaks — a description, a text, an answer. That is also its boundary: the microphone belongs to what is spoken, not to everything textual. A confirmation code, coordinates and a HEX colour get a keyboard, and this is the owner's decision of 2026-08-28."
+      },
+      "ru": {
+        "title": "Голосовой ввод",
+        "what": "Маленькая кнопка рядом с полем: удерживаешь — идёт запись, отпустил — уходит на расшифровку. Во время записи полоса в 40 пикселей показывает приходящий звук, а в её центре идёт время. Помнит курсор: расшифровка встаёт туда, где он стоял, а не в конец поля.",
+        "how": "С шага 32-2 в этом файле только облик; механика — разрешение микрофона, запись, столбики уровня, таймер, расшифровка, память курсора — живёт в `client/use-voice-recorder.ts`, одна на все интерфейсы. Строя второй облик, зовут этот хук, а не копируют работу с `AudioContext`. Внутри намеренно нет ни shadcn, ни lucide, ни sonner: инструмент обязан оставаться архивом, который работает там, куда распакована папка, — поэтому отказ показывается строкой под кнопкой, а не тостом платформы.",
+        "value": "Диктовка вместо набора там, где человек действительно говорит: описание, текст, ответ. Здесь же его граница — микрофон принадлежит тому, что произносят, а не всему текстовому: код подтверждения, координаты и HEX-цвет получают клавиатуру, и это решение владельца от 2026-08-28."
+      }
+    }
+  ]
+}

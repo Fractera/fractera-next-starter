@@ -1,0 +1,19 @@
+{
+  "id": "socials-ai",
+  "entry": "client/socials-ai-dialog.client.tsx",
+  "needs": ["browser", "openai-key"],
+  "npmDeps": [],
+  "usedBy": ["architect/socials-field"],
+  "en": {
+    "title": "Social links from a phrase",
+    "what": "A person writes a phrase — a company name, a nickname, a line about themselves — and the tool proposes several social profiles that could be theirs. Every candidate is checked by an actual request to the network, and the three outcomes look different rather than being shades of one: found, not found, and «the network refuses strangers».",
+    "how": "The model only proposes; the person picks. Automatic selection of the most likely candidate would be wrong silently — and a link in the site footer would point at somebody else's profile until a human noticed. `closed` is not «no such profile»: Instagram and LinkedIn shut bots out regardless of whether the profile exists, and the words say so.",
+    "value": "Filling in the footer's social links without hunting for each address by hand. It is also the one tool that arrived from the panel and was visibly rebuilt for this project — the owner's words: «it needs its styles adapted to the existing standards of this application». That is what an imported tool is supposed to look like afterwards."
+  },
+  "ru": {
+    "title": "Соцсети из фразы",
+    "what": "Человек пишет фразу — название компании, псевдоним, строку о себе, — и инструмент предлагает несколько профилей в соцсетях, которые могут быть его. Каждый кандидат проверяется настоящим обращением к сети, и три исхода выглядят по-разному, а не оттенками одного: найден, не найден и «сеть не отвечает посторонним».",
+    "how": "Модель только предлагает, выбирает человек. Автоматический выбор самого вероятного ошибётся молча — и ссылка в подвале сайта будет вести на чужой профиль, пока кто-нибудь этого не заметит. `closed` — не «профиля нет»: Instagram и LinkedIn закрываются от ботов независимо от существования профиля, и слова говорят об этом прямо.",
+    "value": "Заполнение соцсетей в подвале без ручного поиска каждого адреса. Он же единственный инструмент, приехавший из панели и заметно переделанный под этот проект — по словам владельца: «он требует адаптации стилей нашим существующим стандартам этого приложения». Так и должен выглядеть перенесённый инструмент после переноса."
+  }
+}

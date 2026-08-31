@@ -5,6 +5,7 @@ import { Pencil, Plus, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { AppDialog } from "@/components/dialog/app-dialog.client"
 import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
+import { pageRequestWords } from "@/lib/pages/page-request.words"
 
 // ЗАЯВКА В ПРИЁМНУЮ ПРОЕКТА (шаг 61, 2026-08-30; поднят и обобщён 69, 2026-08-31).
 //
@@ -57,15 +58,6 @@ import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 // решает владелец в разговоре, и об этом прямо говорит тост.
 
 /**
- * Слова варианта В — ОТДЕЛЬНЫМ ТИПОМ, А НЕ ПОЛЯМИ ОБЩЕГО (69).
- *
- * 🔒 Требовать их от каталога блоков значило бы заставить его носить три строки,
- * которых он никогда не покажет, — и завести в словаре слоя слова про страницы
- * подвала. Тип обязан описывать то, что есть, а не то, что удобно передать.
- */
-export type PageRequestUi = { label: string; title: string; lead: string }
-
-/**
  * Слова, общие ВСЕМ трём вариантам: поле «что нужно», кнопки, тост.
  *
  * 🔒 РАЗВЕДЕНО НАДВОЕ В 69, И ЭТО НЕ ПЕРЕСТАНОВКА ПОЛЕЙ. Пока тип был один, он
@@ -106,7 +98,8 @@ export type BlockWordsUi = {
 export type BlockRequestUi = RequestCommonUi & BlockWordsUi
 
 type Props = {
-  ui: RequestCommonUi
+  /** Слова каталога блоков. У варианта В их нет: он берёт свои сам. */
+  ui?: RequestCommonUi
   /** Слова вариантов А и Б. Обязательны там, где предмет — блок. */
   blockUi?: BlockWordsUi
   /** Слова самого окна (крестик и т. п.) — резолвятся на сервере. */
@@ -121,12 +114,12 @@ type Props = {
   pageSlug?: string
   /** Как страница называется по-человечески; печатается в заголовке окна. */
   pageTitle?: string
-  /** Слова варианта В. Есть только у заявки на текст страницы. */
-  pageUi?: PageRequestUi
+  /** Язык страницы: слова варианта В островок берёт сам (см. page-request.words). */
+  pageLang?: string
   page: string
 }
 
-export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageUi, page }: Props) {
+export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageLang, page }: Props) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState("")
   const [role, setRole] = useState("")
@@ -135,6 +128,14 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
   // Три предмета, и признак у каждого свой: кода нет и типа нет — значит это
   // страница. Порядок проверок здесь и есть определение вариантов.
   const isPage = Boolean(pageSlug)
+  // 🔒 СЛОВА ВАРИАНТА В РЕЗОЛВЯТСЯ ЗДЕСЬ, В БРАУЗЕРЕ, А НЕ ПРИЕЗЖАЮТ ПРОПСОМ.
+  // Иначе они уезжают в полезной нагрузке каждому посетителю статической
+  // страницы — даже когда кнопка не нарисована. Измерено на живом сервере.
+  const w = pageRequestWords(pageLang ?? "en")
+  // 🔒 ОБЩИЕ СЛОВА: у блоков приходят пропсом из словаря слоя архитектора, у
+  // страницы подвала берутся здесь же. Один островок, два источника — потому что
+  // словари принадлежат разным группам прав и объединить их нечем.
+  const u = ui ?? w
   const isCreate = !code && !isPage
 
   async function send() {
@@ -149,7 +150,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
       const data = (await res.json().catch(() => null)) as { ok?: boolean; file?: string } | null
 
       if (!res.ok || !data?.ok || !data.file) {
-        toast.error(ui.toastFailed, { duration: Infinity })
+        toast.error(u.toastFailed, { duration: Infinity })
         return
       }
 
@@ -170,14 +171,14 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
       // файла — им человек назовёт заявку агенту), где лежит и ЧТО БУДЕТ ДАЛЬШЕ.
       // Без третьей строки человек уверен, что работа началась, а она не
       // начиналась: заявка ждёт его слова.
-      toast.success(`${ui.toastTitle} ${data.file}`, {
-        description: `${ui.toastWhere} · ${ui.toastNext}`,
+      toast.success(`${u.toastTitle} ${data.file}`, {
+        description: `${u.toastWhere} · ${u.toastNext}`,
         duration: Infinity,
         closeButton: false,
-        action: { label: ui.toastGot, onClick: () => {} },
+        action: { label: u.toastGot, onClick: () => {} },
       })
     } catch {
-      toast.error(ui.toastFailed, { duration: Infinity })
+      toast.error(u.toastFailed, { duration: Infinity })
     } finally {
       setBusy(false)
     }
@@ -197,7 +198,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
           className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-[length:var(--fs-body)] font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Sparkles size={16} aria-hidden />
-          {pageUi?.label}
+          {w.label}
         </button>
       ) : isCreate ? (
         <button
@@ -227,8 +228,8 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
         onOpenChange={setOpen}
         ui={dialogUi}
         size="md"
-        title={isPage ? (pageUi?.title ?? "").replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
-        description={isPage ? pageUi?.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
+        title={isPage ? w.title.replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
+        description={isPage ? w.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
         footer={
           <>
             <button
@@ -236,7 +237,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
               onClick={() => setOpen(false)}
               className="rounded-md border border-border px-4 py-2 text-[length:var(--fs-small)] text-muted-foreground transition-colors hover:text-foreground"
             >
-              {ui.cancel}
+              {u.cancel}
             </button>
             <button
               type="button"
@@ -244,7 +245,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
               disabled={!text.trim() || busy}
               className="rounded-md bg-primary px-4 py-2 text-[length:var(--fs-small)] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? ui.sending : ui.send}
+              {busy ? u.sending : u.send}
             </button>
           </>
         }
@@ -254,13 +255,13 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
             «Отправить» — это и была жалоба владельца. */}
         <div className="flex flex-col gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[length:var(--fs-small)] font-medium text-foreground">{ui.whatLabel}</span>
+              <span className="text-[length:var(--fs-small)] font-medium text-foreground">{u.whatLabel}</span>
               <textarea
                 value={text}
                 onChange={e => setText(e.target.value)}
                 rows={5}
                 maxLength={4000}
-                placeholder={ui.whatPlaceholder}
+                placeholder={u.whatPlaceholder}
                 className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-[length:var(--fs-small)] leading-relaxed outline-none focus:border-primary/50"
               />
             </label>

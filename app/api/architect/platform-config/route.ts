@@ -1,5 +1,6 @@
 // @api read and save this project's platform switches and routing mode
 import { NextRequest, NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireRoles } from "@/lib/auth/require-roles"
 import { ARCHITECT_LAYER_ROLES } from "@/lib/roles"
 import { readRawPlatformConfig, writePlatformPatch } from "@/lib/architect/platform-config-writer"
@@ -53,6 +54,28 @@ export async function POST(req: NextRequest) {
     const status = result.reason === "bad-body" ? 400 : 500
     return NextResponse.json({ ok: false, error: result.reason, detail: result.detail }, { status })
   }
+
+  // 🔒 ЗАПИСЬ БЕЗ СБРОСА КЭША ЧИТАЕТСЯ КАК НЕРАБОТАЮЩИЙ ВЫКЛЮЧАТЕЛЬ (78-4,
+  // 2026-08-31). Публичные страницы статические с `revalidate = 600`: конфиг
+  // применяется без пересборки, но результат доезжает до посетителя лишь когда
+  // истечёт окно ISR. Человек щёлкает, открывает сайт, ничего не видит и делает
+  // единственный доступный ему вывод — «сломано».
+  //
+  // ✗ ЭТО НЕ ДОГАДКА И НЕ НОВЫЙ ДЕФЕКТ: он найден владельцем 2026-08-19 ровно на
+  // ЭТОМ выключателе («выключил авторизацию — кнопка входа осталась в шапке») и
+  // разобран в `reports/errors-panel-switch-invisible-until-isr-expires.md`.
+  // Панель лечила его, вызывая `/api/revalidate` после записи; дверь слоя
+  // архитектора эту половину не унаследовала — и воспроизвела дефект в новой
+  // поверхности.
+  //
+  // 🔒 СБРАСЫВАЕТСЯ ВЕСЬ ПУБЛИЧНЫЙ СЛОЙ, А НЕ СТРАНИЦА. Выключатели кормят шапку,
+  // подвал, мета и манифест — то есть каждую страницу; точечный сброс оставил бы
+  // часть сайта в прежнем виде, и расхождение было бы хуже задержки.
+  //
+  // 🔒 СТРАНИЦЫ ОСТАЮТСЯ СТАТИЧЕСКИМИ. Это очистка кэша, а не перевод в динамику:
+  // инвариант статической генерации не задет ни на одну страницу.
+  revalidatePath("/", "layout")
+  revalidatePath("/[lang]", "layout")
 
   return NextResponse.json({ ok: true, config: result.config })
 }

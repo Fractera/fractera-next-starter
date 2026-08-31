@@ -24,14 +24,28 @@ export type EnvWriteResult =
   | { ok: true }
   | { ok: false; reason: "write-failed"; detail: string }
 
-function envPath(): string {
-  return process.env.SLOT_ENV_PATH ?? join(process.cwd(), ".env.local")
+// 🔒 ПУТЬ СТАЛ НЕОБЯЗАТЕЛЬНЫМ ПАРАМЕТРОМ, А НЕ СМЕНИЛСЯ (78-3, 2026-08-31).
+//
+// Появился второй файл окружения, который правит этот слой: у службы входа свой
+// `.env.local`, и лежит он в дереве ПЛАТФОРМЫ, а не проекта. Написать ради него
+// второй писатель значило бы завести два места, пишущих `.env`, — они разошлись
+// бы на первой же правке формата, и разошлись бы молча.
+//
+// 🔒 УМОЛЧАНИЕ ПРЕЖНЕЕ, ПОЭТОМУ НИ ОДИН СУЩЕСТВУЮЩИЙ ВЫЗОВ НЕ МЕНЯЕТСЯ. Правка
+// аддитивная по построению: вызов без второго аргумента ведёт себя ровно так же,
+// как вёл до этой строки.
+function envPath(path?: string): string {
+  return path ?? process.env.SLOT_ENV_PATH ?? join(process.cwd(), ".env.local")
 }
 
-/** Значение одной переменной из файла — не из `process.env`. */
-export function readEnvValue(key: string): string | null {
+/**
+ * Значение одной переменной из файла — не из `process.env`.
+ *
+ * `path` не задан — файл слота, как было всегда.
+ */
+export function readEnvValue(key: string, path?: string): string | null {
   try {
-    const raw = readFileSync(envPath(), "utf8")
+    const raw = readFileSync(envPath(path), "utf8")
     for (const line of raw.split(/\r?\n/)) {
       const trimmed = line.trim()
       if (!trimmed || trimmed.startsWith("#")) continue
@@ -56,8 +70,8 @@ export function readEnvValue(key: string): string | null {
  * ровно до того дня, когда кто-нибудь прочитает файл глазами и удалит «лишнюю»
  * верхнюю строку, вернув старое значение.
  */
-export function writeEnvValue(key: string, value: string): EnvWriteResult {
-  const path = envPath()
+export function writeEnvValue(key: string, value: string, file?: string): EnvWriteResult {
+  const path = envPath(file)
   let lines: string[] = []
   let eol = "\n"
 

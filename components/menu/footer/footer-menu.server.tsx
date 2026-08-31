@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send, KeyRound } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -10,7 +10,7 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
@@ -318,6 +318,28 @@ export function FooterMenu({ lang }: { lang: string }) {
             >
               <Send className="hidden size-3.5 sm:inline-block" />
               {telegramLinkUi(lang).footer}
+            </Link>
+
+            {/* 🔒 АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ (владелец 2026-08-31): «сюда из
+                административной панели мы вытащим настройку авторизации… первая
+                секция описание, вторая провайдер Google, третья провайдер Resend».
+
+                🔒 ПАНЕЛЬНАЯ ВКЛАДКА «СПОСОБЫ ВХОДА» ОСТАЁТСЯ ЖИВОЙ — его же
+                решение того дня. Пока логика не переехала, две поверхности
+                сосуществуют намеренно, и заглушки разделов прямо называют, где
+                вход настраивается сегодня.
+
+                Законы четырёх соседних ссылок действуют дословно: видимость
+                ничего не открывает постороннему (замок — на макете слоя и на
+                дверях), `rel="nofollow"` — страница служебная, `Link` — она СВОЯ,
+                в отличие от панели на чужом поддомене. */}
+            <Link
+              href={`/${lang}/architect/auth`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <KeyRound className="hidden size-3.5 sm:inline-block" />
+              {authLinkUi(lang).footer}
             </Link>
 
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).

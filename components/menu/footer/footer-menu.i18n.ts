@@ -221,6 +221,26 @@ export function devModeLinkUi(lang: string): DevModeLinkUi {
   return DEV_MODE_LINK[lang] ?? DEV_MODE_LINK.en;
 }
 
+// ─── Telegram bot (footer) ──────────────────────────────────────────────────
+//
+// 🔒 ЧЕТВЁРТЫЙ ВХОД СЛОЯ (владелец 2026-08-31, дословно: «я хочу, чтоб мы создали
+// Telegram-бот внутри footer»). Довод тот же, что у дизайна и режима разработки:
+// у бота свои три раздела, и вложить их в настройки проекта значило бы удлинить
+// меню, из которого каждый раз выбирают одну строку.
+//
+// 🔒 СЛОВО ТО ЖЕ, ЧТО В МЕНЮ И В ЗАГОЛОВКЕ СТРАНИЦЫ. Вход, названный иначе, чем
+// место, куда он ведёт, заставляет человека проверять догадку нажатием.
+export type TelegramLinkUi = { footer: string };
+
+const TELEGRAM_LINK: Record<string, TelegramLinkUi> = {
+  en: { footer: "Telegram bot" },
+  ru: { footer: "Telegram-бот" },
+};
+
+export function telegramLinkUi(lang: string): TelegramLinkUi {
+  return TELEGRAM_LINK[lang] ?? TELEGRAM_LINK.en;
+}
+
 // ─── Architect group heading (footer) ───────────────────────────────────────
 //
 // 🔒 ПОДПИСЬ ГРУППЫ, А НЕ ЕЩЁ ОДНА ССЫЛКА (владелец 2026-08-29). Четыре

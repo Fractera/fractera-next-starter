@@ -88,6 +88,25 @@ export type AuthUi = {
     visEnableHint: string
     visOnNotice: string
     visOffNotice: string
+    catTitle: string
+    catLead: string
+    catOnHint: string
+    catSnapshot: string
+    catAsk: string
+    rolesTitle: string
+    rolesLead: string
+    rolesTiersTitle: string
+    rolesTiersHint: string
+    rolesVocabTitle: string
+    rolesVocabHint: string
+    guestTitle: string
+    guestLead: string
+    guestHow: string
+    guestReadyTitle: string
+    guestReady: string
+    devTitle: string
+    devLead: string
+    devWhy: string
   }
 }
 
@@ -189,6 +208,25 @@ const EN: AuthUi = {
     visOnNotice: "Visitors see the account control in the header and can sign in.",
     visOffNotice:
       "The control is hidden everywhere on the public site. People who are already signed in keep their session, and the sign-in address still answers directly — this hides the door, it does not lock it.",
+    catTitle: "What else can be a way in",
+    catLead: "The sign-in service is built on {lib}, and that substrate knows {n} providers. Three of them are wired here — they are marked green below. The rest exist and work; what they lack is the wiring: keys, a redirect address and a button on the sign-in page.",
+    catOnHint: "Wired in this project",
+    catSnapshot: "The list is a snapshot of the installed package taken on {date} — the sign-in service lives beside this project rather than inside it, so the page cannot count them live.",
+    catAsk: "Need one of these, or something not on the list? Write to Fractera support:",
+    rolesTitle: "Roles that already exist",
+    rolesLead: "Roles are not built for a project — they are already there. Fifteen names, and they split in two, because only one half is enforced by the substrate itself.",
+    rolesTiersTitle: "Three access tiers — these the substrate enforces",
+    rolesTiersHint: "A guest is the absence of a session, a user is any signed-in person, and the architect is the owner of this deployment. The architect belongs to every protected group by construction: the owner of a server is never locked out of his own application — which is also why a screen that works for you may refuse everybody else.",
+    rolesVocabTitle: "Twelve more — the vocabulary your application gates on",
+    rolesVocabHint: "These do not stop anyone by themselves: they are names your code and doors ask about. A page shows its data when the door asks for the role, not when the menu hides the link.",
+    guestTitle: "The guest role, and why it exists",
+    guestLead: "Some things need to know WHO is doing them before the person is willing to say who they are: a cart being filled, a conversation with an AI assistant, a form half completed. Ask for an email first and you lose the person at the moment they were closest to staying.",
+    guestHow: "So the sign-in service can issue a real session without asking for anything. It creates an account with the role `guest` and signs the visitor in — the cart and the chat get a stable identity from the first click, and the person notices nothing. Later, when they do sign in properly, the same session becomes theirs and what they collected stays.",
+    guestReadyTitle: "This is already built and configured.",
+    guestReady: "Nothing has to be invented for it. What remains is to name the pages that should sign a visitor in automatically — say which ones, and they get it.",
+    devTitle: "On localhost:3000 sign-in is ignored on purpose",
+    devLead: "Running the project on your own machine, you are always the architect: the session is issued without any check, with the email demo@local and the role architect. Since that role belongs to every protected group, every door in the application is open to you at once.",
+    devWhy: "This is deliberate and it is what makes local work possible — otherwise you would have to sign in before every page you touch. The price is that a role gate cannot be TESTED here: everything works for everybody. To see what a manager or a guest actually sees, open the project on its own address, where the same code checks the session for real.",
   },
 }
 
@@ -290,6 +328,25 @@ const RU: AuthUi = {
     visOnNotice: "Посетители видят элемент аккаунта в хедере и могут войти.",
     visOffNotice:
       "Элемент скрыт всюду на публичном сайте. Те, кто уже вошёл, сохраняют сессию, а адрес входа по-прежнему отвечает напрямую — это прячет дверь, а не запирает её.",
+    catTitle: "Что ещё может быть путём входа",
+    catLead: "Служба входа построена на {lib}, и эта подложка знает {n} провайдеров. Три из них здесь подключены — они отмечены зелёным ниже. Остальные существуют и работают; им не хватает обвязки: ключей, адреса возврата и кнопки на странице входа.",
+    catOnHint: "Подключён в этом проекте",
+    catSnapshot: "Список — снимок установленного пакета, снятый {date}. Служба входа живёт рядом с проектом, а не внутри него, поэтому пересчитать их на лету страница не может.",
+    catAsk: "Нужен один из этих или тот, которого в списке нет? Напишите в поддержку Fractera:",
+    rolesTitle: "Роли, которые уже существуют",
+    rolesLead: "Роли не строят под проект — они уже есть. Пятнадцать имён, и делятся они надвое, потому что принуждает подложка только одну половину.",
+    rolesTiersTitle: "Три яруса доступа — эти принуждает сама подложка",
+    rolesTiersHint: "Гость — это отсутствие сессии, пользователь — любой вошедший, архитектор — владелец этого развёртывания. Архитектор по построению входит в каждую защищённую группу: владелец сервера никогда не заперт снаружи собственного приложения — отсюда же и то, что экран, работающий у вас, может отказать всем остальным.",
+    rolesVocabTitle: "Ещё двенадцать — словарь, на который опирается ваше приложение",
+    rolesVocabHint: "Сами по себе они никого не останавливают: это имена, о которых спрашивают ваш код и ваши двери. Страница отдаёт данные, когда роль спросила дверь, а не когда меню спрятало ссылку.",
+    guestTitle: "Гостевая роль, и зачем она нужна",
+    guestLead: "Некоторым вещам нужно знать, КТО их делает, раньше, чем человек готов назвать себя: наполняемая корзина, разговор с ИИ-ассистентом, наполовину заполненная форма. Спросите почту первой — и потеряете человека ровно в ту минуту, когда он был ближе всего к тому, чтобы остаться.",
+    guestHow: "Поэтому служба входа умеет выдать настоящую сессию, ничего не спрашивая. Она заводит учётную запись с ролью `guest` и впускает посетителя — корзина и чат получают устойчивую личность с первого щелчка, а человек не замечает ничего. Позже, когда он войдёт по-настоящему, та же сессия станет его, и собранное останется при нём.",
+    guestReadyTitle: "Это уже построено и настроено.",
+    guestReady: "Изобретать под это ничего не нужно. Остаётся назвать страницы, которые должны впускать посетителя автоматически, — скажите какие, и они это получат.",
+    devTitle: "На localhost:3000 авторизация игнорируется намеренно",
+    devLead: "Запустив проект на своей машине, вы всегда архитектор: сессия выдаётся без единой проверки, с почтой demo@local и ролью architect. А поскольку эта роль входит в каждую защищённую группу, вам разом открыты все двери приложения.",
+    devWhy: "Так сделано намеренно, и именно это делает возможной локальную работу — иначе перед каждой страницей пришлось бы входить. Цена в том, что ролевой замок здесь ПРОВЕРИТЬ нельзя: работает всё и у всех. Чтобы увидеть, что на самом деле видит менеджер или гость, откройте проект по его собственному адресу — там тот же код проверяет сессию по-настоящему.",
   },
 }
 

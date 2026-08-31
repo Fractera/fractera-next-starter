@@ -6,6 +6,7 @@ import { authUi } from "../../_i18n/auth.i18n"
 import { AUTH_SECTIONS, resolveAuthSection, hrefOfAuthSection } from "../../_lib/auth-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { AuthProvider } from "../../_components/auth-provider"
+import { AuthAbout } from "../../_components/auth-about"
 import { FeaturesEditor } from "../../_components/features-editor.client"
 import { readAuthMethods } from "@/lib/architect/auth-methods"
 import { featureOn } from "@/config/platform-config"
@@ -117,6 +118,13 @@ export default async function AuthPage({
                 }
               />
             )}
+
+            {/* 🔒 ЭТО СТОИТ НИЖЕ СПРАВКИ, А НЕ ВНУТРИ НЕЁ, И ПОРЯДОК ЗАДАН
+                ВЛАДЕЛЬЦЕМ (2026-09-01): бейджи провайдеров идут ниже абзаца, где
+                живут секреты. Внутри свёрнутой справки они были бы спрятаны — а
+                справка на то и свёрнута, что она короткая сводка, а не место для
+                каталога из ста имён. */}
+            {active === "about" && <AuthAbout ui={ui} />}
 
             {/* 🪦 ЗАГЛУШКИ ПРОВАЙДЕРОВ СТАЛИ РАБОЧИМИ СЕКЦИЯМИ (78-3, разрешение
                 владельца: «в целом ты можешь полностью перенести авторизацию»).

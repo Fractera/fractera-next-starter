@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -10,7 +10,7 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
@@ -293,6 +293,31 @@ export function FooterMenu({ lang }: { lang: string }) {
             >
               <GitBranch className="hidden size-3.5 sm:inline-block" />
               {devModeLinkUi(lang).footer}
+            </Link>
+
+            {/* 🔒 TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ (владелец 2026-08-31,
+                дословно: «я хочу, чтоб мы создали Telegram-бот внутри footer. И
+                эта вкладка будет иметь в точности всё то же самое… тот же самый
+                интерфейс»).
+
+                🔒 ПАНЕЛЬНАЯ ВКЛАДКА «КАНАЛЫ СВЯЗИ» ОСТАЁТСЯ ЖИВОЙ — его же
+                решение того дня: «не будем полностью избавляться от 3002, пусть
+                остаётся». Пока логика не переехала, две поверхности сосуществуют
+                намеренно, и заглушки разделов прямо называют, где бот работает
+                сегодня. Тот же порядок, что в шаге 31: сначала перенос и сверка
+                полноты, и только потом удаление.
+
+                Законы трёх соседних ссылок действуют дословно: видимость ничего
+                не открывает постороннему (замок — на макете слоя и на дверях),
+                `rel="nofollow"` — страница служебная, `Link` — она СВОЯ, в
+                отличие от панели на чужом поддомене. */}
+            <Link
+              href={`/${lang}/architect/telegram`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <Send className="hidden size-3.5 sm:inline-block" />
+              {telegramLinkUi(lang).footer}
             </Link>
 
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).

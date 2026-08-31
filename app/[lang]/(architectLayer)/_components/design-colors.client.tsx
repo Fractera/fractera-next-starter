@@ -30,6 +30,8 @@ type Role =
   | "primary" | "accent" | "background" | "foreground" | "muted" | "border" | "destructive"
   // Пять рядов диаграммы (шаг 58). Имена с дефисом — они же имена токенов темы.
   | "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5"
+  // Два состояния (шаг 64): «не получилось» и «идёт запись».
+  | "warning" | "recording"
 type Theme = "light" | "dark"
 type State = Record<Theme, Partial<Record<Role, string>>>
 
@@ -39,6 +41,9 @@ const ROLES: Role[] = [
   // экране, а ряды диаграммы читаются как одна шкала: разорви их ролями темы,
   // и человек перестанет видеть, что правит именно шкалу.
   "chart-1", "chart-2", "chart-3", "chart-4", "chart-5",
+  // 🔒 СОСТОЯНИЯ — ПОСЛЕ ШКАЛЫ, А НЕ СРЕДИ РОЛЕЙ ТЕМЫ: их правят по другому
+  // поводу — не «каким быть сайту», а «каким быть предупреждению».
+  "warning", "recording",
 ]
 
 /** Запасные значения темы — только чтобы было что показать в предпросмотре. */
@@ -51,12 +56,14 @@ const FALLBACK: Record<Theme, Record<Role, string>> = {
     // цвет на самом деле есть, — врать о ненастроенном состоянии.
     "chart-1": "#262626", "chart-2": "#404040", "chart-3": "#525252",
     "chart-4": "#737373", "chart-5": "#d4d4d4",
+    warning: "#bb4d00", recording: "#c70036",
   },
   dark: {
     primary: "#ebebeb", accent: "#444444", background: "#252525", foreground: "#fbfbfb",
     muted: "#444444", border: "#3a3a3a", destructive: "#e5533d",
     "chart-1": "#d4d4d4", "chart-2": "#b4b4b4", "chart-3": "#949494",
     "chart-4": "#737373", "chart-5": "#525252",
+    warning: "#ffb900", recording: "#ff637e",
   },
 }
 

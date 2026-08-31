@@ -113,7 +113,7 @@ export function VoiceControl({
       onPointerCancel={v.stop}
       className={
         (variant === "textarea" ? "h-10 w-full justify-center gap-2 " : "h-10 px-3 ") +
-        (v.recording ? "border-rose-500/50 text-rose-700 dark:text-rose-400" : "")
+        (v.recording ? "border-recording/50 text-recording" : "")
       }
     >
       <MicIcon off={!v.supported} />
@@ -221,7 +221,7 @@ export function VoiceControl({
       ) : null}
 
       {failure && (
-        <Small data-voice-failure className="text-amber-700 dark:text-amber-400">
+        <Small data-voice-failure className="text-warning">
           {failure}
         </Small>
       )}

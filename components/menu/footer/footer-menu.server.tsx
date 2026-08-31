@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench, Palette } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -10,7 +10,7 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
@@ -272,6 +272,27 @@ export function FooterMenu({ lang }: { lang: string }) {
             >
               <Palette className="hidden size-3.5 sm:inline-block" />
               {designLinkUi(lang).footer}
+            </Link>
+
+            {/* 🔒 РЕЖИМ РАЗРАБОТКИ — ТРЕТИЙ ВХОД СЛОЯ (владелец 2026-08-31), и довод
+                тот же, что у дизайна: «перенесли дизайн в отдельную вкладку — вот
+                также я хочу, чтобы перенесли шаги разработки… главное освободить
+                основную вкладку от избыточных и не связанных инструментов».
+
+                Он не настройка проекта, и это не придирка к раскладке: остальные
+                восемь групп описывают САЙТ, а режим решает, как с проектом работает
+                агент. Соседство по меню читалось как соседство по смыслу.
+
+                Законы двух соседних ссылок действуют дословно: видимость ничего не
+                открывает постороннему (замок — на макете слоя и на дверях),
+                `rel="nofollow"` — страница служебная, `Link` — она СВОЯ. */}
+            <Link
+              href={`/${lang}/architect/dev-mode`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <GitBranch className="hidden size-3.5 sm:inline-block" />
+              {devModeLinkUi(lang).footer}
             </Link>
 
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).

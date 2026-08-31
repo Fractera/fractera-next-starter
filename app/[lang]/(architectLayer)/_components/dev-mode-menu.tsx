@@ -1,80 +1,57 @@
-import Link from "next/link"
 import { Check } from "lucide-react"
-import { DEV_MODES, isAlphaMode, type DevMode } from "../_lib/dev-mode"
+import { isAlphaMode, type DevMode } from "../_lib/dev-mode"
 import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 
-// ЧЕТЫРЕ ПОДВКЛАДКИ РЕЖИМА (33-1, 2026-08-29). Серверный компонент: ничего не
-// решает в браузере — выбранная вкладка живёт в адресе.
+// ПОДПИСЬ ПУНКТА ЛЕВОГО МЕНЮ РЕЖИМОВ (66-1, 2026-08-31). Серверный компонент.
 //
-// 🔒 ВКЛАДКА ВЫБИРАЕТСЯ АДРЕСОМ, А НЕ СОСТОЯНИЕМ ОСТРОВКА. Ссылку на конкретный
-// режим пересылают и открывают из закладки; вкладка, живущая в памяти, теряется
-// при обновлении страницы, и человек каждый раз возвращается на первую.
+// 🪦 ОТМЕНЕНО 2026-08-31 РЕШЕНИЕМ ВЛАДЕЛЬЦА. Здесь стоял горизонтальный ряд
+// вкладок и закон при нём: «это ВТОРОЙ уровень меню, и он выглядит иначе, чем
+// первый — одинаковый вид у двух уровней читается как одно меню, показанное
+// дважды». Закон был верен, пока режим разработки жил ГРУППОЙ внутри настроек
+// проекта. Владелец вывел его отдельным входом — «перенесли дизайн в отдельную
+// вкладку, вот также я хочу, чтобы перенесли шаги разработки», — и режимы стали
+// ПЕРВЫМ уровнем своей страницы. Посылка прежнего закона исчезла вместе с
+// вложенностью, а не была отвергнута.
 //
-// 🔒 ЭТО ВТОРОЙ УРОВЕНЬ МЕНЮ, И ОН ВЫГЛЯДИТ ИНАЧЕ, ЧЕМ ПЕРВЫЙ. Левое меню слоя —
-// вертикальный столбец разделов; здесь горизонтальный ряд внутри одного раздела.
-// Одинаковый вид у двух уровней читается как одно меню, показанное дважды.
+// 🔒 ЧТО ОТ ПРЕЖНЕГО ОСТАЛОСЬ ДОСЛОВНО, потому что к уровню меню не относится:
 //
-// 🔒 ОТМЕТКА «ДЕЙСТВУЕТ СЕЙЧАС» СТОИТ У ВКЛАДКИ, А НЕ ТОЛЬКО ВНУТРИ КАРТОЧКИ.
-// Человек приходит сюда с вопросом «в каком режиме мой проект» — ответ обязан
-// читаться до того, как он выберет вкладку, иначе за ответом придётся обойти все
-// четыре.
-export function DevModeMenu({
-  lang,
-  active,
-  current,
-  ui,
-}: {
-  lang: string
-  /** Открытая вкладка. */
-  active: DevMode
-  /** Режим, записанный в конфиге, — у него отметка. */
-  current: DevMode
-  ui: DevModeUi
-}) {
+// ВЫБОР ЖИВЁТ В АДРЕСЕ, А НЕ В ПАМЯТИ ОСТРОВКА. Ссылку на конкретный режим
+// пересылают и открывают из закладки; вкладка, живущая в состоянии, теряется при
+// обновлении страницы, и человек каждый раз возвращается на первую.
+//
+// ОТМЕТКА «ДЕЙСТВУЕТ СЕЙЧАС» СТОИТ В МЕНЮ, А НЕ ТОЛЬКО ВНУТРИ КАРТОЧКИ. Человек
+// приходит с вопросом «в каком режиме мой проект» — ответ обязан читаться до
+// того, как он выберет пункт, иначе за ответом придётся обойти все четыре.
+//
+// В МЕНЮ ТОЛЬКО ТОЧКА, СЛОВО «АЛЬФА» ЖИВЁТ В КАРТОЧКЕ (решение владельца
+// 2026-08-29): слово у двух пунктов из четырёх делало их вдвое длиннее соседей,
+// и список читался как перечень предупреждений, а не режимов. Точка при этом не
+// молчаливая — объяснение едет в `title` и `aria-label`: значок, который ничего
+// не говорит ни курсору, ни читалке, есть украшение, а не знак.
+//
+// 🔒 САМО МЕНЮ БОЛЬШЕ НЕ РИСУЕТСЯ ЗДЕСЬ, И ЭТО ГЛАВНАЯ ПРАВКА ПОДШАГА. Столбец,
+// ящик на телефоне и разметку пунктов держит общая раскладка
+// `components/workspace/workspace-shell.tsx` — та же, что у настроек проекта и у
+// дизайна. Отсюда уезжает ровно подпись пункта, которую раскладка сама сделать не
+// может: она не знает ни про альфу, ни про действующий режим.
+export function devModeItemLabel(
+  mode: DevMode,
+  current: DevMode,
+  ui: DevModeUi,
+) {
   return (
-    <nav data-dev-mode-menu aria-label={ui.title} className="border-b border-border">
-      <ul className="slim-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
-        {DEV_MODES.map(mode => {
-          const isActive = mode === active
-          const isCurrent = mode === current
-          return (
-            <li key={mode} className="shrink-0">
-              <Link
-                href={`/${lang}/architect/dev-mode?mode=${mode}`}
-                data-dev-mode-tab={mode}
-                data-dev-mode-tab-current={isCurrent ? "true" : "false"}
-                aria-current={isActive ? "page" : undefined}
-                className={
-                  "flex items-center gap-2 whitespace-nowrap rounded-t-md border-b-2 px-4 py-3 text-[length:var(--fs-body)] transition-colors " +
-                  (isActive
-                    ? "border-primary font-medium text-foreground"
-                    : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground")
-                }
-              >
-                {ui.modes[mode].label}
-                {/* 🔒 В МЕНЮ — ТОЛЬКО ТОЧКА, СЛОВО ЖИВЁТ В КАРТОЧКЕ (решение владельца
-                    2026-08-29). Меню — это ряд коротких имён, и слово «альфа-тестирование»
-                    у двух пунктов из четырёх делало их вдвое длиннее соседей: ряд читался
-                    уже не как список режимов, а как список предупреждений.
-
-                    🔒 ТОЧКА НЕ МОЛЧАЛИВАЯ. Своего текста у неё нет, поэтому объяснение
-                    едет в `title` и в `aria-label`: значок, который ничего не говорит ни
-                    курсору, ни читалке, — украшение, а не знак. */}
-                {isAlphaMode(mode) && (
-                  <span
-                    data-mode-alpha={mode}
-                    title={ui.alpha}
-                    aria-label={ui.alpha}
-                    role="img"
-                    className="size-2 shrink-0 rounded-full bg-pink-500"
-                  />
-                )}
-                {isCurrent && <Check className="size-4 shrink-0 text-primary" aria-hidden />}
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
-    </nav>
+    <span data-dev-mode-tab={mode} data-dev-mode-tab-current={mode === current ? "true" : "false"} className="flex items-center gap-2">
+      <span className="truncate">{ui.modes[mode].label}</span>
+      {isAlphaMode(mode) && (
+        <span
+          data-mode-alpha={mode}
+          title={ui.alpha}
+          aria-label={ui.alpha}
+          role="img"
+          className="size-2 shrink-0 rounded-full bg-pink-500"
+        />
+      )}
+      {mode === current && <Check className="size-4 shrink-0 text-primary" aria-hidden />}
+    </span>
   )
 }

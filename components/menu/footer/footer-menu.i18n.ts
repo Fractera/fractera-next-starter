@@ -200,6 +200,27 @@ export function designLinkUi(lang: string): DesignLinkUi {
   return DESIGN_LINK[lang] ?? DESIGN_LINK.en;
 }
 
+// ─── Dev-mode entry (footer) ────────────────────────────────────────────────
+//
+// 🔒 ТРЕТИЙ ВХОД СЛОЯ (владелец 2026-08-31), и заведён он по тому же доводу, что
+// «Дизайн» до него: вкладка настроек проекта несла девять групп, из которых
+// режим разработки не был настройкой вовсе — он решает, КАК с проектом работает
+// агент. «Главное освободить основную вкладку от избыточных и не связанных
+// инструментов».
+//
+// 🔒 СЛОВО ТО ЖЕ, ЧТО В МЕНЮ И В ЗАГОЛОВКЕ СТРАНИЦЫ. Вход, названный иначе, чем
+// место, куда он ведёт, заставляет человека проверять догадку нажатием.
+export type DevModeLinkUi = { footer: string };
+
+const DEV_MODE_LINK: Record<string, DevModeLinkUi> = {
+  en: { footer: "Development mode" },
+  ru: { footer: "Режим разработки" },
+};
+
+export function devModeLinkUi(lang: string): DevModeLinkUi {
+  return DEV_MODE_LINK[lang] ?? DEV_MODE_LINK.en;
+}
+
 // ─── Architect group heading (footer) ───────────────────────────────────────
 //
 // 🔒 ПОДПИСЬ ГРУППЫ, А НЕ ЕЩЁ ОДНА ССЫЛКА (владелец 2026-08-29). Четыре

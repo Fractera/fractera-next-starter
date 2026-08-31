@@ -323,7 +323,7 @@ export function FooterMenu({ lang }: { lang: string }) {
                 rel="noopener noreferrer"
                 aria-label={label}
                 title={label}
-                className="w-8 h-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:text-foreground hover:bg-accent transition-colors"
+                className="size-8 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 <Icon className="size-4" />
               </a>

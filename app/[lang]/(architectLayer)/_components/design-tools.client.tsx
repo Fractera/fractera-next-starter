@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { H3 } from "@/components/ui/typography"
 import type { DesignUi } from "../_i18n/design.i18n"
 
 // ИНСТРУМЕНТЫ РАЗРАБОТЧИКА ПОВЕРХ САЙТА (шаг 41, 2026-08-29).
@@ -65,7 +66,7 @@ export function DesignTools({
           🔒 РАЗДЕЛИТЕЛЬ ЗДЕСЬ НЕСЁТ СМЫСЛ, А НЕ ВИД: он и есть граница между
           тем, что берут в код, и тем, что смотрят глазами. */}
       <div className="border-t border-border pt-5">
-        <h3 className="text-[length:var(--fs-h3)] font-medium text-foreground">{ui.pages.tools.instrumentsTitle}</h3>
+        <H3 variant="ui">{ui.pages.tools.instrumentsTitle}</H3>
         <p className="mt-1 text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
           {ui.pages.tools.instrumentsLead}
         </p>

@@ -1,4 +1,5 @@
 import TOOLS from "@/_tools/TOOLS.json"
+import { H3, H4 } from "@/components/ui/typography"
 import type { DesignUi } from "../_i18n/design.i18n"
 
 // ВИТРИНА ИНСТРУМЕНТОВ ПРОЕКТА (76-3, 2026-08-31).
@@ -50,7 +51,7 @@ export function ToolsCatalogue({ lang, ui }: { lang: string; ui: DesignUi }) {
 
   return (
     <section data-tools-catalogue className="flex flex-col gap-4">
-      <h3 className="text-[length:var(--fs-h3)] font-medium text-foreground">{w.catalogueTitle}</h3>
+      <H3 variant="ui">{w.catalogueTitle}</H3>
 
       {/* 🔒 ОДНА КОЛОНКА НА ЛЮБОЙ ШИРИНЕ — прямая просьба владельца: «в одну
           колонку друг подружкой достаточно компактно». Сетка в два столбца на
@@ -66,7 +67,7 @@ export function ToolsCatalogue({ lang, ui }: { lang: string; ui: DesignUi }) {
               className="rounded-lg border border-border bg-card p-4"
             >
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <h4 className="text-[length:var(--fs-body)] font-medium text-foreground">{t.title}</h4>
+                <H4 variant="ui">{t.title}</H4>
                 {/* Идентификатор — он же имя папки: по нему инструмент ищут в
                     дереве, и потому он стоит рядом с названием, а не спрятан. */}
                 <code className="text-[length:var(--fs-small)] text-muted-foreground">{tool.dir}</code>

@@ -1,15 +1,12 @@
 import type { Metadata } from "next"
-import { MediaImage } from "@/components/media/media-image.server"
-import Link from "next/link"
 import { buildAlternates } from "@/lib/seo/alternates"
 import { constructMetadata } from "@/lib/construct-metadata"
 import { getAppConfig } from "@/config/app-config"
-import { firstProducts, productsTotal, FIRST_BATCH } from "@/lib/catalogue"
+import { firstProducts, productsTotal } from "@/lib/catalogue"
 import { localizeProduct } from "@/lib/products/localize"
 import type { Product } from "@/lib/products/types"
 import { catalogueUi } from "../_data"
-import { LoadMore } from "./load-more.client"
-import { H1 } from '@/components/ui/typography'
+import { CatalogueGrid } from "../_widgets/static/catalogue-grid"
 import { PageHeader } from "@/components/content-page/page-header.server"
 import { PageShell } from "@/components/content-page/page-shell"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -51,7 +48,6 @@ export default async function Catalogue({ lang }: { lang: string }) {
   const [rows, total] = await Promise.all([firstProducts(), productsTotal()])
   const products = (rows as unknown as Product[]).map(p => localizeProduct(p, lang))
   const cfg = getAppConfig()
-  const money = new Intl.NumberFormat(lang, { style: "currency", currency: cfg.commerce.currency })
 
   // Разметка списка: витрина — это перечень товаров, и `ItemList` ровно про то,
   // ЧТО перечислено и в каком порядке. Без неё поисковик видит просто набор
@@ -89,49 +85,13 @@ export default async function Catalogue({ lang }: { lang: string }) {
       {products.length === 0 ? (
         <EmptyState title={t.empty} />
       ) : (
-        <>
-          {/* Сетка — серверная разметка. Каждая карточка это ССЫЛКА: её видит
-              поисковик, она открывается средним щелчком и работает без JS. */}
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {products.map(p => (
-              <li key={p.id}>
-                <Link
-                  href={`/${lang}/products/${p.id}`}
-                  className="group block overflow-hidden rounded-xl border border-border transition-colors hover:border-foreground/30"
-                >
-                  <div className="aspect-square bg-muted/30 p-4">
-                    {p.media_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <MediaImage media={{ url: p.media_url!, width: p.media_width, height: p.media_height, blur: p.media_blur }} alt={p.localizedName} sizes="(max-width: 640px) 50vw, 280px" className="h-full w-full object-contain" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-muted-foreground">—</div>
-                    )}
-                  </div>
-                  <div className="border-t border-border p-3">
-                    <p className="truncate text-sm font-medium text-foreground group-hover:underline">
-                      {p.localizedName}
-                    </p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{money.format(p.price)}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Догрузка появляется, только если есть что грузить. */}
-          {total > FIRST_BATCH && (
-            <LoadMore
-              lang={lang}
-              total={total}
-              loaded={products.length}
-              // Валюта приезжает ПРОПОМ: островок не читает настройки — они
-              // серверные, и половина сетки иначе показывала бы цену в валюте,
-              // а вторая половина, догруженная, голой цифрой.
-              currency={cfg.commerce.currency}
-              labels={{ more: t.loadMore, loading: t.loading, failed: t.failed, shown: t.shown }}
-            />
-          )}
-        </>
+        <CatalogueGrid
+          lang={lang}
+          products={products}
+          total={total}
+          currency={cfg.commerce.currency}
+          labels={{ loadMore: t.loadMore, loading: t.loading, failed: t.failed, shown: t.shown }}
+        />
       )}
     </PageShell>
   )

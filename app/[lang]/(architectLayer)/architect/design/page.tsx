@@ -11,7 +11,7 @@ import { DesignType } from "../../_components/design-type.client"
 import { DesignShape } from "../../_components/design-shape.client"
 import { DesignColors } from "../../_components/design-colors.client"
 import { BlocksCatalogue } from "../../_components/blocks-catalogue"
-import { BlocksIntro } from "../../_components/blocks-intro.client"
+import { SectionIntro } from "../../_components/section-intro.client"
 import { HelpDetails } from "../../_components/help-details"
 import { DesignTools } from "../../_components/design-tools.client"
 import { featureOn } from "@/config/platform-config"
@@ -122,7 +122,8 @@ export default async function DesignPage({
               // 🔒 КЛЮЧ ВКЛЮЧАЕТ И РАЗДЕЛ, И ТИП БЛОКА: смена любой вкладки даёт
               // новый экземпляр, то есть снова свёрнутый вид. Владелец: «не надо
               // в памяти держать открытый контейнер» — это и есть исполнение.
-              <BlocksIntro
+              <SectionIntro
+                name="blocks"
                 key={`${active}:${rawKind ?? ""}`}
                 moreLabel={ui.pages.blocks.helpMore}
                 lessLabel={ui.pages.blocks.helpLess}
@@ -138,7 +139,7 @@ export default async function DesignPage({
                         верен: «свёрнутый ответ на такой вопрос равен
                         отсутствующему». Отменено им же 2026-08-31, когда справка
                         выросла до четырёх абзацев и вытеснила каталог. Причина
-                        записана в `blocks-intro.client.tsx`. */}
+                        записана в `section-intro.client.tsx` (файл назывался `blocks-intro` до 76-2). */}
                     <Small><strong className="text-foreground">{ui.pages.blocks.helpParallelTitle}</strong> {ui.pages.blocks.helpParallel}</Small>
                   </>
                 }
@@ -153,6 +154,32 @@ export default async function DesignPage({
             {active === "dialogs" && (
               <DialogsCatalogue ui={ui.pages.dialogs} dialogUi={appDialogUi(lang)} />
             )}
+            {/* 🔒 СПРАВКА РАЗДЕЛА СТОИТ ПЕРЕД РАБОТОЙ И СВЁРНУТА — тот же островок,
+                что у «Блоков» (76-2). Место текста — часть текста: объяснение,
+                которое читают ПЕРЕД работой, стоит перед работой.
+
+                🔒 КЛЮЧ — САМ РАЗДЕЛ: переход на другой раздел и обратно даёт новый
+                экземпляр, то есть снова свёрнутый вид. Типа блока здесь нет, и
+                второй составляющей ключу не нужно. */}
+            {active === "tools" && (
+              <SectionIntro
+                name="tools"
+                key={active}
+                moreLabel={ui.pages.tools.helpMore}
+                lessLabel={ui.pages.tools.helpLess}
+                summary={
+                  <Small><strong className="text-foreground">{ui.pages.tools.helpWhatTitle}</strong> {ui.pages.tools.helpWhat}</Small>
+                }
+                rest={
+                  <>
+                    <Small><strong className="text-foreground">{ui.pages.tools.helpWhyTitle}</strong> {ui.pages.tools.helpWhy}</Small>
+                    <Small><strong className="text-foreground">{ui.pages.tools.helpWidgetTitle}</strong> {ui.pages.tools.helpWidget}</Small>
+                    <Small><strong className="text-foreground">{ui.pages.tools.helpExceptionTitle}</strong> {ui.pages.tools.helpException}</Small>
+                  </>
+                }
+              />
+            )}
+
             {/* 🔒 ЧИТАЕТСЯ ДЕЙСТВУЮЩЕЕ ЗНАЧЕНИЕ, А НЕ СЫРОЙ ФАЙЛ. У выключателя
                 возможности есть умолчание проекта, и «владелец не высказался»
                 обязано показываться в том положении, в каком возможность реально
@@ -164,9 +191,13 @@ export default async function DesignPage({
                 её в островок — и три абзаца текста уедут в браузер вместе с
                 состоянием формы, которое к ним отношения не имеет.
 
-                🔒 У «Инструментов» справки нет намеренно: выключатель объяснён
-                своей же подписью, и раскрывашка под ним обещала бы то, чего в ней
-                не будет. */}
+                🪦 «У «ИНСТРУМЕНТОВ» СПРАВКИ НЕТ НАМЕРЕННО» — отменено 76-2,
+                2026-08-31, словом владельца. Довод был верен, пока раздел состоял
+                из одного выключателя: раскрывашка под ним обещала бы то, чего в
+                ней нет. Раздел перестал быть выключателем и стал витриной
+                инструментов — и у витрины объяснение обязано стоять ПЕРЕД
+                работой, свёрнутым, как у «Блоков». Надгробие оставлено: иначе
+                следующая сессия воскресит запрет по памяти и снимет справку. */}
 
             {active === "fonts" && (
               <HelpDetails label={ui.fonts.helpLabel}>

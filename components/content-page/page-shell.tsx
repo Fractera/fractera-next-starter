@@ -72,6 +72,8 @@ export type PageShellProps = {
    */
   afterHero?: ReactNode
   /** Завершающая секция — тоже во всю ширину, ниже ленты. */
+  /** Разметка ПОСЛЕ тела и до завершающей секции (69). */
+  afterBody?: ReactNode
   outro?: ReactNode
   children: ReactNode
 }
@@ -83,6 +85,7 @@ export function PageShell({
   jsonLd,
   hero,
   afterHero,
+  afterBody,
   outro,
   children,
 }: PageShellProps) {
@@ -97,6 +100,7 @@ export function PageShell({
       >
         {children}
       </Column>
+      {afterBody}
       {outro}
     </main>
   )

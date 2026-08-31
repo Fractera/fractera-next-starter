@@ -94,6 +94,8 @@ export type StandardContentPageProps = {
    * (шаг 521). Отличие от `hero` выше: тот заменяет картинку ВНУТРИ ленты.
    */
   afterHero?: ReactNode
+  /** Разметка после тела страницы (69): кнопка заявки на заглушке. */
+  afterBody?: ReactNode
   blocks: Block[]
   faq?: FaqPair[]
   /** Ссылка «назад» — на уровень выше. Нет уровня выше — нет и ссылки. */
@@ -121,6 +123,7 @@ export function StandardContentPage({
   heroAlt,
   hero,
   afterHero,
+  afterBody,
   blocks,
   faq,
   backHref,
@@ -198,6 +201,7 @@ export function StandardContentPage({
       columnAs="article"
       hero={heroBlock ? <PostBody blocks={[heroBlock]} lang={lang} /> : undefined}
       afterHero={afterHero}
+      afterBody={afterBody}
       outro={outroBlock ? <PostBody blocks={[outroBlock]} lang={lang} /> : undefined}
     >
 

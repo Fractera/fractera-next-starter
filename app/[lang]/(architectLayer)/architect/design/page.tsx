@@ -14,6 +14,7 @@ import { BlocksCatalogue } from "../../_components/blocks-catalogue"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { HelpDetails } from "../../_components/help-details"
 import { DesignTools } from "../../_components/design-tools.client"
+import { ToolsCatalogue } from "../../_components/tools-catalogue"
 import { featureOn } from "@/config/platform-config"
 import { readRawDesignConfig } from "@/lib/architect/design-config-writer"
 
@@ -184,6 +185,11 @@ export default async function DesignPage({
                 возможности есть умолчание проекта, и «владелец не высказался»
                 обязано показываться в том положении, в каком возможность реально
                 работает, — иначе страница спорит с сайтом. */}
+            {/* 🔒 КАТАЛОГ ИДЁТ ПЕРВЫМ, ПРИБОР — ВТОРЫМ (76-4). Раздел называет
+                себя витриной инструментов, и то, ради чего его открывают, стоит
+                выше того, что оставлено здесь исключением. Обратный порядок
+                объявил бы прибор главным предметом страницы. */}
+            {active === "tools" && <ToolsCatalogue lang={lang} ui={ui} />}
             {active === "tools" && <DesignTools initial={featureOn("viewportBadge")} ui={ui} />}
 
             {/* 🔒 СПРАВКА ЖИВЁТ НА СТРАНИЦЕ, А НЕ ВНУТРИ ОСТРОВКА (перенесено из

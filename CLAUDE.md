@@ -53,7 +53,14 @@ exists, hand it to the owner. Do not rewrite his request for him and do not prom
 | `3500` | channels | `use-channels` |
 | `9621` | agentic RAG | `use-agentic-rag` |
 
-🔒 **THAT TABLE IS THE SECOND OF YOUR THREE CIRCLES OF SIGHT, AND THE THREE ARE NOT EQUAL** (step 65,
+🔒 **THE ARCHITECT LAYER HAS THREE ENTRANCES, NOT ONE** (step 66, 2026-08-31):
+`/{lang}/architect/app-config` — the eight groups that describe the SITE · `…/design` — how it looks ·
+`…/dev-mode` — how the AGENT works on it. All three stand on the same shell
+(`components/workspace/workspace-shell.tsx`): a fourth copy of «menu plus column» is the point past
+which drift stops being noticed. The owner splits an overloaded tab, and the split is his decision:
+«free the main tab of excessive and unrelated tools».
+
+🔒 **THAT TABLE IS THE SECOND OF YOUR THREE CIRCLES OF SIGHT🔒 **THAT TABLE IS THE SECOND OF YOUR THREE CIRCLES OF SIGHT, AND THE THREE ARE NOT EQUAL** (step 65,
 2026-08-31). **Yours** is this tree — answer from it by MEASURING: open the file, count the thing,
 show the line. **The contract** is the row above: you use a neighbour without ever seeing it, so you
 answer from the skill that owns its port, not from a guess. **Not yours** is the panel's code, the

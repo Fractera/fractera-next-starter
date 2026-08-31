@@ -959,6 +959,39 @@ opened while developing may not appear in production: that is the role at work, 
 before the complaint. In mode `true` the login is bypassed on the server too, the protocol is http and
 the service worker is not registered.
 
+
+## The project may have arrived from someone else
+
+Your project can be born two ways. Usually the slot is filled from this starter template. But the
+owner may have taken the **second launch path** in the panel — "your own Fractera repository" — and
+then the slot was filled from **another person's Fractera project**, and this code is that person's
+work, now his.
+
+🔒 **THE HISTORY IS ALREADY CUT, AND THAT IS NOT YOUR PROBLEM TO SOLVE.** The panel detaches the slot
+from the donor before you ever see it: no remote, one root commit named `Fractera slot: project
+baseline`. If `git log` shows exactly one commit and `git remote -v` is empty, that is a healthy
+adopted project, **not** a broken repository. Do not try to "restore" a history that was removed on
+purpose.
+
+🔒 **WHAT YOU WILL BE ASKED TO DO, AND WHAT YOU MUST NOT DO.** On the thirteenth step of that path the
+owner is given one prompt to hand you: find the previous owner's details and replace them with his —
+project name, owner or company name, site address, contact email, social links, the copyright in the
+footer. Look in the settings, in page texts, in the titles for search, in email templates.
+
+- **Do not touch the design, the layout or the contents of the pages.** He came to this project
+  precisely for them. Replacing details is not redecorating.
+- **Ask for everything you do not know in ONE list**, not one question at a time. He is doing this
+  once and does not want an interrogation.
+- **There is no list of places to look, and none can be given**: every donor hides its details
+  somewhere else. Read the project.
+
+🔒 **THE DEPLOY PHRASE IS THE SAME ON BOTH PATHS: "deploy this to my server".** It is the one sentence
+the owner carries away and repeats on his own; two wordings of it would diverge.
+
+🛑 **`.env.local` IS NOT PART OF THE PROJECT.** It survived the swap because it belongs to the
+machine — data-layer keys, the server address. It never travels to the owner's repository, and you do
+not put anything into it that the project needs in order to be understood.
+
 ## Development modes
 
 The owner chooses in the panel: "Application" → "Development mode". The value is `developmentMode` in

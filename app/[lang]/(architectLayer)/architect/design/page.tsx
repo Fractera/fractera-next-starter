@@ -11,6 +11,7 @@ import { DesignType } from "../../_components/design-type.client"
 import { DesignShape } from "../../_components/design-shape.client"
 import { DesignColors } from "../../_components/design-colors.client"
 import { BlocksCatalogue } from "../../_components/blocks-catalogue"
+import { BlocksIntro } from "../../_components/blocks-intro.client"
 import { HelpDetails } from "../../_components/help-details"
 import { DesignTools } from "../../_components/design-tools.client"
 import { featureOn } from "@/config/platform-config"
@@ -118,28 +119,30 @@ export default async function DesignPage({
                 начнёт верстать руками и потеряет перенос, порядок и перевод
                 разом — причём узнает об этом через месяц. */}
             {active === "blocks" && (
-              <section data-blocks-intro className="rounded-lg border border-border bg-card p-4 sm:p-5">
-                <div className="flex flex-col gap-3">
+              // 🔒 КЛЮЧ ВКЛЮЧАЕТ И РАЗДЕЛ, И ТИП БЛОКА: смена любой вкладки даёт
+              // новый экземпляр, то есть снова свёрнутый вид. Владелец: «не надо
+              // в памяти держать открытый контейнер» — это и есть исполнение.
+              <BlocksIntro
+                key={`${active}:${rawKind ?? ""}`}
+                moreLabel={ui.pages.blocks.helpMore}
+                lessLabel={ui.pages.blocks.helpLess}
+                summary={
                   <Small><strong className="text-foreground">{ui.pages.blocks.helpWhatTitle}</strong> {ui.pages.blocks.helpWhat}</Small>
-                  <Small><strong className="text-foreground">{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</Small>
-                  <Small><strong className="text-foreground">{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</Small>
-                  {/* 🔒 ЧЕТВЁРТЫЙ АБЗАЦ ВИДИМ, А НЕ СВЁРНУТ (заказ владельца
-                      2026-08-30). Он отвечает на вопрос, ради которого страницу
-                      и открывают дважды: «а пересобирать проект каждый раз
-                      придётся?». Свёрнутый ответ на такой вопрос равен
-                      отсутствующему — это уже оплачено в 59-2.
-
-                      🔒 УТВЕРЖДЕНИЕ ИЗМЕРЕНО ПО ЭТАЛОННОМУ ПРИЛОЖЕНИЮ, А НЕ
-                      ВЗЯТО ИЗ ГОЛОВЫ: у страницы слота `generateStaticParams`
-                      возвращает пустой список, `dynamicParams` true,
-                      `revalidate 300`, а маршруты и блоки читаются из базы на
-                      запросе. Состояние стартера на сегодня в текст НЕ вынесено
-                      по слову владельца: эталон и есть источник, откуда код
-                      будет перенесён. Сам факт записан в итоге шага. */}
-                  <Small><strong className="text-foreground">{ui.pages.blocks.helpParallelTitle}</strong> {ui.pages.blocks.helpParallel}</Small>
-                </div>
-
-              </section>
+                }
+                rest={
+                  <>
+                    <Small><strong className="text-foreground">{ui.pages.blocks.helpThreeTitle}</strong> {ui.pages.blocks.helpThree}</Small>
+                    <Small><strong className="text-foreground">{ui.pages.blocks.helpWidgetTitle}</strong> {ui.pages.blocks.helpWidget}</Small>
+                    {/* 🪦 ЧЕТВЁРТЫЙ АБЗАЦ БОЛЬШЕ НЕ ВИДЕН ПО УМОЛЧАНИЮ. Решение
+                        владельца 2026-08-30 требовало обратного, и его довод был
+                        верен: «свёрнутый ответ на такой вопрос равен
+                        отсутствующему». Отменено им же 2026-08-31, когда справка
+                        выросла до четырёх абзацев и вытеснила каталог. Причина
+                        записана в `blocks-intro.client.tsx`. */}
+                    <Small><strong className="text-foreground">{ui.pages.blocks.helpParallelTitle}</strong> {ui.pages.blocks.helpParallel}</Small>
+                  </>
+                }
+              />
             )}
 
             {active === "blocks" && <BlocksCatalogue lang={lang} kind={rawKind} ui={ui} dialogUi={appDialogUi(lang)} />}

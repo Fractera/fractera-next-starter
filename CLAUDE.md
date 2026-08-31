@@ -706,6 +706,23 @@ now true. ✗ a capability that works perfectly and answers no case is work the 
 
 A page is a LIST OF BLOCKS in a language cell, not a laid-out file.
 
+🔒 **AND THAT SENTENCE IS NOW A REFUSAL, NOT A DESCRIPTION** (63-4, 2026-08-31). Whatever appears on a
+page is a **catalogue block**, a **route widget**, or a **platform primitive** — `PageHeader`,
+`StaticImage`, typography. **There is no fourth source, and a page that lays out its own markup
+instead of taking one of the three fails the build:** `check:page-composition` walks every `page.tsx`
+under `app/[lang]` and names the file. Exceptions exist, are listed by name with a reason in the head
+of the guard, and are not something you add to make a build green.
+✗ paid for by the whole of step 62: the rule existed in prose, in a gate for a neighbouring genus,
+and in this very file — and was broken by the agent who had cited it a day earlier. **A rule with
+nowhere to be seen and nobody to check it is executed from memory, which is to say not executed.**
+
+🔒 **FOREIGN UI KNOWLEDGE IS WELCOME — INSIDE ONE OF THOSE THREE, NEVER INSTEAD OF THEM** (63-2). The
+vendored `shadcn` skill (`.claude/skills/shadcn/`) composes the inside of a block kind or a widget
+better than you will from scratch; it knows nothing of this project's page law, and on four points it
+is overruled here — the dialog, the toast, the server-only section layer, colour as a token.
+**Read `use-shadcn` before you follow it**: our skill owns WHEN, the foreign one owns HOW, and
+neither retells the other.
+
 🔒 **TRIGGER: name what you are building — BEFORE the first file.** "Make a section / add a block / I
 need a counter" does not name the kind of thing. You name it, out loud, with four questions. ✗ moving
 a built thing from one kind to another means rewriting it whole.
@@ -1210,6 +1227,8 @@ say so and work without it rather than inventing its content.
 | `use-route-parameters` | one address or one per record: the question hidden in "make a client page", what to tell the owner before he answers, and what to count before REMOVING a parameter that exists | 🔬 |
 | `use-sections` | the section layer: the catalogue closed by type, kind against widget, colour only by token | ✅ |
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
+| `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
+| `shadcn` | **foreign, shadcn/ui, vendored**: the components, the CLI, registries, styling and composition rules. Provenance and the update command in its `SOURCE.md`; never hand-edited | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |
 | `use-routes` | where a route lives: two layers, four permission groups, folder shape, no sibling imports | ✅ |
 | `use-translations` | three storage forms for a string, how many languages each must carry, the guard by manual list, exchanging translations with an external model | ✅ |

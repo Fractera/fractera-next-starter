@@ -5,7 +5,8 @@ import { architectLayerUi } from "../../_i18n/architect-layer.i18n"
 import { authUi } from "../../_i18n/auth.i18n"
 import { AUTH_SECTIONS, resolveAuthSection, hrefOfAuthSection } from "../../_lib/auth-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
-import { SectionSoon } from "../../_components/section-soon"
+import { AuthProvider } from "../../_components/auth-provider"
+import { readAuthMethods } from "@/lib/architect/auth-methods"
 
 // АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (78-1, 2026-08-31).
 //
@@ -50,6 +51,10 @@ export default async function AuthPage({
   const ui = authUi(lang)
   const active = resolveAuthSection(rawSection)
 
+  // 🔒 ЧИТАЕТСЯ НА СЕРВЕРЕ И ТОЛЬКО МАСКИ. Секреты в браузер не уезжают ни разу,
+  // даже ради показа: `readAuthMethods()` возвращает `mask()`, а не значение.
+  const methods = readAuthMethods()
+
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
@@ -91,25 +96,36 @@ export default async function AuthPage({
                 lessLabel={ui.helpLess}
                 summary={
                   <Small>
-                    <strong className="text-foreground">{ui.aboutSoonTitle}</strong> {ui.aboutSoon}
+                    <strong className="text-foreground">{ui.m.helpWhatTitle}</strong> {ui.m.helpWhat}
                   </Small>
                 }
-                rest={null}
+                rest={
+                  <>
+                    <Small>
+                      <strong className="text-foreground">{ui.m.helpWhySecureTitle}</strong> {ui.m.helpWhySecure}
+                    </Small>
+                    <Small>
+                      <strong className="text-foreground">{ui.m.helpEmptyTitle}</strong> {ui.m.helpEmpty}
+                    </Small>
+                    <Small>
+                      <strong className="text-foreground">{ui.m.helpSecretsTitle}</strong> {ui.m.helpSecrets}
+                    </Small>
+                  </>
+                }
               />
             )}
 
-            {/* 🔒 ДВЕ ЗАГЛУШКИ — ОДИН КОМПОНЕНТ, И ОН ВЗЯТ ГОТОВЫМ ИЗ 77-1.
-                Написать здесь свою значило бы завести второй экземпляр той же
-                вещи — ровно то, о чём владелец предупреждал дважды: «вместо того
-                чтобы перенести готовое, начинаешь пересоздавать аналоги». */}
+            {/* 🪦 ЗАГЛУШКИ ПРОВАЙДЕРОВ СТАЛИ РАБОЧИМИ СЕКЦИЯМИ (78-3, разрешение
+                владельца: «в целом ты можешь полностью перенести авторизацию»).
+                В 78-1 здесь стоял `SectionSoon` с адресом панельной вкладки —
+                осознанное промежуточное состояние, а не забытый долг. Надгробие
+                оставлено: иначе следующая сессия прочитает исчезновение заглушки
+                как потерю и вернёт её.
+
+                🔒 ОДИН КОМПОНЕНТ НА ОБА ПРОВАЙДЕРА — решение источника, а не моё:
+                у Google и у почтовой ссылки одинаковый экран. */}
             {active !== "about" && (
-              <SectionSoon
-                section={active}
-                title={ui.soonTitle}
-                lead={ui.soonLead}
-                whereLabel={ui.soonWhere}
-                where={ui.soonPanel}
-              />
+              <AuthProvider kind={active} state={methods} ui={ui} />
             )}
           </div>
         </WorkspaceShell>

@@ -47,6 +47,12 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  /* Состояния (шаг 64): «идёт запись» и «не получилось». Без этих двух строк
+     токен существует, а классов `text-warning`/`border-recording` нет — Tailwind
+     печатает утилиту только для того, что объявлено здесь. Отказ немой: разметка
+     верна, цвет не появляется. */
+  --color-warning: var(--warning);
+  --color-recording: var(--recording);
   /* Тона смысловых групп — определены в теме проекта (config/design/*.css). */
   --color-tone-data: var(--tone-data);
   --color-tone-reach: var(--tone-reach);

@@ -188,7 +188,14 @@ const EN = {
       },
       "chart-5": {
         "label": "Chart series 5",
-        "description": "The fifth and last: more than five colours nobody tells apart anyway."
+        "description": "The fifth and last: more than five colours nobody tells apart anyway."      },
+      "warning": {
+        "label": "Warning",
+        "description": "«It did not work out» — a notice, not a failure. Deliberately not the colour of deletion: it says try again, not something broke."
+      },
+      "recording": {
+        "label": "Recording",
+        "description": "The colour of the voice field while it listens. It is a state, not an error."
       }
     },
     "contrastOk": "Readable",
@@ -474,7 +481,14 @@ const RU: typeof EN = {
       },
       "chart-5": {
         "label": "Диаграмма, ряд 5",
-        "description": "Пятый и последний: больше пяти цветов человек всё равно не различает."
+        "description": "Пятый и последний: больше пяти цветов человек всё равно не различает."      },
+      "warning": {
+        "label": "Предупреждение",
+        "description": "«Не получилось» — сообщение, а не отказ. Намеренно не цвет удаления: оно говорит «попробуйте снова», а не «сломалось»."
+      },
+      "recording": {
+        "label": "Идёт запись",
+        "description": "Цвет голосового поля, пока оно слушает. Это состояние, а не ошибка."
       }
     },
     "contrastOk": "Читаемо",

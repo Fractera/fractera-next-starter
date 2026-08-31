@@ -48,7 +48,7 @@ export function FooterSocialDropdown({
         aria-label={label}
         title={label}
         aria-expanded={open}
-        className="w-9 h-9 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:text-foreground hover:bg-muted transition-colors"
+        className="size-9 inline-flex items-center justify-center rounded-md border border-border text-foreground hover:text-foreground hover:bg-muted transition-colors"
       >
         {open ? <X size={16} /> : <Menu size={16} />}
       </button>

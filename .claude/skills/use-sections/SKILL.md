@@ -268,3 +268,6 @@ type only when the owner has confirmed the number is hard, never on your own rea
 - Open the catalogue page and look at the specimen in **both** themes and in a narrow window.
 - Read the page you built with JavaScript off: a server renderer plus an island degrades visibly; a
   renderer that drew nothing without scripts is the mistake this layer is shaped to prevent.
+
+- **Building the inside of a new kind?** The vendored `shadcn` skill composes it best; `use-shadcn`
+  says when that is legal and what the section layer forbids it regardless.

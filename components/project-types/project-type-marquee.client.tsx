@@ -107,7 +107,7 @@ export function ProjectTypeMarquee({ cards, lang, ui, dialogUi }: Props) {
         ) : !entry ? (
           <p className="text-sm text-muted-foreground">{ui.loading}</p>
         ) : (
-          <div className="space-y-4 text-sm leading-relaxed">
+          <div className="flex flex-col gap-4 text-sm leading-relaxed">
             <p className="text-foreground">{entry.definition}</p>
 
             <Section title={ui.examples}>
@@ -135,7 +135,7 @@ export function ProjectTypeMarquee({ cards, lang, ui, dialogUi }: Props) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
+    <div className="flex flex-col gap-1.5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</p>
       {children}
     </div>

@@ -15,11 +15,7 @@ export type NoticeUi = {
   /** Заголовок раздела-заглушки в теле страницы. */
   heading: string
   /** Абзац под ним. */
-  body: string
-  /** Кнопка заявки под заглушкой и слова её окна (69). Видит только архитектор. */
-  requestLabel: string
-  requestTitle: string
-  requestLead: string
+  body: string
 }
 
 const UI: Record<string, NoticeUi> = {
@@ -29,9 +25,6 @@ const UI: Record<string, NoticeUi> = {
     label: 'Open the panel',
     heading: 'What belongs here',
     body: 'Replace this placeholder with your own text. The page is fully static and indexable: search engines receive its title, description and structured data, exactly as they do for an article.',
-    requestLabel: 'Ask the project to write this text',
-    requestTitle: 'Text for the page «%s»',
-    requestLead: 'Say in your own words what this document must cover — the request goes to the project inbox, and the agent will write it when you ask him to start. Nothing happens on its own.',
   },
   ru: {
     title: 'У этой страницы пока нет текста.',
@@ -39,9 +32,6 @@ const UI: Record<string, NoticeUi> = {
     label: 'Открыть панель',
     heading: 'Что здесь должно быть',
     body: 'Замените эту заглушку своим текстом. Страница полностью статическая и индексируется: поисковые системы получают её заголовок, описание и структурированные данные — ровно так же, как у статьи.',
-    requestLabel: 'Попросить проект написать этот текст',
-    requestTitle: 'Текст страницы «%s»',
-    requestLead: 'Своими словами скажите, что этот документ должен охватывать. Заявка ляжет в приёмную проекта, и агент напишет текст, когда вы скажете ему начать. Само ничего не произойдёт.',
   },
 }
 

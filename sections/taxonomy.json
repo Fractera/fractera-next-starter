@@ -491,6 +491,11 @@
       "id": "0054",
       "type": "product-demo",
       "shape": "cards"
+    },
+    "invite": {
+      "id": "0055",
+      "type": "page-material",
+      "shape": "invite"
     }
   }
 }

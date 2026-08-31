@@ -850,6 +850,23 @@ would suit ANY page → create it (renderer `sections/blocks/<kind>.server.tsx`,
 (`lib/db/index.ts`) and a door `app/api/<name>/route.ts` (named in `PUBLIC_API_PREFIXES` if it serves a
 guest).
 
+🔒 **A PAGE-LONG LIST IS A WIDGET, NOT A KIND** (step 64, 2026-08-31). The product catalogue with its
+load-more island, the product page and the blog index each looked like candidates for a new catalogue
+kind and are not: **reuse decides**, and a kind must fit ANY page of the project. These fit exactly
+one address each — they know about a database query, a currency, a cover image and reading time. They
+live in `_widgets/static/<name>/` inside their route, and the page keeps what belongs to the ADDRESS:
+metadata, the data fetch, breadcrumbs and the JSON-LD it declares about itself.
+✗ paid twice over: before step 64 all three drew their own layout inside the page, and
+`check:page-composition` counted four files as debt.
+🔒 **And the guard counts a widget by USE, not by import** — a leftover import line is not a widget on
+the page, though to a text search it looks like one.
+
+🔒 **A STATE HAS A COLOUR ROLE, AND IT IS NOT `destructive`** (step 64). `warning` («it did not work
+out») and `recording` (the voice field while it listens) are roles of the palette, editable at
+`/{lang}/architect/design?section=colors`. Painting a warning in the colour of deletion tells a person
+something broke, when the message is «try again». Like the chart series, they carry **no
+`-foreground` pair**: these colours write the text, they do not fill a surface under it.
+
 🔒 **A KIND LIVES IN SIX PLACES, AND THE LIST ABOVE NAMES FOUR** (measured 2026-08-30 while adding
 `h4` and `h5`). The two that are easy to miss are the ones that fail LATER, not at compile time:
 `sections/taxonomy.json` (the kind's purpose-type; without it the panel files it under a default) and

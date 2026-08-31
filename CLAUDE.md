@@ -53,6 +53,20 @@ exists, hand it to the owner. Do not rewrite his request for him and do not prom
 | `3500` | channels | `use-channels` |
 | `9621` | agentic RAG | `use-agentic-rag` |
 
+🔒 **THAT TABLE IS THE SECOND OF YOUR THREE CIRCLES OF SIGHT, AND THE THREE ARE NOT EQUAL** (step 65,
+2026-08-31). **Yours** is this tree — answer from it by MEASURING: open the file, count the thing,
+show the line. **The contract** is the row above: you use a neighbour without ever seeing it, so you
+answer from the skill that owns its port, not from a guess. **Not yours** is the panel's code, the
+services' internals, the machine — there the only honest sentence is *«I cannot see that from here»*,
+followed by who can.
+✗ The one failure this prevents: describing a mechanism you never opened. It reads exactly like
+knowledge. If «probably», «usually» or «it should» appears in an answer about a neighbour, you are
+inventing — quote the contract instead.
+🔒 **And the owner may read everything himself:** the platform is Open Code (source-available) at
+`github.com/Fractera/Agent-Engineering-Infrastructure`, this starter is MIT at
+`github.com/Fractera/fractera-next-starter`. Never «open source» — the terms differ legally. Send him
+there to UNDERSTAND; a platform change is ordered, not patched. → `explain-this-project`
+
 ## How you answer me
 
 The shape of your answer to ANY request of the owner, without exception. Your own words, this meaning,

@@ -222,7 +222,41 @@ No gate catches this. It is a question you ask yourself before reaching for a re
 drawing already on the page?* If it is, the honest answer is a different kind — that is normal work,
 not extra work. `problemSolution` exists because of exactly this.
 
-## 7. 🔒 Every kind has a card, and the card is where the owner's taste is remembered
+## 7. 🔒 Число колонок принадлежит ВИДУ, а не странице
+
+Владелец, дословно (2026-08-31): «блоки, которые имеют условно говоря три колонки или две колонки,
+должны восприниматься как блоки, у которых нельзя делать больше или меньше колонок для стандартного
+широкого экрана. Например `flow01` всегда рисуется с тремя колонками».
+
+🔒 **СЕТКА ВИДА — ЭТО ЕГО ЛИЦО, А НЕ НАСТРОЙКА.** `flow01` — трёхколоночный. Не «обычно три», не «три
+по умолчанию», а **три**. Вид, нарисованный в два или четыре столбца, перестаёт быть собой: он
+выглядит как сломанный, а не как гибкий, и человек читает это как дефект платформы.
+
+🔒 **СОДЕРЖИМОЕ ПОДГОНЯЕТСЯ ПОД СЕТКУ, А НЕ СЕТКА ПОД СОДЕРЖИМОЕ.** Пришло четыре элемента в
+трёхколоночный вид — это **не повод сменить сетку**. Это одно из двух: либо четвёртый элемент лишний,
+либо взят не тот вид. Оба ответа честные; менять `grid-cols-3` на `grid-cols-4` — нет.
+
+🔒 **ЗАПРЕТ КАСАЕТСЯ ШИРОКОГО ЭКРАНА, И ТОЛЬКО ЕГО.** Как вид складывается на узком — его собственное
+дело: одна колонка на телефоне, две на планшете, это часть его устройства и трогать её не нужно. Речь
+о том виде, ради которого блок и выбран, — на обычном рабочем мониторе.
+
+✗ **ЧЕМ ЭТО УЖЕ ОПЛАЧЕНО.** У `metrics` рендерер `grid-cols-3`, а тип принимает массив без границы:
+четвёртое число **собирается, доезжает и встаёт одиноко у левого края**. Сборка молчит, типы молчат,
+ломается только вид — и находит это человек, а не проверка. Правило выше существует ровно затем, чтобы
+такой блок не пришлось «чинить» сменой сетки.
+
+**Что делать вместо смены сетки:**
+
+| Столкнулся с | Верный ход |
+|---|---|
+| элементов больше, чем колонок | убрать лишние или взять другой вид — карточка вида называет ёмкость |
+| элементов меньше, чем колонок | тоже вид не тот: полупустая сетка читается как недоделанная страница |
+| «а давай тут в две колонки» от владельца | это заявка на ДРУГОЙ вид или новый вид, а не правка существующего |
+
+🔒 **И НИКОГДА НЕ ПРАВЬ СЕТКУ РЕНДЕРЕРА РАДИ ОДНОЙ СТРАНИЦЫ.** Вид живёт в каталоге и стоит на
+десятках страниц, включая те, которых ты не видел. Правка `grid-cols` меняет их все разом — молча.
+
+## 8. 🔒 Every kind has a card, and the card is where the owner's taste is remembered
 
 `sections/blocks/<kind>.md`, beside the renderer. Free form, written for a model to read: the family
 it belongs to (`proof`, `breakdown`, `action`, `story`, …), how many elements it holds and **what
@@ -260,7 +294,7 @@ one level down.
 type refuses. "Looks wrong right after `flow`" is not countable — that stays in the card. Change the
 type only when the owner has confirmed the number is hard, never on your own reading of the CSS.
 
-## 8. Before you call it done
+## 9. Before you call it done
 
 - `check:sections` — every kind has a specimen, colours are tokens, fills carry their pairs.
 - `check:typography`, `check:layout`, `check:contrast` — text through the primitives, no size that

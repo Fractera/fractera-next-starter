@@ -8,6 +8,7 @@ import { DEV_MODES, devModeOf, devModeChosen, resolveDevMode } from "../../_lib/
 import { WorkspaceShell } from "@/components/workspace/workspace-shell"
 import { devModeItemLabel } from "../../_components/dev-mode-menu"
 import { AdviceNote } from "../../_components/advice-note"
+import { ConfirmMode } from "../../_components/confirm-mode.client"
 import { ProductsList } from "../../_components/products-list"
 import { getProducts } from "@/config/products-config"
 import { ModeCard } from "../../_components/mode-card.client"
@@ -106,9 +107,20 @@ export default async function DevModePage({
         >
           <div data-dev-mode-page data-dev-mode-active={active} className="flex min-w-0 flex-1 flex-col gap-6">
             {/* 🔒 «РЕЖИМ НЕ ВЫБИРАЛИ» — ОТДЕЛЬНОЕ СОСТОЯНИЕ, А НЕ ЗНАЧЕНИЕ.
-                Молчание конфига действует как классический, поэтому по значению
-                этого не увидеть никогда; спрашивается факт записи. */}
-            {!chosen && <AdviceNote probe="mode-never-chosen" title={ui.title} text={ui.neverChosen} />}
+                Молчание конфига действует как `steps`, поэтому по значению этого
+                не увидеть никогда; спрашивается факт записи.
+
+                🔒 И ЗДЕСЬ ЖЕ ЕГО МОЖНО ИСПРАВИТЬ (68, 2026-08-31). Кнопка стояла
+                на карточке действующего режима, рядом со словом «сейчас», и
+                владелец прочитал это как поломку. Действие принадлежит блоку,
+                который объясняет, зачем оно нужно; убрать его совсем было нельзя —
+                врезка осталась бы навсегда, а решение незаписанным. */}
+            {!chosen && (
+              <div>
+                <AdviceNote probe="mode-never-chosen" title={ui.title} text={ui.neverChosen} />
+                <ConfirmMode mode={current} ui={ui} />
+              </div>
+            )}
 
             <ModeCard mode={active} current={current} chosen={chosen} ui={ui} lang={lang} adminUrl={adminUrl} />
 

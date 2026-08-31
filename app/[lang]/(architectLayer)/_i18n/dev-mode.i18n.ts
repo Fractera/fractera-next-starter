@@ -78,8 +78,6 @@ export type DevModeUi = {
    * не заполнена». Правда о ненастроенном берётся у самой способности и
    * произносится словами (закон 31-14).
    */
-  doorUnknown: string
-  doorUnknownLink: string
   title: string
   subtitle: string
   lead: string
@@ -93,6 +91,8 @@ export type DevModeUi = {
   /** Обвязка списка продуктов на вкладке кейсов (34-E). */
   products: { title: string; hint: string; empty: string; emptyHint: string; create: string; creating: string; created: string; namePlaceholder: string; phase: string; stage: string }
   choose: string
+  /** Слово кнопки во врезке «режим ещё не выбирали» (68, 2026-08-31). */
+  confirmCurrent: string
   chosen: string
   saving: string
   saved: string
@@ -105,8 +105,6 @@ export type DevModeUi = {
 
 const en: DevModeUi = {
   title: "Development mode",
-  doorUnknown: "The panel address is not known yet: it is derived from the site address, and that one is still empty. Fill it in and the button to the panel appears right here.",
-  doorUnknownLink: "Set the site address",
   subtitle:
     "How work on this project is carried out. The agent reads this at the start of every session — said in a chat, it would not survive the conversation.",
   lead:
@@ -131,6 +129,7 @@ const en: DevModeUi = {
     stage: "Stage",
   },
   choose: "Choose this mode",
+  confirmCurrent: "Keep this mode — record the choice",
   chosen: "This mode is in effect",
   saving: "Saving…",
   saved: "Mode saved",
@@ -188,8 +187,6 @@ const en: DevModeUi = {
 
 const ru: DevModeUi = {
   title: "Режим разработки",
-  doorUnknown: "Адрес панели пока не известен: он считается из адреса сайта, а тот ещё пуст. Заполните его — и кнопка в панель появится здесь.",
-  doorUnknownLink: "Указать адрес сайта",
   subtitle:
     "Как ведётся работа над этим проектом. Агент читает это в начале каждой сессии — сказанное в разговоре до следующего окна не доезжает.",
   lead:
@@ -214,6 +211,7 @@ const ru: DevModeUi = {
     stage: "Стадия",
   },
   choose: "Выбрать этот режим",
+  confirmCurrent: "Оставить этот режим — записать решение",
   chosen: "Этот режим действует",
   saving: "Сохраняю…",
   saved: "Режим сохранён",

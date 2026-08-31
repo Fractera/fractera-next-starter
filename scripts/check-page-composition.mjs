@@ -40,7 +40,26 @@ const LANG_DIR = path.join(ROOT, "app", "[lang]")
 // Источники, каждый из которых делает страницу законной.
 const FACTORY = /createContentPage|createContentPost/
 const BLOCKS = /PostBody|renderBlocks|from ["']@\/sections|SPECIMEN/
-const WIDGET = /_widgets\//
+
+// 🔒 ВИДЖЕТ ЗАСЧИТЫВАЕТСЯ ПО ПРИМЕНЕНИЮ, А НЕ ПО ИМПОРТУ, И ЭТО НЕ ПРИДИРКА.
+// ✗ оплачено 2026-08-31, негативным контролем шага 64: я убрал вызов виджета,
+// поставил вместо него свою сетку — и сторож смолчал, потому что СТРОКА ИМПОРТА
+// осталась в файле. Импорт без применения выглядит для текстового поиска ровно
+// так же, как честно нарисованный виджет; а в живом коде такой импорт остаётся
+// после любой поспешной правки, и страница уезжает со своей вёрсткой под
+// зелёным сторожем.
+//
+// Поэтому имя берётся из самого импорта и ищется в разметке как `<Имя`.
+function widgetUsed(text) {
+  const names = []
+  for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*["'][^"']*_widgets\/[^"']*["']/g)) {
+    for (const part of m[1].split(",")) {
+      const name = part.trim().split(/\s+as\s+/).pop()?.trim()
+      if (name) names.push(name)
+    }
+  }
+  return names.some(n => new RegExp(`<${n}[\\s/>]`).test(text))
+}
 
 // Признак собственной раскладки: класс, расставляющий вещи по экрану.
 // Отступ внутри примитива сюда не попадает намеренно — ищется РАСКЛАДКА.
@@ -110,7 +129,7 @@ for (const page of pages.sort()) {
   const files = entryFiles(page)
   const text = files.map(f => fs.readFileSync(f, "utf8")).join("\n")
 
-  if (FACTORY.test(text) || BLOCKS.test(text) || WIDGET.test(text)) {
+  if (FACTORY.test(text) || BLOCKS.test(text) || widgetUsed(text)) {
     ok++
     continue
   }

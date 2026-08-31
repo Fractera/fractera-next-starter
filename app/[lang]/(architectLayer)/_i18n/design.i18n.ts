@@ -332,6 +332,9 @@ const EN = {
       "howLabel": "How to use it",
       "valueLabel": "What it gives you",
       "request": {
+        "editLabel": "Suggest a change to %s",
+        "editTitle": "Change the tool %s",
+        "editLead": "Describe in your own words what should be different — a refusal that explains nothing, a missing setting, behaviour that gets in the way. The tool keeps the same patterns as the others in `_tools/` and the `use-tools` skill still governs it. Your words go to the agent verbatim; nothing happens until you ask him to take it.",
         "createLabel": "Ask for a new tool",
         "createTitle": "A new tool for this project",
         "createLead": "Describe the capability you are missing — image generation with AI, document recognition, a map, a signature. It will be built in the SAME patterns as the tools above: its own folder `_tools/<id>/` with client, server and types, its own `tool.json` card, a place in this catalogue — and under the `use-tools` skill, which governs how tools are built here. Your words go to the agent verbatim; nothing happens until you ask him to take it.",
@@ -671,6 +674,9 @@ const RU: typeof EN = {
       "howLabel": "Как применять",
       "valueLabel": "Какую пользу даёт",
       "request": {
+        "editLabel": "Предложить правку инструмента %s",
+        "editTitle": "Изменить инструмент %s",
+        "editLead": "Опишите своими словами, что должно быть иначе: отказ, который ничего не объясняет, недостающая настройка, поведение, которое мешает. Инструмент остаётся в тех же паттернах, что и соседние в `_tools/`, и по-прежнему подчиняется навыку `use-tools`. Ваши слова уезжают агенту дословно; само ничего не начнётся, пока вы не попросите его взяться.",
         "createLabel": "Попросить новый инструмент",
         "createTitle": "Новый инструмент для этого проекта",
         "createLead": "Опишите способность, которой не хватает: генерация изображений искусственным интеллектом, распознавание документов, карта, подпись. Он будет построен В ТЕХ ЖЕ ПАТТЕРНАХ, что и инструменты выше: своя папка `_tools/<id>/` с клиентом, сервером и типами, своя карточка `tool.json`, место в этой витрине — и по навыку `use-tools`, который и регулирует, как здесь строят инструменты. Ваши слова уезжают агенту дословно; само ничего не начнётся, пока вы не попросите его взяться.",

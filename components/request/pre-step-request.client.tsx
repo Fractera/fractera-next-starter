@@ -113,6 +113,10 @@ export type ToolWordsUi = {
   whereLabel: string
   whereHint: string
   wherePlaceholder: string
+  /** Подпись карандаша для читалки: «предложить правку инструмента %s». */
+  editLabel: string
+  editTitle: string
+  editLead: string
 }
 
 type Props = {
@@ -143,12 +147,21 @@ type Props = {
    * прямо — тем же способом, каким назван `pageSlug`.
    */
   tool?: boolean
+  /**
+   * Какой именно инструмент правим — `_tools/code-view`.
+   *
+   * 🔒 ЕГО НАЛИЧИЕ И ЕСТЬ РАЗНИЦА МЕЖДУ «ПРАВКОЙ» И «НОВЫМ», ровно как у блоков:
+   * там код образца отличает карандаш от кнопки создания. Один и тот же признак
+   * на два предмета — не совпадение, а то, что делает каталоги одинаковыми на
+   * ощупь.
+   */
+  toolId?: string
   /** Слова варианта Г. Обязательны там, где предмет — инструмент. */
   toolUi?: ToolWordsUi
   page: string
 }
 
-export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageLang, tool, toolUi, page }: Props) {
+export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, pageSlug, pageTitle, pageLang, tool, toolId, toolUi, page }: Props) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState("")
   const [role, setRole] = useState("")
@@ -158,6 +171,9 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
   // определение вариантов: инструмент и страница объявляются прямо, правка
   // образца узнаётся по коду, новый блок остаётся тем, что не подошло никуда.
   const isTool = Boolean(tool)
+  // Правка существующего инструмента против просьбы о новом — та же развилка,
+  // что у блоков: назван предмет — карандаш, не назван — карточка создания.
+  const isToolEdit = isTool && Boolean(toolId)
   const isPage = Boolean(pageSlug)
   // 🔒 СЛОВА ВАРИАНТА В РЕЗОЛВЯТСЯ ЗДЕСЬ, В БРАУЗЕРЕ, А НЕ ПРИЕЗЖАЮТ ПРОПСОМ.
   // Иначе они уезжают в полезной нагрузке каждому посетителю статической
@@ -181,7 +197,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
         // применять»; вопросы разные, а место в заявке одно. Второй ключ ради
         // подписи развёл бы форму и файл: писателю пришлось бы знать оба и
         // выбирать, а он и так знает предмет.
-        body: JSON.stringify({ text, code, kind, pageSlug, tool: tool || undefined, role: role || undefined, page }),
+        body: JSON.stringify({ text, code, kind, pageSlug, tool: tool || undefined, toolId, role: role || undefined, page }),
       })
       const data = (await res.json().catch(() => null)) as { ok?: boolean; file?: string } | null
 
@@ -222,7 +238,7 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
 
   return (
     <>
-      {isPage || isCreate || isTool ? (
+      {isPage || isCreate || (isTool && !isToolEdit) ? (
 
         <button
           type="button"
@@ -238,10 +254,11 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
       ) : (
         <button
           type="button"
-          data-edit-block={code}
+          data-edit-block={isToolEdit ? undefined : code}
+          data-edit-tool={isToolEdit ? toolId : undefined}
           onClick={() => setOpen(true)}
-          aria-label={(blockUi?.editLabel ?? "").replace("%s", code ?? "")}
-          title={(blockUi?.editLabel ?? "").replace("%s", code ?? "")}
+          aria-label={isToolEdit ? (toolUi?.editLabel ?? "").replace("%s", toolId ?? "") : (blockUi?.editLabel ?? "").replace("%s", code ?? "")}
+          title={isToolEdit ? (toolUi?.editLabel ?? "").replace("%s", toolId ?? "") : (blockUi?.editLabel ?? "").replace("%s", code ?? "")}
           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
         >
           <Pencil size={12} aria-hidden />
@@ -253,8 +270,8 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
         onOpenChange={setOpen}
         ui={dialogUi}
         size="md"
-        title={isTool ? (toolUi?.createTitle ?? "") : isPage ? w.title.replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
-        description={isTool ? (toolUi?.createLead ?? "") : isPage ? w.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
+        title={isToolEdit ? (toolUi?.editTitle ?? "").replace("%s", toolId ?? "") : isTool ? (toolUi?.createTitle ?? "") : isPage ? w.title.replace("%s", pageTitle ?? pageSlug ?? "") : isCreate ? (blockUi?.createTitle ?? "").replace("%s", kindTitle ?? kind ?? "") : (blockUi?.editTitle ?? "").replace("%s", code ?? "")}
+        description={isToolEdit ? (toolUi?.editLead ?? "") : isTool ? (toolUi?.createLead ?? "") : isPage ? w.lead : isCreate ? (blockUi?.createLead ?? "") : (blockUi?.editLead ?? "")}
         footer={
           <>
             <button
@@ -326,8 +343,14 @@ export function PreStepRequest({ ui, blockUi, dialogUi, code, kind, kindTitle, p
 
                 🔒 ПОДСКАЗКИ О ЧУЖИХ СТИЛЯХ ЗДЕСЬ НЕТ НАМЕРЕННО. Она про блок:
                 вид можно повторить по CSS. У инструмента предмет — работа, а не
-                облик, и обещание «пришлите стили» увело бы разговор не туда. */}
-            {isTool && (
+                облик, и обещание «пришлите стили» увело бы разговор не туда.
+
+                🔒 У ПРАВКИ СУЩЕСТВУЮЩЕГО ИНСТРУМЕНТА ЭТОГО ПОЛЯ НЕТ, и это не
+                экономия: он уже где-то применяется, и спрашивать «где будете
+                применять» значило бы задать вопрос, на который отвечает сама
+                карточка строкой «Уже применяется». Тот же порядок у блоков:
+                карандаш спрашивает одно, кнопка создания — два. */}
+            {isTool && !isToolEdit && (
               <label className="flex flex-col gap-1.5">
                 <span className="text-[length:var(--fs-small)] font-medium text-foreground">{(toolUi?.whereLabel ?? "")}</span>
                 <span className="text-[length:var(--fs-small)] text-muted-foreground">{(toolUi?.whereHint ?? "")}</span>

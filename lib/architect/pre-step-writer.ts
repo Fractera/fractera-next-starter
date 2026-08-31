@@ -29,7 +29,7 @@ import { join } from "path"
 const INBOX = join(process.cwd(), "development-docs", "development-steps", "pre-steps")
 
 /** Разумные пределы полей. Не защита от злого умысла, а защита от случайности. */
-const LIMITS = { text: 4000, code: 64, kind: 64, role: 2000, pageSlug: 64 } as const
+const LIMITS = { text: 4000, code: 64, kind: 64, role: 2000, pageSlug: 64, toolId: 64 } as const
 
 export type PreStepRequest = {
   /** Дословные слова человека: что он хочет изменить или построить. */
@@ -40,8 +40,10 @@ export type PreStepRequest = {
   kind?: string
   /** Имя страницы подвала — третий повод заявки (69): текст документа. */
   pageSlug?: string
-  /** Четвёртый повод (76-5): нужен новый ИНСТРУМЕНТ в `_tools/`. */
+  /** Четвёртый повод (76-5): речь об ИНСТРУМЕНТЕ в `_tools/`. */
   tool?: boolean
+  /** Какой именно — `_tools/code-view`. Есть только у правки существующего. */
+  toolId?: string
   /**
    * Второе свободное поле. Что оно значит, решает ПРЕДМЕТ заявки: у блока —
    * роль и ограничения, у инструмента — где его будут применять.
@@ -100,6 +102,7 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
   const role = typeof body.role === "string" ? body.role.trim().slice(0, LIMITS.role) : ""
   const pageSlug = typeof body.pageSlug === "string" ? body.pageSlug.trim().slice(0, LIMITS.pageSlug) : ""
   const tool = body.tool === true
+  const toolId = typeof body.toolId === "string" ? body.toolId.trim().slice(0, LIMITS.toolId) : ""
   const page = typeof body.page === "string" ? body.page.trim().slice(0, 200) : ""
 
   // Заявка про существующий образец, про новый блок в типе, про текст страницы
@@ -124,13 +127,13 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
   ]
   if (kind) lines.push(`тип:           ${kind}`)
   if (pageSlug) lines.push(`страница:      ${pageSlug}`)
-  if (tool) lines.push(`предмет:       новый инструмент в _tools/`)
+  if (tool) lines.push(`предмет:       ${toolId ? `правка инструмента ${toolId}` : "новый инструмент в _tools/"}`)
   lines.push(`что просят:    «${quote(text)}»`)
   // Подпись второго поля даёт предмет: у блока это роль, у инструмента — место
   // применения. Вопросы разные, ключ один.
   if (role) lines.push(`${tool ? "где применять:" : "роль и ограничения:"} «${quote(role)}»`)
   lines.push(
-    `чем вызвано:   ${tool ? "кнопка «попросить новый инструмент» в витрине инструментов" : pageSlug ? `кнопка «написать текст» на странице ${pageSlug}` : code ? `нажатие карандаша на образце ${code}` : `кнопка «создать блок» в типе ${kind}`}`,
+    `чем вызвано:   ${tool ? (toolId ? `нажатие карандаша на инструменте ${toolId}` : "кнопка «попросить новый инструмент» в витрине инструментов") : pageSlug ? `кнопка «написать текст» на странице ${pageSlug}` : code ? `нажатие карандаша на образце ${code}` : `кнопка «создать блок» в типе ${kind}`}`,
   )
   lines.push("")
 

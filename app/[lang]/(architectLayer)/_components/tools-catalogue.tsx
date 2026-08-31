@@ -65,6 +65,8 @@ export function ToolsCatalogue({
   // поключевое правило, которым живут языковые ячейки страниц: отсутствие
   // перевода деградирует до английского, а не до дыры.
   const text = (t: ToolEntry): ToolText => (lang === "ru" && t.ru ? t.ru : t.en)
+  // Адрес страницы уезжает в заявку: агенту важно, откуда пришла просьба.
+  const page = `/${lang}/architect/design?section=tools`
 
   return (
     <section data-tools-catalogue className="flex flex-col gap-4">
@@ -96,6 +98,18 @@ export function ToolsCatalogue({
                   режет видео». */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <KindBadge code={tool.dir} />
+                {/* 🔒 КАРАНДАШ СТОИТ У МЕТКИ, А НЕ НАД КАРТОЧКОЙ — тот же порядок,
+                    что у образца блока, и по той же причине: в заявку уезжает
+                    именно то, что написано на метке, и кнопка рядом с ней не
+                    оставляет вопроса, ЧТО будет правиться. */}
+                <PreStepRequest
+                  tool
+                  toolId={tool.dir}
+                  toolUi={w.request}
+                  ui={w.request}
+                  dialogUi={dialogUi}
+                  page={page}
+                />
                 <H4 variant="ui">{t.title}</H4>
               </div>
 
@@ -170,7 +184,7 @@ export function ToolsCatalogue({
           toolUi={w.request}
           ui={w.request}
           dialogUi={dialogUi}
-          page={`/${lang}/architect/design?section=tools`}
+          page={page}
         />
       </div>
     </section>

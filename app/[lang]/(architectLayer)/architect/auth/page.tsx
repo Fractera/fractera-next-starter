@@ -6,7 +6,10 @@ import { authUi } from "../../_i18n/auth.i18n"
 import { AUTH_SECTIONS, resolveAuthSection, hrefOfAuthSection } from "../../_lib/auth-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { AuthProvider } from "../../_components/auth-provider"
+import { FeaturesEditor } from "../../_components/features-editor.client"
 import { readAuthMethods } from "@/lib/architect/auth-methods"
+import { featureOn } from "@/config/platform-config"
+import { groupsUi } from "../../_i18n/groups.i18n"
 
 // АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (78-1, 2026-08-31).
 //
@@ -124,7 +127,39 @@ export default async function AuthPage({
 
                 🔒 ОДИН КОМПОНЕНТ НА ОБА ПРОВАЙДЕРА — решение источника, а не моё:
                 у Google и у почтовой ссылки одинаковый экран. */}
-            {active !== "about" && (
+            {/* 🔒 ВЫКЛЮЧАТЕЛЬ БЫЛ ЖИВ В КОДЕ И ПОТЕРЯЛ ПОВЕРХНОСТЬ ПРАВКИ
+                (78-4, слово владельца: «эта возможность существовала, но теперь
+                мы её потеряли»). Найдено чтением: `features.auth` лежит в схеме
+                `PLATFORM-CONFIG`, стоит `true` в умолчаниях и читается
+                `appShellAuthSide()` — а её зовут И ХЕДЕР, и подвал. Механизм
+                исправен целиком; исчез только экран, где на него нажимают.
+
+                🔒 РЕДАКТОР ВЗЯТ ГОТОВЫЙ. `FeaturesEditor` уже правит заплатой три
+                таких выключателя на соседней вкладке; написать здесь свой значило
+                бы завести второе место, пишущее `features`, — и оно разошлось бы
+                с первым молча.
+
+                🔒 УМОЛЧАНИЕ НЕ ЗАДАЁТСЯ ЗДЕСЬ, А ЧИТАЕТСЯ. `auth: true` стоит в
+                `PLATFORM-CONFIG/defaults.json`; повторить «по умолчанию включено»
+                вторым числом в коде значило бы завести вторую правду о том же. */}
+            {active === "visibility" && (
+              <FeaturesEditor
+                title={ui.m.visTitle}
+                hint={ui.m.visHint}
+                switches={[
+                  {
+                    key: "auth",
+                    label: ui.m.visEnable,
+                    hint: ui.m.visEnableHint,
+                    notice: { on: ui.m.visOnNotice, off: ui.m.visOffNotice },
+                    initial: featureOn("auth"),
+                  },
+                ]}
+                ui={groupsUi(lang)}
+              />
+            )}
+
+            {(active === "google" || active === "resend") && (
               <AuthProvider kind={active} state={methods} ui={ui} />
             )}
           </div>

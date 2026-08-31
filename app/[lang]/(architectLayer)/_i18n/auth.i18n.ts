@@ -19,7 +19,7 @@ export type AuthUi = {
   title: string
   menuTitle: string
   subtitle: string
-  pages: Record<"about" | "google" | "resend", { title: string; hint: string }>
+  pages: Record<"about" | "visibility" | "google" | "resend", { title: string; hint: string }>
   helpMore: string
   helpLess: string
   aboutSoonTitle: string
@@ -82,6 +82,12 @@ export type AuthUi = {
     helpEmpty: string
     helpSecretsTitle: string
     helpSecrets: string
+    visTitle: string
+    visHint: string
+    visEnable: string
+    visEnableHint: string
+    visOnNotice: string
+    visOffNotice: string
   }
 }
 
@@ -94,6 +100,10 @@ const EN: AuthUi = {
     about: {
       title: "About",
       hint: "How signing in is arranged in this project and what decides which methods appear.",
+    },
+    visibility: {
+      title: "Visibility",
+      hint: "Whether visitors see a way to sign in at all — the switch that shows or hides it in the header.",
     },
     google: {
       title: "Google provider",
@@ -171,6 +181,14 @@ const EN: AuthUi = {
     helpSecretsTitle: "Where the secrets live.",
     helpSecrets:
       "In the sign-in service's own environment file on your server, never in this page. What you see here is a mask built on the server; the secret itself is never sent back to the browser, not even to display it.",
+    visTitle: "Sign-in in the header",
+    visHint:
+      "Whether visitors see a way in at all. This is about the BUTTON, not about the providers below: turn it off and the account control disappears from the header and the footer, while the sign-in service and everyone's accounts stay exactly as they are.",
+    visEnable: "Show sign-in on the site",
+    visEnableHint: "On by default. The change is visible on the next page load — no rebuild.",
+    visOnNotice: "Visitors see the account control in the header and can sign in.",
+    visOffNotice:
+      "The control is hidden everywhere on the public site. People who are already signed in keep their session, and the sign-in address still answers directly — this hides the door, it does not lock it.",
   },
 }
 
@@ -183,6 +201,10 @@ const RU: AuthUi = {
     about: {
       title: "Описание",
       hint: "Как устроен вход в этот проект и от чего зависит, какие способы появляются.",
+    },
+    visibility: {
+      title: "Видимость",
+      hint: "Видят ли посетители вход вообще — выключатель, который показывает или скрывает его в хедере.",
     },
     google: {
       title: "Провайдер Google",
@@ -260,6 +282,14 @@ const RU: AuthUi = {
     helpSecretsTitle: "Где живут секреты.",
     helpSecrets:
       "В собственном файле окружения службы входа на вашем сервере, и никогда на этой странице. То, что вы здесь видите, — маска, собранная на сервере; сам секрет в браузер не отправляется, даже чтобы его показать.",
+    visTitle: "Вход в хедере",
+    visHint:
+      "Видят ли посетители путь входа вообще. Речь о КНОПКЕ, а не о провайдерах ниже: выключите — и элемент аккаунта исчезнет из хедера и подвала, а служба входа и все учётные записи останутся ровно такими, какими были.",
+    visEnable: "Показывать вход на сайте",
+    visEnableHint: "По умолчанию включено. Изменение видно при следующей загрузке страницы, без пересборки.",
+    visOnNotice: "Посетители видят элемент аккаунта в хедере и могут войти.",
+    visOffNotice:
+      "Элемент скрыт всюду на публичном сайте. Те, кто уже вошёл, сохраняют сессию, а адрес входа по-прежнему отвечает напрямую — это прячет дверь, а не запирает её.",
   },
 }
 

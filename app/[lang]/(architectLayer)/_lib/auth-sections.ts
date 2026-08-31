@@ -20,7 +20,12 @@
 // `use-auth-providers`). Завести ему раздел значило бы обещать выключатель,
 // которого не существует.
 
-export const AUTH_SECTIONS = ["about", "google", "resend"] as const
+// 🔒 «ВИДИМОСТЬ» СТОИТ ВТОРОЙ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА (78-4, 2026-08-31):
+// «это будет второй вкладкой сверху в левом меню». Место содержательно: сначала
+// решают, ЕСТЬ ли вход на сайте вообще, и только потом — какими провайдерами он
+// открывается. Провайдер, настроенный при выключенном входе, не появится нигде,
+// и человек, начавший с третьего раздела, искал бы ошибку в ключах.
+export const AUTH_SECTIONS = ["about", "visibility", "google", "resend"] as const
 export type AuthSection = (typeof AUTH_SECTIONS)[number]
 
 export function isAuthSection(v: unknown): v is AuthSection {

@@ -103,3 +103,6 @@ the build, is a **tool** — `_tools/`, `use-tools`.
   Tab in, Escape out. A window you cannot leave without a mouse is broken however it looks.
 - If you wrote something that felt like it should already exist, say so in your report: that is how
   the missing primitive gets noticed instead of being re-invented a fourth time.
+
+- **Foreign knowledge about these components** lives in the vendored `shadcn` skill; `use-shadcn`
+  says when it may be used here and where our law overrules it — the dialog above all.

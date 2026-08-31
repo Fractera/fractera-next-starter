@@ -209,3 +209,6 @@ Green types prove nothing here. Four measurements, all cheap:
    a second after — identical strings.
 4. **Deletion:** remove the folder, run the gates, grep the tree. One line in the route entry and one
    in the i18n registry is the whole footprint; anything else means the widget was smeared.
+
+5. **Foreign design knowledge has the widest room here** — a widget owes nobody but its route.
+   `use-shadcn` names what still holds: one dialog, one toast, colour as a token.

@@ -69,6 +69,17 @@ export type ModeWords = {
 }
 
 export type DevModeUi = {
+  /**
+   * Что сказано вместо ссылки, когда адрес панели неизвестен (66-3, 2026-08-31).
+   *
+   * 🔒 БЛОК ДВЕРИ НЕ ИСЧЕЗАЕТ МОЛЧА. Адрес панели считается из адреса САЙТА, а он
+   * пуст у каждого нового сервера в первый день — и весь блок пропадал целиком.
+   * Человек читал это как «в продукте такой возможности нет», а не как «настройка
+   * не заполнена». Правда о ненастроенном берётся у самой способности и
+   * произносится словами (закон 31-14).
+   */
+  doorUnknown: string
+  doorUnknownLink: string
   title: string
   subtitle: string
   lead: string
@@ -94,6 +105,8 @@ export type DevModeUi = {
 
 const en: DevModeUi = {
   title: "Development mode",
+  doorUnknown: "The panel address is not known yet: it is derived from the site address, and that one is still empty. Fill it in and the button to the panel appears right here.",
+  doorUnknownLink: "Set the site address",
   subtitle:
     "How work on this project is carried out. The agent reads this at the start of every session — said in a chat, it would not survive the conversation.",
   lead:
@@ -175,6 +188,8 @@ const en: DevModeUi = {
 
 const ru: DevModeUi = {
   title: "Режим разработки",
+  doorUnknown: "Адрес панели пока не известен: он считается из адреса сайта, а тот ещё пуст. Заполните его — и кнопка в панель появится здесь.",
+  doorUnknownLink: "Указать адрес сайта",
   subtitle:
     "Как ведётся работа над этим проектом. Агент читает это в начале каждой сессии — сказанное в разговоре до следующего окна не доезжает.",
   lead:

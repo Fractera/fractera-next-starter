@@ -176,21 +176,49 @@ export function ModeCard({
           СКАЗАНО ПРЯМО. Тот же приём, что у неготовой группы меню: пока раздел не
           переехал, настройка обязана оставаться доступной там, где она есть. Данные
           при этом одни и те же — панель пишет в ту же папку продуктов. */}
-      {words.door && doorHref(mode, lang, adminUrl) && (
-        <div data-mode-door={mode} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
-          {/* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ: это другое приложение и другой
-              домен, и увести туда текущую вкладку значит выбросить человека из его
-              проекта. `noopener` обязателен вместе с `_blank`. */}
-          <a
-            href={doorHref(mode, lang, adminUrl)}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
-          >
-            {words.door.label}
-            <ArrowRight className="size-4" aria-hidden />
-          </a>
-          <Small>{words.door.hint}</Small>
+      {/* 🔒 БЛОК ДВЕРИ НЕ ИСЧЕЗАЕТ НИКОГДА (66-3, 2026-08-31, решение владельца).
+          ✗ Здесь стояло `words.door && doorHref(...) &&` — и адрес панели считается
+          из адреса САЙТА, который у нового сервера пуст. Весь блок пропадал молча,
+          и владелец, не найдя кнопок, сообщил, что их нет вовсе. Измерено на живом
+          сервере до правки: дверей 0 на обоих режимах при HTTP 200.
+
+          Лечение — не «настроить адрес», а перестать молчать: настроить можно за
+          минуту, но у КАЖДОГО нового клиента в первый день адрес пуст, и кнопки
+          пропадут точно так же. Правда о ненастроенном берётся у самой способности
+          и произносится словами (закон 31-14).
+
+          🔒 ПОКА ПОВЕРХНОСТЬ КЕЙСОВ ПЕРЕЕЗЖАЕТ, ДВЕРЬ ВЕДЁТ В ПАНЕЛЬ, И ОБ ЭТОМ
+          СКАЗАНО ПРЯМО. Данные при этом одни и те же — панель пишет в ту же папку
+          продуктов. */}
+      {words.door && (
+        <div data-mode-door={mode} data-mode-door-known={doorHref(mode, lang, adminUrl) ? "true" : "false"} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
+          {doorHref(mode, lang, adminUrl) ? (
+            /* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ: это другое приложение и другой
+               домен, и увести туда текущую вкладку значит выбросить человека из его
+               проекта. `noopener` обязателен вместе с `_blank`. */
+            <a
+              href={doorHref(mode, lang, adminUrl)}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
+            >
+              {words.door.label}
+              <ArrowRight className="size-4" aria-hidden />
+            </a>
+          ) : (
+            /* Адреса нет — на месте кнопки стоит то, чего не хватает, и дорога туда,
+               где это заполняют. Ссылка СВОЯ, поэтому обычная и без нового окна. */
+            <a
+              href={`/${lang}/architect/app-config?group=basics`}
+              data-mode-door-fix={mode}
+              rel="nofollow"
+              className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
+            >
+              {ui.doorUnknownLink}
+              <ArrowRight className="size-4" aria-hidden />
+            </a>
+          )}
+          <Small>{doorHref(mode, lang, adminUrl) ? words.door.hint : ui.doorUnknown}</Small>
         </div>
       )}
 

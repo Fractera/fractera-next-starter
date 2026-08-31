@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowRight, Check, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { H3, P, Small } from "@/components/ui/typography"
 import { AdviceNote } from "./advice-note"
+import { adminBase } from "@/lib/runtime-urls"
 import { isAlphaMode, type DevMode } from "../_lib/dev-mode"
 import type { DevModeUi } from "../_i18n/dev-mode.i18n"
 
@@ -33,15 +34,34 @@ import type { DevModeUi } from "../_i18n/dev-mode.i18n"
  * Адрес двери по имени режима.
  *
  * 🔒 СЧИТАЕТСЯ ЗДЕСЬ, А НЕ В СЛОВАРЕ. Адрес — не слово: он не переводится и
- * зависит от того, что уже переехало в этот слой. Кейсы пока живут в панели,
- * переезд — на своей же вкладке.
+ * зависит от того, что уже переехало в этот слой.
+ *
+ * 🔒 ОБЕ ДВЕРИ ВЕДУТ В ПАНЕЛЬ (решение владельца 2026-08-29): «для навигации
+ * используем новую архитектуру, для работы старую». Пока способность живёт и
+ * работает там, слой обязан вести к ней, а не заводить свою копию.
+ *
+ * ✗ ОПЛАЧЕНО 2026-08-31, И ОШИБКА БЫЛА НЕ В РАСЧЁТЕ, А В ПОИСКЕ. Адрес брался
+ * ТОЛЬКО из настроек (`adminUrlFromSite(APP-CONFIG.url)`), пустых у каждого
+ * нового сервера, — и дверь либо исчезала, либо (после 66-3) объявляла адрес
+ * неизвестным. Владелец ответил ровно то, что следовало проверить самому:
+ * «как это неизвестен… спуститесь в подвал и нажмите кнопку панель управления,
+ * там всё известно».
+ *
+ * 🔒 ЭТУ ЖЕ ЗАДАЧУ ПРОЕКТ РЕШИЛ 2026-08-29 ДЛЯ КНОПКИ В ПОДВАЛЕ, и решение
+ * лежало готовым: `lib/runtime-urls.ts`. Два источника, и ни один не угадывает —
+ * сервер даёт адрес из настроек, когда они есть; иначе он ВЫЧИСЛЯЕТСЯ из адреса
+ * окна (IP → `<хост>:3002`, домен → `admin.<апекс>`). Закон «выдуманный адрес
+ * хуже отсутствующего» запрещает ВЫДУМЫВАТЬ, а не ВЫЧИСЛЯТЬ.
+ *
+ * 🔒 ВЫЧИСЛЕНИЕ ИДЁТ ПОСЛЕ ГИДРАТАЦИИ, И ЭТО НЕ ОСТОРОЖНОСТЬ, А НЕОБХОДИМОСТЬ.
+ * На сервере `adminBase()` отдаёт `http://localhost:3002` — адрес МАШИНЫ
+ * ПОСЕТИТЕЛЯ, а не сервера. Поставь его в ссылку на этапе разметки, и человек
+ * уйдёт в никуда на собственном компьютере. Поэтому база приходит сюда готовой,
+ * а считает её `useEffect` — тем же приёмом, что `AdminLink` в подвале.
  */
-function doorHref(mode: DevMode, lang: string, adminUrl: string): string {
-  // 🔒 ОБЕ ДВЕРИ ВЕДУТ В ПАНЕЛЬ (решение владельца 2026-08-29): «для навигации
-  // используем новую архитектуру, для работы старую». Пока способность живёт и
-  // работает там, слой обязан вести к ней, а не заводить свою копию.
-  if (!adminUrl) return ""
-  return mode === "migration" ? `${adminUrl}/${lang}/migration` : `${adminUrl}/${lang}/products`
+function doorHref(mode: DevMode, lang: string, base: string): string {
+  if (!base) return ""
+  return mode === "migration" ? `${base}/${lang}/migration` : `${base}/${lang}/products`
 }
 
 export function ModeCard({
@@ -67,9 +87,28 @@ export function ModeCard({
   const [savedChosen, setSavedChosen] = useState(chosen)
   const [busy, setBusy] = useState(false)
 
+  // Адрес панели: сервер даёт его из настроек, когда они есть; иначе браузер
+  // выводит из собственного адреса окна — после гидратации, не в разметке.
+  const [base, setBase] = useState(adminUrl)
+  useEffect(() => {
+    if (!adminUrl) setBase(adminBase())
+  }, [adminUrl])
+
   const isCurrent = mode === savedMode
-  // Кнопка гаснет, только когда этот режим И действует, И выбран осознанно.
-  const done = isCurrent && savedChosen
+  // 🔒 КНОПКИ НЕТ У ДЕЙСТВУЮЩЕГО РЕЖИМА — ТОЧКА (владелец 2026-08-31: «ты видишь,
+  // что это шаг активный, но при этом кнопка продолжает гореть; я тебе раньше
+  // давал задание: если шаг активный, то кнопка исчезает»).
+  //
+  // 🪦 ЗДЕСЬ СТОЯЛО `isCurrent && savedChosen`, и довод при нём был не пустой:
+  // умолчание — `steps`, поэтому режим ДЕЙСТВУЕТ ещё до того, как его выбрали, и
+  // без кнопки записать это решение было бы нечем. Довод верен, вывод был неверен:
+  // кнопка «выбрать» на карточке, где сверху написано «сейчас», читается как
+  // сломанная — человек нажимает её, чтобы проверить, а не чтобы решить.
+  //
+  // 🔒 ПОДТВЕРЖДЕНИЕ ПЕРЕЕХАЛО ТУДА, ГДЕ О НЁМ И ГОВОРЯТ — во врезку «режим ещё не
+  // выбирали». Действие принадлежит тому блоку, который объясняет, почему оно
+  // нужно; на карточке действующего режима ему делать нечего.
+  const done = isCurrent
 
   async function choose() {
     setBusy(true)
@@ -176,49 +215,31 @@ export function ModeCard({
           СКАЗАНО ПРЯМО. Тот же приём, что у неготовой группы меню: пока раздел не
           переехал, настройка обязана оставаться доступной там, где она есть. Данные
           при этом одни и те же — панель пишет в ту же папку продуктов. */}
-      {/* 🔒 БЛОК ДВЕРИ НЕ ИСЧЕЗАЕТ НИКОГДА (66-3, 2026-08-31, решение владельца).
-          ✗ Здесь стояло `words.door && doorHref(...) &&` — и адрес панели считается
-          из адреса САЙТА, который у нового сервера пуст. Весь блок пропадал молча,
-          и владелец, не найдя кнопок, сообщил, что их нет вовсе. Измерено на живом
-          сервере до правки: дверей 0 на обоих режимах при HTTP 200.
-
-          Лечение — не «настроить адрес», а перестать молчать: настроить можно за
-          минуту, но у КАЖДОГО нового клиента в первый день адрес пуст, и кнопки
-          пропадут точно так же. Правда о ненастроенном берётся у самой способности
-          и произносится словами (закон 31-14).
+      {/* 🔒 ДВЕРЬ ЕСТЬ ВСЕГДА, ПОТОМУ ЧТО АДРЕС ВСЕГДА ВЫЧИСЛИМ (66-3 → 68).
+          ✗ Дважды подряд здесь стояло условие на настройки: сперва блок исчезал
+          молча, потом (66-3) честно объявлял адрес неизвестным. Второе было
+          вежливее и так же неверно — владелец ответил тем, что следовало
+          проверить самому: «спуститесь в подвал и нажмите кнопку панель
+          управления, там всё известно». Адрес неизвестен не был никогда.
 
           🔒 ПОКА ПОВЕРХНОСТЬ КЕЙСОВ ПЕРЕЕЗЖАЕТ, ДВЕРЬ ВЕДЁТ В ПАНЕЛЬ, И ОБ ЭТОМ
           СКАЗАНО ПРЯМО. Данные при этом одни и те же — панель пишет в ту же папку
           продуктов. */}
-      {words.door && (
-        <div data-mode-door={mode} data-mode-door-known={doorHref(mode, lang, adminUrl) ? "true" : "false"} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
-          {doorHref(mode, lang, adminUrl) ? (
-            /* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ: это другое приложение и другой
-               домен, и увести туда текущую вкладку значит выбросить человека из его
-               проекта. `noopener` обязателен вместе с `_blank`. */
-            <a
-              href={doorHref(mode, lang, adminUrl)}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
-            >
-              {words.door.label}
-              <ArrowRight className="size-4" aria-hidden />
-            </a>
-          ) : (
-            /* Адреса нет — на месте кнопки стоит то, чего не хватает, и дорога туда,
-               где это заполняют. Ссылка СВОЯ, поэтому обычная и без нового окна. */
-            <a
-              href={`/${lang}/architect/app-config?group=basics`}
-              data-mode-door-fix={mode}
-              rel="nofollow"
-              className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
-            >
-              {ui.doorUnknownLink}
-              <ArrowRight className="size-4" aria-hidden />
-            </a>
-          )}
-          <Small>{doorHref(mode, lang, adminUrl) ? words.door.hint : ui.doorUnknown}</Small>
+      {words.door && doorHref(mode, lang, base) && (
+        <div data-mode-door={mode} className="flex flex-col gap-1 rounded-lg border border-border px-4 py-3">
+          {/* 🔒 ПАНЕЛЬ ОТКРЫВАЕТСЯ НОВОЙ ВКЛАДКОЙ: это другое приложение и другой
+              домен, и увести туда текущую вкладку значит выбросить человека из его
+              проекта. `noopener` обязателен вместе с `_blank`. */}
+          <a
+            href={doorHref(mode, lang, base)}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="inline-flex w-fit items-center gap-2 text-[length:var(--fs-body)] font-medium text-primary hover:underline"
+          >
+            {words.door.label}
+            <ArrowRight className="size-4" aria-hidden />
+          </a>
+          <Small>{words.door.hint}</Small>
         </div>
       )}
 

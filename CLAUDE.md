@@ -455,7 +455,7 @@ total** — this one plus the four below, all of them on the same shell
 |---|---|
 | `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
 | `/{lang}/architect/design` | **the look of this project** — seven sections: fonts · type scale · shape · colours · blocks · **dialogs** · **tools** |
-| `/{lang}/architect/telegram` | the Telegram bot — a skeleton so far: description · logs · settings |
+| `/{lang}/architect/telegram` | **the Telegram bot** — description · logs · settings, all three built (step 77) |
 | `/{lang}/architect/auth` | **how people sign in** — description · sign-in visibility · Google · Resend |
 
 🔒 **THE COUNT AND THE LIST ARE FIXED IN ONE EDIT, NEVER ONE WITHOUT THE OTHER.** A hand-written list
@@ -492,6 +492,29 @@ switch looks dead for ten minutes — a defect the owner found twice on this sam
 
 🪦 **THE CONTROL PANEL NO LONGER HAS A "SIGN-IN METHODS" TAB** (removed 2026-09-01). Do not send the
 owner there; this page is the only surface.
+
+### `/{lang}/architect/telegram` — the bot (step 77)
+
+Three sections. **Description** says what the bot can do today and what it cannot, both written from
+the service's source rather than from memory. **Logs** is a live feed of what the bot heard — the last
+500 messages the channel service keeps, newest first, with the reason spelled out when it is empty
+(no token · not linked · nobody wrote). **Settings** is the panel's screen moved here whole: the token,
+the on/off switch, the schedule step, and the linking handshake.
+
+🔒 **THE TRUTH ABOUT THE BOT LIVES IN THE CHANNEL SERVICE ON `:3500`, NOT HERE.** It stores the token
+in its own `config.json`, validates the token format, clamps the schedule and is the single reader of
+the bot. Our four doors under `/api/architect/channels/*` are deliberately thin — a second copy of
+those rules in this repository would diverge on the service's first change. The doors, and what may
+NOT be done with a token, are in `use-channels`.
+
+🔒 **NO RESTART IS NEEDED AFTER WRITING**, unlike the sign-in service: `:3500` re-reads its config on
+every request. Check what a door does AFTER a write before you copy a neighbour's habit.
+
+🔒 **THREE THINGS "EVERYBODY KNEW" ABOUT THIS BOT WERE FALSE** (found in 77-6 by reading the service):
+a voice note IS transcribed, every message IS pushed into this project's own `/api/telegram/hook` with
+a shared secret, and a sent file IS stored in the media library and read. All three were written down
+as missing capabilities in `use-channels`, which has now been corrected. **Read the source before you
+promise, or refuse, anything about a platform service.**
 
 🔒 **DESIGN HAS ITS OWN ENTRY IN THE SITE FOOTER, NOT A ROW IN THE SETTINGS MENU** (owner, 2026-08-29).
 It moved out of the control panel the same day, and the panel no longer has those pages: do not send

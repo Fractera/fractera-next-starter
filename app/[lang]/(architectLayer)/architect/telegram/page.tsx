@@ -10,6 +10,7 @@ import {
 } from "../../_lib/telegram-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { SectionSoon } from "../../_components/section-soon"
+import { readChannels } from "@/lib/architect/channels"
 
 // TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (77-1, 2026-08-31).
 //
@@ -56,6 +57,11 @@ export default async function TelegramPage({
   const ui = telegramUi(lang)
   const active = resolveTelegramSection(rawSection)
 
+  // 🔒 ОДИН ВОПРОС СЛУЖБЕ НА СТРАНИЦУ, А НЕ ПО ОДНОМУ НА РАЗДЕЛ. Служба ходит в
+  // Telegram за именем бота, то есть вызов не бесплатный; и разделы обязаны
+  // показывать ОДНО состояние, а не каждый своё, снятое в разные секунды.
+  const channels = await readChannels()
+
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
@@ -79,9 +85,18 @@ export default async function TelegramPage({
           title={ui.pages[active].title}
           lead={ui.pages[active].hint}
         >
+          {/* 🔒 СОСТОЯНИЕ ЧИТАЕТ СЕРВЕР ДО ОТДАЧИ HTML (77-3) — как это делала
+              панель. Значит без JS видно главное: жива ли служба каналов, сохранён
+              ли токен, узнаёт ли его сам Telegram, привязан ли чат. Признаки стоят
+              на контейнере раздела, а не внутри островка: островок появляется
+              позже, а правда о боте нужна разметке сразу. */}
           <div
             data-telegram-page
             data-telegram-section={active}
+            data-channels-available={String(channels.available)}
+            data-telegram-configured={String(Boolean(channels.telegram?.configured))}
+            data-telegram-reachable={String(Boolean(channels.telegram?.reachable))}
+            data-telegram-linked={String(Boolean(channels.telegram?.chatId))}
             className="flex min-w-0 flex-1 flex-col gap-6"
           >
             {/* 🔒 «ОПИСАНИЕ» БЕРЁТ ОБЩУЮ СВЁРНУТУЮ СПРАВКУ, А НЕ СВОЮ. Тот же

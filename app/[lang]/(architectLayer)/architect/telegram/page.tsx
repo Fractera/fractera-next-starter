@@ -13,7 +13,7 @@ import {
 } from "../../_lib/telegram-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { TelegramSettings } from "../../_components/telegram-settings"
-import { TelegramLogsSection } from "../../_components/telegram-logs-section"
+import { TaskParseSection } from "../../_components/task-parse-section"
 import { TelegramAbout } from "../../_components/telegram-about"
 import { InProgress } from "../../_components/in-progress"
 import { readChannels } from "@/lib/architect/channels"
@@ -222,9 +222,13 @@ export default async function TelegramPage({
                 Полоса была в `WorkspaceShell` с самого начала и не использовалась
                 никем — своя здесь была бы второй копией готового. Построен пока
                 только первый вид, остальные четыре честно называют себя. */}
+            {/* 🪦 ПЕРВЫМ ВИДОМ БЫЛА ЛЕНТА ВХОДЯЩИХ, ЗАМЕНЕНА НА «РАЗБОР ЗАПРОСА»
+                (91-1) прямым словом владельца: «Заменить ленту совсем». Способность
+                видеть последние 500 сообщений исчезла вместе с ней, и это долг, а
+                не размен: её дом — вид `db` этого же ряда, объявлен и не построен. */}
             {active === "logs" &&
-              (view === "messages" ? (
-                <TelegramLogsSection state={channels} ui={ui} />
+              (view === "parse" ? (
+                <TaskParseSection state={channels} ui={ui} />
               ) : (
                 <InProgress where={`logs-${view}`} label={ui.skeleton.views[view]} lead={ui.skeleton.inProgress} />
               ))}

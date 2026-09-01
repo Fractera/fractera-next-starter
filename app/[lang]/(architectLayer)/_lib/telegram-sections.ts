@@ -60,7 +60,15 @@ export function hrefOfTelegramSection(lang: string, section: TelegramSection): s
 // 🔒 РАЗМЕТКУ ДАЁТ `WorkspaceShell` СВОИМ СВОЙСТВОМ `tabs` — тем самым липким
 // рядом, который в раскладке был с самого начала и до сих пор не использовался
 // никем. Своя полоса вкладок здесь была бы второй копией готового.
-export const TELEGRAM_LOG_VIEWS = ["messages", "db", "media", "vectors", "rag"] as const
+// 🪦 ПЕРВЫМ ВИДОМ БЫЛ `messages` — ЛЕНТА ПОСЛЕДНИХ 500 ВХОДЯЩИХ (80-6). Заменён
+// на `parse` 2026-09-02 прямым решением владельца: «Заменить ленту совсем».
+//
+// 🛑 ЦЕНА НАЗВАНА, А НЕ ЗАМОЛЧАНА: вопрос «что бот слышал вчера» с этого экрана
+// больше не имеет ответа. Из трёх доказательств удаления поверхности — «этого
+// нет», «сосед цел», «способность жива на новом месте» — третье здесь честно НЕ
+// выполняется: «Разбор запроса» показывает ТЕКУЩИЙ запрос, а не историю.
+// Естественный дом для истории — вид `db` этого же ряда: объявлен, не построен.
+export const TELEGRAM_LOG_VIEWS = ["parse", "db", "media", "vectors", "rag"] as const
 export type TelegramLogView = (typeof TELEGRAM_LOG_VIEWS)[number]
 
 export function isTelegramLogView(v: unknown): v is TelegramLogView {
@@ -69,7 +77,10 @@ export function isTelegramLogView(v: unknown): v is TelegramLogView {
 
 /** Какой вид логов открыт. Неизвестное значение падает на первый — тот же закон. */
 export function resolveTelegramLogView(raw: string | undefined): TelegramLogView {
-  return isTelegramLogView(raw) ? raw : "messages"
+  // 🔒 УМОЛЧАНИЕ БЕРЁТСЯ ИЗ СПИСКА, А НЕ ПИШЕТСЯ ЛИТЕРАЛОМ. Прежде здесь стояло
+  // `"messages"`, и при переименовании вида эта строка молча стала бы указывать
+  // на несуществующий вид: тип её не ловит — она уже проверена условием выше.
+  return isTelegramLogView(raw) ? raw : TELEGRAM_LOG_VIEWS[0]
 }
 
 /** Адрес вида внутри раздела «Логи». */

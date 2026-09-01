@@ -43,7 +43,38 @@ export type TelegramUi = {
     mapLead: string
     instructionTitle: string
     instructionLead: string
-    views: Record<'messages' | 'db' | 'media' | 'vectors' | 'rag', string>
+    views: Record<'parse' | 'db' | 'media' | 'vectors' | 'rag', string>
+  }
+
+  /**
+   * СЛОВА ВИДА «РАЗБОР ЗАПРОСА» (91-1).
+   *
+   * 🔒 ВКЛАДКА ОБЯЗАНА ОБЪЯСНЯТЬ СОБОЙ, А НЕ НАЗЫВАТЬСЯ — прямое требование
+   * владельца: «вкладку которая в своем описании подробно расскажет что здесь
+   * происходит». Экран показывает ХОД РАССУЖДЕНИЯ, и без слов он читается как
+   * технический мусор, а не как работа.
+   *
+   * 🔒 ПУСТОЕ СОСТОЯНИЕ НАЗЫВАЕТ ПРИЧИНУ, И ПРИЧИН ТРИ РАЗНЫХ. «Ничего нет»
+   * одинаково выглядит при мёртвой службе, непривязанном боте и просто молчании
+   * — а лечится по-разному. Молчание вместо причины читается как поломка (28-13).
+   */
+  parse: {
+    title: string
+    /** Первый абзац справки: виден свёрнутым. */
+    summary: string
+    /** Остальное: пять родов строки, почему всегда одна запись, что дальше. */
+    details: string
+    /** Причины пустоты — по одной на состояние. */
+    emptyServiceDown: string
+    emptyNotLinked: string
+    emptyNoRequests: string
+    /** Заголовки колонок таблицы. */
+    colKind: string
+    colWhat: string
+    colSource: string
+    colTime: string
+    /** Имена пяти родов строки. */
+    kinds: Record<'intake' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
   }
 
   /**
@@ -307,11 +338,36 @@ const EN: TelegramUi = {
     instructionLead:
       "A text you write yourself and the bot follows in addition to its own rules — your limits, your tone, your subject. It is added to the instruction the bot already has, not instead of it.",
     views: {
-      messages: "Messages",
+      parse: "Request breakdown",
       db: "Database",
       media: "Media library",
       vectors: "Vector store",
       rag: "Agentic RAG",
+    },
+  },
+
+  parse: {
+    title: "Request breakdown",
+    summary:
+      "One message, taken apart in front of you. Not the result — the reasoning: what arrived, what was read out of it, which registry facts it turned out to contain, and what each of them would be stored as.",
+    details:
+      "Rows appear as the work finishes, not all at once. The first is the raw request exactly as it came in, down to the millisecond. Then, if there was an attachment, what was read out of it. Then, if the message refers to something said earlier, which thing exactly and how it was chosen. Then the plan: which registry facts this request contains. Then one row per fact, with the values pulled out and the table they would go into.\n\nThere is always exactly ONE record here, and the next request replaces it — this is working material, not a history. Yesterday's breakdown is not kept: the point is to see how the system thinks right now, and later this record is split across the fact tables and freed for the next conversation.\n\nNothing is written into those tables yet. A row names where a value would land; it does not put it there.",
+    emptyServiceDown:
+      "The channel service is not running, so nothing reaches the bot and there is nothing to take apart.",
+    emptyNotLinked:
+      "The bot is not linked to a chat yet. Link it in Settings, write to it, and the breakdown of that message appears here.",
+    emptyNoRequests:
+      "Nobody has written to the bot yet. The first message will be taken apart here.",
+    colKind: "Row",
+    colWhat: "What was established",
+    colSource: "Obtained by",
+    colTime: "Time",
+    kinds: {
+      intake: "Raw request",
+      extract: "Read from attachment",
+      resolve: "Reference resolved",
+      plan: "Plan",
+      reveal: "Fact",
     },
   },
 
@@ -572,11 +628,36 @@ const RU: TelegramUi = {
     instructionLead:
       "Текст, который вы пишете сами, а бот исполняет вдобавок к своим правилам: ваши ограничения, ваш тон, ваша предметная область. Он добавляется к инструкции бота, а не заменяет её.",
     views: {
-      messages: "Сообщения",
+      parse: "Разбор запроса",
       db: "База данных",
       media: "Медиатека",
       vectors: "Векторное хранилище",
       rag: "Агентный RAG",
+    },
+  },
+
+  parse: {
+    title: "Разбор запроса",
+    summary:
+      "Одно сообщение, разобранное у вас на глазах. Не итог, а ход рассуждения: что пришло, что из этого прочитано, какие признаки реестра в нём нашлись и чем каждый из них станет при сохранении.",
+    details:
+      "Строки появляются по мере готовности, а не разом. Первая — запрос как он пришёл, с точностью до миллисекунды. Затем, если было вложение, — что из него прочитано. Затем, если сообщение ссылается на сказанное раньше, — на что именно и почему выбрано оно. Затем план: какие признаки реестра в этом запросе есть. Затем по строке на признак: извлечённые значения и таблица, в которую они лягут.\n\nЗапись здесь всегда РОВНО ОДНА, и следующий запрос её заменяет — это рабочий материал, а не история. Вчерашний разбор не хранится: смысл экрана в том, чтобы видеть, как система думает сейчас, а позже эта запись разъедется по таблицам признаков и освободится под следующий разговор.\n\nВ сами таблицы пока ничего не пишется. Строка называет, куда значение легло бы, но не кладёт его туда.",
+    emptyServiceDown:
+      "Служба каналов не запущена — до бота ничего не доходит, и разбирать нечего.",
+    emptyNotLinked:
+      "Бот ещё не привязан к чату. Привяжите его в «Настройках», напишите ему — и разбор этого сообщения появится здесь.",
+    emptyNoRequests:
+      "Боту ещё никто не писал. Первое сообщение будет разобрано здесь.",
+    colKind: "Строка",
+    colWhat: "Что установлено",
+    colSource: "Чем добыто",
+    colTime: "Время",
+    kinds: {
+      intake: "Сырой запрос",
+      extract: "Прочитано из вложения",
+      resolve: "Разрешена ссылка",
+      plan: "План",
+      reveal: "Признак",
     },
   },
 
@@ -586,6 +667,7 @@ const RU: TelegramUi = {
       "Что проект умеет вынимать из сообщения: дату события, деньги, место, связь со сказанным раньше. Каждый признак — объявленная способность, а не ярлык.",
     rest:
       "Признак — объявленная способность узнать в сообщении класс фактов, сохранить их отдельно от текста и связать с остальным. С другой стороны, и так точнее: нет признака в реестре — нет инструкции, как это декомпозировать, значит факт не попадёт ни в одну таблицу и останется просто текстом. У каждой записи пять частей: имя, что это, форма значения, КАК ЭТО УЗНАВАТЬ и что делать, когда признак подразумевается, но не извлекается. Встроенные порождаются из кода и не правятся: они описывают то, что система делает по устройству. Добавленные вы описываете сами, и каждый получает свою таблицу в момент сохранения.",
+
     more: "Что такое признак",
     less: "Свернуть",
     levels: {

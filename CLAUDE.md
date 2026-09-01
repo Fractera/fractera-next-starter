@@ -508,7 +508,31 @@ those rules in this repository would diverge on the service's first change. The 
 NOT be done with a token, are in `use-channels`.
 
 🔒 **NO RESTART IS NEEDED AFTER WRITING**, unlike the sign-in service: `:3500` re-reads its config on
-every request. Check what a door does AFTER a write before you copy a neighbour's habit.
+every request. Check what a door does AFTER a write before you copy a neighbour's habit. **The OpenAI
+key is the opposite** — this project reads its environment at start, so writing it restarts the slot
+with `--update-env`; "Saved" without that is true about the file and false about behaviour.
+
+🔒 **THE OPENAI KEY IS SET ON THE BOT'S OWN SCREEN, SECOND CARD, NOT IN A SECTION OF ITS OWN** (owner,
+2026-09-01: "the bot cannot work without the key, so one screen must carry both settings"). Doors:
+`GET/POST /api/architect/openai-key`, and `POST …?check=1` verifies the key that is ALREADY on the
+server — never send a key over the wire to check it.
+
+🔒 **ONE KEY, THREE CONSUMERS, THREE SEPARATE TRUTHS:** this project (`.env.local`), the data layer
+(`services/data/.env`) and the knowledge graph (`services/rag/.env`). The plaque is green only when
+every service that exists has the key; otherwise it is amber and NAMES the ones without it. ✗ the
+panel paid a day for a single "key is set" indicator: the second consumer fails SILENTLY — document
+ingestion answers `200` and embeds nothing. A missing file means the service is not installed, which
+is not the same as "no key".
+
+🔒 **"WORKS" AND "IS PAID FOR" ARE TWO DIFFERENT MEASUREMENTS.** `GET /v1/models` answers `200` on an
+empty account — listing models costs nothing. An empty balance shows up only on a real call
+(`429 insufficient_quota`). So the check asks both questions, and the second one spends the minimum.
+
+🛑 **THE REMAINING BALANCE CANNOT BE SHOWN, AND THE PAGE SAYS SO IN WORDS.** Measured 2026-09-01:
+`credit_grants` and `subscription` answer `403` "must be made with a session key… from the browser",
+`organization/costs` answers `403` "Missing scopes: api.usage.read". Only a browser session of the
+account or an admin key (`sk-admin-…`) sees it. Never render an empty "balance: —": a silent dash is
+the same promise, only unfalsified.
 
 🔒 **THREE THINGS "EVERYBODY KNEW" ABOUT THIS BOT WERE FALSE** (found in 77-6 by reading the service):
 a voice note IS transcribed, every message IS pushed into this project's own `/api/telegram/hook` with

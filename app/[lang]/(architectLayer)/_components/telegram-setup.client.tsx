@@ -2,29 +2,29 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, ExternalLink } from "lucide-react"
+import { Loader2, ExternalLink, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { Small } from "@/components/ui/typography"
 
-// НАСТРОЙКА TELEGRAM — ПЕРЕНЕСЕНА ИЗ ПАНЕЛИ (77-4, 2026-09-01).
-// Источник: `bridges/app/app/[lang]/channels/_components/telegram-setup.client.tsx`.
+// НАСТРОЙКА TELEGRAM — ПЕРЕНЕСЕНА ИЗ ПАНЕЛИ (77-4), ПЕРЕЛОЖЕНА ПО СЛОВУ
+// ВЛАДЕЛЬЦА (77-9, 2026-09-01).
 //
-// 🔒 ОСТРОВОК ЗДЕСЬ НЕИЗБЕЖЕН, И ВСЕ ТРИ ЕГО ДЕЛА ТРЕБУЮТ БРАУЗЕРА ПО-РАЗНОМУ —
-// довод переехал вместе с кодом:
-//   • токен бота — СЕКРЕТ, и форма без JS отправила бы его перезагрузкой,
-//     оставив в истории навигации;
-//   • выключатель обязан отвечать сразу, иначе непонятно, сработал ли он;
-//   • привязка ЖДЁТ действия человека в другом приложении — страница опрашивает
-//     сервер, пока в Telegram не нажмут «Старт».
+// 🔒 ОСТРОВОК ЗДЕСЬ НЕИЗБЕЖЕН, И ДОВОД ПЕРЕЕХАЛ ВМЕСТЕ С КОДОМ: токен — СЕКРЕТ,
+// и форма без JS отправила бы его перезагрузкой, оставив в истории навигации;
+// выключатель обязан отвечать сразу; привязка ЖДЁТ действия человека в другом
+// приложении.
 //
-// 🔒 ЧТО ИЗМЕНЕНО ПРОТИВ ИСТОЧНИКА, И ТОЛЬКО ЭТО: адреса дверей
-// (`/api/architect/channels/*` вместо панельных) и кегли — вместо `text-[11px]`
-// шкала `--fs-*` этого проекта. **Поведение не изменено ни в одном месте.**
+// 🪦 РАСПИСАНИЕ ОТСЮДА УШЛО (77-9) в свой островок `telegram-schedule.client.tsx`.
+// Здесь оно стояло между токеном и привязкой, и кнопка «Привязать другую учётную
+// запись» читалась как часть расписания. ✗ ошибка переноса: порядок источника я
+// повторил дословно, не спросив, верен ли он. Владелец: «кнопку привязать другую
+// учетную запись поднять в первую секцию».
 //
-// 🔒 СЛОВА ПРИХОДЯТ ПРОПСОМ, А НЕ ИМПОРТОМ (76-4): клиентский файл, импортирующий
-// словарь слоя значением, увёз бы в браузер все его языки.
+// 🔒 ПОРЯДОК ТЕПЕРЬ СМЫСЛОВОЙ: канал включён → чей это бот (токен) → кому он
+// пишет (привязка) → и сразу предупреждение о том, что будет после привязки.
 
 export type TelegramSetupLabels = {
   tokenLabel: string
@@ -43,22 +43,17 @@ export type TelegramSetupLabels = {
   linkExpired: string
   linkFailed: string
   channelOn: string
-  scheduleLabel: string
-  scheduleHint: string
-  scheduleOff: string
-  scheduleEvery: string
-  scheduleSaved: string
+  /** Предупреждение о том, что бот заговорит только после привязки. */
+  afterLink: string
 }
 
 export function TelegramSetup({
   configured,
   enabled,
-  tickSeconds,
   labels,
 }: {
   configured: boolean
   enabled: boolean
-  tickSeconds: number
   labels: TelegramSetupLabels
 }) {
   const router = useRouter()
@@ -67,38 +62,6 @@ export function TelegramSetup({
   const [linking, setLinking] = useState(false)
   const [deepLink, setDeepLink] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [tick, setTick] = useState(tickSeconds)
-
-  // 🔒 ШАГ РАСПИСАНИЯ ВЫБИРАЕТСЯ ИЗ СПИСКА, А НЕ ВВОДИТСЯ ЧИСЛОМ. Свободное поле
-  // здесь означает «поставлю единицу и посмотрю»: служба стучит в приложение, и
-  // цена ошибки — постоянная нагрузка, которую никто не заметит месяцами. Служба
-  // всё равно зажимает значение в 30…3600, но объяснять это отказом формы дороже,
-  // чем просто не дать ошибиться.
-  const STEPS = [0, 60, 300, 900, 3600]
-
-  async function saveTick(next: number) {
-    const before = tick
-    setTick(next)
-    try {
-      const r = await fetch("/api/architect/channels/telegram", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tickSeconds: next }),
-      })
-      if (!r.ok) {
-        setTick(before)
-        setError(labels.failed)
-        return
-      }
-      toast.success(labels.scheduleSaved)
-      router.refresh()
-    } catch {
-      // 🔒 СЛУЖБА НЕ ОТВЕТИЛА — ВОЗВРАЩАЕМ ПРЕЖНЕЕ ЗНАЧЕНИЕ. Показать выбранное
-      // как сохранённое значит соврать о состоянии сервера.
-      setTick(before)
-      setError(labels.failed)
-    }
-  }
 
   async function saveToken() {
     setSaving(true)
@@ -111,7 +74,7 @@ export function TelegramSetup({
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok) {
-        // 🔒 ОТКАЗ ПОКАЗЫВАЕТСЯ СЛОВАМИ СЛУЖБЫ. Она одна знает, чем именно плох
+        // 🔒 ОТКАЗ ПОКАЗЫВАЕТСЯ СЛОВАМИ СЛУЖБЫ: она одна знает, чем именно плох
         // токен; «не удалось сохранить» отправило бы человека гадать.
         setError(String(d.error ?? `${r.status}`))
         return
@@ -212,9 +175,8 @@ export function TelegramSetup({
         </span>
         <div className="flex flex-wrap items-center gap-2">
           {/* 🔒 `type="password"` И `autoComplete="off"` — НЕ ОФОРМЛЕНИЕ. Первое
-              прячет секрет от чужих глаз за плечом, второе не даёт браузеру
-              запомнить токен в автозаполнении, откуда его достанет любой, кто
-              сядет за эту машину. */}
+              прячет секрет от чужих глаз, второе не даёт браузеру запомнить токен
+              в автозаполнении, откуда его достанет любой, кто сядет за машину. */}
           <Input
             type="password"
             value={token}
@@ -235,52 +197,46 @@ export function TelegramSetup({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-border pt-4">
-        <span className="text-[length:var(--fs-small)] text-muted-foreground">
-          {labels.scheduleLabel}
-        </span>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {STEPS.map(n => (
-            <Button
-              key={n}
-              variant={tick === n ? "default" : "outline"}
-              size="sm"
-              disabled={!configured}
-              onClick={() => saveTick(n)}
-            >
-              {n === 0 ? labels.scheduleOff : labels.scheduleEvery.replace("{n}", String(n))}
-            </Button>
-          ))}
-        </div>
-        <p className="text-[length:var(--fs-small)] leading-relaxed text-muted-foreground">
-          {labels.scheduleHint}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={startLink}
-          disabled={!configured || linking}
-        >
-          {linking ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <ExternalLink className="size-3.5" />
-          )}
-          {linking ? labels.waiting : labels.connect}
-        </Button>
-        {deepLink && (
-          <a
-            href={deepLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[length:var(--fs-small)] text-primary underline underline-offset-2"
+      <div data-telegram-link-row className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={startLink}
+            disabled={!configured || linking}
           >
-            {labels.openTelegram}
-          </a>
-        )}
+            {linking ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <ExternalLink className="size-3.5" />
+            )}
+            {linking ? labels.waiting : labels.connect}
+          </Button>
+          {deepLink && (
+            <a
+              href={deepLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[length:var(--fs-small)] text-primary underline underline-offset-2"
+            >
+              {labels.openTelegram}
+            </a>
+          )}
+        </div>
+
+        {/* 🔒 ПРЕДУПРЕЖДЕНИЕ СТОИТ У КНОПКИ, А НЕ В КОНЦЕ ЭКРАНА — прямое слово
+            владельца. Оранжевый здесь означает «что произойдёт после нажатия», и
+            он на этом экране единственный: красный занят отказом службы, а тон,
+            стоящий у каждого абзаца, к третьему разу не значит ничего. */}
+        <p
+          data-telegram-warning
+          className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2.5"
+        >
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <Small className="leading-relaxed text-amber-900 dark:text-amber-100">
+            {labels.afterLink}
+          </Small>
+        </p>
       </div>
 
       {error && (

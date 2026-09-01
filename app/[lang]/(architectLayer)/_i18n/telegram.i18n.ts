@@ -97,6 +97,42 @@ export type TelegramUi = {
    * проверена в первоисточнике — иначе описание обещает то, чего нет, или молчит о
    * том, что есть.
    */
+  /**
+   * СЛОВА БЛОКА «КЛЮЧ OPENAI» (77-8, 2026-09-01).
+   *
+   * 🔒 ОСТАТОК ПО СЧЁТУ НЕ ОБЕЩАН НИ ОДНОЙ СТРОКОЙ, И ЭТО ИЗМЕРЕНО, А НЕ
+   * ПРЕДПОЛОЖЕНО: OpenAI отдаёт баланс только браузерной сессии кабинета либо
+   * админскому ключу с правом api.usage.read. Поэтому есть строка, которая
+   * объясняет это человеку, а не пустое поле «остаток: —».
+   */
+  openai: {
+    title: string
+    lead: string
+    exists: string
+    missing: string
+    partial: string
+    consumerApp: string
+    consumerData: string
+    consumerGraph: string
+    keyLabel: string
+    keyPlaceholder: string
+    keyReplace: string
+    save: string
+    saving: string
+    saved: string
+    failed: string
+    badFormat: string
+    check: string
+    checking: string
+    valid: string
+    invalid: string
+    funded: string
+    noFunds: string
+    fundsUnknown: string
+    balanceNote: string
+    restartNote: string
+  }
+
   about: {
     whatTitle: string
     what: string
@@ -261,6 +297,35 @@ const EN: TelegramUi = {
     start:
       "Ask @BotFather in Telegram for a new bot, take the token it gives you, and paste it into Settings here. Then link your account and write to the bot — the first message appears in Logs.",
   },
+  openai: {
+    title: "OpenAI key",
+    lead:
+      "The bot needs it more often than not: without this key a voice note is not transcribed and an answer is not composed. It is set here so that both settings live on one screen.",
+    exists: "An OpenAI key is set",
+    missing: "No OpenAI key yet",
+    partial: "The key has not reached every service",
+    consumerApp: "this project",
+    consumerData: "data layer",
+    consumerGraph: "knowledge graph",
+    keyLabel: "Key from platform.openai.com",
+    keyPlaceholder: "sk-…",
+    keyReplace: "Paste a new key to replace the saved one",
+    save: "Save",
+    saving: "Saving…",
+    saved: "OpenAI key saved",
+    failed: "Action failed",
+    badFormat: "That does not look like an OpenAI key — they start with sk-",
+    check: "Check",
+    checking: "Checking…",
+    valid: "The key is valid",
+    invalid: "OpenAI did not accept this key",
+    funded: "The balance is positive",
+    noFunds: "The key works, but the account is out of credit",
+    fundsUnknown: "Could not tell whether there is credit — try again later",
+    balanceNote:
+      "The remaining balance cannot be shown: OpenAI returns it only to a browser session of your account or to an admin key with the api.usage.read scope. An ordinary project key never sees it.",
+    restartNote: "The project restarts to pick up the new key; the channel service reads it straight away.",
+  },
 }
 
 const RU: TelegramUi = {
@@ -390,6 +455,35 @@ const RU: TelegramUi = {
     startTitle: "Как завести бота.",
     start:
       "Попросите у @BotFather в Telegram нового бота, возьмите выданный токен и вставьте его здесь, в «Настройках». Потом привяжите свою учётную запись и напишите боту — первое сообщение появится в «Логах».",
+  },
+  openai: {
+    title: "Ключ OpenAI",
+    lead:
+      "Боту он нужен чаще, чем нет: без этого ключа голосовая заметка не расшифруется, а ответ не соберётся. Поэтому он настраивается здесь — обе настройки на одном экране.",
+    exists: "Ключ OpenAI существует",
+    missing: "Ключ OpenAI не задан",
+    partial: "Ключ доехал не до всех служб",
+    consumerApp: "этот проект",
+    consumerData: "слой данных",
+    consumerGraph: "граф знаний",
+    keyLabel: "Ключ с platform.openai.com",
+    keyPlaceholder: "sk-…",
+    keyReplace: "Вставьте новый ключ, чтобы заменить сохранённый",
+    save: "Сохранить",
+    saving: "Сохраняю…",
+    saved: "Ключ OpenAI сохранён",
+    failed: "Действие не выполнено",
+    badFormat: "Это не похоже на ключ OpenAI — они начинаются с sk-",
+    check: "Проверить",
+    checking: "Проверяю…",
+    valid: "Ключ верный",
+    invalid: "OpenAI этот ключ не принял",
+    funded: "Баланс положительный",
+    noFunds: "Ключ рабочий, но на счёте кончились средства",
+    fundsUnknown: "Про средства ответить не удалось — попробуйте позже",
+    balanceNote:
+      "Остаток показать нельзя: OpenAI отдаёт его только браузерной сессии вашего кабинета или админскому ключу с правом api.usage.read. Обычный проектный ключ его не видит.",
+    restartNote: "Проект перезапускается, чтобы прочитать новый ключ; служба каналов читает его сразу.",
   },
 }
 

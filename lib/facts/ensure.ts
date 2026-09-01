@@ -91,16 +91,39 @@ export async function ensureFactTables(facts: Fact[]): Promise<EnsureReport> {
  * 🔒 СТАНДАРТ, КОТОРЫЙ НЕЧЕМ ПРОВЕРИТЬ, ЖИВЁТ ДО ПЕРВОГО ОТКЛОНЕНИЯ. Таблица,
  * созданная руками или прежней версией кода, выглядит рабочей и молча ведёт себя
  * иначе; сверка колонок ловит это одним запросом.
+ *
+ * ✗ 🛑 ЗДЕСЬ СТОЯЛ `PRAGMA table_info`, И ОН МОЛЧА ДАВАЛ ЛОЖЬ (измерено
+ * 2026-09-01). Слой данных отвечает на `PRAGMA` ровно `{"ok":true}` — без строк:
+ * он не считает его запросом, возвращающим данные. Сверка получала пустой список
+ * колонок и объявляла НЕ СТАНДАРТНЫМИ все двадцать четыре исправные таблицы.
+ * **Измерение, дающее ноль, обязано быть проверено случаем, который заведомо
+ * даёт единицу** — иначе меряется прибор, а не предмет.
+ *
+ * 🔒 ЧИТАЕМ ОПРЕДЕЛЕНИЕ ИЗ `sqlite_master`: там лежит тот самый `CREATE TABLE`,
+ * которым таблица создана. Это работает через слой данных, потому что запрос
+ * обычный, и заодно ловит лишние колонки — их видно в тексте.
  */
 export async function factTableMatchesStandard(table: string): Promise<boolean> {
   try {
     const r = await dataFetch("/db/migrate", {
       method: "POST",
-      body: JSON.stringify({ sql: `PRAGMA table_info(${table})` }),
+      body: JSON.stringify({
+        sql: "SELECT sql FROM sqlite_master WHERE type='table' AND name = ?",
+        params: [table],
+      }),
     })
     if (!r.ok) return false
-    const d = (await r.json()) as { rows?: { name: string }[] }
-    const cols = (d.rows ?? []).map(x => x.name)
+    const d = (await r.json()) as { rows?: { sql?: string }[] }
+    const ddl = d.rows?.[0]?.sql
+    if (!ddl) return false
+
+    // Имена колонок из определения: строки внутри скобок, первое слово каждой.
+    const body = ddl.slice(ddl.indexOf("(") + 1, ddl.lastIndexOf(")"))
+    const cols = body
+      .split(",")
+      .map(s => s.trim().split(/\s+/)[0])
+      .filter(Boolean)
+
     return (
       cols.length === FACT_TABLE_COLUMNS.length &&
       FACT_TABLE_COLUMNS.every(c => cols.includes(c))

@@ -69,7 +69,7 @@ export default function Chat({
           {messages.length === 0 ? (
             <ConversationEmptyState
               title={ui.emptyTitle}
-              description={ui.emptyNote}
+              description={ui.emptyNote || undefined}
               data-chat-empty=""
             />
           ) : (

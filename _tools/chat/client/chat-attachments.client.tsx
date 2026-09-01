@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, MapPin } from "lucide-react";
+import { CalendarClock, FileText, Image as ImageIcon, MapPin, Music2, Video } from "lucide-react";
 import {
   Attachment,
   AttachmentInfo,
@@ -27,9 +27,13 @@ import type { ChatAttachment, ChatUi } from "../types/chat";
 const ROW =
   "flex w-full items-center gap-3 rounded-lg border p-3 text-sm hover:bg-accent/50";
 
+/** Значок для вложения, у которого есть род, но нет адреса. */
+const FILE_ICON = { audio: Music2, image: ImageIcon, video: Video, document: FileText } as const;
+
 /** Наш род вложения превращается в то, что понимает библиотека. */
 function toAttachmentData(item: ChatAttachment, index: number): AttachmentData | null {
   if (item.kind === "place" || item.kind === "event") return null;
+  if (!item.url) return null;
   return {
     type: "file",
     id: `${index}`,
@@ -88,8 +92,19 @@ export function ChatAttachments({
           );
         }
 
+        // 🔒 ВЛОЖЕНИЕ БЕЗ АДРЕСА — СТРОКА-ПОДПИСЬ, А НЕ ПРОПУЩЕННОЕ ВЛОЖЕНИЕ
+        // (80-6). У журнала службы есть идентификатор файла и нет ссылки; молча
+        // не нарисовать его значило бы соврать, что сообщение пришло пустым.
         const data = toAttachmentData(item, index);
-        if (!data) return null;
+        if (!data) {
+          const Icon = FILE_ICON[item.kind];
+          return (
+            <div className={ROW} key={`bare-${index}`} data-chat-attachment={item.kind}>
+              <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <div className="min-w-0 truncate font-medium">{item.name ?? item.kind}</div>
+            </div>
+          );
+        }
 
         return (
           <Attachment data={data} key={`file-${index}`} data-chat-attachment={item.kind}>

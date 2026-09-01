@@ -1,16 +1,30 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Loader2, RefreshCw, MapPin, Mic, Paperclip, CornerUpRight } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Small } from "@/components/ui/typography"
 import type { InboxMessage } from "@/lib/architect/channels"
+import type { ChatAttachment, ChatMessage, ChatUi } from "@/_tools/chat/types/chat"
+import Chat from "@/_tools/chat/client/chat.client"
 
-// ЛЕНТА ВХОДЯЩИХ (77-5, 2026-09-01).
+// ЛЕНТА ВХОДЯЩИХ (77-5, 2026-09-01; переселена на инструмент 80-6).
 //
-// 🔒 ЭТО НЕ ПЕРЕНОС — В ПАНЕЛИ ТАКОГО ЭКРАНА НЕТ. Служба хранила последние 500
-// сообщений с самого начала, и читал их только код. Поэтому здесь нет источника,
-// с которого списывать поведение, и всё, что нужно объяснить, объяснено на месте.
+// 🔒 ЛЕНТУ РИСУЕТ ИНСТРУМЕНТ `_tools/chat`, А НЕ ЭТОТ ФАЙЛ. Здесь остаётся ровно
+// то, чего инструмент знать не должен: опрос склада по курсору, счётчик,
+// кнопка обновления и ПЕРЕВОД записи службы в сообщение ленты. Инструмент в сеть
+// не ходит вовсе — поэтому один и тот же островок годится и журналу, и виду
+// блока, и будущему мессенджеру.
+//
+// ✗ ОПЛАЧЕНО ЭТИМ ЖЕ ЭКРАНОМ. До 80-6 здесь лежала своя вёрстка ленты: список,
+// пузыри, своя строка «кто · когда», свои значки родов. Библиотека AI Elements
+// при этом уже лежала в репозитории — просто никто не сказал, что ею положено
+// пользоваться. Ровно ради этого заведён шаг 80.
+//
+// 🔒 ПОЛЯ ВВОДА ЗДЕСЬ НЕТ НАМЕРЕННО, И ЭТО НЕ ОГРАНИЧЕНИЕ ИНСТРУМЕНТА. Склад —
+// журнал службы, а не почтовый ящик проекта: ни ответа, ни пересылки, ни
+// удаления. Инструменту просто не даётся обработчик отправки, и он честно
+// остаётся лентой.
 //
 // 🔒 ПЕРВЫЕ ЗАПИСИ ПРИХОДЯТ С СЕРВЕРА, А НЕ ЗАПРАШИВАЮТСЯ ПОСЛЕ ЗАГРУЗКИ. Иначе
 // раздел на секунду показывал бы пустоту, неотличимую от «вам никто не писал», —
@@ -20,9 +34,6 @@ import type { InboxMessage } from "@/lib/architect/channels"
 // (`after=lastId`), а не пятьсот записей каждые десять секунд. Уход со страницы
 // снимает таймер: невидимая вкладка, стучащая в службу вечно, — это счёт за
 // трафик, которого никто не заказывал.
-//
-// 🔒 ЛЕНТА ТОЛЬКО ЧИТАЕТ. Ни ответа, ни пересылки, ни удаления здесь нет: склад —
-// журнал службы, а не почтовый ящик проекта.
 
 export type TelegramLogsLabels = {
   refresh: string
@@ -85,6 +96,26 @@ export function TelegramLogs({
     return () => clearInterval(timer)
   }, [pull])
 
+  const messages = useMemo(() => rows.map(m => toChatMessage(m, labels)), [rows, labels])
+
+  // 🔒 ПУСТОТА ОБЪЯСНЯЕТСЯ СЛОВАМИ, ПРИШЕДШИМИ С СЕРВЕРА. Причин три — нет
+  // токена, чат не привязан, никто не писал, — и выбирает её серверная половина
+  // раздела: ей одной видно состояние бота (77-5).
+  const ui: ChatUi = {
+    emptyTitle: labels.empty,
+    emptyNote: "",
+    placeholder: "",
+    send: "",
+    attach: "",
+    place: labels.kindLocation,
+    // 🔒 ЖУРНАЛ НЕ ПОРОЖДАЕТ КАЛЕНДАРНЫХ СОБЫТИЙ, И ПОДПИСЬ ОСТАЁТСЯ ПУСТОЙ.
+    // Договор инструмента требует ключ целиком; подставить сюда чужое слово
+    // («место») значило бы приготовить ложную подпись на день, когда события
+    // появятся, — и никто бы её не заметил, потому что сегодня она не видна.
+    event: "",
+    forwarded: labels.forwarded,
+  }
+
   return (
     <div data-telegram-logs className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -102,79 +133,55 @@ export function TelegramLogs({
         </Small>
       </div>
 
-      {rows.length === 0 ? (
-        <Small data-logs-empty className="rounded-md border border-border bg-muted/40 p-3 leading-relaxed text-muted-foreground">
-          {labels.empty}
-        </Small>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {rows.map(m => (
-            /* 🔒 ОБЕ СТОРОНЫ РАЗГОВОРА, И ОТЛИЧАЮТСЯ ОНИ ВИДОМ, А НЕ ПОДПИСЬЮ
-               (77-11). Реплика бота сдвинута, залита и подписана «бот»: журнал,
-               в котором ответ выглядит как вопрос, читается как список чужих
-               фраз, а не как разговор.
-               🔒 ЗАПИСЬ БЕЗ `direction` — ВХОДЯЩАЯ: склад был полон до того, как
-               поле появилось. */
-            <li
-              key={m.id}
-              data-logs-row
-              data-logs-direction={m.direction === "out" ? "out" : "in"}
-              className={
-                "flex flex-col gap-1 rounded-md border p-2.5 " +
-                (m.direction === "out"
-                  ? "ml-6 border-primary/30 bg-primary/5"
-                  : "border-border")
-              }
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium text-[length:var(--fs-small)] text-foreground">
-                  {m.direction === "out" ? labels.fromBot : (m.who ?? labels.fromPerson)}
-                </span>
-                <time
-                  dateTime={m.at}
-                  className="text-[length:var(--fs-small)] text-muted-foreground"
-                >
-                  {m.at.replace("T", " ").slice(0, 16)}
-                </time>
-                {m.kind === "voice" && (
-                  <span className="inline-flex items-center gap-1 text-[length:var(--fs-small)] text-muted-foreground">
-                    <Mic className="size-3" />
-                    {labels.kindVoice}
-                  </span>
-                )}
-                {m.fileId && (
-                  <span className="inline-flex items-center gap-1 text-[length:var(--fs-small)] text-muted-foreground">
-                    <Paperclip className="size-3" />
-                    {labels.kindFile}
-                  </span>
-                )}
-                {m.lat != null && m.lon != null && (
-                  <span className="inline-flex items-center gap-1 text-[length:var(--fs-small)] text-muted-foreground">
-                    <MapPin className="size-3" />
-                    {labels.kindLocation}
-                  </span>
-                )}
-                {m.forwardedFrom && (
-                  <span className="inline-flex items-center gap-1 text-[length:var(--fs-small)] text-muted-foreground">
-                    <CornerUpRight className="size-3" />
-                    {labels.forwarded} {m.forwardedFrom}
-                  </span>
-                )}
-              </div>
-              {/* 🔒 ТЕКСТ ЧЕЛОВЕКА ПОКАЗЫВАЕТСЯ ТЕКСТОМ. Никакой разметки из
-                  сообщения: сюда пишут посторонние люди, и содержимое чужого
-                  сообщения — данные, а не инструкция и не HTML. */}
-              {m.text && (
-                <p className="break-words text-[length:var(--fs-small)] leading-relaxed text-foreground">
-                  {m.text}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* 🔒 ВЫСОТА ЗАДАЁТСЯ ЗДЕСЬ, А НЕ ИНСТРУМЕНТОМ: он держит низ ленты, но
+          сколько места ему дали — дело хозяина экрана. */}
+      <div data-logs-feed className="h-[560px]">
+        <Chat messages={messages} ui={ui} className="h-full" />
+      </div>
 
       <Small className="text-muted-foreground">{labels.ringNote}</Small>
     </div>
   )
+}
+
+/**
+ * Запись склада службы → сообщение ленты. ЕДИНСТВЕННОЕ место перевода.
+ *
+ * 🔒 `direction: "out"` — РЕПЛИКА БОТА, И ОТЛИЧАЕТСЯ ОНА СТОРОНОЙ, А НЕ ПОДПИСЬЮ
+ * (77-11). У инструмента роль `assistant` рисуется справа и своей заливкой —
+ * ровно то, что раньше делалось вручную сдвигом и рамкой.
+ * 🔒 ЗАПИСЬ БЕЗ `direction` — ВХОДЯЩАЯ: склад был полон до того, как поле
+ * появилось, и правка формата не имеет права сделать прежние сообщения чужими.
+ */
+function toChatMessage(m: InboxMessage, labels: TelegramLogsLabels): ChatMessage {
+  const out = m.direction === "out"
+  return {
+    id: String(m.id),
+    from: out ? "assistant" : "user",
+    text: m.text || null,
+    // Время показывается так же, как показывалось до переселения: дата и часы
+    // без секунд и без зоны — журнал читают глазами, а не сверяют по нему часы.
+    at: m.at.replace("T", " ").slice(0, 16),
+    who: out ? labels.fromBot : (m.who ?? labels.fromPerson),
+    forwardedFrom: m.forwardedFrom ?? null,
+    attachments: toAttachments(m, labels),
+  }
+}
+
+/**
+ * Три рода вложения, которые склад службы знает.
+ *
+ * 🔒 У ГОЛОСА И ФАЙЛА ЕСТЬ РОД И НЕТ АДРЕСА: служба хранит идентификатор файла
+ * Telegram, а не ссылку. Инструмент с 80-6 умеет такое вложение — рисует строку
+ * со значком рода и подписью. Прежний экран показывал ровно столько же, значками
+ * «голос» и «файл», и ни байтом больше.
+ */
+function toAttachments(m: InboxMessage, labels: TelegramLogsLabels): ChatAttachment[] | undefined {
+  const out: ChatAttachment[] = []
+  if (m.kind === "voice") out.push({ kind: "audio", name: labels.kindVoice })
+  if (m.fileId) out.push({ kind: "document", name: labels.kindFile })
+  if (m.lat != null && m.lon != null) {
+    out.push({ kind: "place", lat: m.lat, lon: m.lon, label: labels.kindLocation })
+  }
+  return out.length ? out : undefined
 }

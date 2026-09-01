@@ -238,20 +238,38 @@ export function WorkspaceShell({
             `overflow: hidden` у любого родителя выключает его МОЛЧА — тем же днём
             это правило чуть не поставили на корень страницы ради полосы `promoBand`;
             там выбран `clip`, а потом снят и он. */}
+          {/* 🔒 АКТИВНАЯ ВКЛАДКА — НИЖНЯЯ ЛИНИЯ, А НЕ ОБВЕДЁННАЯ ТАБЛЕТКА
+              (2026-09-01, решение владельца, закрепляющее стандарт).
+
+              ✗ ЧЕМ ОПЛАЧЕНО. Здесь стояла рамка у КАЖДОЙ вкладки и заливка у
+              активной. Пять обведённых прямоугольников в ряд спорят с левым меню,
+              где рамки уже есть, и ряд читается как вторая панель, а не как
+              разделы одной. Владелец назвал это «нестандартным дизайном» — и был
+              прав по сути: узора подчёркивания в корпусе не существовало вовсе,
+              то есть стандарта не было ни здесь, ни где-либо ещё.
+
+              🔒 ПОЛОСА ПОД ВСЕМ РЯДОМ ДЕРЖИТ ЛИНИЮ. Без неё подчёркивание
+              активной вкладки висит в пустоте и читается как случайная черта, а
+              не как «вот эта из пяти».
+
+              🔒 ПРАВКА ОДНА, А ПОТРЕБИТЕЛЕЙ ТРИ, и это сказано владельцу ДО неё:
+              ряд рисует блок `workspace` (уезжает КАЖДОМУ клиенту), его образец в
+              каталоге блоков и разделы слоя архитектора. Другого места, где
+              рисуются вкладки, в проекте нет — примитива `tabs` у нас тоже нет. */}
         {tabs && tabs.length > 0 && (
           <nav
             data-workspace-tabs
             aria-label={typeof title === 'string' ? title : menuWord}
-            className="slim-scrollbar wsx-strip -mx-1 flex gap-1.5 overflow-x-auto bg-card px-1 pb-1 md:sticky wsx-sticky md:z-30 md:py-3"
+            className="slim-scrollbar wsx-strip -mx-1 flex gap-1 overflow-x-auto border-b border-border bg-card px-1 md:sticky wsx-sticky md:z-30 md:pt-3"
           >
             {tabs.map((tab, i) => (
               <Item
                 key={`${id}-tab-${i}`}
                 item={tab}
                 content={renderTab?.(tab, i)}
-                base="shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-[length:var(--fs-small)] transition-colors"
-                activeClass=" border-primary/50 bg-primary/5 text-foreground"
-                idleClass=" border-border text-muted-foreground hover:bg-muted/50"
+                base="-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-[length:var(--fs-small)] transition-colors"
+                activeClass=" border-primary font-medium text-foreground"
+                idleClass=" border-transparent text-muted-foreground hover:border-border hover:text-foreground"
               />
             ))}
           </nav>

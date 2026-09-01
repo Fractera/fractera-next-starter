@@ -1,26 +1,28 @@
-import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle } from "lucide-react"
+import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle, Timer } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { TelegramSetup } from "./telegram-setup.client"
+import { TelegramSchedule } from "./telegram-schedule.client"
+import { OpenAiKeySection } from "./openai-key"
 import type { ChannelsState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 
-// РАЗДЕЛ «НАСТРОЙКИ» ВХОДА «TELEGRAM-БОТ» — ПЕРЕНЕСЁН ИЗ ПАНЕЛИ (77-4, 2026-09-01).
-// Источник: `bridges/app/app/[lang]/channels/page.tsx`.
+// РАЗДЕЛ «НАСТРОЙКИ» ВХОДА «TELEGRAM-БОТ» — ПЕРЕНЕСЁН ИЗ ПАНЕЛИ (77-4),
+// ПЕРЕЛОЖЕН И ДОПОЛНЕН (77-8, 77-9, 2026-09-01).
 //
-// 🔒 ТРИ СОСТОЯНИЯ РАЗЛИЧАЮТСЯ ВИДОМ, А НЕ ОТТЕНКОМ ОДНОГО, И ПРИЧИНА ПЕРЕЕХАЛА
-// ВМЕСТЕ С НИМИ: лечение у них разное.
-//   • служба не запущена → её надо поднять: `pm2 start fractera-channels`;
-//   • токен не сохранён  → его надо получить у @BotFather;
-//   • токен сохранён, но Telegram его не узнаёт → он набран с ошибкой или отозван.
-// Панель до переезда показывала третье припиской в подписи поля, где его легко
-// пропустить. ✗ «Не работает» без указания, ЧТО именно не работает, — это отказ,
-// который человек лечит наугад.
+// 🔒 ТРИ КАРТОЧКИ В СМЫСЛОВОМ ПОРЯДКЕ, И ПОРЯДОК НАЗВАН ВЛАДЕЛЬЦЕМ:
+//   1) «Telegram» — какой это бот, включён ли канал, кому он пишет;
+//   2) «Ключ OpenAI» — без него бот не расшифрует голос и не соберёт ответ,
+//      поэтому он стоит ВТОРЫМ, а не в отдельном разделе: «в одной настройке мы
+//      должны пробросить сразу две»;
+//   3) «Расписание» — как часто дёргать проект.
 //
-// 🔒 СЕРВЕРНЫЙ: резолвит слова и отдаёт островку СТРОКИ ПОИМЁННО (76-4).
+// 🔒 ТРИ СОСТОЯНИЯ БОТА РАЗЛИЧАЮТСЯ ВИДОМ, А НЕ ОТТЕНКОМ ОДНОГО, И ПРИЧИНА
+// ПЕРЕЕХАЛА ВМЕСТЕ С НИМИ: лечение у них разное.
+//   • служба не запущена → `pm2 start fractera-channels`;
+//   • токен не сохранён  → взять у @BotFather;
+//   • токен есть, Telegram его не узнаёт → он набран с ошибкой или отозван.
 //
-// 🔒 ССЫЛКА В ПАНЕЛЬ НЕ ПЕРЕЕХАЛА, И ЭТО РЕШЕНИЕ РАЗВЕДКИ 77-2. В источнике строка
-// про базу знаний вела на страницу панели; у гостя такой страницы нет, а ссылка в
-// чужой контур хуже её отсутствия — она обещает место, куда человек не попадёт.
+// 🔒 СЕРВЕРНЫЙ: резолвит слова и отдаёт островкам СТРОКИ ПОИМЁННО (76-4).
 
 export function TelegramSettings({
   state,
@@ -32,9 +34,9 @@ export function TelegramSettings({
   const w = ui.settings
   const tg = state.telegram
 
-  // 🔒 СЛУЖБА НЕ ОТВЕТИЛА — ЭТО ОТДЕЛЬНЫЙ ЭКРАН, А НЕ ПУСТАЯ ФОРМА. Форма без
-  // службы принимала бы ввод, которому некуда деться. И это НОРМАЛЬНОЕ состояние
-  // на машине человека: служба каналов принадлежит платформе и живёт на сервере.
+  // 🔒 СЛУЖБА НЕ ОТВЕТИЛА — ЭТО ОТДЕЛЬНЫЙ ЭКРАН, А НЕ ПУСТАЯ ФОРМА. И это
+  // НОРМАЛЬНОЕ состояние на машине человека: служба каналов принадлежит
+  // платформе и живёт на сервере.
   if (!state.available) {
     return (
       <div
@@ -52,8 +54,11 @@ export function TelegramSettings({
     )
   }
 
+  const configured = Boolean(tg?.configured)
+
   return (
     <div data-telegram-settings="ready" className="flex flex-col gap-4">
+      {/* ── 1. Telegram ─────────────────────────────────────────────────── */}
       <div className="rounded-lg border border-border">
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
           <span className="flex flex-1 items-center gap-2">
@@ -61,7 +66,6 @@ export function TelegramSettings({
             <H4 variant="ui">Telegram</H4>
           </span>
 
-          {/* Состояние привязки — одной строкой, тремя разными видами. */}
           {tg?.chatId ? (
             <span
               data-telegram-link="linked"
@@ -70,7 +74,7 @@ export function TelegramSettings({
               <CheckCircle2 className="size-3.5" />
               {w.linkedTo.replace("{who}", tg.who ?? tg.chatId)}
             </span>
-          ) : tg?.configured ? (
+          ) : configured ? (
             <span
               data-telegram-link="not-linked"
               className="text-[length:var(--fs-small)] text-amber-700 dark:text-amber-300"
@@ -88,9 +92,9 @@ export function TelegramSettings({
         </div>
 
         <div className="flex flex-col gap-4 p-3">
-          {/* 🔒 ТОКЕН ЕСТЬ, НО TELEGRAM ЕГО НЕ УЗНАЁТ — ОТДЕЛЬНОЕ СОСТОЯНИЕ, А НЕ
+          {/* 🔒 ТОКЕН ЕСТЬ, НО TELEGRAM ЕГО НЕ УЗНАЁТ — ОТДЕЛЬНОЕ СОСТОЯНИЕ, а не
               приписка в подписи поля: лечение у него своё. */}
-          {tg?.configured && !tg.reachable && (
+          {configured && !tg?.reachable && (
             <p
               data-telegram-state="rejected"
               className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-2.5"
@@ -100,16 +104,15 @@ export function TelegramSettings({
             </p>
           )}
 
-          {tg?.configured && tg.reachable && tg.bot && (
+          {configured && tg?.reachable && tg.bot && (
             <Small data-telegram-state="ok" className="text-muted-foreground">
               {w.currentBot} <span className="font-mono text-foreground">@{tg.bot}</span>
             </Small>
           )}
 
           <TelegramSetup
-            configured={Boolean(tg?.configured)}
+            configured={configured}
             enabled={tg?.enabled !== false}
-            tickSeconds={Number(tg?.tickSeconds ?? 0)}
             labels={{
               tokenLabel: w.tokenLabel,
               tokenPlaceholder: w.tokenPlaceholder,
@@ -129,17 +132,37 @@ export function TelegramSettings({
               linkExpired: w.linkExpired,
               linkFailed: w.linkFailed,
               channelOn: w.channelOn,
-              scheduleLabel: w.scheduleLabel,
-              scheduleHint: w.scheduleHint,
+              // 🔒 ТЕКСТ НЕ ПЕРЕПИСАН — ПЕРЕЕХАЛ. Он же был внизу экрана сноской;
+              // теперь стоит предупреждением у кнопки, к которой относится.
+              afterLink: `${w.answersFrom} ${w.neverInvents}`,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── 2. Ключ OpenAI ──────────────────────────────────────────────── */}
+      <OpenAiKeySection ui={ui} />
+
+      {/* ── 3. Расписание ───────────────────────────────────────────────── */}
+      <div className="rounded-lg border border-border">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+          <span className="flex flex-1 items-center gap-2">
+            <Timer className="size-4 text-muted-foreground" />
+            <H4 variant="ui">{w.scheduleLabel}</H4>
+          </span>
+        </div>
+        <div className="p-3">
+          <TelegramSchedule
+            configured={configured}
+            tickSeconds={Number(tg?.tickSeconds ?? 0)}
+            labels={{
               scheduleOff: w.scheduleOff,
               scheduleEvery: w.scheduleEvery,
               scheduleSaved: w.scheduleSaved,
+              scheduleHint: w.scheduleHint,
+              failed: w.failed,
             }}
           />
-
-          <Small className="border-t border-border pt-3 leading-relaxed text-muted-foreground">
-            {w.answersFrom} {w.neverInvents}
-          </Small>
         </div>
       </div>
     </div>

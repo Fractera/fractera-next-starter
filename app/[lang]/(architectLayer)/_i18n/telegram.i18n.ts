@@ -87,6 +87,14 @@ export type TelegramUi = {
     /** Причины отказа двери, по её кодам. */
     errors: Record<string, string>
     errorOther: string
+    /** Слова инструмента черновика (81-5). */
+    draftTitle: string
+    draftHint: string
+    draftPlaceholder: string
+    draftSubmit: string
+    draftSubmitting: string
+    draftNotes: string
+    draftFailures: Record<'no-key' | 'too-short' | 'model-silent' | 'not-understood', string>
   }
 
   /**
@@ -355,6 +363,18 @@ const EN: TelegramUi = {
       "builtin-readonly": "Built-in facts are generated from the code and cannot be edited.",
     },
     errorOther: "Could not save. Try again in a minute.",
+    draftTitle: "Describe it in words",
+    draftHint: "Say what you want to store and how it shows up in messages. The model fills the fields in — you check them and save. Nothing is written until you do.",
+    draftPlaceholder: "I want to keep the weather when a message arrived — take it from mentions of rain, heat, snow or degrees",
+    draftSubmit: "Fill the fields in",
+    draftSubmitting: "Reading…",
+    draftNotes: "Assumed:",
+    draftFailures: {
+      "no-key": "No OpenAI key — fill the fields by hand, everything else works.",
+      "too-short": "Too short. Say what it is and by which words it shows up.",
+      "model-silent": "The model did not answer. Try again in a minute.",
+      "not-understood": "Could not make a record out of this. Say it in other words, or fill the fields by hand.",
+    },
   },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
@@ -608,6 +628,18 @@ const RU: TelegramUi = {
       "builtin-readonly": "Встроенные признаки порождаются из кода и не правятся.",
     },
     errorOther: "Не удалось сохранить. Попробуйте через минуту.",
+    draftTitle: "Опишите словами",
+    draftHint: "Скажите, что хотите хранить и по каким словам это встречается. Модель заполнит поля — вы проверите и сохраните. До этого ничего не записывается.",
+    draftPlaceholder: "хочу хранить погоду в момент сообщения — бери из упоминаний дождя, жары, снега или градусов",
+    draftSubmit: "Заполнить поля",
+    draftSubmitting: "Читаем…",
+    draftNotes: "Предположил:",
+    draftFailures: {
+      "no-key": "Ключа OpenAI нет — заполните поля руками, остальное работает.",
+      "too-short": "Слишком коротко. Скажите, что это и по каким словам встречается.",
+      "model-silent": "Модель не ответила. Попробуйте через минуту.",
+      "not-understood": "Не получилось собрать запись. Скажите иначе или заполните поля руками.",
+    },
   },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",

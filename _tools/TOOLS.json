@@ -52,6 +52,31 @@
       }
     },
     {
+      "id": "fact-draft",
+      "entry": "client/fact-draft.client.tsx",
+      "dir": "_tools/fact-draft",
+      "needs": [
+        "browser",
+        "openai-key"
+      ],
+      "npmDeps": [],
+      "usedBy": [
+        "architect/facts-registry"
+      ],
+      "en": {
+        "title": "Typed draft from words",
+        "what": "A person describes in free words what they want to store, and the tool returns a filled-in record: machine name, human name, the form of the value, the instruction for recognising it, and what to do when it is implied but not extractable. The schema of fields comes as a parameter, so the tool serves any consumer, not only the fact registry.",
+        "how": "One call to the model with the field schema in the prompt and strict JSON back. Closed lists are verified HERE, not promised by the model: it will happily return a value outside the list and it will look plausible. A record that fails verification is dropped whole — half-parsed is worse than refused, because half-parsed gets saved. The field carries a microphone, which the browser only grants in a secure context: on plain http it is absent by construction and the person types instead.",
+        "value": "Describing a thing in words is the only way a person can extend the system without an agent. The tool never writes anything: it proposes, and the person edits and saves — the law taken verbatim from socials-ai, because a model errs quietly and the only guard is human eyes between the proposal and the record."
+      },
+      "ru": {
+        "title": "Типизированный черновик из слов",
+        "what": "Человек описывает свободными словами, что хочет хранить, и получает заполненную запись: машинное имя, человеческое название, форму значения, инструкцию узнавания и поведение при неудаче. Схема полей приходит параметром — поэтому инструмент годится любому потребителю, а не только реестру признаков.",
+        "how": "Один вызов модели со схемой полей в промпте и строгим JSON в ответе. Закрытые списки проверяются ЗДЕСЬ, а не обещаются моделью: она охотно вернёт значение вне списка, и выглядеть это будет правдоподобно. Черновик, не прошедший проверку, отбрасывается целиком — наполовину разобранная запись хуже отказа, потому что её сохранят. У поля есть микрофон, а микрофон браузер отдаёт только в защищённом контексте: по http его нет по устройству, и человек печатает.",
+        "value": "Описать вещь словами — единственный способ расширить систему без агента. Инструмент ничего не пишет: он предлагает, а правит и сохраняет человек. Закон взят дословно у socials-ai, потому что модель ошибается тихо, и единственная защита — глаза владельца между предложением и записью."
+      }
+    },
+    {
       "id": "image-crop",
       "entry": "client/image-cropper.client.tsx",
       "dir": "_tools/image-crop",

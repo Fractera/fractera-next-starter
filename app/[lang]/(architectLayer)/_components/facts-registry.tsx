@@ -31,7 +31,7 @@ import type { TelegramUi } from "../_i18n/telegram.i18n"
 
 const ORDER: FactLevel[] = ["material", "intent", "entity", "destination", "field"]
 
-export async function FactsRegistrySection({ ui }: { ui: TelegramUi }) {
+export async function FactsRegistrySection({ lang, ui }: { lang: string; ui: TelegramUi }) {
   const w = ui.facts
   const facts = await allFacts()
   const byLevel = new Map<FactLevel, Fact[]>()
@@ -63,6 +63,7 @@ export async function FactsRegistrySection({ ui }: { ui: TelegramUi }) {
             видит его среди встроенных. Кнопка внизу списка означала бы, что
             добавление — редкая операция; здесь она главная. */}
         <FactsAdd
+          lang={lang}
           labels={{
             addTitle: w.addTitle,
             keyLabel: w.keyLabel,
@@ -80,6 +81,16 @@ export async function FactsRegistrySection({ ui }: { ui: TelegramUi }) {
             saved: w.savedWithTable,
             errors: w.errors,
             errorOther: w.errorOther,
+            draftNotes: w.draftNotes,
+            draft: {
+              title: w.draftTitle,
+              hint: w.draftHint,
+              placeholder: w.draftPlaceholder,
+              submit: w.draftSubmit,
+              submitting: w.draftSubmitting,
+              notesPrefix: w.draftNotes,
+              failures: w.draftFailures,
+            },
           }}
         />
 

@@ -209,7 +209,7 @@ export default async function TelegramPage({
                     </div>
                   }
                 />
-                <TelegramSettings state={channels} ui={ui} />
+                <TelegramSettings lang={lang} state={channels} ui={ui} />
               </>
             )}
 

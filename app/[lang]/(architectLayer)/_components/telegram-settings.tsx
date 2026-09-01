@@ -27,9 +27,11 @@ import type { TelegramUi } from "../_i18n/telegram.i18n"
 // 🔒 СЕРВЕРНЫЙ: резолвит слова и отдаёт островкам СТРОКИ ПОИМЁННО (76-4).
 
 export function TelegramSettings({
+  lang,
   state,
   ui,
 }: {
+  lang: string
   state: ChannelsState
   ui: TelegramUi
 }) {
@@ -61,7 +63,7 @@ export function TelegramSettings({
             где службы каналов нет по устройству, реестра не существовало вовсе.
             Реестр описывает ПРОЕКТ, а не бота: он про то, что система умеет
             вынимать из любого сообщения, и от живости Telegram не зависит. */}
-        <FactsRegistrySection ui={ui} />
+        <FactsRegistrySection lang={lang} ui={ui} />
       </div>
     )
   }
@@ -182,7 +184,7 @@ export function TelegramSettings({
           прямой вопрос, где живёт реестр. Стоит ПЕРЕД инструкцией боту:
           реестр говорит, что система умеет вынимать, а инструкция — как ей
           об этом рассказывать. Порядок смысловой, как у трёх карточек выше. */}
-      <FactsRegistrySection ui={ui} />
+      <FactsRegistrySection lang={lang} ui={ui} />
 
 
       {/* ── 5. Ваша инструкция боту — каркас (77-15) ─────────────────────────

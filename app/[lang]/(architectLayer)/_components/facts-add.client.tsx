@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Small } from "@/components/ui/typography"
 import { FACT_ON_MISSING, FACT_VALUE_TYPES, type FactOnMissing, type FactValueType } from "@/lib/facts/types"
+import { FactDraft, type FactDraftLabels } from "@/_tools/fact-draft/client/fact-draft.client"
 
 // ФОРМА ДОБАВЛЕНИЯ ПРИЗНАКА (81-4).
 //
@@ -41,13 +42,21 @@ type Labels = {
   saved: string
   errors: Record<string, string>
   errorOther: string
+  draft: FactDraftLabels
+  draftNotes: string
 }
 
-export function FactsAdd({ labels }: { labels: Labels }) {
+export function FactsAdd({ lang, labels }: { lang: string; labels: Labels }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [saved, setSaved] = useState("")
+  // 🔒 ЧЕРНОВИК КЛАДЁТСЯ В ПОЛЯ, А НЕ СОХРАНЯЕТСЯ. Форма перерисовывается с
+  // новыми умолчаниями, человек их читает и правит. Ключ на форме меняется,
+  // чтобы React пересоздал поля: иначе введённое ранее пересилило бы черновик.
+  const [draft, setDraft] = useState<Record<string, string> | null>(null)
+  const [notes, setNotes] = useState("")
+  const [formKey, setFormKey] = useState(0)
 
   async function submit(form: FormData) {
     setBusy(true)
@@ -102,26 +111,46 @@ export function FactsAdd({ labels }: { labels: Labels }) {
 
   return (
     <form
+      key={formKey}
       action={submit}
       data-facts-add-form
       className="flex flex-col gap-3 rounded-lg border border-border p-3"
     >
+      {/* 🔒 ИНСТРУМЕНТ ПЕРВЫМ, ПОЛЯ ПОД НИМ. Человек описывает словами, поля
+          заполняются, он читает и правит. Обратный порядок означал бы, что
+          описание словами — запасной путь; здесь это главный. */}
+      <FactDraft
+        lang={lang}
+        labels={labels.draft}
+        onDraft={(d, n) => {
+          setDraft(d)
+          setNotes(n)
+          setFormKey(k => k + 1)
+        }}
+      />
+
+      {notes && (
+        <Small data-facts-draft-notes className="text-muted-foreground">
+          {labels.draftNotes} {notes}
+        </Small>
+      )}
+
       <Field label={labels.keyLabel} hint={labels.keyHint}>
-        <Input name="key" required placeholder="weather" autoComplete="off" />
+        <Input name="key" required placeholder="weather" autoComplete="off" defaultValue={draft?.key ?? ""} />
       </Field>
 
       <Field label={labels.titleLabel}>
-        <Input name="title" required autoComplete="off" />
+        <Input name="title" required autoComplete="off" defaultValue={draft?.title ?? ""} />
       </Field>
 
       <Field label={labels.descriptionLabel}>
-        <Textarea name="description" rows={2} />
+        <Textarea name="description" rows={2} defaultValue={draft?.description ?? ""} />
       </Field>
 
       <Field label={labels.valueTypeLabel}>
         <select
           name="valueType"
-          defaultValue="text"
+          defaultValue={draft?.valueType ?? "text"}
           className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-[length:var(--fs-small)]"
         >
           {FACT_VALUE_TYPES.map(t => (
@@ -133,13 +162,13 @@ export function FactsAdd({ labels }: { labels: Labels }) {
       </Field>
 
       <Field label={labels.howToFindLabel} hint={labels.howToFindHint}>
-        <Textarea name="howToFind" rows={2} required />
+        <Textarea name="howToFind" rows={2} required defaultValue={draft?.howToFind ?? ""} />
       </Field>
 
       <Field label={labels.onMissingLabel}>
         <select
           name="onMissing"
-          defaultValue="silent"
+          defaultValue={draft?.onMissing ?? "silent"}
           className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-[length:var(--fs-small)]"
         >
           {FACT_ON_MISSING.map(t => (

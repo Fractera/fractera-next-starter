@@ -1,6 +1,33 @@
 {
   "tools": [
     {
+      "id": "chat",
+      "entry": "client/chat.client.tsx",
+      "dir": "_tools/chat",
+      "needs": [
+        "browser"
+      ],
+      "npmDeps": [
+        "ai",
+        "streamdown",
+        "use-stick-to-bottom",
+        "nanoid"
+      ],
+      "usedBy": [],
+      "en": {
+        "title": "Chat",
+        "what": "One conversation for the whole project, in two states. Given a send handler it is a full chat — a feed plus an input field with file attachment; without one it is a read-only feed, which is exactly what a log needs. A message carries text, who wrote it, when, an optional mark of which channel made it, and up to five kinds of attachment: audio, image, video, document — and two of ours, a place and a calendar event.",
+        "how": "The feed, the message and the input field come from AI Elements, vendored into `components/ai-elements/` in 80-2; this tool only decides what appears in them. Four kinds of attachment the library recognises by media type on its own, the two of ours are drawn here in the same row shape, so a person sees one list under a message rather than two. Scrolling belongs to `Conversation`: it holds the bottom and offers a way back, and no hand-written scroll work is allowed to appear here again. The tool never talks to the network — it takes messages as a prop and hands sent ones back out, so polling and cursors stay with whoever owns the storage.",
+        "value": "Anything that shows a run of messages is the same thing under different names — a chat with a person, a chat with a model, a feed, a bot log, an inbox. Before this tool each of them was built by hand, and the log feed of 77-5 was assembled from list items while the library already sat in the repository. One implementation, three consumers: the block view, the architect layer, and the future messenger."
+      },
+      "ru": {
+        "title": "Чат",
+        "what": "Одна переписка на весь проект, в двух состояниях. Дан обработчик отправки — это чат целиком: лента и поле ввода с прикреплением файла; не дан — лента только на чтение, ровно то, что нужно журналу. Сообщение несёт текст, автора, время, необязательную пометку канала и до пяти родов вложений: аудио, изображение, видео, документ — и два наших, место и календарное событие.",
+        "how": "Лента, сообщение и поле ввода взяты из AI Elements, вендоренной в `components/ai-elements/` шагом 80-2; инструмент решает только, что в них появится. Четыре рода вложений библиотека узнаёт сама по типу содержимого, два наших нарисованы здесь строкой того же вида — чтобы под сообщением был один список, а не два. Прокрутка принадлежит `Conversation`: он держит низ и предлагает вернуться, и своей работы со скроллом здесь больше не появится. В сеть инструмент не ходит: сообщения приходят пропсом, отправленное уезжает наружу, а опрос и курсор остаются у того, кто владеет складом.",
+        "value": "Всё, что показывает череду сообщений, — одна и та же вещь под разными именами: чат с человеком, чат с моделью, лента, журнал бота, входящие. До этого инструмента каждую из них собирали руками, и лента логов 77-5 была сложена из элементов списка при том, что библиотека уже лежала в репозитории. Одна реализация, три потребителя: вид блока, слой архитектора и будущий мессенджер."
+      }
+    },
+    {
       "id": "code-view",
       "entry": "client/code-view.client.tsx",
       "dir": "_tools/code-view",

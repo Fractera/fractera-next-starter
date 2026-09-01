@@ -1235,8 +1235,14 @@ export const PromptInputSubmit = ({
     Icon = <XIcon className="size-4" />;
   }
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+  // ПРАВКА ВЕНДОРЕННОГО ФАЙЛА, НАЗВАННАЯ ЯВНО (80-4): наш `InputGroupButton`
+  // стоит на `@base-ui/react`, и его `onClick` принимает событие Base UI, а не
+  // голое React-событие. Библиотека типизировала обработчик голым — `tsc` падал
+  // на этом файле, а с ним упала бы и сборка. Тип берётся У САМОЙ КНОПКИ, а не
+  // переписывается руками: обновление библиотеки эту строку перепишет, и это
+  // правильно — она про наш примитив, а не про их логику.
+  const handleClick = useCallback<NonNullable<PromptInputSubmitProps["onClick"]>>(
+    (e) => {
       if (isGenerating && onStop) {
         e.preventDefault();
         onStop();

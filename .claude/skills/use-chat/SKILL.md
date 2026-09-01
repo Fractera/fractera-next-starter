@@ -48,7 +48,7 @@ Installed in `components/ai-elements/` (step 80-2), as our own source code:
 | `attachments` | **automatic media type detection: image · video · audio · document**, in three layouts |
 | `prompt-input` | the input area, `PromptInputActionAddAttachments` for files, submit with state |
 
-🔒 **FOUR OF OUR FIVE ATTACHMENT KINDS ARE NATIVE.** Audio, photo, video and document are detected and
+🔒 **FOUR OF OUR SIX ATTACHMENT KINDS ARE NATIVE.** Audio, photo, video and document are detected and
 rendered by `attachments` with no work from you. **Location and calendar are not** — those two are
 ours, and they live in the chat tool, never as a fork of the library file.
 
@@ -80,7 +80,31 @@ including with a bigger heap. The registry answers fine:
 file and rewrites `@/registry/<style>/ui/*` to `@/components/ui/*`. Do the same, change nothing else,
 and record what you did.
 
-## 5. Before you call it done
+## 5. What the first four consumers taught (80-4 … 80-6)
+
+Written after the tool was actually built and mounted three times. Both laws below are things this
+skill did **not** say, and both cost a wrong turn.
+
+🔒 **A BLOCK KIND NEVER HAS AN INPUT AREA, AND THAT IS MECHANICS, NOT MODESTY.** The input area appears
+when the tool is given a send handler; a handler is a function, and a server renderer cannot pass a
+function into a client island. So the `chat` kind is always a read-only feed. **Say it out loud in the
+kind's card** — an input area missing without explanation reads as a defect of the kind rather than as
+its boundary. A working chat is placed by a consumer that owns client state, the way the Logs section
+does.
+
+🔒 **A CONSUMER MAY WIDEN THE TOOL'S CONTRACT — AND THEN REWRITES THE OLD LAW, NEVER WORKS AROUND IT.**
+The tool said "an attachment without an address is a caption, not a file". The bot log knows a file's
+KIND and not its address, because the channel service stores a Telegram file id. The address became
+optional, the previous truth was kept in the comment with its reason, and the log renders a captioned
+row. **Building your own markup because "the tool does not fit" is the exact mistake this skill exists
+to prevent** — the tool is ours, and widening it is cheaper than a second feed forever.
+
+🛑 **AND ONE MEASUREMENT THAT LIED HERE.** `grep -c` counts LINES, and rendered HTML is one line: a
+check for "how many messages are on the page" answered 1 with seven drawn. Count occurrences —
+`grep -o … | wc -l`. The same shape as `npm run build | tail`, which prints the exit code of `tail`.
+
+
+## 6. Before you call it done
 
 1. The thing you built is the chat tool in one of its two states — not markup that resembles it.
 2. `npm ls ai` shows one line and `deduped`.

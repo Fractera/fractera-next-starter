@@ -643,11 +643,17 @@ writing anything, check whether a switch already does it.
 
 ## Tools — `_tools/`
 
-**Six** ready pieces, a folder each: `voice-input`, `image-crop`, `video-trim`, `code-view`,
-`translations-dialog`, `socials-ai`. **Look here BEFORE building anything similar** → `use-tools`.
+**Seven** ready pieces, a folder each: `voice-input`, `image-crop`, `video-trim`, `code-view`,
+`translations-dialog`, `socials-ai`, **`chat`**. **Look here BEFORE building anything similar**
+→ `use-tools`.
 The catalogue that shows them to a human lives at **`/{lang}/architect/design?section=tools`**, and a
 tool you are missing is **asked for from there** — a card at the bottom of the column writes a request
 into `development-docs/development-steps/pre-steps/`.
+
+🪦 **AND IT SAID "Six" UNTIL 2026-09-01 — the same slip, one edit later.** `chat` arrived with step
+80, and the number above it did not move on its own, because no number written by hand ever does. The
+law below is why the count is generated: `npm run build:tools-map` counts the folder, and the prose is
+only a courtesy that must be corrected in the SAME edit as the list beside it.
 
 🪦 **This line said "Five" until 2026-08-31, and the sixth had been there for two days.** `socials-ai`
 arrived, was wired into the socials field, and was named nowhere — not here, not in the panel's
@@ -678,7 +684,7 @@ decides the rule is not for him; neither follows from the text.
 import is lazy and inside `try/catch`, so without the package highlighting silently becomes plain
 text. That is a legal state: unhighlighted code is readable, an empty screen is not.
 
-**Six is today, not forever.** Image or video generation, document recognition, maps, payment,
+**Seven is today, not forever.** Image or video generation, document recognition, maps, payment,
 signature — every such capability lands HERE, not in the folder of the page that needed it first.
 ✗ a tool left living at its first caller is found only by someone who remembers it is there.
 🔒 **And the owner asks for those from the showcase, not from you directly.** The card at the bottom
@@ -847,6 +853,23 @@ of the guard, and are not something you add to make a build green.
 ✗ paid for by the whole of step 62: the rule existed in prose, in a gate for a neighbouring genus,
 and in this very file — and was broken by the agent who had cited it a day earlier. **A rule with
 nowhere to be seen and nobody to check it is executed from memory, which is to say not executed.**
+
+🔒 **A RUN OF MESSAGES IS BUILT WITH ONE TOOL, NEVER BY HAND** (step 80, 2026-09-01). A chat with a
+person, a chat with a model, a feed, a bot log, an inbox — they are the same thing under different
+names, and the thing is `_tools/chat`. It has **two states and they are one property, not two
+components**: given a send handler it is a chat, without one it is a read-only feed. The block kind
+`chat` is a thin wrapper over it; the architect layer calls it directly. **When to reach for it is
+`use-chat`; how the library underneath works is the vendored `ai-elements`, and neither retells the
+other.**
+🪦 **THE FEED OF THE BOT LOGS WAS BUILT BY HAND ON 2026-09-01 AND IS GONE (80-6).** A list, bubbles, a
+hand-written "who · when" line, hand-picked icons per kind — while AI Elements already sat in this
+repository. Nobody was careless: **there was no law saying a message feed has an owner**, and a
+capability nobody names is rebuilt by whoever needs it next. That is the whole reason this paragraph
+exists.
+🔒 **A CONSUMER MAY WIDEN THE TOOL'S CONTRACT — AND MUST REWRITE THE OLD LAW, NOT WORK AROUND IT.**
+The log knows a file's kind and not its address, because the service stores a Telegram file id. So
+`url` became optional and the previous rule was rewritten with its reason kept. **Building your own
+markup because the tool "does not fit" is the mistake this whole step was opened to remove.**
 
 🔒 **FOREIGN UI KNOWLEDGE IS WELCOME — INSIDE ONE OF THOSE THREE, NEVER INSTEAD OF THEM** (63-2). The
 vendored `shadcn` skill (`.claude/skills/shadcn/`) composes the inside of a block kind or a widget
@@ -1435,8 +1458,8 @@ say so and work without it rather than inventing its content.
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
 | `explain-this-project` | answering «how does this work»: three circles of sight, measure before claiming, the boundary said out loud, and where to read the platform | ✅ |
 | `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
-| `use-chat` | **anything that shows a sequence of messages** — a chat with a person or a model, a feed, a log, an inbox: one tool, two states, never hand-built markup | ⬜ |
-| `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited | ⬜ |
+| `use-chat` | **anything that shows a sequence of messages** — a chat with a person or a model, a feed, a log, an inbox: one tool, two states, never hand-built markup | 🔬 |
+| `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited | ✅ |
 | `shadcn` | **foreign, shadcn/ui, vendored**: the components, the CLI, registries, styling and composition rules. Provenance and the update command in its `SOURCE.md`; never hand-edited | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |
 | `use-routes` | where a route lives: two layers, four permission groups, folder shape, no sibling imports | ✅ |
@@ -1475,6 +1498,12 @@ say so and work without it rather than inventing its content.
 from the journal of one complete migration (2026-08-25), law by law, and every ✗ in it is a failure
 that actually happened — from **one** project, which is why it carries its own §9 "what this skill does
 not know". It earns a tick the way the others did: by holding while somebody works by it.
+**`use-chat` carries it after one real run and no more than one**: it was written in 80-3 before
+anything used it, then four substeps were built by it — the tool, the block kind, the catalogue
+specimen and the bot logs. It held, and it was corrected once by the work itself: a consumer widened
+the tool's contract, and the skill had nothing to say about that case. Its second capability is its
+examination. **`ai-elements` is ticked on the scale foreign vendored skills use** — the same as
+`shadcn`: its components were vendored, mounted and rendered live, and it did not mislead.
 **`build-product-with-owner` carries the same mark for the opposite reason**: it was assembled from the
 laws this corpus already paid for, and no product has yet been walked from cases to a prototype by it.
 Its first real product is its examination. **`use-route-parameters`** carries it for the same reason,

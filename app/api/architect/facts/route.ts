@@ -6,6 +6,18 @@ import { allFacts, addFact, updateFact, disableFact } from "@/lib/facts/registry
 import { ensureFactTables } from "@/lib/facts/ensure"
 import { factTableName } from "@/lib/facts/table"
 import { FACT_LEVELS, FACT_ON_MISSING, FACT_VALUE_TYPES } from "@/lib/facts/types"
+import { FACT_FN_KINDS } from "@/lib/facts/fn-types"
+import { allowedHosts } from "@/lib/facts/run-fn"
+
+/** Хост описанной функции разрешён? Тот же список, что у исполнителя. */
+function hostOfFnAllowed(url: unknown): boolean {
+  try {
+    const u = new URL(String(url))
+    return u.protocol === "https:" && allowedHosts().includes(u.hostname)
+  } catch {
+    return false
+  }
+}
 
 // ДВЕРЬ РЕЕСТРА ПРИЗНАКОВ (81-4).
 //
@@ -60,6 +72,25 @@ export async function POST(req: NextRequest) {
   if (!FACT_VALUE_TYPES.includes(valueType as never)) return no("bad-value-type")
   if (!FACT_ON_MISSING.includes(onMissing as never)) return no("bad-on-missing")
 
+  // 🔒 ОПИСАНИЕ ФУНКЦИИ ПРОВЕРЯЕТСЯ ФОРМОЙ, А НЕ ДОВЕРИЕМ (81-8). Разбираем
+  // JSON здесь: нечитаемое описание, записанное в базу, стало бы признаком с
+  // функцией, которая никогда не сработает и никому об этом не скажет.
+  let fn: string | undefined
+  if (body.fn !== undefined && body.fn !== null && body.fn !== "") {
+    const raw = typeof body.fn === "string" ? body.fn : JSON.stringify(body.fn)
+    try {
+      const parsed = JSON.parse(raw) as { kind?: string; url?: string }
+      if (!FACT_FN_KINDS.includes(String(parsed.kind) as never)) return no("bad-fn-kind")
+      // 🛑 БЕЛЫЙ СПИСОК ХОСТОВ ПРОВЕРЯЕТСЯ ПРИ ЗАПИСИ, А НЕ ТОЛЬКО ПРИ ВЫЗОВЕ.
+      // Признак с чужим адресом, лежащий в базе, — это отложенная попытка
+      // достучаться туда, куда нам нельзя; сказать «нет» надо сразу.
+      if (parsed.kind === "http" && !hostOfFnAllowed(parsed.url)) return no("host-not-allowed")
+      fn = raw
+    } catch {
+      return no("bad-fn")
+    }
+  }
+
   const added = await addFact({
     key,
     level: level as never,
@@ -68,6 +99,7 @@ export async function POST(req: NextRequest) {
     valueType: valueType as never,
     howToFind,
     onMissing: onMissing as never,
+    fn,
   })
   if (!added.ok) return no(added.error ?? "refused", added.error === "builtin-exists" ? 409 : 400)
 

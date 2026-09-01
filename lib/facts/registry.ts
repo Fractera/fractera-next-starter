@@ -66,6 +66,9 @@ function fromRow(r: Row): Fact {
     howToFind: r.how_to_find,
     storedIn: factTableName(r.key) || "имя недопустимо: таблицы нет",
     onMissing: r.on_missing as FactOnMissing,
+    // Описание внешнего вызова едет как есть: разбирает его исполнитель,
+    // а читателю реестра знать его форму незачем.
+    fn: r.fn ?? undefined,
     builtin: false,
     enabled: r.enabled === 1,
   }
@@ -101,6 +104,8 @@ export type NewFact = {
   valueType: FactValueType
   howToFind: string
   onMissing: FactOnMissing
+  /** Описание внешнего вызова, строкой JSON. Проверено дверью (81-8). */
+  fn?: string
 }
 
 /**
@@ -119,9 +124,9 @@ export async function addFact(fact: NewFact): Promise<{ ok: boolean; error?: str
   if (builtinFacts().some(f => f.key === key)) return { ok: false, error: "builtin-exists" }
 
   return write(
-    `INSERT INTO fact_registry (key, level, title, description, value_type, how_to_find, on_missing)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [key, fact.level, fact.title, fact.description, fact.valueType, fact.howToFind, fact.onMissing],
+    `INSERT INTO fact_registry (key, level, title, description, value_type, how_to_find, on_missing, fn)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [key, fact.level, fact.title, fact.description, fact.valueType, fact.howToFind, fact.onMissing, fact.fn ?? null],
   )
 }
 

@@ -1,4 +1,5 @@
 import { noteFacets } from "@/lib/facts/candidates"
+import { collectFactValues } from "@/lib/facts/collect"
 import { db } from "@/lib/db"
 import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
@@ -421,6 +422,25 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   //
   // 🔒 ОТКАЗ СВЕРКИ НЕ РОНЯЕТ РАЗБОР. Слой данных может молчать, и сообщение
   // всё равно принято: кандидат — это подсказка, а не часть сохранения.
+  // 🔒 ЗНАЧЕНИЯ ПРИЗНАКОВ С ОПИСАННЫМИ ФУНКЦИЯМИ (81-8). Собираются ПОСЛЕ
+  // того, как сообщение легло в базу: у значения должен быть `message_id`, к
+  // которому его привязать.
+  //
+  // 🔒 ОТКАЗ ЧУЖОГО ИСТОЧНИКА ЛОЖИТСЯ В ЗАМЕТКИ, А НЕ РОНЯЕТ РАЗБОР. Погода
+  // не ответила — сообщение принято целиком; причина видна в строке сообщения,
+  // потому что диагностика, видимая только в момент отказа, не существует.
+  try {
+    const collected = await collectFactValues(messageId, {
+      text: msg.text ?? "",
+      lat: msg.lat != null ? String(msg.lat) : "",
+      lon: msg.lon != null ? String(msg.lon) : "",
+      date: at.slice(0, 10),
+    })
+    for (const f of collected.failed) notes.push(`fn:${f.key}:${f.reason}`)
+  } catch {
+    // Молча: значения признаков — дополнение, а не условие приёма сообщения.
+  }
+
   let candidate = ""
   try {
     candidate = await noteFacets(u.facets)

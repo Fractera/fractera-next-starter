@@ -4,6 +4,7 @@ import { SectionIntro } from "./section-intro.client"
 import { FactsAdd } from "./facts-add.client"
 import { allFacts } from "@/lib/facts/registry"
 import { needsTable } from "@/lib/facts/table"
+import { factDetail } from "@/lib/facts/detail"
 import type { Fact, FactLevel } from "@/lib/facts/types"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 
@@ -156,6 +157,64 @@ function FactRow({ fact, w }: { fact: Fact; w: TelegramUi["facts"] }) {
       <Small data-facts-stored className="text-muted-foreground">
         {needsTable(fact) ? fact.storedIn : w.noTable}
       </Small>
+
+      <FactDetails fact={fact} w={w} />
     </li>
+  )
+}
+
+/**
+ * РАСКРЫТИЕ КАРТОЧКИ — ПЯТЬ СТРОК (81-9).
+ *
+ * 🔒 ЗАКАЗ ВЛАДЕЛЬЦА 2026-09-02 И ЕГО ПРИЧИНА ДОСЛОВНО: «если честно я не понимаю
+ * насколько много мы извлекли из этого с тобой понимание». Реестр показывает
+ * двадцать пять встроенных записей ОДИНАКОВО, как будто все они одинаково живые.
+ * Раскрытие показывает разницу.
+ *
+ * 🔒 БЕЗ ОСТРОВКА, НА `<details>`. Закон слоя велит сперва спросить, нужен ли JS:
+ * здесь нужен показ и сокрытие, и браузер умеет это сам. Островок дал бы то же
+ * самое ценой гидратации и работал бы хуже без скриптов.
+ *
+ * 🛑 ПЯТАЯ СТРОКА — «ЧТО ТЕРЯЕТСЯ» — ВЛАДЕЛЬЦЕМ НЕ ЗАКАЗЫВАЛАСЬ И ДОБАВЛЕНА
+ * НАМЕРЕННО. Четыре заказанные рассказывают, что признак умеет, и молчат о том,
+ * что он умеет и ВЫБРАСЫВАЕТ; а вопрос был именно про честный объём понимания.
+ */
+function FactDetails({ fact, w }: { fact: Fact; w: TelegramUi["facts"] }) {
+  const d = factDetail(fact)
+
+  return (
+    <details data-facts-details={fact.key} className="mt-1">
+      <summary className="cursor-pointer list-none text-[length:var(--fs-small)] text-muted-foreground underline underline-offset-2 hover:text-foreground">
+        {w.detailsMore}
+      </summary>
+
+      <div className="mt-2 flex flex-col gap-2 border-l-2 border-border pl-3">
+        {/* 🔒 ПУСТОЕ ГОВОРИТ, ЧТО ОНО ПУСТОЕ, А НЕ ИСЧЕЗАЕТ. Скрытая строка
+            неотличима от несуществующей способности; «не описано» — это факт о
+            нашей работе, и человек вправе его видеть. */}
+        <Detail label={w.detailExample} lines={d.example ? [d.example] : []} empty={w.detailNotDescribed} />
+        <Detail label={w.detailExtracts} lines={d.extracts} empty={w.detailNotDescribed} />
+        <Detail label={w.detailTools} lines={d.tools} empty={w.detailNotDescribed} />
+        <Detail label={w.detailFunctions} lines={d.functions} empty={w.detailNotDescribed} />
+        <Detail label={w.detailLost} lines={d.lost ? [d.lost] : []} empty={w.detailNothingLost} />
+      </div>
+    </details>
+  )
+}
+
+function Detail({ label, lines, empty }: { label: string; lines: string[]; empty: string }) {
+  return (
+    <div data-facts-detail className="flex flex-col gap-0.5">
+      <Small className="font-medium text-foreground">{label}</Small>
+      {lines.length === 0 ? (
+        <Small data-facts-detail-empty className="text-muted-foreground">{empty}</Small>
+      ) : (
+        lines.map((l, i) => (
+          <Small key={i} className="leading-relaxed text-muted-foreground">
+            {l}
+          </Small>
+        ))
+      )}
+    </div>
   )
 }

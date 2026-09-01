@@ -95,6 +95,24 @@ export type TelegramUi = {
     draftSubmitting: string
     draftNotes: string
     draftFailures: Record<'no-key' | 'too-short' | 'model-silent' | 'not-understood', string>
+    /**
+     * ПОДПИСИ РАСКРЫТИЯ КАРТОЧКИ (81-9).
+     *
+     * 🔒 ПОДПИСИ ЖИВУТ ЗДЕСЬ, А СОДЕРЖИМОЕ — РЯДОМ С МЕХАНИЗМОМ. Словарь
+     * принадлежит экрану и знает, КАК назвать строку; что в ней стоит, знает
+     * `lib/facts/{detail,builtin}.ts`. Положи мы туда и текст — он устарел бы в
+     * день правки кода, и устарел бы молча.
+     */
+    detailsMore: string
+    detailExample: string
+    detailExtracts: string
+    detailTools: string
+    detailFunctions: string
+    detailLost: string
+    /** Рукописного нет — так и говорим. Выдуманный пример хуже пустоты. */
+    detailNotDescribed: string
+    /** Терять нечего — это тоже ответ, и он отличается от «не описано». */
+    detailNothingLost: string
   }
 
   /**
@@ -375,6 +393,14 @@ const EN: TelegramUi = {
       "model-silent": "The model did not answer. Try again in a minute.",
       "not-understood": "Could not make a record out of this. Say it in other words, or fill the fields by hand.",
     },
+    detailsMore: "More about this fact",
+    detailExample: "How a person says it",
+    detailExtracts: "What is extracted, and where it lands",
+    detailTools: "Obtained by",
+    detailFunctions: "The code behind it",
+    detailLost: "What is extracted and NOT kept",
+    detailNotDescribed: "not described",
+    detailNothingLost: "nothing is lost — everything extracted is stored",
   },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
@@ -640,6 +666,14 @@ const RU: TelegramUi = {
       "model-silent": "Модель не ответила. Попробуйте через минуту.",
       "not-understood": "Не получилось собрать запись. Скажите иначе или заполните поля руками.",
     },
+    detailsMore: "Подробнее об этом признаке",
+    detailExample: "Как человек это говорит",
+    detailExtracts: "Что извлекается и куда ложится",
+    detailTools: "Чем добывается",
+    detailFunctions: "Какой код за этим стоит",
+    detailLost: "Что извлекается и НЕ сохраняется",
+    detailNotDescribed: "не описано",
+    detailNothingLost: "не теряется ничего — всё извлечённое сохраняется",
   },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",

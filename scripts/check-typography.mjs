@@ -21,6 +21,24 @@ const ROOT = process.cwd()
 const SCAN = ["app", "components", "sections"]
 const SKIP = new Set(["node_modules", ".next", ".git", ".swc"])
 
+// 🔒 ЧУЖОЙ ВЕНДОРЕННЫЙ КОД — ИСКЛЮЧЕНИЕ, А НЕ ДОЛГ (шаг 80, доставка на сервер).
+//
+// `components/ai-elements/` — исходник AI Elements (Vercel), вендоренный целиком
+// в 80-2. Мы правим в нём ровно то, что правит CLI библиотеки — пути импорта;
+// всё остальное живёт до первого `npx shadcn add` и исчезает МОЛЧА. Требовать от
+// него нашей шкалы текста значит либо держать правку, которую сотрёт обновление,
+// либо не обновляться никогда.
+//
+// Тот же разрез и та же причина, что у `check:shadcn-rules`, где это исключение
+// уже стояло. ✗ ОПЛАЧЕНО ТЕМ, ЧТО СБОРКА НА СЕРВЕРЕ УПАЛА НА `conversation.tsx:62`
+// после того, как шаг 80 был закрыт: локально сборка не запускается по закону, а
+// `next dev` гейтов не зовёт. **Вендорить чужой код — значит пройти ВСЕХ сторожей,
+// а не только того, чьё имя вспомнилось.**
+//
+// 🔒 Это ИСКЛЮЧЕНИЕ, а не прощённое нарушение: правило сюда не относится, потому
+// что файл не наш. Наш код в этой папке — только `_tools/chat/`, и он проверяется.
+const VENDORED = new Set([path.join("components", "ai-elements")])
+
 // 🔒 ИСКЛЮЧЕНИЯ ПЕРЕЧИСЛЕНЫ ПОИМЕННО, А НЕ ШАБЛОНОМ. Шаблон вроде «всё в
 // components/ui» однажды накроет файл, который в него случайно переехал.
 const ALLOWED_RAW_HEADINGS = new Set([
@@ -61,6 +79,7 @@ function walk(dir) {
   try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
   for (const e of entries) {
     if (SKIP.has(e.name)) continue
+    if (VENDORED.has(path.relative(ROOT, path.join(dir, e.name)))) continue
     const p = path.join(dir, e.name)
     if (e.isDirectory()) walk(p)
     else if (e.name.endsWith(".tsx")) files.push(p)

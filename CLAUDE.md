@@ -446,19 +446,59 @@ language.
 it**. Eight groups in the left menu: basics · SEO · meta and media · languages · parallel routing ·
 header · footer · cookie banner.
 
-Two more groups have their own routes, because each holds several sections and a second menu inside a
-menu-selected page would be two menus of the same kind side by side:
+Four more entries have their own routes, because each holds several sections and a second menu inside
+a menu-selected page would be two menus of the same kind side by side. **There are FIVE entries in
+total** — this one plus the four below, all of them on the same shell
+(`components/workspace/workspace-shell.tsx`), each with its own button in the site footer:
 
 | Route | What is inside |
 |---|---|
 | `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
-| `/{lang}/architect/design` | **the look of this project** — fonts · type scale · shape · colours · blocks · **dialogs** |
+| `/{lang}/architect/design` | **the look of this project** — seven sections: fonts · type scale · shape · colours · blocks · **dialogs** · **tools** |
+| `/{lang}/architect/telegram` | the Telegram bot — a skeleton so far: description · logs · settings |
+| `/{lang}/architect/auth` | **how people sign in** — description · sign-in visibility · Google · Resend |
+
+🔒 **THE COUNT AND THE LIST ARE FIXED IN ONE EDIT, NEVER ONE WITHOUT THE OTHER.** A hand-written list
+diverges from the code silently, and nothing wakes up: this very table said "two more groups" for two
+days after the fourth and fifth entries shipped, and the design row said six sections while
+`_lib/design-sections.ts` had held seven since step 41.
+
+### `/{lang}/architect/auth` — sign-in settings (step 78)
+
+Four sections. **Description** carries the collapsed help, a snapshot of **104 possible providers**
+(taken from `next-auth/providers/*` of the sign-in service, Auth.js 5.0.0-beta.31 — the project
+cannot generate that list, so it is dated and says so), the **roles** — three access tiers the
+substrate enforces, kept apart from the twelve role names your doors ask about, re-exported from
+`lib/roles.ts` and never retyped — the **guest role**, and an orange card about `localhost`, where
+`shouldBypassAuth()` gives you `architect` and therefore every door: **you cannot test a role lock
+here.** Then **sign-in visibility** (the switch that removes the account button from header and
+footer), then **Google** and **Resend**.
+
+🔒 **THE KEYS ARE WRITTEN INTO THE SIGN-IN SERVICE'S OWN `.env.local`, WHICH BELONGS TO THE PLATFORM,
+NOT TO THIS REPOSITORY.** On the server both live under `/opt/fractera/`; on a laptop that file does
+not exist at all, and the page says so in words instead of failing silently. Reading and writing go
+through `lib/architect/env-writer.ts` — the one line-by-line atomic writer this project has. **Never
+write a second `.env` writer**: two writers of one file diverge on the first format change.
+
+🔒 **SECRETS LEAVE THE SERVER MASKED, AND MASKING NEVER HAPPENS IN THE BROWSER** — masking on the
+client would mean sending the secret to the browser first. The door refuses writes outside secure
+mode (`isSecureMode()`), refuses a Resend key that does not start with `re_`, refuses an empty
+submit, and restarts `fractera-auth` after a successful write.
+
+🔒 **A DOOR THAT CHANGES WHAT VISITORS SEE MUST BUST THE CACHE.** Public pages are static with
+`revalidate = 600`, so "applies without a rebuild" is not "applies now": after writing, call
+`revalidatePath("/", "layout")` and `revalidatePath("/[lang]", "layout")`. Without it a working
+switch looks dead for ten minutes — a defect the owner found twice on this same switch.
+
+🪦 **THE CONTROL PANEL NO LONGER HAS A "SIGN-IN METHODS" TAB** (removed 2026-09-01). Do not send the
+owner there; this page is the only surface.
 
 🔒 **DESIGN HAS ITS OWN ENTRY IN THE SITE FOOTER, NOT A ROW IN THE SETTINGS MENU** (owner, 2026-08-29).
 It moved out of the control panel the same day, and the panel no longer has those pages: do not send
-the owner there for fonts or colours. Its six sections live behind their own left menu; the project
-settings menu does not list them. The sixth section, **Tools**, is not about the look at all — it holds
-the switch for the screen-width badge, and it therefore writes to `PLATFORM-CONFIG`, not `DESIGN-CONFIG`.
+the owner there for fonts or colours. Its **seven** sections live behind their own left menu; the
+project settings menu does not list them. The seventh section, **Tools**, is not about the look at all
+— it is the catalogue of this project's reusable tools (step 76), and the screen-width badge below it
+is a named exception that writes to `PLATFORM-CONFIG`, not `DESIGN-CONFIG`. Never
 send the owner to the control panel for fonts or colours: those pages are deleted. The reason is not
 tidiness — `DESIGN-CONFIG` lives INSIDE this repository while the panel lives outside it, and settings
 edited where the code is not are settings the owner cannot see next to the code.

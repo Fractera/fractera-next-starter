@@ -3,6 +3,7 @@ import { H4, Small } from "@/components/ui/typography"
 import { TelegramSetup } from "./telegram-setup.client"
 import { TelegramSchedule } from "./telegram-schedule.client"
 import { OpenAiKeySection } from "./openai-key"
+import { FactsRegistrySection } from "./facts-registry"
 import { InProgress } from "./in-progress"
 import type { ChannelsState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
@@ -40,17 +41,27 @@ export function TelegramSettings({
   // платформе и живёт на сервере.
   if (!state.available) {
     return (
-      <div
-        data-telegram-settings="service-down"
-        className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3"
-      >
-        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
-        <div className="flex flex-col gap-1">
-          <Small className="text-destructive">{w.serviceDown}</Small>
-          <code className="w-fit rounded bg-destructive/10 px-1.5 py-0.5 font-mono text-[length:var(--fs-small)]">
-            pm2 start fractera-channels
-          </code>
+      <div className="flex flex-col gap-4">
+        <div
+          data-telegram-settings="service-down"
+          className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
+          <div className="flex flex-col gap-1">
+            <Small className="text-destructive">{w.serviceDown}</Small>
+            <code className="w-fit rounded bg-destructive/10 px-1.5 py-0.5 font-mono text-[length:var(--fs-small)]">
+              pm2 start fractera-channels
+            </code>
+          </div>
         </div>
+
+        {/* 🔒 РЕЕСТР ВИДЕН, ДАЖЕ КОГДА СЛУЖБА ЛЕЖИТ, И ЭТО НЕ МЕЛОЧЬ.
+            ✗ Найдено измерением 81-3: карточка была смонтирована ВНУТРИ раздела,
+            который при отказе службы исчезает целиком, — и на машине человека,
+            где службы каналов нет по устройству, реестра не существовало вовсе.
+            Реестр описывает ПРОЕКТ, а не бота: он про то, что система умеет
+            вынимать из любого сообщения, и от живости Telegram не зависит. */}
+        <FactsRegistrySection ui={ui} />
       </div>
     )
   }
@@ -166,8 +177,15 @@ export function TelegramSettings({
           />
         </div>
       </div>
+      {/* ── 4. Реестр признаков (81-3) ──────────────────────────────────
+          🔒 МЕСТО НАЗВАНО ВЛАДЕЛЬЦЕМ: он ответил адресом этого раздела на
+          прямой вопрос, где живёт реестр. Стоит ПЕРЕД инструкцией боту:
+          реестр говорит, что система умеет вынимать, а инструкция — как ей
+          об этом рассказывать. Порядок смысловой, как у трёх карточек выше. */}
+      <FactsRegistrySection ui={ui} />
 
-      {/* ── 4. Ваша инструкция боту — каркас (77-15) ─────────────────────────
+
+      {/* ── 5. Ваша инструкция боту — каркас (77-15) ─────────────────────────
           🔒 МЕСТО ЗАНЯТО ЗАРАНЕЕ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА: «создаём на этой
           странице ещё одну вкладку ниже расписание и также пишем там просто текст
           что скоро будет добавлена». Раздел, появившийся потом из ниоткуда,

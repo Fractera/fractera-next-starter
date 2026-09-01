@@ -47,6 +47,30 @@ export type TelegramUi = {
   }
 
   /**
+   * СЛОВА КАРТОЧКИ «РЕЕСТР ПРИЗНАКОВ» (81-3).
+   *
+   * 🔒 ОПРЕДЕЛЕНИЕ ЛЕЖИТ В СЛОВАХ ЭКРАНА, А НЕ В КОММЕНТАРИИ КОДА. Правило,
+   * которое негде увидеть, исполняется по памяти — то есть не исполняется:
+   * закон, оплаченный шагом 62 на модальных окнах и шагом 51 на карточках видов.
+   */
+  facts: {
+    title: string
+    /** Первый абзац справки: виден свёрнутым. */
+    summary: string
+    /** Остальное: определение через отрицание, пять частей, откуда берутся. */
+    rest: string
+    more: string
+    less: string
+    /** Подписи пяти уровней — отвечают на вопрос «когда признак известен». */
+    levels: Record<'material' | 'intent' | 'entity' | 'destination' | 'field', string>
+    /** Пометки записи. */
+    builtin: string
+    required: string
+    noTable: string
+    counted: string
+  }
+
+  /**
    * СЛОВА РАЗДЕЛА «НАСТРОЙКИ» — ПЕРЕНЕСЕНЫ ИЗ ПАНЕЛИ ДОСЛОВНО (77-4, 2026-09-01),
    * из `admin-translations.json` → `channels`.
    *
@@ -263,6 +287,27 @@ const EN: TelegramUi = {
       rag: "Agentic RAG",
     },
   },
+
+  facts: {
+    title: "Fact registry",
+    summary:
+      "What this project knows how to pull out of a message: the date of the event, money, a place, a link to what was said before. Each of them is a declared ability — not a label.",
+    rest:
+      "A fact is a declared ability to recognise a class of facts in a message, store them apart from the text and link them to the rest. Put the other way round, which is more exact: no fact in the registry means no instruction for how to decompose it — so it lands in no table and stays plain text. Every entry carries five parts: a name, what it is, the form of the value, HOW TO RECOGNISE it, and what to do when it is implied but not extracted. Built-in facts are generated from the code and cannot be edited: they describe what the system does by construction. Added ones you describe yourself, and each gets its own table the moment it is saved.",
+    more: "What is a fact",
+    less: "Collapse",
+    levels: {
+      material: "How it arrived",
+      intent: "Why it arrived",
+      entity: "What it turned out to be",
+      destination: "Where it went",
+      field: "What was extracted",
+    },
+    builtin: "built-in",
+    required: "cannot be turned off",
+    noTable: "no table of its own: a link is a relation, not a value",
+    counted: "{n} facts",
+  },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
     noToken: "no token yet",
@@ -465,6 +510,27 @@ const RU: TelegramUi = {
       vectors: "Векторное хранилище",
       rag: "Агентный RAG",
     },
+  },
+
+  facts: {
+    title: "Реестр признаков",
+    summary:
+      "Что проект умеет вынимать из сообщения: дату события, деньги, место, связь со сказанным раньше. Каждый признак — объявленная способность, а не ярлык.",
+    rest:
+      "Признак — объявленная способность узнать в сообщении класс фактов, сохранить их отдельно от текста и связать с остальным. С другой стороны, и так точнее: нет признака в реестре — нет инструкции, как это декомпозировать, значит факт не попадёт ни в одну таблицу и останется просто текстом. У каждой записи пять частей: имя, что это, форма значения, КАК ЭТО УЗНАВАТЬ и что делать, когда признак подразумевается, но не извлекается. Встроенные порождаются из кода и не правятся: они описывают то, что система делает по устройству. Добавленные вы описываете сами, и каждый получает свою таблицу в момент сохранения.",
+    more: "Что такое признак",
+    less: "Свернуть",
+    levels: {
+      material: "Чем пришло",
+      intent: "Зачем пришло",
+      entity: "Чем оказалось",
+      destination: "Куда уехало",
+      field: "Что извлекли",
+    },
+    builtin: "встроенный",
+    required: "выключить нельзя",
+    noTable: "своей таблицы нет: связь — отношение, а не значение",
+    counted: "признаков: {n}",
   },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",

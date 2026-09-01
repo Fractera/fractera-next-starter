@@ -30,6 +30,8 @@ export type TelegramLogsLabels = {
   live: string
   counted: string
   ringNote: string
+  fromBot: string
+  fromPerson: string
   kindVoice: string
   kindFile: string
   kindLocation: string
@@ -104,14 +106,26 @@ export function TelegramLogs({
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map(m => (
+            /* 🔒 ОБЕ СТОРОНЫ РАЗГОВОРА, И ОТЛИЧАЮТСЯ ОНИ ВИДОМ, А НЕ ПОДПИСЬЮ
+               (77-11). Реплика бота сдвинута, залита и подписана «бот»: журнал,
+               в котором ответ выглядит как вопрос, читается как список чужих
+               фраз, а не как разговор.
+               🔒 ЗАПИСЬ БЕЗ `direction` — ВХОДЯЩАЯ: склад был полон до того, как
+               поле появилось. */
             <li
               key={m.id}
               data-logs-row
-              className="flex flex-col gap-1 rounded-md border border-border p-2.5"
+              data-logs-direction={m.direction === "out" ? "out" : "in"}
+              className={
+                "flex flex-col gap-1 rounded-md border p-2.5 " +
+                (m.direction === "out"
+                  ? "ml-6 border-primary/30 bg-primary/5"
+                  : "border-border")
+              }
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-[length:var(--fs-small)] text-foreground">
-                  {m.who}
+                  {m.direction === "out" ? labels.fromBot : (m.who ?? labels.fromPerson)}
                 </span>
                 <time
                   dateTime={m.at}

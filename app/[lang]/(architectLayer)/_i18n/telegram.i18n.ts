@@ -176,6 +176,9 @@ export type TelegramUi = {
     counted: string
     /** Пометка о пределе склада службы. */
     ringNote: string
+    /** Кто сказал реплику — человек или бот (77-11). */
+    fromBot: string
+    fromPerson: string
     kindVoice: string
     kindFile: string
     kindLocation: string
@@ -275,6 +278,8 @@ const EN: TelegramUi = {
     counted: "{n} messages",
     ringNote:
       "The service keeps the last 500 and drops the oldest as new ones arrive — this is a log, not an archive.",
+    fromBot: "bot",
+    fromPerson: "person",
     kindVoice: "voice",
     kindFile: "file",
     kindLocation: "location",
@@ -445,6 +450,8 @@ const RU: TelegramUi = {
     counted: "сообщений: {n}",
     ringNote:
       "Служба хранит последние 500 и вытесняет старые новыми — это журнал, а не архив.",
+    fromBot: "бот",
+    fromPerson: "человек",
     kindVoice: "голос",
     kindFile: "файл",
     kindLocation: "место",

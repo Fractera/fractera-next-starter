@@ -121,17 +121,20 @@ export default async function TelegramPage({
                   key={active}
                   moreLabel={ui.helpMore}
                   lessLabel={ui.helpLess}
+                  /* 🔒 ВИДЕН ТОЛЬКО ПЕРВЫЙ АБЗАЦ, ОСТАЛЬНОЕ — ПОД КНОПКОЙ (77-12,
+                     правка владельца). ✗ в 77-10 я положил в `summary` все пять
+                     абзацев: свёрнутая справка перестала быть свёрнутой, а кнопка
+                     «Узнать больше» открывала одну строку из шести. `summary` —
+                     это то, что читают ВСЕГДА, и потому там ровно один абзац:
+                     чем бот является. */
                   summary={
-                    /* 🔒 ПЕРВЫЙ АБЗАЦ ОТВЕЧАЕТ НА ВОПРОС «ЧТО ЭТО ВООБЩЕ ТАКОЕ»,
-                       и только второй — «зачем он в проекте» (77-10, заказ
-                       владельца). Порядок содержательный: список умений ниже
-                       читается как набор случайностей тем, кто не понял, что
-                       перед ним демонстрация памяти, а не игрушка. */
+                    <Small>
+                      <strong className="text-foreground">{ui.about.demoTitle}</strong>{" "}
+                      {ui.about.demoWhat}
+                    </Small>
+                  }
+                  rest={
                     <div className="flex flex-col gap-2">
-                      <Small>
-                        <strong className="text-foreground">{ui.about.demoTitle}</strong>{" "}
-                        {ui.about.demoWhat}
-                      </Small>
                       <Small>
                         <strong className="text-foreground">{ui.about.demoWriteTitle}</strong>{" "}
                         {ui.about.demoWrite}
@@ -146,13 +149,11 @@ export default async function TelegramPage({
                         <strong className="text-foreground">{ui.about.whatTitle}</strong>{" "}
                         {ui.about.what}
                       </Small>
+                      <Small>
+                        <strong className="text-foreground">{ui.about.arrangedTitle}</strong>{" "}
+                        {ui.about.arranged}
+                      </Small>
                     </div>
-                  }
-                  rest={
-                    <Small>
-                      <strong className="text-foreground">{ui.about.arrangedTitle}</strong>{" "}
-                      {ui.about.arranged}
-                    </Small>
                   }
                 />
                 <TelegramAbout ui={ui} />

@@ -74,6 +74,8 @@ export async function TelegramLogsSection({
           live: w.live,
           counted: w.counted,
           ringNote: w.ringNote,
+          fromBot: w.fromBot,
+          fromPerson: w.fromPerson,
           kindVoice: w.kindVoice,
           kindFile: w.kindFile,
           kindLocation: w.kindLocation,

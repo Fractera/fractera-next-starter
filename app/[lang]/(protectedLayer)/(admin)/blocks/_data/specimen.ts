@@ -1012,6 +1012,25 @@ export const SPECIMEN: SpecimenSection[] = [
       },
     ],
   },
+  {
+    kind: 'chat',
+    when: 'A run of messages as a section of the page: the feed of the project chat tool, without an input field. Take it to show a conversation — with a person, with an assistant, with a bot; a working chat is put in place by a consumer that owns the state.',
+    whenRu: 'Череда сообщений как секция страницы: лента инструмента чата, без поля ввода. Берут, чтобы показать переписку — с человеком, с ассистентом, с ботом; работающий чат ставит потребитель, который владеет состоянием.',
+    blocks: [
+      {
+        kind: 'chat',
+        title: 'Chat',
+        note: 'One implementation of a conversation for the whole project.',
+        size: 'compact',
+        messages: [
+          { id: 'm1', from: 'user', who: '@roma', at: '10:14', text: 'Is the tool the same one the bot log uses?' },
+          { id: 'm2', from: 'assistant', who: 'assistant', at: '10:14', text: 'The same one. The block view is a thin wrapper: the feed, the message and the scrolling belong to the tool.' },
+          { id: 'm3', from: 'user', who: '@roma', at: '10:15', text: 'And the input field?' },
+          { id: 'm4', from: 'assistant', who: 'assistant', at: '10:15', text: 'It appears when a send handler is given. A server renderer cannot pass a function, so a block view is always a read-only feed.' },
+        ],
+      },
+    ],
+  },
 ]
 
 // КОД ОБРАЗЦА — УНИКАЛЬНЫЙ, И ОН ВЫЧИСЛЯЕТСЯ, А НЕ ПРОСТАВЛЯЕТСЯ РУКАМИ

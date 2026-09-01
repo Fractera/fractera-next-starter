@@ -88,6 +88,30 @@ export type TelegramUi = {
    * экрана логов нет вовсе: служба хранила входящие с самого начала, и читал их
    * только код. Не найдя источника, легко решить, что «перевод потерялся».
    */
+  /**
+   * СЛОВА РАЗДЕЛА «ОПИСАНИЕ» (77-6, 2026-09-01).
+   *
+   * 🔒 НАПИСАНЫ ПО КОДУ СЛУЖБЫ И ПРОДУКТА, А НЕ ПО ПАМЯТИ И НЕ ПО НАВЫКУ. Три
+   * утверждения, которые «все знали», оказались устаревшими: голос расшифровывается,
+   * сообщения уезжают в сам проект, файлы попадают в медиатеку. Каждая строка ниже
+   * проверена в первоисточнике — иначе описание обещает то, чего нет, или молчит о
+   * том, что есть.
+   */
+  about: {
+    whatTitle: string
+    what: string
+    arrangedTitle: string
+    arranged: string
+    canTitle: string
+    can: string[]
+    cannotTitle: string
+    cannot: string[]
+    boundaryTitle: string
+    boundary: string
+    startTitle: string
+    start: string
+  }
+
   logs: {
     title: string
     lead: string
@@ -206,6 +230,37 @@ const EN: TelegramUi = {
     kindLocation: "location",
     forwarded: "forwarded from",
   },
+  about: {
+    whatTitle: "A door into this project from a messenger.",
+    what:
+      "A person writes to your bot and talks to your project — no separate app, no login screen. The bot is yours: the token comes from @BotFather and belongs to you, so the conversation runs between your visitors and your server.",
+    arrangedTitle: "How it is arranged.",
+    arranged:
+      "One service on this machine is the only reader of the bot. It listens, keeps what it heard, and hands every message to this project at once. Nothing about the bot lives in your repository except the screens you are looking at.",
+    canTitle: "What it can do today",
+    can: [
+      "hear text and voice — a voice note is fetched and transcribed, and from then on it is indistinguishable from typing (an OpenAI key is required for that)",
+      "accept a photo, a video, a document or audio — the file goes into the media library and is READ, so a receipt sent without a word is still searchable",
+      "keep everything it heard: the last 500 messages, which is what the Logs section shows",
+      "hand every message to this project the moment it lands — your own door at /api/telegram/hook, with a shared secret; while that wiring is in place the PROJECT answers, not the service",
+      "knock on the project on a schedule, so a reminder can fire while nobody is looking at the site",
+      "send back: your project can write text and files into the chat",
+    ],
+    cannotTitle: "What it does not do — said plainly",
+    cannot: [
+      "one linked chat, yours. Other people can write to the bot and their messages reach the project, but the linked chat stays the default recipient, and nothing here collects a list of other people",
+      "no mass mailing. One bot, one messenger, one conversation at a time — a loyalty service writing to thousands is a different product",
+      "two of its own phrases (the greeting and the reply after linking) are English and live inside the service. This project cannot translate them",
+      "without an OpenAI key a voice note arrives without text — the message is kept, but nobody transcribed it",
+      "the log keeps the last 500 messages and drops the oldest. It is a log, not an archive",
+    ],
+    boundaryTitle: "Where the boundary is.",
+    boundary:
+      "The channels service belongs to the platform, not to your repository: on the server they are neighbours, and on your laptop the service is not running at all. That is why these screens say the service is unavailable there — nothing is broken, the bot simply lives on the server.",
+    startTitle: "How to get a bot.",
+    start:
+      "Ask @BotFather in Telegram for a new bot, take the token it gives you, and paste it into Settings here. Then link your account and write to the bot — the first message appears in Logs.",
+  },
 }
 
 const RU: TelegramUi = {
@@ -304,6 +359,37 @@ const RU: TelegramUi = {
     kindFile: "файл",
     kindLocation: "место",
     forwarded: "переслано от",
+  },
+  about: {
+    whatTitle: "Дверь в этот проект из мессенджера.",
+    what:
+      "Человек пишет вашему боту и разговаривает с вашим проектом — без отдельного приложения и без страницы входа. Бот ваш: токен вы получаете у @BotFather, и он принадлежит вам, поэтому разговор идёт между вашими посетителями и вашим сервером.",
+    arrangedTitle: "Как это устроено.",
+    arranged:
+      "На этой машине есть одна служба, и она единственный читатель бота. Она слушает, хранит услышанное и сразу передаёт каждое сообщение в этот проект. В вашем репозитории от бота нет ничего, кроме экранов, на которые вы сейчас смотрите.",
+    canTitle: "Что он умеет сегодня",
+    can: [
+      "слышать текстом и голосом — голосовая заметка скачивается и расшифровывается, и дальше неотличима от напечатанной (для этого нужен ключ OpenAI)",
+      "принимать фотографию, видео, документ и звук — файл попадает в медиатеку и ПРОЧИТЫВАЕТСЯ, поэтому снимок чека, присланный молча, всё равно находится поиском",
+      "хранить всё услышанное: последние 500 сообщений — это и есть раздел «Логи»",
+      "передавать каждое сообщение в сам проект в момент прихода — в вашу дверь /api/telegram/hook, с общим секретом; пока эта проводка на месте, отвечает ПРОЕКТ, а не служба",
+      "стучать в проект по расписанию, чтобы напоминание сработало, когда на сайт никто не смотрит",
+      "отвечать: ваш проект умеет писать в чат текст и присылать файлы",
+    ],
+    cannotTitle: "Чего он не умеет — сказано прямо",
+    cannot: [
+      "привязанный чат один, ваш. Другие люди могут писать боту, и их сообщения доходят до проекта, но адресатом по умолчанию остаётся привязанный чат, а списка чужих чатов здесь никто не собирает",
+      "рассылок нет. Один бот, один мессенджер, один разговор за раз — служба лояльности, пишущая тысячам, это другой продукт",
+      "две его собственные фразы (приветствие и ответ после привязки) — английские и живут внутри службы. Этот проект их не переводит",
+      "без ключа OpenAI голосовая заметка приходит без текста — сообщение сохранится, но расшифровать его будет некому",
+      "журнал хранит последние 500 сообщений и вытесняет старые. Это журнал, а не архив",
+    ],
+    boundaryTitle: "Где проходит граница.",
+    boundary:
+      "Служба каналов принадлежит платформе, а не вашему репозиторию: на сервере они соседи, а на вашем ноутбуке служба не запущена вовсе. Поэтому там эти экраны говорят, что службы нет, — ничего не сломано, просто бот живёт на сервере.",
+    startTitle: "Как завести бота.",
+    start:
+      "Попросите у @BotFather в Telegram нового бота, возьмите выданный токен и вставьте его здесь, в «Настройках». Потом привяжите свою учётную запись и напишите боту — первое сообщение появится в «Логах».",
   },
 }
 

@@ -11,6 +11,7 @@ import {
 import { SectionIntro } from "../../_components/section-intro.client"
 import { TelegramSettings } from "../../_components/telegram-settings"
 import { TelegramLogsSection } from "../../_components/telegram-logs-section"
+import { TelegramAbout } from "../../_components/telegram-about"
 import { readChannels } from "@/lib/architect/channels"
 
 // TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (77-1, 2026-08-31).
@@ -110,21 +111,31 @@ export default async function TelegramPage({
                 🔒 КЛЮЧ — САМ РАЗДЕЛ: уход на другой раздел и обратно даёт новый
                 экземпляр, то есть снова свёрнутый вид.
 
-                🛑 ЗДЕСЬ БУДЕТ ТЕКСТ И ИЗОБРАЖЕНИЕ ВЛАДЕЛЬЦА. Пока их нет, справка
-                говорит об этом прямо, а не показывает пустой контейнер. */}
+                🪦 «ЗДЕСЬ БУДЕТ ТЕКСТ ВЛАДЕЛЬЦА» — БОЛЬШЕ НЕ ТАК (77-6). Описание
+                написано по первоисточникам: коду службы каналов и продукта.
+                Строки `aboutSoonTitle`/`aboutSoon` остались в словаре историей. */}
             {active === "about" && (
-              <SectionIntro
-                name="telegram-about"
-                key={active}
-                moreLabel={ui.helpMore}
-                lessLabel={ui.helpLess}
-                summary={
-                  <Small>
-                    <strong className="text-foreground">{ui.aboutSoonTitle}</strong> {ui.aboutSoon}
-                  </Small>
-                }
-                rest={null}
-              />
+              <>
+                <SectionIntro
+                  name="telegram-about"
+                  key={active}
+                  moreLabel={ui.helpMore}
+                  lessLabel={ui.helpLess}
+                  summary={
+                    <Small>
+                      <strong className="text-foreground">{ui.about.whatTitle}</strong>{" "}
+                      {ui.about.what}
+                    </Small>
+                  }
+                  rest={
+                    <Small>
+                      <strong className="text-foreground">{ui.about.arrangedTitle}</strong>{" "}
+                      {ui.about.arranged}
+                    </Small>
+                  }
+                />
+                <TelegramAbout ui={ui} />
+              </>
             )}
 
             {/* 🔒 «НАСТРОЙКИ» ПЕРЕЕХАЛИ ИЗ ПАНЕЛИ ЦЕЛИКОМ (77-4): справка сверху,

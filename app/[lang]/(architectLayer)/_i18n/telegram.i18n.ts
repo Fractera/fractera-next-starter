@@ -16,7 +16,7 @@ export type TelegramUi = {
   menuTitle: string
   subtitle: string
   pages: Record<
-    "about" | "logs" | "settings",
+    "about" | "commands" | "logs" | "calendar" | "map" | "settings",
     { title: string; hint: string }
   >
   /** Свёрнутая справка раздела «Описание». */
@@ -29,6 +29,23 @@ export type TelegramUi = {
   soonLead: string
   soonWhere: string
   soonPanel: string
+  /**
+   * КАРКАС РАЗДЕЛОВ, ПОСТРОЕННЫХ ПОЗЖЕ (77-15, 2026-09-01).
+   *
+   * 🔒 СЛОВА ЗАГЛУШКИ ЖИВУТ ЗДЕСЬ, А НЕ В КОМПОНЕНТЕ. Заглушка одна на семь мест,
+   * и текст у каждого свой: «в процессе разработки» без имени того, чего ждать,
+   * не отличается от поломки.
+   */
+  skeleton: {
+    inProgress: string
+    commandsLead: string
+    calendarLead: string
+    mapLead: string
+    instructionTitle: string
+    instructionLead: string
+    views: Record<'messages' | 'db' | 'media' | 'vectors' | 'rag', string>
+  }
+
   /**
    * СЛОВА РАЗДЕЛА «НАСТРОЙКИ» — ПЕРЕНЕСЕНЫ ИЗ ПАНЕЛИ ДОСЛОВНО (77-4, 2026-09-01),
    * из `admin-translations.json` → `channels`.
@@ -196,6 +213,18 @@ const EN: TelegramUi = {
       title: "About",
       hint: "What the bot is for in this project and how it is arranged.",
     },
+    commands: {
+      title: "Commands",
+      hint: "What the bot understands and how to talk to it.",
+    },
+    calendar: {
+      title: "Calendar",
+      hint: "What the bot has scheduled and when it will remind you.",
+    },
+    map: {
+      title: "Map",
+      hint: "Places this project has remembered.",
+    },
     logs: {
       title: "Logs",
       hint: "What the bot has actually been doing — messages, answers, refusals.",
@@ -215,6 +244,25 @@ const EN: TelegramUi = {
     "The place for it is here, and it is deliberately empty rather than hidden: a section that appears out of nowhere later is harder to notice than one that says it is coming.",
   soonWhere: "Where this works today:",
   soonPanel: "the Channels tab of the control panel — the link to it is in the site footer.",
+  skeleton: {
+    inProgress: "Being built",
+    commandsLead:
+      "Everything the bot understands: the phrasings it is taught, what it does with each of them, and the ways of talking to it beyond typing.",
+    calendarLead:
+      "Reminders and events the bot has scheduled — what is due, when, and what it will say.",
+    mapLead:
+      "Places saved in this project: what was recorded there and when.",
+    instructionTitle: "Your own instruction for the bot",
+    instructionLead:
+      "A text you write yourself and the bot follows in addition to its own rules — your limits, your tone, your subject. It is added to the instruction the bot already has, not instead of it.",
+    views: {
+      messages: "Messages",
+      db: "Database",
+      media: "Media library",
+      vectors: "Vector store",
+      rag: "Agentic RAG",
+    },
+  },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
     noToken: "no token yet",
@@ -368,6 +416,18 @@ const RU: TelegramUi = {
       title: "Описание",
       hint: "Зачем боту существовать в этом проекте и как он устроен.",
     },
+    commands: {
+      title: "Команды",
+      hint: "Что бот понимает и как с ним говорить.",
+    },
+    calendar: {
+      title: "Календарь",
+      hint: "Что бот запланировал и когда напомнит.",
+    },
+    map: {
+      title: "Карта",
+      hint: "Места, которые запомнил этот проект.",
+    },
     logs: {
       title: "Логи",
       hint: "Что бот на самом деле делал — сообщения, ответы, отказы.",
@@ -387,6 +447,25 @@ const RU: TelegramUi = {
     "Место под него здесь, и оно намеренно пустое, а не спрятанное: раздел, появившийся потом из ниоткуда, заметить труднее, чем тот, который сам сказал, что он будет.",
   soonWhere: "Где это работает сегодня:",
   soonPanel: "вкладка «Каналы связи» панели управления — ссылка на неё в подвале сайта.",
+  skeleton: {
+    inProgress: "В процессе разработки",
+    commandsLead:
+      "Всё, что бот понимает: слова, которым он обучен, что он делает с каждым из них, и способы говорить с ним помимо печати.",
+    calendarLead:
+      "Напоминания и встречи, которые бот запланировал: что наступит, когда и что он скажет.",
+    mapLead:
+      "Места, сохранённые в этом проекте: что там было записано и когда.",
+    instructionTitle: "Ваша собственная инструкция боту",
+    instructionLead:
+      "Текст, который вы пишете сами, а бот исполняет вдобавок к своим правилам: ваши ограничения, ваш тон, ваша предметная область. Он добавляется к инструкции бота, а не заменяет её.",
+    views: {
+      messages: "Сообщения",
+      db: "База данных",
+      media: "Медиатека",
+      vectors: "Векторное хранилище",
+      rag: "Агентный RAG",
+    },
+  },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",
     noToken: "токен не задан",

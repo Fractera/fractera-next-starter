@@ -1435,6 +1435,8 @@ say so and work without it rather than inventing its content.
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
 | `explain-this-project` | answering «how does this work»: three circles of sight, measure before claiming, the boundary said out loud, and where to read the platform | ✅ |
 | `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
+| `use-chat` | **anything that shows a sequence of messages** — a chat with a person or a model, a feed, a log, an inbox: one tool, two states, never hand-built markup | ⬜ |
+| `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited | ⬜ |
 | `shadcn` | **foreign, shadcn/ui, vendored**: the components, the CLI, registries, styling and composition rules. Provenance and the update command in its `SOURCE.md`; never hand-edited | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |
 | `use-routes` | where a route lives: two layers, four permission groups, folder shape, no sibling imports | ✅ |

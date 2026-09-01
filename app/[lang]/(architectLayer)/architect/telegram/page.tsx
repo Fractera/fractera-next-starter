@@ -122,10 +122,31 @@ export default async function TelegramPage({
                   moreLabel={ui.helpMore}
                   lessLabel={ui.helpLess}
                   summary={
-                    <Small>
-                      <strong className="text-foreground">{ui.about.whatTitle}</strong>{" "}
-                      {ui.about.what}
-                    </Small>
+                    /* 🔒 ПЕРВЫЙ АБЗАЦ ОТВЕЧАЕТ НА ВОПРОС «ЧТО ЭТО ВООБЩЕ ТАКОЕ»,
+                       и только второй — «зачем он в проекте» (77-10, заказ
+                       владельца). Порядок содержательный: список умений ниже
+                       читается как набор случайностей тем, кто не понял, что
+                       перед ним демонстрация памяти, а не игрушка. */
+                    <div className="flex flex-col gap-2">
+                      <Small>
+                        <strong className="text-foreground">{ui.about.demoTitle}</strong>{" "}
+                        {ui.about.demoWhat}
+                      </Small>
+                      <Small>
+                        <strong className="text-foreground">{ui.about.demoWriteTitle}</strong>{" "}
+                        {ui.about.demoWrite}
+                      </Small>
+                      <Small>
+                        <strong className="text-foreground">{ui.about.demoReadTitle}</strong>{" "}
+                        {ui.about.demoRead}
+                      </Small>
+                      <Small>{ui.about.demoWhy}</Small>
+                      {/* Второй абзац — прежний, дословно: владелец просил его не трогать. */}
+                      <Small>
+                        <strong className="text-foreground">{ui.about.whatTitle}</strong>{" "}
+                        {ui.about.what}
+                      </Small>
+                    </div>
                   }
                   rest={
                     <Small>

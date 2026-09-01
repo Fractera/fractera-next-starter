@@ -153,6 +153,11 @@ async function previousNear(chatId: string, atUnix: number): Promise<Neighbour |
 }
 
 /** Метка вопроса о поясе: узнаётся по тексту нашего же последнего ответа. */
+// Рода артефактов переехали в свой лист (81-1) — `ingest.ts` тянет базу, а имена
+// родов нужны и тем, кому база не нужна. Реэкспорт оставлен: сюда за ними ходят.
+export { ARTIFACT_KINDS, type ArtifactKind } from "./artifact-kinds"
+import type { ArtifactKind } from "./artifact-kinds"
+
 export const WHERE_MARK = "часовой пояс"
 
 async function lastWasWhereQuestion(chatId: string): Promise<boolean> {
@@ -178,7 +183,7 @@ function unix(at: string): number {
 
 export async function ingest(msg: Incoming): Promise<IngestResult> {
   const notes: string[] = []
-  const artifacts: { kind: string; ref: string }[] = []
+  const artifacts: { kind: ArtifactKind; ref: string }[] = []
   const at = msg.at || new Date().toISOString()
 
   // 🔒 ИДЕМПОТЕНТНОСТЬ ПЕРВОЙ СТРОКОЙ. Служба повторит доставку, если дверь не

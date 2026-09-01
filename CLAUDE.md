@@ -1565,6 +1565,7 @@ say so and work without it rather than inventing its content.
 | `use-primitives` | one owner per genus of thing: one dialog, text as a primitive, size never shrinks | ✅ |
 | `explain-this-project` | answering «how does this work»: three circles of sight, measure before claiming, the boundary said out loud, and where to read the platform | ✅ |
 | `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
+| `use-ai-generation` | **anything that calls a model** — where the key comes from, why the AI Gateway is forbidden here, why the model id is a SETTING, and what the SDK already gives instead of a hand-rolled loop | ⬜ |
 | `use-chat` | **anything that shows a sequence of messages** — a chat with a person or a model, a feed, a log, an inbox: one tool, two states, never hand-built markup | 🔬 |
 | `ai-sdk` | **foreign, the AI SDK by Vercel, vendored**: how to call a model, define tools, build agents. Its one instruction nobody thinks of alone: **the docs ship inside the package, at `node_modules/ai/docs/`, matching the version you actually run** | ✅ |
 | `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited — **except one measured patch, named in that same file** | ✅ |

@@ -48,6 +48,7 @@
     "check:steps": "node scripts/check-steps.mjs"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.55",
     "@ai-sdk/react": "^4.0.92",
     "@aws-sdk/client-s3": "^3.1030.0",
     "@base-ui/react": "^1.4.1",

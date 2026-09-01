@@ -86,6 +86,37 @@ export async function ensureFactTables(facts: Fact[]): Promise<EnsureReport> {
 }
 
 /**
+ * Имена колонок из определения таблицы.
+ *
+ * ✗ 🛑 НАИВНОЕ ДЕЛЕНИЕ ПО ЗАПЯТОЙ ЗДЕСЬ НЕ РАБОТАЕТ, И ЭТО ИЗМЕРЕНО, А НЕ
+ * ПРЕДУГАДАНО. У колонки `created_at` умолчание —
+ * `(strftime('%Y-%m-%dT%H:%M:%SZ','now'))`, и запятая ВНУТРИ него давала девятую
+ * колонку из воздуха: сверка объявляла нестандартными все исправные таблицы.
+ * Считаем запятые только верхнего уровня вложенности.
+ */
+function columnsOf(ddl: string): string[] {
+  const body = ddl.slice(ddl.indexOf("(") + 1, ddl.lastIndexOf(")"))
+  const parts: string[] = []
+  let depth = 0
+  let quote = ""
+  let cur = ""
+  for (const ch of body) {
+    if (quote) {
+      if (ch === quote) quote = ""
+      cur += ch
+      continue
+    }
+    if (ch === "'" || ch === '"') { quote = ch; cur += ch; continue }
+    if (ch === "(") depth++
+    if (ch === ")") depth--
+    if (ch === "," && depth === 0) { parts.push(cur); cur = ""; continue }
+    cur += ch
+  }
+  parts.push(cur)
+  return parts.map(s => s.trim().split(/\s+/)[0]).filter(Boolean)
+}
+
+/**
  * Проверить, что таблица построена ПО ОБРАЗЦУ.
  *
  * 🔒 СТАНДАРТ, КОТОРЫЙ НЕЧЕМ ПРОВЕРИТЬ, ЖИВЁТ ДО ПЕРВОГО ОТКЛОНЕНИЯ. Таблица,
@@ -117,17 +148,8 @@ export async function factTableMatchesStandard(table: string): Promise<boolean> 
     const ddl = d.rows?.[0]?.sql
     if (!ddl) return false
 
-    // Имена колонок из определения: строки внутри скобок, первое слово каждой.
-    const body = ddl.slice(ddl.indexOf("(") + 1, ddl.lastIndexOf(")"))
-    const cols = body
-      .split(",")
-      .map(s => s.trim().split(/\s+/)[0])
-      .filter(Boolean)
-
-    return (
-      cols.length === FACT_TABLE_COLUMNS.length &&
-      FACT_TABLE_COLUMNS.every(c => cols.includes(c))
-    )
+    return columnsOf(ddl).length === FACT_TABLE_COLUMNS.length &&
+      FACT_TABLE_COLUMNS.every(c => columnsOf(ddl).includes(c))
   } catch {
     return false
   }

@@ -233,6 +233,46 @@ const SCHEMA = `
     created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS tgdesk_calendar_due ON tgdesk_calendar (status, due_unix);
+
+  -- РЕЕСТР ПРИЗНАКОВ — описания того, что система умеет вынимать из сообщения (81-2).
+  --
+  -- 🔒 ЗДЕСЬ ТОЛЬКО ОПИСАНИЯ. Значения каждого признака живут в СВОЕЙ таблице,
+  -- и она создаётся не отсюда: её порождает «ensureFactTables()» по записям этого
+  -- реестра. Причина в том, что признак заводит ЧЕЛОВЕК в работающей системе, а
+  -- схема исполняется при старте — таблицы, перечисленной здесь заранее, для его
+  -- признака не существует и существовать не может.
+  --
+  -- 🔒 ЕДИНЫЙ СТАНДАРТ БЕЗ ИСКЛЮЧЕНИЙ — решение владельца 2026-09-01. Довод его, и
+  -- он сильнее прежнего: пока часть признаков живёт в захардкоженных колонках, а
+  -- часть в своих таблицах, ПРАВИЛА НЕТ — есть выбор, а выбор без критерия
+  -- читается как «можно как угодно». Исключение ровно одно, и оно по природе:
+  -- связь сообщений — не факт о сообщении, а отношение между двумя.
+  CREATE TABLE IF NOT EXISTS fact_registry (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- 🔒 МАШИННОЕ ИМЯ. Из него собирается имя таблицы значений, и потому оно
+    -- проверяется белым списком символов ДО всякой записи: ключ рождается из
+    -- свободного описания через модель, и попав в CREATE TABLE без проверки, он
+    -- становится SQL-инъекцией.
+    key         TEXT    NOT NULL UNIQUE,
+    -- material | intent | entity | destination | field — когда признак известен.
+    level       TEXT    NOT NULL DEFAULT 'field',
+    title       TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    value_type  TEXT    NOT NULL DEFAULT 'text',
+    -- 🔒 ИНСТРУКЦИЯ УЗНАВАНИЯ — то, чего не существует в коде и ради чего заведён
+    -- весь реестр: код знает, ЧТО есть, и не знает, КАК это узнавать.
+    how_to_find TEXT    NOT NULL DEFAULT '',
+    -- silent | ask | join — что делать, когда признак подразумевается, но не
+    -- извлекается. Это часть записи, а не ошибка: «здесь продаются пирожки»
+    -- называет место и не даёт координат.
+    on_missing  TEXT    NOT NULL DEFAULT 'silent',
+    -- Описание внешнего вызова, JSON. Пусто — признак берётся из самого
+    -- сообщения. 🛑 Здесь НЕ БЫВАЕТ кода: только куда сходить и что взять.
+    fn          TEXT,
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS fact_registry_enabled ON fact_registry (enabled, level);
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

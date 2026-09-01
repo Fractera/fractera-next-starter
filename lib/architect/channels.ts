@@ -72,4 +72,64 @@ export async function readChannels(): Promise<ChannelsState> {
   }
 }
 
+/**
+ * ЗАПИСЬ СКЛАДА ВХОДЯЩИХ — ФОРМА ЗАДАНА СЛУЖБОЙ (77-5, 2026-09-01).
+ *
+ * Служба кладёт сюда ВСЁ, что услышал бот, независимо от режима, и хранит
+ * последние 500 записей на диске (`INBOX_MAX`), чтобы перезапуск не потерял те,
+ * которых никто не прочитал.
+ *
+ * 🔒 ПОЛЯ НЕ ПРИДУМАНЫ ЗДЕСЬ, А СПИСАНЫ С `pushInbox()` СЛУЖБЫ. Наш тип — это
+ * описание чужого формата, и расширять его «на будущее» нельзя: поле, которого
+ * служба не пишет, будет вечно пустым и однажды объявится способностью.
+ */
+export type InboxMessage = {
+  id: number
+  /** ISO-время прихода. */
+  at: string
+  chatId: string
+  /** `@имя`, либо имя и фамилия, либо идентификатор чата — что нашлось. */
+  who: string
+  kind: string
+  text: string
+  objectType?: string | null
+  fileId?: string | null
+  forwardedFrom?: string | null
+  lat?: number | null
+  lon?: number | null
+}
+
+export type InboxPage = {
+  available: boolean
+  messages: InboxMessage[]
+  lastId: number
+}
+
+/**
+ * Прочитать склад входящих службы.
+ *
+ * 🔒 ЭТО ЧТЕНИЕ, И ТОЛЬКО ЧТЕНИЕ. Ни ответа, ни пересылки, ни удаления здесь нет
+ * и не появится мимоходом: склад — журнал службы, а не почтовый ящик проекта.
+ *
+ * 🔒 ПУСТОЙ СКЛАД — НОРМАЛЬНОЕ СОСТОЯНИЕ, А НЕ ОТКАЗ. Он пуст у каждого, кому
+ * ещё не писали, и раздел обязан сказать это словами.
+ */
+export async function readInbox(after = 0, limit = 50): Promise<InboxPage> {
+  try {
+    const r = await fetch(
+      `${CHANNELS_URL}/telegram/inbox?after=${encodeURIComponent(String(after))}&limit=${encodeURIComponent(String(limit))}`,
+      { cache: "no-store", signal: AbortSignal.timeout(8000) },
+    )
+    if (!r.ok) return { available: false, messages: [], lastId: 0 }
+    const d = (await r.json()) as { messages?: InboxMessage[]; lastId?: number }
+    return {
+      available: true,
+      messages: Array.isArray(d.messages) ? d.messages : [],
+      lastId: Number(d.lastId ?? 0),
+    }
+  } catch {
+    return { available: false, messages: [], lastId: 0 }
+  }
+}
+
 export { CHANNELS_URL }

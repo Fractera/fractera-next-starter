@@ -81,6 +81,32 @@ export type TelegramUi = {
     helpOffTitle: string
     helpOff: string
   }
+  /**
+   * СЛОВА РАЗДЕЛА «ЛОГИ» — НАПИСАНЫ ЗДЕСЬ, А НЕ ПЕРЕНЕСЕНЫ (77-5, 2026-09-01).
+   *
+   * 🔒 И ЭТО СКАЗАНО ВСЛУХ ИМЕННО ПОТОМУ, ЧТО ОСТАЛЬНОЙ ВХОД — ПЕРЕНОС. В панели
+   * экрана логов нет вовсе: служба хранила входящие с самого начала, и читал их
+   * только код. Не найдя источника, легко решить, что «перевод потерялся».
+   */
+  logs: {
+    title: string
+    lead: string
+    /** Три причины пустоты — у каждой своё лечение. */
+    emptyNoToken: string
+    emptyNotLinked: string
+    emptyNoMessages: string
+    refresh: string
+    refreshing: string
+    live: string
+    /** `{n}` — сколько записей показано. */
+    counted: string
+    /** Пометка о пределе склада службы. */
+    ringNote: string
+    kindVoice: string
+    kindFile: string
+    kindLocation: string
+    forwarded: string
+  }
 }
 
 const EN: TelegramUi = {
@@ -159,6 +185,27 @@ const EN: TelegramUi = {
     helpOff:
       "The switch stops the bot answering without deleting the token or the link — useful while you are changing the knowledge base and would rather nobody got half-built answers.",
   },
+  logs: {
+    title: "What the bot has heard",
+    lead:
+      "Everything that reaches the bot is kept by the channels service — the last 500 messages, whatever it then did with them. This is that record, newest first.",
+    emptyNoToken:
+      "Nothing here yet, and the reason is simple: the bot has no token. Save one in Settings and it starts listening.",
+    emptyNotLinked:
+      "The bot is alive but no account is linked yet, so nobody has written to it. Link yours in Settings and the first message appears here.",
+    emptyNoMessages:
+      "The bot is set up and listening — nobody has written to it yet. This page is empty because there is nothing to show, not because something failed.",
+    refresh: "Refresh",
+    refreshing: "Refreshing…",
+    live: "Updating while this section is open",
+    counted: "{n} messages",
+    ringNote:
+      "The service keeps the last 500 and drops the oldest as new ones arrive — this is a log, not an archive.",
+    kindVoice: "voice",
+    kindFile: "file",
+    kindLocation: "location",
+    forwarded: "forwarded from",
+  },
 }
 
 const RU: TelegramUi = {
@@ -236,6 +283,27 @@ const RU: TelegramUi = {
     helpOffTitle: "Что делает выключение канала.",
     helpOff:
       "Переключатель останавливает ответы бота, не удаляя ни токен, ни привязку, — это удобно, пока вы меняете базу знаний и не хотите, чтобы кто-то получал недостроенные ответы.",
+  },
+  logs: {
+    title: "Что бот услышал",
+    lead:
+      "Всё, что доходит до бота, служба каналов складывает у себя — последние 500 сообщений, что бы она потом с ними ни сделала. Это и есть та запись, новые сверху.",
+    emptyNoToken:
+      "Здесь пока пусто, и причина простая: у бота нет токена. Сохраните его в «Настройках», и он начнёт слушать.",
+    emptyNotLinked:
+      "Бот жив, но учётная запись ещё не привязана, поэтому ему никто не писал. Привяжите свою в «Настройках» — и первое сообщение появится здесь.",
+    emptyNoMessages:
+      "Бот настроен и слушает — ему просто ещё никто не написал. Пусто здесь потому, что показывать нечего, а не потому, что что-то отказало.",
+    refresh: "Обновить",
+    refreshing: "Обновляю…",
+    live: "Обновляется, пока раздел открыт",
+    counted: "сообщений: {n}",
+    ringNote:
+      "Служба хранит последние 500 и вытесняет старые новыми — это журнал, а не архив.",
+    kindVoice: "голос",
+    kindFile: "файл",
+    kindLocation: "место",
+    forwarded: "переслано от",
   },
 }
 

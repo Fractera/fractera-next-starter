@@ -25,12 +25,6 @@
       "skillPath": "skills/find-skills/SKILL.md",
       "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
     },
-    "migrate-ai-sdk-v6-to-v7": {
-      "source": "vercel/ai",
-      "sourceType": "github",
-      "skillPath": "skills/migrate-ai-sdk-v6-to-v7/SKILL.md",
-      "computedHash": "92a68769c5a82e6bd35cb8fe13537a80f6341742306d6a23c52afb6c1f7b5ab9"
-    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",

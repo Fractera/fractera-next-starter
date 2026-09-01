@@ -319,11 +319,57 @@ hand is possible, knowing whether the rewrite helped is not. It runs the checks
 (`scripts/run_eval.py`), compares revisions, and tunes the `description` line that decides whether the
 skill loads at all (`scripts/improve_description.py`).
 
+## Talking to a model — the AI SDK, and it now has an owner (step 92, 2026-09-01)
+
+🔒 **ANYTHING THAT CALLS A MODEL STARTS WITH THE `ai-sdk` SKILL, AND ITS FIRST RULE IS ABOUT YOU:**
+*never write AI SDK code from memory — verify every API against the documentation.* The documentation
+is not on a website: it **ships inside the package**, at `node_modules/ai/docs/`, eleven sections
+including `03-agents/`, and it matches the version this project actually runs. That is better than
+the site, which describes the newest version rather than ours.
+
+✗ **WHY THIS PARAGRAPH EXISTS.** In 54 skills there was **not one** about how to talk to a model.
+`use-chat` owns the message feed, `use-telegram` owns the product, `use-agentic-rag` owns the graph —
+generation belonged to nobody. And the law of this corpus is that **a capability nobody names gets
+rebuilt by whoever needs it next**: it happened **twelve times**, once per file that calls
+`v1/chat/completions` by hand.
+
+🔒 **THOSE TWELVE FILES ARE HISTORY, NOT A PATTERN TO COPY** (`run-fn`, `answer`, `route-intent`, the
+six `branches/*`, `i18n/translate`, `fact-draft`, `socials-ai`). New code uses the SDK. Converting an
+old one is a step with its own proofs — never a drive-by edit while passing through.
+
+🔒 **THE SDK IS ON THE v7 LINE SINCE STEP 93** (`ai@7`, `@ai-sdk/react@4`). What it gives instead of
+hand-rolled machinery: `ToolLoopAgent` (the tool loop, with `stopWhen`), `Output.object({ schema })`
+(structured output on zod), `tool({ description, inputSchema, execute })` (**the model picks the door
+itself**), `steps` (every call and result — a decision journal for free), `prepareStep` (a stronger
+model only where the work is hard).
+
+🛑 **AND WHERE THE FOREIGN SKILL IS OVERRULED HERE — READ `use-ai-generation` FIRST.** Four points,
+and on all four ours wins: the **AI Gateway is forbidden** (one OpenAI key, three consumers, an amber
+plaque when one lags) · the model id comes from `OPENAI_TEXT_MODEL`, **a setting on the bot's screen**,
+not a literal · the provider package is ours to install · the twelve legacy files above.
+
 ## Foreign skills in this project
 
-Three are installed: **`find-skills`** (Vercel — searches the `skills.sh` catalogue),
+**Six are installed**, and the number is corrected in the SAME edit as the list — never one without
+the other: **`ai-sdk`** (Vercel — how to call a model; gatekeeper `use-ai-generation`),
+**`ai-elements`** (Vercel — the chat UI; gatekeeper `use-chat`), **`shadcn`** (shadcn/ui — the
+components; gatekeeper `use-shadcn`), **`find-skills`** (Vercel — searches the `skills.sh` catalogue),
 **`skill-creator`** (Anthropic), **`extract-design-system`** (lifts tokens from a public page by URL;
 rules in `use-design`). Installed with `npx skills add <owner>/<repo>`.
+
+🪦 **THIS LINE SAID "Three" UNTIL 2026-09-01, AND BY THEN IT WAS WRONG BY FOUR.** `shadcn` and
+`ai-elements` arrived in step 80 and were never counted here; `ai-sdk` arrived in 92-1. Nobody was
+careless — **a number written by hand does not move on its own**, and this is the fifth time the same
+class of miss has been paid for in this corpus in four days (the tool count went "five" → "six" →
+"seven" → "eight"). The cure is not vigilance: it is editing the number with the same keystrokes as
+the list beside it.
+
+🛑 **THREE OF THE SIX HAVE NO `SOURCE.md`, AND THAT IS A DEBT WITH A DATE** (measured 2026-09-01):
+`find-skills`, `skill-creator`, `extract-design-system`, installed 2026-08-21. Their install commands
+and dates are not known today, and **inventing them would be a plausible lie about the origin of
+foreign code**. Whoever recovers the commands closes this.
+🛑 **And `skill-creator` is on disk but absent from `skills-lock.json`** — so the lock is not a
+complete census of what is vendored here. Check the disk, not only the lock.
 
 🔒 **Into the PROJECT, never globally, and with the owner's knowledge.** `find-skills` itself offers
 `-g -y` — the home folder, no question asked. ✗ a global skill does not travel with the repository, so
@@ -1520,7 +1566,8 @@ say so and work without it rather than inventing its content.
 | `explain-this-project` | answering «how does this work»: three circles of sight, measure before claiming, the boundary said out loud, and where to read the platform | ✅ |
 | `use-shadcn` | **when the foreign `shadcn` skill is legal here** — a new block kind or a widget, never a page of its own — and the four rules of ours that overrule it | ✅ |
 | `use-chat` | **anything that shows a sequence of messages** — a chat with a person or a model, a feed, a log, an inbox: one tool, two states, never hand-built markup | 🔬 |
-| `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited | ✅ |
+| `ai-sdk` | **foreign, the AI SDK by Vercel, vendored**: how to call a model, define tools, build agents. Its one instruction nobody thinks of alone: **the docs ship inside the package, at `node_modules/ai/docs/`, matching the version you actually run** | ✅ |
+| `ai-elements` | **foreign, AI Elements by Vercel, vendored**: conversation, message, attachments, prompt-input. Provenance and the cost it carries in its `SOURCE.md`; never hand-edited — **except one measured patch, named in that same file** | ✅ |
 | `shadcn` | **foreign, shadcn/ui, vendored**: the components, the CLI, registries, styling and composition rules. Provenance and the update command in its `SOURCE.md`; never hand-edited | ✅ |
 | `use-code-shape` | the shape of the code and eighteen validators: no dynamic page, `proxy.ts`, segments, `@api`, `SCHEMA` | ✅ |
 | `use-routes` | where a route lives: two layers, four permission groups, folder shape, no sibling imports | ✅ |

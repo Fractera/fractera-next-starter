@@ -48,6 +48,7 @@
     "check:steps": "node scripts/check-steps.mjs"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.276",
     "@aws-sdk/client-s3": "^3.1030.0",
     "@base-ui/react": "^1.4.1",
     "@streamdown/cjk": "^1.0.3",
@@ -64,6 +65,7 @@
     "cmdk": "^1.1.1",
     "lucide-react": "^0.575.0",
     "motion": "^12.38.0",
+    "nanoid": "^6.0.1",
     "next": "16.2.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
@@ -73,7 +75,7 @@
     "react-rnd": "^10.5.3",
     "recharts": "^3.8.0",
     "sonner": "^2.0.7",
-    "streamdown": "^2.5.0",
+    "streamdown": "^2.6.0",
     "tailwind-merge": "^3.5.0",
     "tslib": "^2.8.1",
     "unzipper": "^0.12.3",

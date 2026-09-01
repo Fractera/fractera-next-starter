@@ -7,6 +7,9 @@ in `../use-chat/SKILL.md`, which is ours and is never overwritten.
 
 | | |
 |---|---|
+> 🛑 **ONE PATCH LIVES IN THE VENDORED COMPONENTS AND MUST BE REAPPLIED AFTER EVERY UPDATE.**
+> See «The one deviation» at the bottom of this file. Re-vendor without it and the build breaks.
+
 | skill | `ai-elements` — AI Elements by Vercel: chat UI built on shadcn/ui and the AI SDK |
 | source | `github.com/vercel/ai-elements` |
 | installed with | `npx skills add vercel/ai-elements -a claude-code` |
@@ -55,3 +58,36 @@ The CLI offered to replace our own primitives — `button.tsx`, `tooltip.tsx`, `
 its versions. **Every one was declined.** Those files are our design system; a foreign version of them
 would change the look of the whole project silently. Only `input-group.tsx` was added, because we did
 not have it and `prompt-input` needs it.
+
+## 🛑 The one deviation — a hand patch inside vendored code, and why it exists anyway
+
+**Rule broken knowingly, recorded here so it is not lost.** `components/ai-elements/prompt-input.tsx`
+carries eight lines that are ours, added in step 80-4 and re-confirmed in 93-2.
+
+**What it fixes.** `PromptInputSubmit` types its click handler with a bare React event, and it hands
+that handler to **our** `InputGroupButton`, which stands on `@base-ui/react` and expects its own:
+
+```
+components/ai-elements/prompt-input.tsx(1245,17): error TS2345:
+  Argument of type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to parameter
+  of type 'BaseUIEvent<MouseEvent<HTMLButtonElement, MouseEvent>>'.
+  Property 'preventBaseUIHandler' is missing …
+```
+
+**Measured 2026-09-01 in 93-2, not assumed:** the vendored file was restored to the byte from its
+install commit `32a4d72`, `tsc` produced exactly the error above, and the patch was put back.
+The patch is **still required on AI SDK v7**.
+
+**Why it cannot live outside the component.** The call is internal to `PromptInputSubmit`; there is
+nothing to wrap from the outside. The patch takes the type FROM the component's own props
+(`PromptInputSubmitProps["onClick"]`) rather than restating it, so a library change carries it along
+instead of contradicting it.
+
+🔒 **WHAT MAKES THIS SURVIVABLE IS NOT DISCIPLINE BUT `tsc`.** An update wipes the patch, and the
+loss is caught by `npx tsc --noEmit` with the file and line named — this is measured, above.
+
+🛑 **AND HERE IS THE HOLE, NAMED RATHER THAN PAPERED OVER:** `check:types` is **not** part of
+`prebuild`. Nineteen gates run themselves; this one waits to be called by hand. So the safety net
+exists and is not automatic — whoever re-vendors these components runs `npx tsc --noEmit` **before**
+believing the update went well. Putting it into `prebuild` is a separate decision about everybody's
+build time, and it is not taken here.

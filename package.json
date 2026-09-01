@@ -48,7 +48,7 @@
     "check:steps": "node scripts/check-steps.mjs"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.276",
+    "@ai-sdk/react": "^4.0.92",
     "@aws-sdk/client-s3": "^3.1030.0",
     "@base-ui/react": "^1.4.1",
     "@streamdown/cjk": "^1.0.3",
@@ -58,7 +58,7 @@
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
     "@xyflow/react": "^12.10.0",
-    "ai": "^6.0.168",
+    "ai": "^7.0.89",
     "better-sqlite3": "^11.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

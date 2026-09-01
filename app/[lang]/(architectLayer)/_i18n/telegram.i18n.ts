@@ -16,7 +16,7 @@ export type TelegramUi = {
   menuTitle: string
   subtitle: string
   pages: Record<
-    "about" | "logs" | "settings",
+    "about" | "commands" | "logs" | "calendar" | "map" | "settings",
     { title: string; hint: string }
   >
   /** Свёрнутая справка раздела «Описание». */
@@ -29,6 +29,23 @@ export type TelegramUi = {
   soonLead: string
   soonWhere: string
   soonPanel: string
+  /**
+   * КАРКАС РАЗДЕЛОВ, ПОСТРОЕННЫХ ПОЗЖЕ (77-15, 2026-09-01).
+   *
+   * 🔒 СЛОВА ЗАГЛУШКИ ЖИВУТ ЗДЕСЬ, А НЕ В КОМПОНЕНТЕ. Заглушка одна на семь мест,
+   * и текст у каждого свой: «в процессе разработки» без имени того, чего ждать,
+   * не отличается от поломки.
+   */
+  skeleton: {
+    inProgress: string
+    commandsLead: string
+    calendarLead: string
+    mapLead: string
+    instructionTitle: string
+    instructionLead: string
+    views: Record<'messages' | 'db' | 'media' | 'vectors' | 'rag', string>
+  }
+
   /**
    * СЛОВА РАЗДЕЛА «НАСТРОЙКИ» — ПЕРЕНЕСЕНЫ ИЗ ПАНЕЛИ ДОСЛОВНО (77-4, 2026-09-01),
    * из `admin-translations.json` → `channels`.
@@ -190,11 +207,23 @@ const EN: TelegramUi = {
   title: "Telegram bot",
   menuTitle: "Telegram bot",
   subtitle:
-    "The bot that talks to people on behalf of this project: what it is, what it has been doing, and how it is set up.",
+    "The architect's own tool, built to make their work faster — and a live demonstration of how this project remembers.",
   pages: {
     about: {
       title: "About",
       hint: "What the bot is for in this project and how it is arranged.",
+    },
+    commands: {
+      title: "Commands",
+      hint: "What the bot understands and how to talk to it.",
+    },
+    calendar: {
+      title: "Calendar",
+      hint: "What the bot has scheduled and when it will remind you.",
+    },
+    map: {
+      title: "Map",
+      hint: "Places this project has remembered.",
     },
     logs: {
       title: "Logs",
@@ -215,6 +244,25 @@ const EN: TelegramUi = {
     "The place for it is here, and it is deliberately empty rather than hidden: a section that appears out of nowhere later is harder to notice than one that says it is coming.",
   soonWhere: "Where this works today:",
   soonPanel: "the Channels tab of the control panel — the link to it is in the site footer.",
+  skeleton: {
+    inProgress: "Being built",
+    commandsLead:
+      "Everything the bot understands: the phrasings it is taught, what it does with each of them, and the ways of talking to it beyond typing.",
+    calendarLead:
+      "Reminders and events the bot has scheduled — what is due, when, and what it will say.",
+    mapLead:
+      "Places saved in this project: what was recorded there and when.",
+    instructionTitle: "Your own instruction for the bot",
+    instructionLead:
+      "A text you write yourself and the bot follows in addition to its own rules — your limits, your tone, your subject. It is added to the instruction the bot already has, not instead of it.",
+    views: {
+      messages: "Messages",
+      db: "Database",
+      media: "Media library",
+      vectors: "Vector store",
+      rag: "Agentic RAG",
+    },
+  },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
     noToken: "no token yet",
@@ -265,7 +313,7 @@ const EN: TelegramUi = {
   logs: {
     title: "What the bot has heard",
     lead:
-      "Everything that reaches the bot is kept by the channels service — the last 500 messages, whatever it then did with them. This is that record, oldest first — it reads as a conversation.",
+      "Everything that reaches the bot is kept by the channels service, and so is every answer it sends back — the whole conversation, from the day this project started until the server is gone. This is that record, oldest first.",
     emptyNoToken:
       "Nothing here yet, and the reason is simple: the bot has no token. Save one in Settings and it starts listening.",
     emptyNotLinked:
@@ -277,7 +325,7 @@ const EN: TelegramUi = {
     live: "Updating while this section is open",
     counted: "{n} messages",
     ringNote:
-      "The service keeps the last 500 and drops the oldest as new ones arrive — this is a log, not an archive.",
+      "Nothing here is ever dropped: the journal keeps the whole history for as long as the server lives. Only the newest part is loaded at once.",
     fromBot: "bot",
     fromPerson: "person",
     kindVoice: "voice",
@@ -307,7 +355,7 @@ const EN: TelegramUi = {
     can: [
       "hear text and voice — a voice note is fetched and transcribed, and from then on it is indistinguishable from typing (an OpenAI key is required for that)",
       "accept a photo, a video, a document or audio — the file goes into the media library and is READ, so a receipt sent without a word is still searchable",
-      "keep everything it heard: the last 500 messages, which is what the Logs section shows",
+      "keep the whole conversation — both what it heard and what it answered — for as long as the server lives; that is what the Logs section shows",
       "hand every message to this project the moment it lands — your own door at /api/telegram/hook, with a shared secret; while that wiring is in place the PROJECT answers, not the service",
       "knock on the project on a schedule, so a reminder can fire while nobody is looking at the site",
       "send back: your project can write text and files into the chat",
@@ -318,7 +366,7 @@ const EN: TelegramUi = {
       "no mass mailing. One bot, one messenger, one conversation at a time — a loyalty service writing to thousands is a different product",
       "two of its own phrases (the greeting and the reply after linking) are English and live inside the service. This project cannot translate them",
       "without an OpenAI key a voice note arrives without text — the message is kept, but nobody transcribed it",
-      "the log keeps the last 500 messages and drops the oldest. It is a log, not an archive",
+      "nothing is deleted automatically, so the journal only grows — the disk of your server is the limit",
     ],
     boundaryTitle: "Where the boundary is.",
     boundary:
@@ -362,11 +410,23 @@ const RU: TelegramUi = {
   title: "Telegram-бот",
   menuTitle: "Telegram-бот",
   subtitle:
-    "Бот, который говорит с людьми от имени этого проекта: что это такое, что он делал и как он настроен.",
+    "Личный инструмент архитектора, созданный для повышения его профессиональной эффективности и как демонстрация работы памяти проекта.",
   pages: {
     about: {
       title: "Описание",
       hint: "Зачем боту существовать в этом проекте и как он устроен.",
+    },
+    commands: {
+      title: "Команды",
+      hint: "Что бот понимает и как с ним говорить.",
+    },
+    calendar: {
+      title: "Календарь",
+      hint: "Что бот запланировал и когда напомнит.",
+    },
+    map: {
+      title: "Карта",
+      hint: "Места, которые запомнил этот проект.",
     },
     logs: {
       title: "Логи",
@@ -387,6 +447,25 @@ const RU: TelegramUi = {
     "Место под него здесь, и оно намеренно пустое, а не спрятанное: раздел, появившийся потом из ниоткуда, заметить труднее, чем тот, который сам сказал, что он будет.",
   soonWhere: "Где это работает сегодня:",
   soonPanel: "вкладка «Каналы связи» панели управления — ссылка на неё в подвале сайта.",
+  skeleton: {
+    inProgress: "В процессе разработки",
+    commandsLead:
+      "Всё, что бот понимает: слова, которым он обучен, что он делает с каждым из них, и способы говорить с ним помимо печати.",
+    calendarLead:
+      "Напоминания и встречи, которые бот запланировал: что наступит, когда и что он скажет.",
+    mapLead:
+      "Места, сохранённые в этом проекте: что там было записано и когда.",
+    instructionTitle: "Ваша собственная инструкция боту",
+    instructionLead:
+      "Текст, который вы пишете сами, а бот исполняет вдобавок к своим правилам: ваши ограничения, ваш тон, ваша предметная область. Он добавляется к инструкции бота, а не заменяет её.",
+    views: {
+      messages: "Сообщения",
+      db: "База данных",
+      media: "Медиатека",
+      vectors: "Векторное хранилище",
+      rag: "Агентный RAG",
+    },
+  },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",
     noToken: "токен не задан",
@@ -437,7 +516,7 @@ const RU: TelegramUi = {
   logs: {
     title: "Что бот услышал",
     lead:
-      "Всё, что доходит до бота, служба каналов складывает у себя — последние 500 сообщений, что бы она потом с ними ни сделала. Это и есть та запись, старые сверху — она читается как разговор.",
+      "Всё, что доходит до бота, и всё, что он отвечает, служба каналов складывает у себя — весь разговор целиком, со дня запуска проекта и до тех пор, пока жив сервер. Это и есть та запись, старые сверху.",
     emptyNoToken:
       "Здесь пока пусто, и причина простая: у бота нет токена. Сохраните его в «Настройках», и он начнёт слушать.",
     emptyNotLinked:
@@ -449,7 +528,7 @@ const RU: TelegramUi = {
     live: "Обновляется, пока раздел открыт",
     counted: "сообщений: {n}",
     ringNote:
-      "Служба хранит последние 500 и вытесняет старые новыми — это журнал, а не архив.",
+      "Отсюда ничего не удаляется: журнал хранит всю переписку, пока жив сервер. Разом загружается только свежая часть.",
     fromBot: "бот",
     fromPerson: "человек",
     kindVoice: "голос",
@@ -479,7 +558,7 @@ const RU: TelegramUi = {
     can: [
       "слышать текстом и голосом — голосовая заметка скачивается и расшифровывается, и дальше неотличима от напечатанной (для этого нужен ключ OpenAI)",
       "принимать фотографию, видео, документ и звук — файл попадает в медиатеку и ПРОЧИТЫВАЕТСЯ, поэтому снимок чека, присланный молча, всё равно находится поиском",
-      "хранить всё услышанное: последние 500 сообщений — это и есть раздел «Логи»",
+      "хранить весь разговор — и услышанное, и свои ответы — пока жив сервер; это и есть раздел «Логи»",
       "передавать каждое сообщение в сам проект в момент прихода — в вашу дверь /api/telegram/hook, с общим секретом; пока эта проводка на месте, отвечает ПРОЕКТ, а не служба",
       "стучать в проект по расписанию, чтобы напоминание сработало, когда на сайт никто не смотрит",
       "отвечать: ваш проект умеет писать в чат текст и присылать файлы",
@@ -490,7 +569,7 @@ const RU: TelegramUi = {
       "рассылок нет. Один бот, один мессенджер, один разговор за раз — служба лояльности, пишущая тысячам, это другой продукт",
       "две его собственные фразы (приветствие и ответ после привязки) — английские и живут внутри службы. Этот проект их не переводит",
       "без ключа OpenAI голосовая заметка приходит без текста — сообщение сохранится, но расшифровать его будет некому",
-      "журнал хранит последние 500 сообщений и вытесняет старые. Это журнал, а не архив",
+      "ничего не удаляется само, поэтому журнал только растёт — предел здесь один, диск вашего сервера",
     ],
     boundaryTitle: "Где проходит граница.",
     boundary:

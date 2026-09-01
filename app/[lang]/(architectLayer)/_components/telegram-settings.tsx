@@ -1,8 +1,9 @@
-import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle, Timer } from "lucide-react"
+import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle, Timer, ScrollText } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { TelegramSetup } from "./telegram-setup.client"
 import { TelegramSchedule } from "./telegram-schedule.client"
 import { OpenAiKeySection } from "./openai-key"
+import { InProgress } from "./in-progress"
 import type { ChannelsState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 
@@ -162,6 +163,30 @@ export function TelegramSettings({
               scheduleHint: w.scheduleHint,
               failed: w.failed,
             }}
+          />
+        </div>
+      </div>
+
+      {/* ── 4. Ваша инструкция боту — каркас (77-15) ─────────────────────────
+          🔒 МЕСТО ЗАНЯТО ЗАРАНЕЕ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА: «создаём на этой
+          странице ещё одну вкладку ниже расписание и также пишем там просто текст
+          что скоро будет добавлена». Раздел, появившийся потом из ниоткуда,
+          заметить труднее, чем тот, который сам сказал, что он будет (28-13).
+          🛑 ЗДЕСЬ БУДЕТ ТЕКСТ, КОТОРЫЙ ЕДЕТ В ИНСТРУКЦИЮ БОТА ДОБАВКОЙ к его
+          собственным правилам — а значит это поле влияет на поведение продукта,
+          и его ТЗ (77-19) отдельно называет, что оно НЕ отменяет. */}
+      <div className="rounded-lg border border-border">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+          <span className="flex flex-1 items-center gap-2">
+            <ScrollText className="size-4 text-muted-foreground" />
+            <H4 variant="ui">{ui.skeleton.instructionTitle}</H4>
+          </span>
+        </div>
+        <div className="p-3">
+          <InProgress
+            where="instruction"
+            label={ui.skeleton.inProgress}
+            lead={ui.skeleton.instructionLead}
           />
         </div>
       </div>

@@ -7,11 +7,15 @@ import {
   TELEGRAM_SECTIONS,
   resolveTelegramSection,
   hrefOfTelegramSection,
+  resolveTelegramLogView,
+  hrefOfTelegramLogView,
+  TELEGRAM_LOG_VIEWS,
 } from "../../_lib/telegram-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { TelegramSettings } from "../../_components/telegram-settings"
 import { TelegramLogsSection } from "../../_components/telegram-logs-section"
 import { TelegramAbout } from "../../_components/telegram-about"
+import { InProgress } from "../../_components/in-progress"
 import { readChannels } from "@/lib/architect/channels"
 
 // TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (77-1, 2026-08-31).
@@ -53,14 +57,15 @@ export default async function TelegramPage({
   searchParams,
 }: {
   params: Promise<{ lang: string }>
-  searchParams: Promise<{ section?: string }>
+  searchParams: Promise<{ section?: string; view?: string }>
 }) {
   const { lang } = await params
-  const { section: rawSection } = await searchParams
+  const { section: rawSection, view: rawView } = await searchParams
 
   const t = architectLayerUi(lang)
   const ui = telegramUi(lang)
   const active = resolveTelegramSection(rawSection)
+  const view = resolveTelegramLogView(rawView)
 
   // 🔒 ОДИН ВОПРОС СЛУЖБЕ НА СТРАНИЦУ, А НЕ ПО ОДНОМУ НА РАЗДЕЛ. Служба ходит в
   // Telegram за именем бота, то есть вызов не бесплатный; и разделы обязаны
@@ -89,6 +94,15 @@ export default async function TelegramPage({
           }))}
           title={ui.pages[active].title}
           lead={ui.pages[active].hint}
+          tabs={
+            active === "logs"
+              ? TELEGRAM_LOG_VIEWS.map(v => ({
+                  label: ui.skeleton.views[v],
+                  href: hrefOfTelegramLogView(lang, v),
+                  active: v === view,
+                }))
+              : undefined
+          }
         >
           {/* 🔒 СОСТОЯНИЕ ЧИТАЕТ СЕРВЕР ДО ОТДАЧИ HTML (77-3) — как это делала
               панель. Значит без JS видно главное: жива ли служба каналов, сохранён
@@ -98,6 +112,7 @@ export default async function TelegramPage({
           <div
             data-telegram-page
             data-telegram-section={active}
+            data-telegram-view={active === "logs" ? view : undefined}
             data-channels-available={String(channels.available)}
             data-telegram-configured={String(Boolean(channels.telegram?.configured))}
             data-telegram-reachable={String(Boolean(channels.telegram?.reachable))}
@@ -201,8 +216,33 @@ export default async function TelegramPage({
             {/* 🔒 «ЛОГИ» — ЕДИНСТВЕННЫЙ РАЗДЕЛ ВХОДА, КОТОРЫЙ НЕ ПЕРЕНОС (77-5).
                 В панели такого экрана нет: служба хранила входящие с самого
                 начала, и читал их только код. Способность не новая — новой стала
-                поверхность, на которой её видно. */}
-            {active === "logs" && <TelegramLogsSection state={channels} ui={ui} />}
+                поверхность, на которой её видно.
+
+                🔒 ВЕРХНЕЕ МЕНЮ ДАЁТ РАСКЛАДКА (`tabs`), А НЕ ЭТА СТРАНИЦА (77-15).
+                Полоса была в `WorkspaceShell` с самого начала и не использовалась
+                никем — своя здесь была бы второй копией готового. Построен пока
+                только первый вид, остальные четыре честно называют себя. */}
+            {active === "logs" &&
+              (view === "messages" ? (
+                <TelegramLogsSection state={channels} ui={ui} />
+              ) : (
+                <InProgress where={`logs-${view}`} label={ui.skeleton.views[view]} lead={ui.skeleton.inProgress} />
+              ))}
+
+            {/* 🛑 ТРИ РАЗДЕЛА ПОСТРОЕНЫ КАРКАСОМ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА:
+                «текущий этап твоей задачи только создать вкладки и создать
+                короткое описание». Каждый называет, ЧТО здесь будет, — иначе
+                пустая вкладка читается как поломка (28-13). Содержимое расписано
+                в ТЗ подшагов 77-16 … 77-19. */}
+            {active === "commands" && (
+              <InProgress where="commands" label={ui.pages.commands.title} lead={ui.skeleton.commandsLead} />
+            )}
+            {active === "calendar" && (
+              <InProgress where="calendar" label={ui.pages.calendar.title} lead={ui.skeleton.calendarLead} />
+            )}
+            {active === "map" && (
+              <InProgress where="map" label={ui.pages.map.title} lead={ui.skeleton.mapLead} />
+            )}
           </div>
         </WorkspaceShell>
       </div>

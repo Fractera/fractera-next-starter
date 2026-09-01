@@ -1,3 +1,4 @@
+import { noteFacets } from "@/lib/facts/candidates"
 import { db } from "@/lib/db"
 import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
@@ -89,6 +90,13 @@ export type Incoming = {
 }
 
 export type IngestResult = {
+  /**
+   * Тег, о котором человек говорит, а признака в реестре нет (81-7).
+   *
+   * 🔒 ПУСТО — ОБЫЧНОЕ СОСТОЯНИЕ, А НЕ ОТКАЗ. Предлагается один кандидат и
+   * только раз: подсказка на каждом сообщении приучает не читать подсказки.
+   */
+  candidate: string
   messageId: number
   duplicate: boolean
   artifacts: { kind: string; ref: string }[]
@@ -209,6 +217,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       needsConfirm: false,
       artifacts: [],
       understood: false,
+      candidate: "",
       intent: "capture",
       schedule: null,
       confirmation: null,
@@ -406,8 +415,22 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       .run(notes.join("; "), messageId)
   }
 
+  // 🔒 СВЕРКА ТЕГОВ С РЕЕСТРОМ — ЗДЕСЬ, А НЕ В ДВЕРИ. `facets` живут ровно
+  // до этой строки: дальше по потоку остаётся только их след в конверте
+  // графа. Отсюда и место — там, где сырьё ещё есть.
+  //
+  // 🔒 ОТКАЗ СВЕРКИ НЕ РОНЯЕТ РАЗБОР. Слой данных может молчать, и сообщение
+  // всё равно принято: кандидат — это подсказка, а не часть сохранения.
+  let candidate = ""
+  try {
+    candidate = await noteFacets(u.facets)
+  } catch {
+    // Молча: подсказка не стоит того, чтобы из-за неё потерялось сообщение.
+  }
+
   return {
     messageId,
+    candidate,
     duplicate: false,
     artifacts,
     summary: u.summary,

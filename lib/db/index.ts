@@ -273,6 +273,28 @@ const SCHEMA = `
     created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS fact_registry_enabled ON fact_registry (enabled, level);
+
+  -- КАНДИДАТЫ В РЕЕСТР — то, о чём человек говорит, а признака нет (81-7).
+  --
+  -- 🔒 СЫРЬЁ БЕРЁТСЯ ИЗ УЖЕ ИЗВЛЕКАЕМОГО. Модель при каждом разборе возвращает
+  -- два-шесть тегов «о чём это»; незнакомые реестру копятся здесь. Ничего нового
+  -- у модели не спрашивается — раньше эти теги просто выбрасывались.
+  --
+  -- 🔒 СЧЁТЧИК ВСТРЕЧ НУЖЕН, ЧТОБЫ НЕ ПРЕДЛАГАТЬ СЛУЧАЙНОЕ СЛОВО. «Пушкин» тоже
+  -- незнаком реестру, но признак под него не нужен: предлагается то, что человек
+  -- повторяет, — это его привычка, а не оговорка.
+  --
+  -- 🔒 ОТКЛОНЁННЫЙ ПОМЕЧАЕТСЯ, А НЕ УДАЛЯЕТСЯ. Удали строку — тег дорастёт до
+  -- порога заново и будет предложен второй раз, хотя человек уже сказал «нет».
+  CREATE TABLE IF NOT EXISTS fact_candidates (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    tag       TEXT    NOT NULL UNIQUE,
+    seen      INTEGER NOT NULL DEFAULT 1,
+    offered   INTEGER NOT NULL DEFAULT 0,
+    dismissed INTEGER NOT NULL DEFAULT 0,
+    last_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
+  CREATE INDEX IF NOT EXISTS fact_candidates_ripe ON fact_candidates (dismissed, offered, seen);
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

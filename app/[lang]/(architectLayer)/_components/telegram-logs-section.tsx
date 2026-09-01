@@ -64,9 +64,11 @@ export async function TelegramLogsSection({
         <Small className="leading-relaxed text-muted-foreground">{w.lead}</Small>
       </div>
 
-      {/* Новые сверху: лента читается как разговор, а не как файл. */}
+      {/* 🔒 ПОРЯДОК СЛУЖБЫ СОХРАНЯЕТСЯ КАК ЕСТЬ: она отдаёт по возрастанию `id`,
+          то есть старое первым. Это и есть порядок разговора — новое внизу
+          (77-13). Прежний `reverse()` переворачивал переписку задом наперёд. */}
       <TelegramLogs
-        initial={[...page.messages].reverse()}
+        initial={page.messages}
         initialLastId={page.lastId}
         labels={{
           refresh: w.refresh,

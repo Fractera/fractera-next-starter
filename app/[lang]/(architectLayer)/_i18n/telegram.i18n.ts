@@ -265,7 +265,7 @@ const EN: TelegramUi = {
   logs: {
     title: "What the bot has heard",
     lead:
-      "Everything that reaches the bot is kept by the channels service — the last 500 messages, whatever it then did with them. This is that record, newest first.",
+      "Everything that reaches the bot is kept by the channels service — the last 500 messages, whatever it then did with them. This is that record, oldest first — it reads as a conversation.",
     emptyNoToken:
       "Nothing here yet, and the reason is simple: the bot has no token. Save one in Settings and it starts listening.",
     emptyNotLinked:
@@ -437,7 +437,7 @@ const RU: TelegramUi = {
   logs: {
     title: "Что бот услышал",
     lead:
-      "Всё, что доходит до бота, служба каналов складывает у себя — последние 500 сообщений, что бы она потом с ними ни сделала. Это и есть та запись, новые сверху.",
+      "Всё, что доходит до бота, служба каналов складывает у себя — последние 500 сообщений, что бы она потом с ними ни сделала. Это и есть та запись, старые сверху — она читается как разговор.",
     emptyNoToken:
       "Здесь пока пусто, и причина простая: у бота нет токена. Сохраните его в «Настройках», и он начнёт слушать.",
     emptyNotLinked:

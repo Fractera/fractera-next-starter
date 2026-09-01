@@ -66,8 +66,11 @@ export function TelegramLogs({
       const fresh = Array.isArray(d.messages) ? d.messages : []
       if (fresh.length) {
         lastId.current = Number(d.lastId ?? lastId.current)
-        // Новые сверху: человек читает ленту как разговор, а не как файл.
-        setRows(prev => [...fresh].reverse().concat(prev).slice(0, 500))
+        // 🔒 НОВОЕ ВНИЗУ, СТАРОЕ ВВЕРХУ (77-13, правка владельца): лента читается
+        // как разговор, а разговор идёт сверху вниз. ✗ я сделал наоборот, по
+        // привычке журнала — но журнал листают, а переписку читают.
+        // 🔒 ОБРЕЗАЕМ НАЧАЛО, А НЕ КОНЕЦ: лишними становятся САМЫЕ СТАРЫЕ.
+        setRows(prev => prev.concat(fresh).slice(-500))
       }
     } catch {
       // 🔒 МОЛЧА. Один пропущенный такт опроса — обычное дело; красная строка на

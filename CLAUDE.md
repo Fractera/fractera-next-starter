@@ -493,6 +493,61 @@ switch looks dead for ten minutes — a defect the owner found twice on this sam
 🪦 **THE CONTROL PANEL NO LONGER HAS A "SIGN-IN METHODS" TAB** (removed 2026-09-01). Do not send the
 owner there; this page is the only surface.
 
+### The fact registry — what this project can pull out of a message (step 81)
+
+🔒 **A FACT IS A DECLARED ABILITY, AND THE LAW IS EASIER TO STATE BACKWARDS** (owner, 2026-09-01):
+*no fact in the registry means no instruction for how to decompose it — so it lands in no table and
+stays plain text.* The registry is a **set of decomposition instructions**, not a list of labels.
+
+Every entry carries five parts, and the TYPE enforces them: a name · what it is · the form of the
+value · **how to recognise it** · what to do when it is implied but not extractable. The fifth is the
+one that gets forgotten: «it sells great pies HERE» names a place and gives no coordinates, and a
+phone number may have to be joined from a neighbouring message. Declare the behaviour or lose half
+the cases silently.
+
+🔒 **BUILT-IN FACTS ARE GENERATED FROM THE CODE, NEVER LISTED** — from `ENTRY_KINDS`, `INTENTS`,
+`ARTIFACT_KINDS` and the columns of `tgdesk_messages`. Twenty-five of them. **The names are
+generated; the human descriptions and the recognition instructions are written by hand, and that is
+legal**: the code knows WHAT exists and does not know HOW to recognise it. That half is the whole
+reason the registry exists.
+
+🔒 **EVERY FACT HAS ITS OWN TABLE, ONE SINGLE STANDARD, NO EXCEPTIONS** (owner's decision, and his
+argument beat the agent's). The agent argued economy — "do not rewrite what works"; the owner argued
+architecture: **two ways of storing is no way at all**, and a choice without a criterion reads as
+"do it however". One form for all: `id · message_id · value_text · value_num · value_json · source ·
+confidence · created_at`. One form means one reader, one writer and **zero code per new fact**.
+
+🔒 **THE ONE EXCEPTION IS BY NATURE, NOT BY CONVENIENCE:** the link between messages is a **relation
+between two**, not a fact about one — no value, only a source and a target. It lives in
+`tgdesk_messages.bundle` and exists before any registry. 🛑 And its honest limit: today it is found
+**by time** — a neighbour within three minutes — not by meaning.
+
+🔒 **TABLES ARE GENERATED FROM THE REGISTRY, NOT DECLARED IN THE SCHEMA.** A table created while the
+system runs never reaches the project schema; on a new server it would be missing while the registry
+rows arrive. So the missing ones are created from the registry rows. **Measured, not assumed:** the
+data layer performs `CREATE TABLE` and `ALTER TABLE ADD COLUMN` at runtime, and a query on the new
+column works.
+
+🛑 **THE TABLE NAME IS BUILT STRICTLY, AND THIS IS NOT PEDANTRY.** A key is born from a person's free
+description passed through a model. Reaching `CREATE TABLE` unchecked, it stops being a name and
+becomes SQL. Whitelist of characters, a length limit, a mandatory prefix.
+
+🔒 **A CONSUMER DESCRIBES IN WORDS AND THE MODEL FILLS THE FIELDS — BUT THE PERSON SAVES.**
+`_tools/fact-draft` turns free words into a typed draft; **it proposes, it never applies**, the law
+taken verbatim from `socials-ai`. Closed lists are verified by US, not promised by the model: it will
+happily return a value outside the list and it will look plausible. A draft that fails verification
+is dropped whole — half-parsed is worse than refused, because half-parsed gets saved.
+
+🔒 **THE TOOL DOES NOT KNOW THE WORD "FACT".** Its field schema arrives as a parameter, so it serves
+any screen where a person describes in words what the code needs as fields. **A good tool does not
+know the name of its first consumer** — otherwise the second one starts with a copy.
+
+**Where it lives:** `lib/facts/` (types, generated built-ins, table shape, registry, table
+generation) · `app/api/architect/facts` and `…/fact-draft` · the card in the bot's Settings section ·
+`_tools/fact-draft/`. The document written for the owner is
+`development-docs/FACTS-REGISTRY.md` — read it before extending any of this.
+
+
 ### `/{lang}/architect/telegram` — the bot (step 77)
 
 Three sections. **Description** says what the bot can do today and what it cannot, both written from
@@ -643,12 +698,18 @@ writing anything, check whether a switch already does it.
 
 ## Tools — `_tools/`
 
-**Seven** ready pieces, a folder each: `voice-input`, `image-crop`, `video-trim`, `code-view`,
-`translations-dialog`, `socials-ai`, **`chat`**. **Look here BEFORE building anything similar**
+**Eight** ready pieces, a folder each: `voice-input`, `image-crop`, `video-trim`, `code-view`,
+`translations-dialog`, `socials-ai`, `chat`, **`fact-draft`**. **Look here BEFORE building anything similar**
 → `use-tools`.
 The catalogue that shows them to a human lives at **`/{lang}/architect/design?section=tools`**, and a
 tool you are missing is **asked for from there** — a card at the bottom of the column writes a request
 into `development-docs/development-steps/pre-steps/`.
+
+🪦 **AND "Seven" LASTED HALF A DAY — THE THIRD MISS IN THIS SAME PARAGRAPH.** `fact-draft` arrived
+with step 81, and the number above it did not move on its own. Three corrections in three days, all
+in one paragraph, by the same author who wrote the law about it. **A hand-written number does not
+move by itself, and knowing that does not make it move either** — only the same edit that touches
+the list beside it does.
 
 🪦 **AND IT SAID "Six" UNTIL 2026-09-01 — the same slip, one edit later.** `chat` arrived with step
 80, and the number above it did not move on its own, because no number written by hand ever does. The
@@ -684,7 +745,7 @@ decides the rule is not for him; neither follows from the text.
 import is lazy and inside `try/catch`, so without the package highlighting silently becomes plain
 text. That is a legal state: unhighlighted code is readable, an empty screen is not.
 
-**Seven is today, not forever.** Image or video generation, document recognition, maps, payment,
+**Eight is today, not forever.** Image or video generation, document recognition, maps, payment,
 signature — every such capability lands HERE, not in the folder of the page that needed it first.
 ✗ a tool left living at its first caller is found only by someone who remembers it is there.
 🔒 **And the owner asks for those from the showcase, not from you directly.** The card at the bottom
@@ -1442,7 +1503,7 @@ say so and work without it rather than inventing its content.
 | `use-platform-config` | eleven switches: what is read, what it does not decide, how to see the change | ✅ |
 | `use-app-config` | the application's identity: a field in four places, socials as a record with a rule, the cache | ✅ |
 | `place-page-in-menu` | a page into the top menu or the footer: search first, rights before building, two menu sources, the manifest shape | ✅ |
-| `use-tools` | the six ready pieces: where they live, the showcase and how a new one is asked for, the `tool.json` card, why to look before building | ✅ |
+| `use-tools` | the ready pieces: where they live, the showcase and how a new one is asked for, the `tool.json` card, why to look before building | ✅ |
 | `use-design` | nine levers of the look: functional against authored, foreign design skills, `DESIGN-CONFIG`, where external code lands, motion | ✅ |
 | `manage-app-settings` | application settings in the panel | ✅ |
 | `expand-site-language` | adding a language to a finished site | ✅ |

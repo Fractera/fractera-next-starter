@@ -134,6 +134,20 @@ export type TelegramUi = {
   }
 
   about: {
+    /**
+     * ПЕРВЫЙ АБЗАЦ ОПИСАНИЯ (77-10, 2026-09-01, заказ владельца).
+     *
+     * 🔒 ОН ОБЪЯСНЯЕТ, ЧЕМ БОТ ЯВЛЯЕТСЯ, А НЕ ЧТО ОН УМЕЕТ. Список умений идёт
+     * ниже и отвечает на другой вопрос. Человек, не понявший ЗАЧЕМ здесь бот,
+     * читает список умений как набор случайных возможностей.
+     */
+    demoTitle: string
+    demoWhat: string
+    demoWriteTitle: string
+    demoWrite: string
+    demoReadTitle: string
+    demoRead: string
+    demoWhy: string
     whatTitle: string
     what: string
     arrangedTitle: string
@@ -267,6 +281,17 @@ const EN: TelegramUi = {
     forwarded: "forwarded from",
   },
   about: {
+    demoTitle: "Your starter bot is a working demonstration of how this project remembers.",
+    demoWhat:
+      "It is not a toy and not a placeholder. Everything it does is built from the same parts your own project has, so trying it out is the shortest way to see the memory of Fractera at work.",
+    demoWriteTitle: "What happens to what you tell it.",
+    demoWrite:
+      "One sentence does not land as one line of text. It is taken apart: the record itself, when it happened, what it was about, the money in it, the place, the links to everything said before. Each part goes to the kind of memory that can answer questions about it later.",
+    demoReadTitle: "How the parts come back together.",
+    demoRead:
+      "A question is not answered from a single row. Several sources are read at once — the records, their meaning, the connections between them — and the answer is assembled from all of them, so it stays whole rather than literal.",
+    demoWhy:
+      "That is why it is worth talking to before you build anything of your own: what you see here is the behaviour your project can be given.",
     whatTitle: "A door into this project from a messenger.",
     what:
       "A person writes to your bot and talks to your project — no separate app, no login screen. The bot is yours: the token comes from @BotFather and belongs to you, so the conversation runs between your visitors and your server.",
@@ -426,6 +451,17 @@ const RU: TelegramUi = {
     forwarded: "переслано от",
   },
   about: {
+    demoTitle: "Ваш стартовый бот — работающая демонстрация того, как этот проект помнит.",
+    demoWhat:
+      "Это не игрушка и не заглушка. Всё, что он делает, собрано из тех же частей, что есть у вашего проекта, — поэтому поговорить с ним быстрее всего, чтобы увидеть память Fractera в работе.",
+    demoWriteTitle: "Что происходит с тем, что вы ему сказали.",
+    demoWrite:
+      "Одна фраза не ложится одной строкой текста. Она раскладывается на части: сама запись, когда это случилось, о чём речь, какие в ней деньги, где это было, с чем связано из сказанного раньше. Каждая часть уходит в тот вид памяти, который потом сможет отвечать на вопросы о ней.",
+    demoReadTitle: "Как части собираются обратно.",
+    demoRead:
+      "Ответ не берётся из одной строки. Читаются сразу несколько источников — сами записи, их смысл и связи между ними, — и ответ собирается из всего этого, поэтому он получается целостным, а не буквальным.",
+    demoWhy:
+      "Поэтому с ним стоит поговорить до того, как вы начнёте строить своё: здесь видно поведение, которое можно дать вашему проекту.",
     whatTitle: "Дверь в этот проект из мессенджера.",
     what:
       "Человек пишет вашему боту и разговаривает с вашим проектом — без отдельного приложения и без страницы входа. Бот ваш: токен вы получаете у @BotFather, и он принадлежит вам, поэтому разговор идёт между вашими посетителями и вашим сервером.",

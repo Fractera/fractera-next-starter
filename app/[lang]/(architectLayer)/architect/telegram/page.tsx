@@ -10,6 +10,7 @@ import {
 } from "../../_lib/telegram-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { SectionSoon } from "../../_components/section-soon"
+import { TelegramSettings } from "../../_components/telegram-settings"
 import { readChannels } from "@/lib/architect/channels"
 
 // TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (77-1, 2026-08-31).
@@ -123,10 +124,48 @@ export default async function TelegramPage({
               />
             )}
 
-            {/* 🔒 ДВЕ ЗАГЛУШКИ — ОДИН КОМПОНЕНТ. Они отличаются только словами
-                раздела; два блока, написанные по отдельности, разъехались бы, и
-                это уже замерено на анатомии шага (28-2). */}
-            {active !== "about" && (
+            {/* 🔒 «НАСТРОЙКИ» ПЕРЕЕХАЛИ ИЗ ПАНЕЛИ ЦЕЛИКОМ (77-4): справка сверху,
+                состояние и форма ниже. Справка — тот же общий островок, что у
+                «Описания»: четыре её блока объясняют ровно то, что на этом
+                экране делают, и в источнике они лежали на той же странице. */}
+            {active === "settings" && (
+              <>
+                <SectionIntro
+                  name="telegram-settings"
+                  key={active}
+                  moreLabel={ui.helpMore}
+                  lessLabel={ui.helpLess}
+                  summary={
+                    <Small>
+                      <strong className="text-foreground">{ui.settings.helpWhatTitle}</strong>{" "}
+                      {ui.settings.helpWhat}
+                    </Small>
+                  }
+                  rest={
+                    <div className="flex flex-col gap-2">
+                      <Small>
+                        <strong className="text-foreground">{ui.settings.helpWhyTitle}</strong>{" "}
+                        {ui.settings.helpWhy}
+                      </Small>
+                      <Small>
+                        <strong className="text-foreground">{ui.settings.helpLinkTitle}</strong>{" "}
+                        {ui.settings.helpLink}
+                      </Small>
+                      <Small>
+                        <strong className="text-foreground">{ui.settings.helpOffTitle}</strong>{" "}
+                        {ui.settings.helpOff}
+                      </Small>
+                    </div>
+                  }
+                />
+                <TelegramSettings state={channels} ui={ui} />
+              </>
+            )}
+
+            {/* 🔒 ЗАГЛУШКА ОСТАЛАСЬ ОДНА — У «ЛОГОВ», И ТОТ ЖЕ КОМПОНЕНТ. Пока
+                раздел не построен (77-5), место занято и говорит об этом; молчащая
+                заглушка читается как поломка (28-13). */}
+            {active === "logs" && (
               <SectionSoon
                 section={active}
                 title={ui.soonTitle}

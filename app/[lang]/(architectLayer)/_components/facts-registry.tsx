@@ -1,6 +1,7 @@
 import { Layers } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { SectionIntro } from "./section-intro.client"
+import { FactsAdd } from "./facts-add.client"
 import { allFacts } from "@/lib/facts/registry"
 import { needsTable } from "@/lib/facts/table"
 import type { Fact, FactLevel } from "@/lib/facts/types"
@@ -23,9 +24,10 @@ import type { TelegramUi } from "../_i18n/telegram.i18n"
 // после второго. Смешав их, мы обещали бы, что температура воздуха узнаётся так
 // же, как «это голосовое».
 //
-// 🔒 СЕРВЕРНАЯ КАРТОЧКА, БЕЗ ОСТРОВКА. Здесь пока только чтение; островок
-// появится в 81-4 вместе с добавлением, и класть его сюда заранее значило бы
-// возить в браузер код, которым никто не пользуется.
+// 🔒 КАРТОЧКА СЕРВЕРНАЯ, КЛИЕНТСКАЯ ТОЛЬКО ФОРМА (81-4). Список читается на
+// сервере и приезжает готовой разметкой; в браузер уезжает лишь то, что обязано
+// там жить, — поля ввода и обращение к двери. Тот же приём, что у ленты
+// направлений: словари резолвятся на сервере, островок получает готовые строки.
 
 const ORDER: FactLevel[] = ["material", "intent", "entity", "destination", "field"]
 
@@ -54,6 +56,31 @@ export async function FactsRegistrySection({ ui }: { ui: TelegramUi }) {
           rest={<Small className="leading-relaxed text-muted-foreground">{w.rest}</Small>}
           moreLabel={w.more}
           lessLabel={w.less}
+        />
+
+        {/* 🔒 ФОРМА СТОИТ МЕЖДУ СПРАВКОЙ И СПИСКОМ, И ПОРЯДОК СМЫСЛОВОЙ:
+            человек сперва читает, что такое признак, потом заводит свой, потом
+            видит его среди встроенных. Кнопка внизу списка означала бы, что
+            добавление — редкая операция; здесь она главная. */}
+        <FactsAdd
+          labels={{
+            addTitle: w.addTitle,
+            keyLabel: w.keyLabel,
+            keyHint: w.keyHint,
+            titleLabel: w.titleLabel,
+            descriptionLabel: w.descriptionLabel,
+            valueTypeLabel: w.valueTypeLabel,
+            howToFindLabel: w.howToFindLabel,
+            howToFindHint: w.howToFindHint,
+            onMissingLabel: w.onMissingLabel,
+            onMissing: w.onMissingWords,
+            valueTypes: w.valueTypes,
+            submit: w.submit,
+            submitting: w.submitting,
+            saved: w.savedWithTable,
+            errors: w.errors,
+            errorOther: w.errorOther,
+          }}
         />
 
         {ORDER.map(level => {

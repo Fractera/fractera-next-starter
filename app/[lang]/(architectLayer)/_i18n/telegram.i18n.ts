@@ -68,6 +68,25 @@ export type TelegramUi = {
     required: string
     noTable: string
     counted: string
+    /** Слова формы добавления (81-4). */
+    addTitle: string
+    keyLabel: string
+    keyHint: string
+    titleLabel: string
+    descriptionLabel: string
+    valueTypeLabel: string
+    howToFindLabel: string
+    howToFindHint: string
+    onMissingLabel: string
+    onMissingWords: Record<'silent' | 'ask' | 'join', string>
+    valueTypes: Record<'flag' | 'text' | 'number' | 'money' | 'date' | 'geo' | 'link' | 'list', string>
+    submit: string
+    submitting: string
+    /** `{table}` — имя созданной таблицы. */
+    savedWithTable: string
+    /** Причины отказа двери, по её кодам. */
+    errors: Record<string, string>
+    errorOther: string
   }
 
   /**
@@ -307,6 +326,35 @@ const EN: TelegramUi = {
     required: "cannot be turned off",
     noTable: "no table of its own: a link is a relation, not a value",
     counted: "{n} facts",
+    addTitle: "Add a fact",
+    keyLabel: "Machine name",
+    keyHint: "Latin letters and digits, dots for levels. The table name is built from it and never changes.",
+    titleLabel: "Name",
+    descriptionLabel: "What it is",
+    valueTypeLabel: "Form of the value",
+    howToFindLabel: "How to recognise it",
+    howToFindHint: "The words and shapes it appears in. This is what goes to the model — without it the fact is a column nobody fills.",
+    onMissingLabel: "When it is implied but not extracted",
+    onMissingWords: {
+      silent: "Say nothing",
+      ask: "Ask a clarifying question",
+      join: "Look in neighbouring messages",
+    },
+    valueTypes: {
+      flag: "Yes or no", text: "Text", number: "Number", money: "Money",
+      date: "Date", geo: "Coordinates", link: "Link to a message", list: "List",
+    },
+    submit: "Save",
+    submitting: "Saving…",
+    savedWithTable: "Saved. Table {table} created — the fact works from now on, no rebuild needed.",
+    errors: {
+      "bad-key": "This machine name will not do: latin letters and digits only, dots between levels.",
+      "no-title": "A name is required.",
+      "no-how-to-find": "Say how to recognise it — without that the fact stays an empty column.",
+      "builtin-exists": "A built-in fact already has this name.",
+      "builtin-readonly": "Built-in facts are generated from the code and cannot be edited.",
+    },
+    errorOther: "Could not save. Try again in a minute.",
   },
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
@@ -531,6 +579,35 @@ const RU: TelegramUi = {
     required: "выключить нельзя",
     noTable: "своей таблицы нет: связь — отношение, а не значение",
     counted: "признаков: {n}",
+    addTitle: "Добавить признак",
+    keyLabel: "Машинное имя",
+    keyHint: "Латиница и цифры, точки между уровнями. Из него строится имя таблицы, и оно не меняется никогда.",
+    titleLabel: "Название",
+    descriptionLabel: "Что это",
+    valueTypeLabel: "Форма значения",
+    howToFindLabel: "Как это узнавать",
+    howToFindHint: "По каким словам и в каком виде встречается. Именно это едет в модель — без него признак останется колонкой, которую никто не заполняет.",
+    onMissingLabel: "Если подразумевается, но не извлекается",
+    onMissingWords: {
+      silent: "Промолчать",
+      ask: "Задать уточняющий вопрос",
+      join: "Поискать в соседних сообщениях",
+    },
+    valueTypes: {
+      flag: "Да или нет", text: "Текст", number: "Число", money: "Деньги",
+      date: "Дата", geo: "Координаты", link: "Ссылка на сообщение", list: "Список",
+    },
+    submit: "Сохранить",
+    submitting: "Сохраняем…",
+    savedWithTable: "Сохранено. Таблица {table} создана — признак работает с этой минуты, пересборка не нужна.",
+    errors: {
+      "bad-key": "Такое машинное имя не годится: только латиница и цифры, точки между уровнями.",
+      "no-title": "Название обязательно.",
+      "no-how-to-find": "Скажите, как это узнавать, — без этого признак останется пустой колонкой.",
+      "builtin-exists": "Встроенный признак уже носит это имя.",
+      "builtin-readonly": "Встроенные признаки порождаются из кода и не правятся.",
+    },
+    errorOther: "Не удалось сохранить. Попробуйте через минуту.",
   },
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",

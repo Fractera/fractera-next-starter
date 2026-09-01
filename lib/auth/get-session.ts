@@ -17,7 +17,20 @@ export async function getSession(req?: NextRequest): Promise<AppSession | null> 
     return { userId: 'demo@local', email: 'demo@local', roles: ['architect'] }
   }
 
-  const authUrl = process.env.AUTH_SERVICE_URL ?? process.env.NEXT_PUBLIC_AUTH_URL ?? 'http://localhost:3001'
+  // 🔒 `||`, А НЕ `??`, И ЭТО НЕ ВКУСОВЩИНА — ОПЛАЧЕНО ПОТЕРЕЙ ВХОДА НА ЖИВОМ
+  // САЙТЕ (2026-09-01).
+  //
+  // `??` заменяет только `null` и `undefined`. `NEXT_PUBLIC_AUTH_URL` в слоте —
+  // ПУСТАЯ СТРОКА, и она запекается в бандл при сборке: выражение возвращало
+  // `""`, дальше шёл `fetch("/api/session")` — относительный адрес, который на
+  // сервере падает молча в `catch`. Наружу это выглядело как честный `401`:
+  // человек вошёл, служба сессию признавала, а сайт показывал кнопку «войти».
+  //
+  // 🛑 ДЕФЕКТ БЫЛ НЕВИДИМ, ПОКА СЕРВЕР РАБОТАЛ ПО IP: там `shouldBypassAuth()`
+  // отвечал раньше, и до этой строки дело не доходило. Перевод на домен включил
+  // настоящий путь — и сломанным он был всё это время.
+  const authUrl =
+    process.env.AUTH_SERVICE_URL || process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:3001'
   const cookie = req?.headers.get('cookie') ?? ''
   try {
     const res = await fetch(`${authUrl}/api/session`, { headers: { cookie } })

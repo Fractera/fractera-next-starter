@@ -8,6 +8,7 @@ import { takeFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
 import { waitingLabel } from "./calendar"
 import { timezoneOf } from "./timezone"
+import { openTask } from "@/lib/task/intake"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -254,6 +255,25 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // Своя связка, если соседа нет; иначе наследуем его.
   const bundle = neighbour ? (neighbour.bundle ?? neighbour.id) : messageId
   await db.prepare("UPDATE tgdesk_messages SET bundle = ? WHERE id = ?").run(bundle, messageId)
+
+  // ── Первая строка разбора ───────────────────────────────────────────────
+  // 🔒 КЛАДЁТСЯ ЗДЕСЬ: ПОСЛЕ ПРИЁМА, ДО ВСЯКОЙ МОДЕЛИ (91-3). Раньше нельзя —
+  // без строки в складе входящих у разбора нет ни сообщения, ни его номера, а
+  // отказ на том участке есть отказ ПРИЁМА, и разбирать в нём нечего. Позже
+  // нельзя тем более: дальше идут вложение и модель, то есть ровно те места,
+  // где не получается, — а экран заведён, чтобы видеть и такой случай.
+  //
+  // 🛑 ОТКАЗ ЗАПИСИ НЕ РОНЯЕТ ПРИЁМ. Экран — наблюдатель, а не участник:
+  // сообщение обязано быть обработано и отвечено даже тогда, когда стол
+  // разбора недоступен (ноутбук без ключа к слою данных). Неудача уходит в
+  // notes строкой, а не исключением.
+  const opened = await openTask({
+    text: msg.text,
+    channel: "telegram",
+    messageId,
+    hasAttachment: Boolean(msg.fileId),
+  })
+  if (!opened.ok) notes.push(`task:${opened.error}`)
 
   // ── Вложение забирается ДО разбора ─────────────────────────────────────
   // Прочитанное с картинки — часть того, что человек сказал. Разобрать сперва

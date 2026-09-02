@@ -1,4 +1,6 @@
 import { SectionIntro } from "./section-intro.client"
+import { readTask } from "@/lib/task/store"
+import type { RequestChannel } from "@/lib/task/types"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 import type { ChannelsState } from "@/lib/architect/channels"
 
@@ -31,7 +33,36 @@ function emptyReason(state: ChannelsState, ui: TelegramUi): { key: string; text:
   return { key: "no-requests", text: ui.parse.emptyNoRequests }
 }
 
-export function TaskParseSection({ state, ui }: { state: ChannelsState; ui: TelegramUi }) {
+/**
+ * Имя канала для показа.
+ *
+ * 🔒 ПОРОЖДАЕТСЯ ИЗ КЛЮЧА, А НЕ ПИШЕТСЯ ВТОРЫМ СПИСКОМ. Список каналов один —
+ * `REQUEST_CHANNELS`; словарь имён рядом с ним разошёлся бы на первом же
+ * добавленном канале, и экран назвал бы WhatsApp телеграмом.
+ */
+function channelName(c: RequestChannel): string {
+  return c.charAt(0).toUpperCase() + c.slice(1)
+}
+
+/**
+ * Метка времени: дата и время С МИЛЛИСЕКУНДАМИ.
+ *
+ * 🔒 МИЛЛИСЕКУНДЫ ПОКАЗЫВАЮТСЯ, А НЕ ТОЛЬКО ХРАНЯТСЯ — прямое требование
+ * владельца. Отрезанные при показе, они неотличимы от неписанных.
+ *
+ * 🔒 UTC НАЗВАН ВСЛУХ И НЕ ПЕРЕВОДИТСЯ В МЕСТНОЕ ВРЕМЯ. Время, показанное без
+ * пояса, читается как своё; сервер, человек и Telegram живут в разных поясах, и
+ * молчаливый сдвиг на три часа выглядит не ошибкой показа, а ошибкой разбора.
+ */
+function stamp(iso: string): string {
+  return `${iso.slice(0, 10)} ${iso.slice(11, 23)} UTC`
+}
+
+export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui: TelegramUi }) {
+  // 🔒 ЧИТАЕТ САМ ВИД, А НЕ СТРАНИЦА. Объект разбора нужен ровно здесь; чтение
+  // его на странице стоило бы запроса к слою данных на КАЖДОМ виде верхнего
+  // ряда, включая те, которым он не нужен.
+  const task = await readTask()
   const empty = emptyReason(state, ui)
 
   return (
@@ -56,12 +87,60 @@ export function TaskParseSection({ state, ui }: { state: ChannelsState; ui: Tele
       {/* 🔒 ПУСТОЕ СОСТОЯНИЕ НЕСЁТ СВОЙ КЛЮЧ В РАЗМЕТКЕ, А НЕ ТОЛЬКО ТЕКСТ.
           Текст переводится и меняется; ключ — то, по чему причина проверяется
           измерением, не завися от языка страницы. */}
-      <div
-        data-task-parse-empty={empty.key}
-        className="rounded-md border border-dashed border-muted-foreground/30 p-6 text-[length:var(--fs-small)] text-muted-foreground"
-      >
-        {empty.text}
-      </div>
+      {/* 🔒 ЛИБО ТАБЛИЦА, ЛИБО ПРИЧИНА ПУСТОТЫ — И НИКОГДА ОБЕ. Пустая таблица с
+          заголовками столбцов выглядит как работающий экран, которому нечего
+          сказать, и человек ждёт строк, которых не будет. */}
+      {task ? (
+        // 🔒 ШИРОКОЕ СОДЕРЖИМОЕ ПРОКРУЧИВАЕТСЯ ВНУТРИ СВОЕГО КОНТЕЙНЕРА: текст
+        // запроса приходит какой угодно длины, а страница не имеет права ехать
+        // вбок целиком.
+        <div data-task-parse-table className="overflow-x-auto rounded-md border">
+          <table className="w-full min-w-[36rem] border-collapse text-[length:var(--fs-small)]">
+            <thead className="border-b bg-muted/40 text-left text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2 font-normal">{ui.parse.colKind}</th>
+                <th className="px-4 py-2 font-normal">{ui.parse.colWhat}</th>
+                <th className="px-4 py-2 font-normal">{ui.parse.colSource}</th>
+                <th className="px-4 py-2 font-normal">{ui.parse.colTime}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* 🔒 ПЕРВАЯ СТРОКА — СЫРЬЁ, КАКИМ ОНО ПРИШЛО, И ОНА НЕ ИЗ `rows`.
+                  Остальные строки таблицы — интерпретация, и живут они списком;
+                  эта одна есть у КАЖДОГО разбора по устройству, потому и лежит
+                  отдельным полем объекта. */}
+              <tr
+                data-task-row="intake"
+                data-task-channel={task.intake.channel}
+                data-task-at={task.intake.at}
+              >
+                <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
+                  {ui.parse.kinds.intake}
+                </td>
+                {/* 🔒 ТЕКСТ ДОСЛОВНО, С ПЕРЕВОДАМИ СТРОК: он и есть то, с чем
+                    сверяют всё остальное. Обрезанный «для вида» оригинал
+                    перестаёт быть оригиналом. */}
+                <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">
+                  {task.intake.text || ui.parse.noWords}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
+                  {ui.parse.via.replace("{name}", channelName(task.intake.channel))}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 align-top font-mono text-muted-foreground">
+                  <time dateTime={task.intake.at}>{stamp(task.intake.at)}</time>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div
+          data-task-parse-empty={empty.key}
+          className="rounded-md border border-dashed border-muted-foreground/30 p-6 text-[length:var(--fs-small)] text-muted-foreground"
+        >
+          {empty.text}
+        </div>
+      )}
     </section>
   )
 }

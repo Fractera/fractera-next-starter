@@ -73,6 +73,15 @@ export type TelegramUi = {
     colWhat: string
     colSource: string
     colTime: string
+    /**
+     * Строка «сырой запрос»: чем она добыта и что показать, когда слов нет.
+     *
+     * 🔒 ИМЯ КАНАЛА ПОДСТАВЛЯЕТСЯ В `{name}`, А НЕ ПИШЕТСЯ ВТОРЫМ СПИСКОМ.
+     * Список каналов один — `REQUEST_CHANNELS`; словарь, перечисляющий их
+     * заново, разошёлся бы с ним на первом же добавленном канале.
+     */
+    via: string
+    noWords: string
     /** Имена пяти родов строки. */
     kinds: Record<'intake' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
   }
@@ -380,6 +389,8 @@ const EN: TelegramUi = {
     colWhat: "What was established",
     colSource: "Obtained by",
     colTime: "Time",
+    via: "{name} channel",
+    noWords: "No words of their own — the message arrived as an attachment.",
     kinds: {
       intake: "Raw request",
       extract: "Read from attachment",
@@ -678,6 +689,8 @@ const RU: TelegramUi = {
     colWhat: "Что установлено",
     colSource: "Чем добыто",
     colTime: "Время",
+    via: "канал {name}",
+    noWords: "Своих слов нет — сообщение пришло вложением.",
     kinds: {
       intake: "Сырой запрос",
       extract: "Прочитано из вложения",

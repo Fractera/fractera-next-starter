@@ -185,7 +185,25 @@ export async function TaskParseSection({
         // 🔒 ШИРОКОЕ СОДЕРЖИМОЕ ПРОКРУЧИВАЕТСЯ ВНУТРИ СВОЕГО КОНТЕЙНЕРА: текст
         // запроса приходит какой угодно длины, а страница не имеет права ехать
         // вбок целиком.
-        <div data-task-parse-table className="overflow-x-auto rounded-md border">
+        <div data-task-parse-table className="task-scroll overflow-x-auto rounded-md border">
+          {/* 🔒 ПОЛОСА ПРОКРУТКИ БЕЗ БОРДЮРА И БЕЗ КНОПОК, ТОНКАЯ — правка владельца.
+              🛑 ПОРЯДОК ПРАВИЛ ЗДЕСЬ ЗНАЧИМ (урок 57-10): увидев стандартные
+              `scrollbar-width`/`scrollbar-color`, Chrome игнорирует ВЕСЬ набор
+              `::-webkit-scrollbar-*` целиком — поэтому стандартные свойства
+              объявлены только там, где вебкитовых не существует. */}
+          <style>
+            {[
+              ".task-scroll::-webkit-scrollbar { height: 6px; }",
+              ".task-scroll::-webkit-scrollbar-track { background: transparent; border: 0; }",
+              ".task-scroll::-webkit-scrollbar-button { display: none; width: 0; height: 0; }",
+              ".task-scroll::-webkit-scrollbar-thumb { border: 0; border-radius: 9999px;" +
+                " background: color-mix(in oklab, currentColor 30%, transparent); }",
+              "@supports not selector(::-webkit-scrollbar) {",
+              "  .task-scroll { scrollbar-width: thin;" +
+                " scrollbar-color: color-mix(in oklab, currentColor 30%, transparent) transparent; }",
+              "}",
+            ].join("\n")}
+          </style>
           <table className="w-full min-w-[36rem] border-collapse text-[length:var(--fs-small)]">
             {/* 🛑 ШАПКА ОТДЕЛЕНА ОТ ТЕЛА ЦВЕТОМ, И ЭТО ПОЧИНКА, А НЕ УКРАШЕНИЕ.
                 ✗ строки разбора стояли ВНУТРИ `<thead>` — фон шапки красил их

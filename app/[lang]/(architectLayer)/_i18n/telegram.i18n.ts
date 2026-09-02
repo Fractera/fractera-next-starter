@@ -349,7 +349,8 @@ const EN: TelegramUi = {
     },
     logs: {
       title: "Logs",
-      hint: "What the bot has actually been doing — messages, answers, refusals.",
+      hint:
+        "The bot picks one of two modes. Fast and cheap, on the fact registry, for most simple tasks. Complex and recursively evolving, on an agent that grows skills, MCP, external APIs and AI browsers for research.",
     },
     settings: {
       title: "Settings",
@@ -662,7 +663,8 @@ const RU: TelegramUi = {
     },
     logs: {
       title: "Логи",
-      hint: "Что бот на самом деле делал — сообщения, ответы, отказы.",
+      hint:
+        "Бот выбирает один из двух режимов. Быстрый и дешёвый — на реестре признаков, для большинства простых задач. Сложный, рекурсивно эволюционирующий — на агенте, наращивающем навыки, MCP, внешние API и ИИ-браузеры для исследований.",
     },
     settings: {
       title: "Настройки",

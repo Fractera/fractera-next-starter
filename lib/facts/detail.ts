@@ -79,6 +79,14 @@ function extractsOf(fact: Fact): string[] {
   if (fact.lifecycle?.statuses.length) {
     out.push(`состояния: ${fact.lifecycle.statuses.join(" → ")}`)
   }
+  // 🛑 ОБЪЯВЛЕННОЕ, НО НЕ ИСПОЛНЯЕМОЕ НАЗЫВАЕТСЯ ТАКИМ ПРЯМО (83-7). `schedules`
+  // объявлен вторым слоем, а календарь сегодня пуст — напоминания не доезжают
+  // (шаг 90). Показать «порождает напоминание» без оговорки значило бы обещать
+  // человеку то, чего он не получит, и он проверит это в свой худший день.
+  if (fact.schedules && fact.schedules !== "none") {
+    const what = fact.schedules === "reminder" ? "напоминание" : "проверку по таймеру"
+    out.push(`порождает ${what} — объявлено, исполнение приезжает шагом 86`)
+  }
   return out
 }
 
@@ -99,8 +107,28 @@ function toolsOf(fact: Fact): string[] {
   }
   const out = [said[fn.kind] ?? fn.kind]
   if (fn.pick) out.push(`берётся поле ответа: ${fn.pick}`)
+  // Несколько полей одним ответом (83-3): показываем ПОИМЁННО, а не числом.
+  if (fn.picks && Object.keys(fn.picks).length) {
+    out.push(
+      `берутся поля: ${Object.entries(fn.picks).map(([slot, path]) => `${slot} ← ${path}`).join(" · ")}`,
+    )
+  }
   out.push(fn.onFail === "note" ? "при отказе — пометка человеку" : "при отказе — тишина и запись причины")
   return out
+}
+
+/**
+ * Какой моделью извлекается (83-7).
+ *
+ * 🔒 ЦЕНА ПОКАЗЫВАЕТСЯ ЧЕЛОВЕКУ ТАМ ЖЕ, ГДЕ СПОСОБНОСТЬ. Слово владельца о
+ * дорогих сценариях: «соглашаемся с тем что это дорогой кейс по Token» —
+ * согласие на ИЗВЕСТНУЮ цену. Скрыв признак, который зовёт сильную модель на
+ * каждом сообщении, мы получили бы согласие на неизвестную.
+ */
+function modelOf(fact: Fact): string {
+  return fact.model === "strong"
+    ? "сильная модель — дороже, объявлено в записи признака"
+    : "дешёвая модель (умолчание)"
 }
 
 /** Какой код за этим стоит. */
@@ -125,7 +153,7 @@ export function factDetail(fact: Fact): FactDetail {
   return {
     example: fact.example ?? "",
     extracts: extractsOf(fact),
-    tools: toolsOf(fact),
+    tools: [...toolsOf(fact), modelOf(fact)],
     functions: functionsOf(fact),
     lost: fact.lost ?? "",
   }

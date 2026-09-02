@@ -17,6 +17,7 @@ import {
 import type { FactLifecycle, FactProduces } from "@/lib/facts/types"
 import { FACT_FN_KINDS } from "@/lib/facts/fn-types"
 import { allowedHosts } from "@/lib/facts/run-fn"
+import { checkChain } from "@/lib/facts/derived"
 
 /** Второй слой записи, разобранный и проверенный. Ошибка — названное поле. */
 type SecondLayer = {
@@ -220,6 +221,32 @@ export async function POST(req: NextRequest) {
   // Второй слой (83-1). Проверяется ДО записи, как и всё остальное.
   const second = readSecondLayer(body)
   if ("error" in second) return no(second.error)
+
+  // 🔒 ЦЕПОЧКА ПРОИЗВОДНОСТИ ПРОВЕРЯЕТСЯ ЗДЕСЬ, А НЕ ПРИ РАЗБОРЕ СООБЩЕНИЯ (83-4).
+  // Кольцо `a → b → a` описывают один раз и зацикливаются на каждом сообщении;
+  // отказ на экране заведения дешевле молчаливого зацикливания в проде.
+  // 🔒 «ИСТОЧНИКА ЕЩЁ НЕТ» ЗАПИСИ НЕ МЕШАЕТ: описать производный признак раньше
+  // источника — законный порядок работы, и запрещать его значило бы навязать
+  // человеку последовательность, которой он не обязан.
+  if (second.derivedFrom) {
+    const probe = {
+      key,
+      level: level as never,
+      title,
+      description: "",
+      valueType: valueType as never,
+      howToFind,
+      storedIn: "",
+      onMissing: onMissing as never,
+      builtin: false,
+      enabled: true,
+      derivedFrom: second.derivedFrom,
+    }
+    const chain = checkChain(probe, await allFacts())
+    if (!chain.ok && chain.reason !== "missing-source") {
+      return no(`bad-chain-${chain.reason}`)
+    }
+  }
 
   const added = await addFact({
     key,

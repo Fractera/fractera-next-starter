@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { noteFacets } from "@/lib/facts/candidates"
 import { collectFactValues } from "@/lib/facts/collect"
 import { db } from "@/lib/db"
@@ -75,6 +77,27 @@ function envelope(
   // Перевод строки кодом, а не escape-последовательностью: этот файл не раз
   // проезжал через цепочку оболочек, и каждая съедала обратный слэш по-своему.
   return lines.join(String.fromCharCode(10))
+}
+
+/**
+ * Пауза разбора в режиме отладки.
+ *
+ * 🛑 ЧИТАЕТСЯ ИЗ ФАЙЛА, А НЕ ИЗ ОКРУЖЕНИЯ ПРОЦЕССА, И ЭТО ИЗМЕРЕНО: приложение
+ * собрано отдельным сервером и `.env.local` в `process.env` НЕ подтягивает —
+ * переменная стояла в файле, а в `/proc/<pid>/environ` её не было вовсе.
+ * Тот же приём, что у ключа OpenAI (`lib/openai-key.ts`): читаем файл.
+ *
+ * 🔒 БЕЗ КЭША: строка правится руками между сообщениями, и закэшированное
+ * значение означало бы перезапуск ради галочки.
+ */
+function parsePaused(): boolean {
+  if (process.env.TASK_DEBUG_PAUSE === "1") return true
+  try {
+    const raw = readFileSync(join(process.cwd(), ".env.local"), "utf8")
+    return /^TASK_DEBUG_PAUSE=1s*$/m.test(raw)
+  } catch {
+    return false
+  }
 }
 
 export type Incoming = {
@@ -300,7 +323,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   //
   // 🔒 СООБЩЕНИЕ ПРИ ЭТОМ ПРИНЯТО И ЗАПИСАНО, а первая строка разбора уже лежит:
   // на паузе видно ровно то, что система знает БЕЗ модели.
-  if (process.env.TASK_DEBUG_PAUSE === "1") {
+  if (parsePaused()) {
     notes.push("paused")
     return {
       messageId, duplicate: false, summary: "", kind: null, payload: null,

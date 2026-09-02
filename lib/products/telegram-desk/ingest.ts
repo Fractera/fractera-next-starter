@@ -427,11 +427,16 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       if (stepLimit() > 3) {
         const prev = (await db
           .prepare(
+            // 🛑 ЗНАЧЕНИЯ ИДУТ ПАРАМЕТРАМИ, А НЕ ЛИТЕРАЛАМИ В ТЕКСТЕ ЗАПРОСА.
+            // ✗ оплачено сегодня: кавычки вокруг `'in'` и `''` съела цепочка
+            // оболочек, которой я правил файл, — в базу уехало `direction = in`,
+            // и слой данных ответил `near "in": syntax error`. Параметр такой
+            // порчи не переживает: он либо есть, либо запрос не собирается.
             `SELECT id, at, text FROM tgdesk_messages
-              WHERE chat_id = ? AND direction = in AND id <> ? AND text <> 
+              WHERE chat_id = ? AND direction = ? AND id <> ? AND text <> ?
               ORDER BY id DESC LIMIT 10`,
           )
-          .all(msg.chatId, messageId)) as unknown as Candidate[]
+          .all(msg.chatId, "in", messageId, "")) as unknown as Candidate[]
 
         const link = await findLink(msg.text, prev, timezoneOf())
         rows.push(linkRow(link, prev, rows.length + 1))

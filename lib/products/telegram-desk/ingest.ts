@@ -8,6 +8,7 @@ import { takeFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
 import { waitingLabel } from "./calendar"
 import { timezoneOf } from "./timezone"
+import { arrivalKindOf } from "./arrival-kinds"
 import { openTask } from "@/lib/task/intake"
 import { appendRows } from "@/lib/task/store"
 import { projectRequest } from "@/lib/task/agent"
@@ -91,6 +92,16 @@ export type Incoming = {
   fileId?: string
   /** От кого переслано. Пусто — человек написал это сам. */
   forwardedFrom?: string
+  /**
+   * Карточка контакта, если человек поделился ею одним касанием (81-10).
+   *
+   * 🛑 СЕГОДНЯ СЛУЖБА КАНАЛОВ ЕЁ НЕ ПРИСЫЛАЕТ — измерено чтением её кода: она не
+   * читает `msg.contact` и отбрасывает сообщение без текста и файла целиком.
+   * Поле объявлено здесь, чтобы правка была ровно одна и в одном месте — в
+   * службе; иначе к моменту, когда контакт поедет, окажется, что принять его
+   * некому.
+   */
+  contact?: { name?: string; phone?: string }
 }
 
 export type IngestResult = {
@@ -245,7 +256,11 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
     )
     .run(
       unix(at), at, msg.chatId, msg.who, msg.externalId,
-      msg.kind === "voice" ? "voice" : "text",
+      // 🔒 РОД ПРИШЕДШЕГО СЧИТАЕТСЯ ОДНИМ МЕСТОМ (81-10). Здесь стояло
+      // `msg.kind === "voice" ? "voice" : "text"` — и оно СХЛОПЫВАЛО в текст всё
+      // остальное: фотографию, видео, документ, точку на карте. Снаружи это
+      // выглядело как «система знает два формата», хотя служба присылала пять.
+      arrivalKindOf(msg),
       msg.text, msg.lat ?? null, msg.lon ?? null, msg.objectType ?? null,
     )
   const born = (await db

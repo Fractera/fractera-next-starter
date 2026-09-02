@@ -195,6 +195,16 @@ export async function POST(req: NextRequest) {
     fileId: fileId || undefined,
     objectType: body.objectType ? String(body.objectType) : undefined,
     forwardedFrom: body.forwardedFrom ? String(body.forwardedFrom) : undefined,
+    // 🔒 КОНТАКТ ПРОПУСКАЕТСЯ НАСКВОЗЬ, ХОТЯ СЛУЖБА ЕГО ЕЩЁ НЕ ШЛЁТ (81-10):
+    // дверь готова принять его в тот день, когда служба научится присылать, и
+    // правка тогда будет РОВНО ОДНА. Форма проверена здесь, а не принята на веру.
+    contact:
+      body.contact && typeof body.contact === "object"
+        ? {
+            name: String((body.contact as Record<string, unknown>).name ?? "") || undefined,
+            phone: String((body.contact as Record<string, unknown>).phone ?? "") || undefined,
+          }
+        : undefined,
     lat: typeof body.lat === "number" ? body.lat : undefined,
     lon: typeof body.lon === "number" ? body.lon : undefined,
   })

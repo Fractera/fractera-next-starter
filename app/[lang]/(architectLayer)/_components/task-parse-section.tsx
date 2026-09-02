@@ -67,7 +67,6 @@ function Row({
   kind,
   fact,
   what,
-  payload,
   source,
   instruction,
   action,
@@ -81,7 +80,6 @@ function Row({
   kind: string
   fact?: string
   what: string
-  payload?: Record<string, unknown>
   source: string
   instruction?: string
   action?: string
@@ -213,8 +211,9 @@ export async function TaskParseSection({
                   kind={ui.parse.kinds[row.kind]}
                   fact={row.fact}
                   what={row.phrase}
-                  payload={row.payload}
                   source={ui.parse.sources[row.source]}
+                  instruction={row.instruction}
+                  action={row.next}
                   confidence={row.confidence}
                   at={row.at}
                   mark={{ "data-task-row": row.kind, "data-task-fact": row.fact }}

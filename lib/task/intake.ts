@@ -35,6 +35,8 @@ function asChannel(raw: string | undefined): RequestChannel | null {
 export async function openTask(input: {
   text: string
   channel: string
+  /** Кто прислал: имя в канале. Инструмент первой строки — `Telegram: @имя`. */
+  who?: string
   messageId?: number
   hasAttachment?: boolean
 }): Promise<{ ok: boolean; error?: string; at?: string }> {
@@ -47,6 +49,7 @@ export async function openTask(input: {
       // владельца о миллисекундах через него неисполнимо — измерено в 91-2.
       at: nowMs(),
       channel,
+      who: input.who,
       text: input.text,
       messageId: input.messageId,
       hasAttachment: Boolean(input.hasAttachment),

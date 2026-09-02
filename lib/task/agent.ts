@@ -1,4 +1,6 @@
 import { ToolLoopAgent, isStepCount, type StopCondition, type ToolSet, type LanguageModel } from "ai"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { createOpenAI } from "@ai-sdk/openai"
 import { activeFacts } from "@/lib/facts/registry"
 import { openAiKey } from "@/lib/openai-key"
@@ -40,6 +42,23 @@ export function taskModelName(kind: "cheap" | "strong"): string {
 
 function model(kind: "cheap" | "strong"): LanguageModel {
   return createOpenAI({ apiKey: openAiKey() })(taskModelName(kind))
+}
+
+/**
+ * До какого шага доводить разбор. Пусто — до конца.
+ *
+ * 🔒 ЧИТАЕТСЯ ИЗ ФАЙЛА ПО ТОЙ ЖЕ ПРИЧИНЕ, ЧТО И ПАУЗА: приложение собрано
+ * отдельным сервером и `.env.local` в окружение процесса не подтягивает.
+ */
+export function stepLimit(): number {
+  const raw = process.env.TASK_DEBUG_STEPS
+  if (raw) return Number(raw) || 99
+  try {
+    const m = readFileSync(join(process.cwd(), ".env.local"), "utf8").match(/^TASK_DEBUG_STEPS=(d+)s*$/m)
+    return m ? Number(m[1]) : 99
+  } catch {
+    return 99
+  }
 }
 
 /** Потолок расхода: считается по всем шагам разом, а не по последнему. */
@@ -152,7 +171,14 @@ export async function runProjection(
  * Гонять весь разбор сильной моделью из-за одного признака значило бы сделать
  * дорогим каждое сообщение — согласие давали не на это.
  */
-export async function projectRequest(request: string, when: When = {}): Promise<TaskRow[]> {
+/** Короткое имя того, чем спрашивали. Для колонки «Инструкция». */
+const INSTRUCTION_LABEL = "Спросить у инструментов реестра, что из запроса им принадлежит"
+
+export async function projectRequest(
+  request: string,
+  when: When = {},
+  from = "",
+): Promise<TaskRow[]> {
   if (!request.trim()) return []
 
   const facts = toolableFacts(await activeFacts())
@@ -176,21 +202,39 @@ export async function projectRequest(request: string, when: When = {}): Promise<
   // 🔒 СТРОКА ПЛАНА ЕСТЬ ВСЕГДА, ДАЖЕ КОГДА НАХОДОК НОЛЬ. «Признаков не
   // нашлось» — законный исход и содержательный ответ (закон владельца,
   // сформулированный отрицанием); молчание на его месте читается как поломка.
+  // 🔒 ВТОРАЯ СТРОКА ТАБЛИЦЫ — ПОИСК СООТВЕТСТВИЯ РЕЕСТРУ, И ЕЁ ФОРМУ ЗАДАЛ
+  // ВЛАДЕЛЕЦ ДОСЛОВНО: «сообщение от {инструмент строки 1} + {сообщение},
+  // соответствует следующим элементам из реестра признаков: {перечисление}».
+  // Строка есть ВСЕГДА — даже когда не нашлось ничего: «ничего не подошло» есть
+  // содержательный ответ, а пустое место читается как поломка.
+  const found = [...new Set(findings.map(f => f.fact))]
   rows.push({
     id: 1,
     kind: "plan",
     phrase: failed
       ? `Разбор не выполнен: ${failed}`
-      : findings.length
-        ? `Признаков в запросе: ${findings.length} из ${offered} предложенных.`
-        : `Признаков не нашлось: ни один из ${offered} к этому запросу не подошёл.`,
+      : `Сообщение от ${from} «${request}» соответствует следующим элементам из реестра признаков: ${found.length ? found.join(", ") : "ни одному из " + offered}.`,
     source: "model",
+    instruction: INSTRUCTION_LABEL,
+    // 🔒 СЛЕДУЮЩЕЕ ДЕЙСТВИЕ ЕСТЬ ВСЕГДА, И ПЕРВОЕ В НЁМ — СВЯЗЬ С ДРУГИМ
+    // СООБЩЕНИЕМ. Слово владельца: «всегда во всех случаях будет действие,
+    // которое исследует, было ли в тексте прямое или косвенное указание на то,
+    // что это сообщение нужно исследовать в контексте с другим». Остальное
+    // зависит от того, что нашлось.
+    next: found.length
+      ? `Проверить связь с другим сообщением; извлечь значения признаков: ${found.join(", ")}.`
+      : "Проверить связь с другим сообщением.",
     at,
   })
 
   // 🔒 ПО СТРОКЕ НА НАХОДКУ, А НЕ НА ПРИЗНАК. Признак, ничего не взявший, строки
   // не получает: таблица показывает, что НАЙДЕНО, а не что существует, — для
   // второго есть реестр.
+  // 🔒 ШАГОВЫЙ ПРЕДЕЛ ОТЛАДКИ. Владелец идёт по разбору шаг за шагом и хочет
+  // видеть, как строки появляются по одной. `TASK_DEBUG_STEPS=2` останавливает
+  // разбор сразу после строки соответствия реестру.
+  if (stepLimit() <= 2) return rows
+
   findings.forEach((f, i) => {
     rows.push({
       id: rows.length + 1,

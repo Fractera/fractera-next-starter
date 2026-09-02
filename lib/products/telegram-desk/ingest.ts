@@ -310,6 +310,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   const opened = await openTask({
     text: msg.text,
     channel: "telegram",
+    who: msg.who,
     messageId,
     hasAttachment: Boolean(msg.fileId),
   })
@@ -388,10 +389,16 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       // день: измерено — на «вчера» она вернула дату 2023 года. Момент берётся у
       // САМОГО СООБЩЕНИЯ, а не у часов сервера: разбор мог задержаться, а «вчера»
       // считается от того, когда человек это сказал. Пояс — настройка продукта.
-      const rows = await projectRequest(forFacts, {
-        now: new Date(Date.parse(at) || Date.now()),
-        timeZone: timezoneOf(),
-      })
+      const rows = await projectRequest(
+        forFacts,
+        {
+          now: new Date(Date.parse(at) || Date.now()),
+          timeZone: timezoneOf(),
+        },
+        // «От кого» для строки соответствия реестру: канал и человек, ровно как
+        // в первой строке таблицы.
+        `Telegram: ${msg.who || msg.chatId}`,
+      )
       // `done: true` — разбор на сегодня кончился: других стадий, дописывающих
       // строки, пока не существует. Появятся (91-5…91-9) — отметку поставит последняя.
       const put = await appendRows(rows, { intakeAt: opened.at, done: true })

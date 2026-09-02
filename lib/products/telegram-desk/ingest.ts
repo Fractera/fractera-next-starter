@@ -15,6 +15,7 @@ import { openTask } from "@/lib/task/intake"
 import { appendRows } from "@/lib/task/store"
 import { projectRequest, stepLimit } from "@/lib/task/agent"
 import { findLink, linkRow, type Candidate } from "@/lib/task/link"
+import { INBOX_STORE } from "@/lib/task/actors"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -390,6 +391,23 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       // день: измерено — на «вчера» она вернула дату 2023 года. Момент берётся у
       // САМОГО СООБЩЕНИЯ, а не у часов сервера: разбор мог задержаться, а «вчера»
       // считается от того, когда человек это сказал. Пояс — настройка продукта.
+      // 🔒 ТРЕТЬЕ ОБЯЗАТЕЛЬНОЕ ДЕЙСТВИЕ — СОХРАНЕНИЕ СООБЩЕНИЯ (правка владельца
+      // 2026-09-02). Оно уже произошло выше, ДО всякой модели; здесь строка лишь
+      // называет его вслух: сообщение не имеет права потеряться из-за того, что
+      // разбор не удался, и в таблице это видно отдельной строкой, а не домыслом.
+      const savedRow = {
+        id: 1,
+        kind: "store" as const,
+        phrase: `Сообщение сохранено в таблице сообщений проекта: #${messageId}, направление «входящее», род «${arrivalKindOf(msg)}».`,
+        source: "table" as const,
+        tool: INBOX_STORE.name,
+        toolWhat: INBOX_STORE.what,
+        instruction: INBOX_STORE.ownInstruction,
+        next: "Узнать, каким элементам реестра признаков соответствует сообщение.",
+        payload: { messageId, direction: "in" },
+        at: new Date().toISOString(),
+      }
+
       const rows = await projectRequest(
         forFacts,
         {
@@ -419,7 +437,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
         rows.push(linkRow(link, prev, rows.length + 1))
       }
 
-      const put = await appendRows(rows, { intakeAt: opened.at, done: true })
+      const put = await appendRows([savedRow, ...rows], { intakeAt: opened.at, done: true })
       if (!put.ok) notes.push(`task-rows:${put.error}`)
     } catch (e) {
       // 🛑 РАЗБОР ДЛЯ ЭКРАНА НЕ ИМЕЕТ ПРАВА УРОНИТЬ ПРИЁМ СООБЩЕНИЯ. Экран —

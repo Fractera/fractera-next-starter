@@ -92,7 +92,7 @@ export type TelegramUi = {
     via: string
     noWords: string
     /** Имена пяти родов строки. */
-    kinds: Record<'intake' | 'match' | 'evolve' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
+    kinds: Record<'intake' | 'store' | 'match' | 'evolve' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
     /**
      * Чем строка добыта — по слову на источник.
      *
@@ -417,6 +417,7 @@ const EN: TelegramUi = {
     noWords: "No words of their own — the message arrived as an attachment.",
     kinds: {
       intake: "Raw request",
+      store: "Message saved",
       match: "Fact lookup",
       evolve: "Registry evolution",
       extract: "Read from attachment",
@@ -735,6 +736,7 @@ const RU: TelegramUi = {
     noWords: "Своих слов нет — сообщение пришло вложением.",
     kinds: {
       intake: "Сырой запрос",
+      store: "Сохранение сообщения",
       match: "Поиск признаков",
       evolve: "Эволюция реестра признаков",
       extract: "Прочитано из вложения",

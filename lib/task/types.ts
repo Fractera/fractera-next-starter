@@ -25,7 +25,7 @@
 //   resolve — на что ссылается сообщение: из скольких выбрано и почему это.
 //   plan    — какие признаки реестра в этом запросе есть.
 //   reveal  — по строке на признак: значения и куда они лягут.
-export const TASK_ROW_KINDS = ["intake", "match", "evolve", "extract", "resolve", "plan", "reveal"] as const
+export const TASK_ROW_KINDS = ["intake", "store", "match", "evolve", "extract", "resolve", "plan", "reveal"] as const
 export type TaskRowKind = (typeof TASK_ROW_KINDS)[number]
 
 /**

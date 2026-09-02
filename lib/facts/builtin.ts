@@ -283,7 +283,7 @@ function destinationFacts(): Fact[] {
     level: "destination" as const,
     title: said[key]?.title ?? key,
     description: said[key]?.description ?? "",
-    valueType: "link" as const,
+    valueType: "relation" as const,
     howToFind: "Отметка ставится обработкой, когда отправка прошла; отказ пишется в заметки сообщения.",
     storedIn: "tgdesk_artifacts.kind",
     onMissing: "silent" as const,
@@ -306,12 +306,12 @@ function destinationFacts(): Fact[] {
 function fieldFacts(): Fact[] {
   return [
     {
-      key: "field.link",
+      key: "field.relation",
       level: "field",
       title: "Связь с другим сообщением",
       description:
         "Сообщения одного разговора, идущие подряд. Человек говорит «эту фотографию», «то место» — и без связи вторая фраза теряет предмет первой.",
-      valueType: "link",
+      valueType: "relation",
       howToFind:
         "Сегодня — по времени: соседнее сообщение того же чата в пределах 180 секунд. По смыслу пока не ищется.",
       storedIn: "tgdesk_messages.bundle",

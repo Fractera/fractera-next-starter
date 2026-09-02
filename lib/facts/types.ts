@@ -38,9 +38,14 @@ export type FactLevel = (typeof FACT_LEVELS)[number]
 
 /** Форма значения. Решает, как признак хранится и как его показывать. */
 //   flag · text · number · money · date · geo · link · list
-//   `link` — ссылка на другое сообщение: связь, о которой владелец сказал
+//   `relation` — СВЯЗЬ с другим сообщением, а не ссылка на ресурс.
+//   🔒 ИМЯ ИСПРАВЛЕНО 2026-09-02 ПО СЛОВУ ВЛАДЕЛЬЦА: «ссылка ассоциируется с
+//   размещением ссылки на какой-либо ресурс, а здесь скорее зависимость или
+//   связь». Слово `link` уже занято РОДОМ ПРИШЕДШЕГО — сообщением, которое ЕСТЬ
+//   адрес; два разных предмета под одним словом путались бы вечно.
+//   Прежнее имя `link` отменено:
 //   «всегда и у всех по умолчанию».
-export const FACT_VALUE_TYPES = ["flag", "text", "number", "money", "date", "geo", "link", "list"] as const
+export const FACT_VALUE_TYPES = ["flag", "text", "number", "money", "date", "geo", "relation", "list"] as const
 export type FactValueType = (typeof FACT_VALUE_TYPES)[number]
 
 /**

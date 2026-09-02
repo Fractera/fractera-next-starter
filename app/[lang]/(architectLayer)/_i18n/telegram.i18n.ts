@@ -136,7 +136,7 @@ export type TelegramUi = {
     howToFindHint: string
     onMissingLabel: string
     onMissingWords: Record<'silent' | 'ask' | 'join', string>
-    valueTypes: Record<'flag' | 'text' | 'number' | 'money' | 'date' | 'geo' | 'link' | 'list', string>
+    valueTypes: Record<'flag' | 'text' | 'number' | 'money' | 'date' | 'geo' | 'relation' | 'list', string>
     submit: string
     submitting: string
     /** `{table}` — имя созданной таблицы. */
@@ -472,7 +472,7 @@ const EN: TelegramUi = {
     },
     valueTypes: {
       flag: "Yes or no", text: "Text", number: "Number", money: "Money",
-      date: "Date", geo: "Coordinates", link: "Link to a message", list: "List",
+      date: "Date", geo: "Coordinates", relation: "Link between messages", list: "List",
     },
     submit: "Save",
     submitting: "Saving…",
@@ -793,7 +793,7 @@ const RU: TelegramUi = {
     },
     valueTypes: {
       flag: "Да или нет", text: "Текст", number: "Число", money: "Деньги",
-      date: "Дата", geo: "Координаты", link: "Ссылка на сообщение", list: "Список",
+      date: "Дата", geo: "Координаты", relation: "Связь между сообщениями", list: "Список",
     },
     submit: "Сохранить",
     submitting: "Сохраняем…",

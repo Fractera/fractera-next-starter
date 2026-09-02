@@ -313,6 +313,26 @@ const SCHEMA = `
     last_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS fact_candidates_ripe ON fact_candidates (dismissed, offered, seen);
+
+  -- ЛЮДИ, О КОТОРЫХ ИДЁТ РЕЧЬ (83-5).
+  --
+  -- 🔒 БЕЗ ПРОДУКТОВОГО ПРЕФИКСА, как и реестр признаков: люди понадобятся
+  -- любому продукту, а префикс tgdesk_ запер бы их внутри бота.
+  --
+  -- 🔒 ПОЛЕ confirmed ОТДЕЛЯЕТ ПРЕДЛОЖЕННОЕ ОТ ПОДТВЕРЖДЁННОГО. Опознание имени
+  -- предлагает, а не решает: слияние двух людей в одного НЕОБРАТИМО портит
+  -- данные, а разделение одного на троих делает вопрос «как дела у Миши»
+  -- бессмысленным. Тот же закон, что у кандидатов в реестр.
+  --
+  -- 🔒 МИША ТОЛЬКО УПОМИНАЕТСЯ (решение владельца 2026-09-01): он не пишет боту.
+  -- Здесь люди, О КОТОРЫХ говорят, а не те, КТО говорит. Учётные записи живут
+  -- своей жизнью и своей группой прав.
+  CREATE TABLE IF NOT EXISTS fact_subjects (
+    key        TEXT PRIMARY KEY NOT NULL,
+    title      TEXT NOT NULL,
+    confirmed  INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
 `
 
 // The architecture three streams (projects / pages / endpoints) and their tasks

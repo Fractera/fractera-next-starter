@@ -443,7 +443,7 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       // 🛑 РАЗБОР ДЛЯ ЭКРАНА НЕ ИМЕЕТ ПРАВА УРОНИТЬ ПРИЁМ СООБЩЕНИЯ. Экран —
       // наблюдатель: человек обязан получить ответ бота даже тогда, когда
       // проекция не сложилась.
-      notes.push(`task-rows:${e instanceof Error ? e.name : "failed"}`)
+      notes.push(`task-rows:${e instanceof Error ? e.name + ": " + e.message.slice(0, 160) : "failed"}`)
     }
   }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send, KeyRound } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send, KeyRound, Bot } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -10,9 +10,9 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi, chatLinkUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
-import { adminUrlFromSite } from "@/lib/site-urls";
+import { adminUrlFromSite, chatUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 import { CookieSettingsButton } from "@/components/menu/footer/cookie-settings-button.client";
@@ -128,6 +128,7 @@ export function FooterMenu({ lang }: { lang: string }) {
   // Адрес панели выводится из адреса сайта, а не из окна браузера: подвал —
   // серверная разметка, и ссылка обязана быть в статическом HTML.
   const adminUrl = adminUrlFromSite(cfg.url);
+  const chatUrl = chatUrlFromSite(cfg.url);
 
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
@@ -319,6 +320,27 @@ export function FooterMenu({ lang }: { lang: string }) {
               <Send className="hidden size-3.5 sm:inline-block" />
               {telegramLinkUi(lang).footer}
             </Link>
+
+            {/* 🔒 ЧАТ С ИИ-АГЕНТОМ — СПРАВА ОТ TELEGRAM-БОТА (правка владельца
+                2026-09-02). Это не раздел слоя, а ОТДЕЛЬНАЯ СЛУЖБА на своём
+                адресе: чат живёт на `chat.<домен>` (или `:3600` по IP), поэтому
+                здесь обычная ссылка наружу, а не `Link` на свой маршрут — тем же
+                правилом, что и вход в панель управления.
+
+                🛑 ПУСТОЙ АДРЕС — ЗАКОННОЕ СОСТОЯНИЕ СВЕЖЕГО СЕРВЕРА: адрес
+                выводится из адреса сайта, а он на новой машине не заполнен.
+                Кнопка тогда не показывается — выдуманный адрес хуже
+                отсутствующего, он ведёт человека в никуда. */}
+            {chatUrl && (
+              <a
+                href={chatUrl}
+                rel="nofollow noopener noreferrer"
+                className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+              >
+                <Bot className="hidden size-3.5 sm:inline-block" />
+                {chatLinkUi(lang).footer}
+              </a>
+            )}
 
             {/* 🔒 АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ (владелец 2026-08-31): «сюда из
                 административной панели мы вытащим настройку авторизации… первая

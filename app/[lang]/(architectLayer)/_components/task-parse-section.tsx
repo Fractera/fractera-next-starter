@@ -1,6 +1,7 @@
 import { SectionIntro } from "./section-intro.client"
 import { TaskTime } from "./task-time.client"
 import { TaskCell } from "./task-cell.client"
+import { TaskTool } from "./task-tool.client"
 import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { readTask } from "@/lib/task/store"
 import type { RequestChannel, TaskRow } from "@/lib/task/types"
@@ -68,6 +69,7 @@ function Row({
   fact,
   what,
   source,
+  toolWhat,
   instruction,
   action,
   confidence,
@@ -81,6 +83,7 @@ function Row({
   fact?: string
   what: string
   source: string
+  toolWhat?: string
   instruction?: string
   action?: string
   confidence?: number
@@ -105,7 +108,7 @@ function Row({
         <TaskCell text={what} title={cols.what} ui={dialogUi} viewAll={cols.viewAll} />
       </td>
       <td className={`${CELL} ${stripe(3)} whitespace-nowrap text-muted-foreground`}>
-        {source}
+        <TaskTool name={source} what={toolWhat} />
         {typeof confidence === "number" ? (
           <span className="ml-2">{Math.round(confidence * 100)}%</span>
         ) : null}
@@ -232,6 +235,7 @@ export async function TaskParseSection({
                 kind={ui.parse.kinds.intake}
                 what={task.intake.text || ui.parse.noWords}
                 source={`${channelName(task.intake.channel)}${task.intake.who ? ": " + task.intake.who : ""}`}
+                toolWhat={ui.parse.intakeToolWhat}
                 action={ui.parse.nextAfterIntake}
                 at={task.intake.at}
                 mark={{
@@ -251,7 +255,8 @@ export async function TaskParseSection({
                   kind={ui.parse.kinds[row.kind]}
                   fact={row.fact}
                   what={row.phrase}
-                  source={ui.parse.sources[row.source]}
+                  source={row.tool ?? ui.parse.sources[row.source]}
+                  toolWhat={row.toolWhat}
                   instruction={row.instruction}
                   action={row.next}
                   confidence={row.confidence}

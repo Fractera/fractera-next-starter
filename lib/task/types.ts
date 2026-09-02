@@ -25,7 +25,7 @@
 //   resolve — на что ссылается сообщение: из скольких выбрано и почему это.
 //   plan    — какие признаки реестра в этом запросе есть.
 //   reveal  — по строке на признак: значения и куда они лягут.
-export const TASK_ROW_KINDS = ["intake", "extract", "resolve", "plan", "reveal"] as const
+export const TASK_ROW_KINDS = ["intake", "match", "evolve", "extract", "resolve", "plan", "reveal"] as const
 export type TaskRowKind = (typeof TASK_ROW_KINDS)[number]
 
 /**
@@ -90,6 +90,10 @@ export type TaskRow = {
   /** Человеческая фраза, порождённая из начинки. Не приходит от модели отдельно. */
   phrase: string
   source: TaskSource
+  /** Имя инструмента, который эту строку сделал. Показывается в колонке. */
+  tool?: string
+  /** Что этот инструмент умеет — всплывает подсказкой под курсором. */
+  toolWhat?: string
   /**
    * Что будет сделано ДАЛЬШЕ по итогам этой строки.
    *

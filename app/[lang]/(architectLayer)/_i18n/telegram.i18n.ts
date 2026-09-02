@@ -76,6 +76,8 @@ export type TelegramUi = {
     viewAll: string
     /** Следующее действие первой строки — она всегда ведёт к анализу реестра. */
     nextAfterIntake: string
+    /** Что умеет «инструмент» первой строки — канал. */
+    intakeToolWhat: string
     colKind: string
     colWhat: string
     colSource: string
@@ -90,7 +92,7 @@ export type TelegramUi = {
     via: string
     noWords: string
     /** Имена пяти родов строки. */
-    kinds: Record<'intake' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
+    kinds: Record<'intake' | 'match' | 'evolve' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
     /**
      * Чем строка добыта — по слову на источник.
      *
@@ -407,6 +409,7 @@ const EN: TelegramUi = {
     colAction: "Next action",
     viewAll: "View all",
     nextAfterIntake: "Find out which registry facts this message matches.",
+    intakeToolWhat: "The channel the message arrived through, and the person who sent it. Nothing here is interpreted: this is the raw material everything else is checked against.",
     colWhat: "Output",
     colSource: "Tool",
     colTime: "Time",
@@ -414,8 +417,10 @@ const EN: TelegramUi = {
     noWords: "No words of their own — the message arrived as an attachment.",
     kinds: {
       intake: "Raw request",
+      match: "Fact lookup",
+      evolve: "Registry evolution",
       extract: "Read from attachment",
-      resolve: "Reference resolved",
+      resolve: "Link to previous message",
       plan: "Plan",
       reveal: "Fact",
     },
@@ -722,6 +727,7 @@ const RU: TelegramUi = {
     colAction: "Следующее действие",
     viewAll: "Посмотреть всё",
     nextAfterIntake: "Узнать, каким элементам реестра признаков соответствует сообщение.",
+    intakeToolWhat: "Канал, которым пришло сообщение, и человек, который его прислал. Здесь ничего не интерпретируется: это сырьё, с которым сверяют всё остальное.",
     colWhat: "Выход",
     colSource: "Инструмент",
     colTime: "Время",
@@ -729,8 +735,10 @@ const RU: TelegramUi = {
     noWords: "Своих слов нет — сообщение пришло вложением.",
     kinds: {
       intake: "Сырой запрос",
+      match: "Поиск признаков",
+      evolve: "Эволюция реестра признаков",
       extract: "Прочитано из вложения",
-      resolve: "Разрешена ссылка",
+      resolve: "Поиск связи с предыдущим сообщением",
       plan: "План",
       reveal: "Признак",
     },

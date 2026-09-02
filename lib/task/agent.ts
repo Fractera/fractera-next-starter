@@ -7,6 +7,7 @@ import { openAiKey } from "@/lib/openai-key"
 import { factTools, toolableFacts, type Finding } from "./tools"
 import { phraseOf } from "./phrase"
 import { fakeRow, fakeMeaningRegistry } from "./fakes"
+import { FACT_MATCHER } from "./actors"
 import { nowMs } from "./store"
 import type { Fact } from "@/lib/facts/types"
 import type { TaskRow } from "./types"
@@ -211,11 +212,13 @@ export async function projectRequest(
   const found = [...new Set(findings.map(f => f.fact))]
   rows.push({
     id: 1,
-    kind: "plan",
+    kind: "match",
     phrase: failed
       ? `Разбор не выполнен: ${failed}`
       : `Сообщение от ${from} «${request}» соответствует следующим элементам из реестра признаков: ${found.length ? found.join(", ") : "ни одному из " + offered}.`,
     source: "model",
+    tool: FACT_MATCHER.name,
+    toolWhat: FACT_MATCHER.what,
     instruction: INSTRUCTION_LABEL,
     // 🔒 СЛЕДУЮЩЕЕ ДЕЙСТВИЕ ЕСТЬ ВСЕГДА, И ПЕРВОЕ В НЁМ — СВЯЗЬ С ДРУГИМ
     // СООБЩЕНИЕМ. Слово владельца: «всегда во всех случаях будет действие,

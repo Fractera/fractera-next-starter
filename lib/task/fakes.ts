@@ -1,4 +1,5 @@
 import { nowMs } from "./store"
+import { HERMES, REGISTRY_EVOLUTION } from "./actors"
 import type { TaskRow } from "./types"
 
 // ДВА ФЕЙКОВЫХ ИНСТРУМЕНТА — ЗАГЛУШКИ ЗА НАСТОЯЩИМ КОНТРАКТОМ (решение владельца
@@ -24,6 +25,8 @@ import type { TaskRow } from "./types"
 export type FakeCall = {
   /** Имя инструмента, каким оно попадёт в колонку «Инструмент». */
   tool: string
+  /** Что инструмент умеет — подсказка под курсором. */
+  what: string
   /** Чем спросили — попадёт в колонку «Инструкция». */
   instruction: string
   /** Что ответил — попадёт в колонку «Выход». */
@@ -48,8 +51,9 @@ const FAKE_MARK = "⚠️ ответ ненастоящий (заглушка)"
  */
 export function fakeHermes(request: string): FakeCall {
   return {
-    tool: "Гермес (заглушка)",
-    instruction: "Передать задачу внешнему агенту: исследовать и вернуть результат",
+    tool: HERMES.name,
+    what: HERMES.what,
+    instruction: HERMES.ownInstruction,
     output: `${FAKE_MARK}. Задача принята внешним агентом. Он исследовал бы запрос «${request}» доступными ему средствами — навыки, MCP, внешние API, ИИ-браузер — и вернул бы техническое задание в pre-steps.`,
     next: "Создать техническое задание в pre-steps по результату работы агента.",
     status: 200,
@@ -73,10 +77,12 @@ export function fakeHermes(request: string): FakeCall {
  */
 export function fakeMeaningRegistry(request: string): FakeCall {
   return {
-    tool: "Эволюция реестра (заглушка)",
-    instruction: "Извлечь облако смыслов и увеличить счётчики; при пороге — предложить новый признак",
+    tool: REGISTRY_EVOLUTION.name,
+    what: REGISTRY_EVOLUTION.what,
+    instruction: REGISTRY_EVOLUTION.ownInstruction,
     output: `${FAKE_MARK}. Смыслы сообщения «${request}» приняты в накопитель. Настоящий инструмент выделил бы из него облако смыслов, увеличил счётчик каждому и при достижении порога предложил бы новый элемент реестра признаков с правилами и атрибутами.`,
-    next: "Ждать накопления счётчиков; при достижении порога — предложить новый признак реестра.",
+    // 🔒 «Автономное выполнение» — слово владельца: строка НЕ порождает следующую.
+    next: "Автономное выполнение",
     status: 200,
   }
 }
@@ -85,9 +91,11 @@ export function fakeMeaningRegistry(request: string): FakeCall {
 export function fakeRow(call: FakeCall, id: number): TaskRow {
   return {
     id,
-    kind: "plan",
+    kind: "evolve",
     phrase: call.output,
     source: "http",
+    tool: call.tool,
+    toolWhat: call.what,
     instruction: call.instruction,
     next: call.next,
     // 🔒 ИМЯ ИНСТРУМЕНТА ЕДЕТ НАЧИНКОЙ, А НЕ ПРЯЧЕТСЯ В ТЕКСТЕ: по нему строку

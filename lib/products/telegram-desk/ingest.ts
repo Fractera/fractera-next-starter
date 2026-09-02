@@ -13,7 +13,8 @@ import { timezoneOf } from "./timezone"
 import { arrivalKindOf } from "./arrival-kinds"
 import { openTask } from "@/lib/task/intake"
 import { appendRows } from "@/lib/task/store"
-import { projectRequest } from "@/lib/task/agent"
+import { projectRequest, stepLimit } from "@/lib/task/agent"
+import { findLink, linkRow, type Candidate } from "@/lib/task/link"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -94,7 +95,7 @@ function parsePaused(): boolean {
   if (process.env.TASK_DEBUG_PAUSE === "1") return true
   try {
     const raw = readFileSync(join(process.cwd(), ".env.local"), "utf8")
-    return /^TASK_DEBUG_PAUSE=1s*$/m.test(raw)
+    return /^TASK_DEBUG_PAUSE=1\s*$/m.test(raw)
   } catch {
     return false
   }
@@ -401,6 +402,23 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
       )
       // `done: true` — разбор на сегодня кончился: других стадий, дописывающих
       // строки, пока не существует. Появятся (91-5…91-9) — отметку поставит последняя.
+      // 🔒 ЧЕТВЁРТАЯ СТРОКА — ПОИСК СВЯЗИ С ПРЕДЫДУЩИМ СООБЩЕНИЕМ, И ОНА ЕСТЬ
+      // ВСЕГДА (правка владельца 2026-09-02). Инструмент настоящий: читает
+      // прежние сообщения этого разговора и решает, продолжает ли новое одно из
+      // них — по общему предмету, прямой ссылке словами и разрыву во времени.
+      if (stepLimit() > 3) {
+        const prev = (await db
+          .prepare(
+            `SELECT id, at, text FROM tgdesk_messages
+              WHERE chat_id = ? AND direction = in AND id <> ? AND text <> 
+              ORDER BY id DESC LIMIT 10`,
+          )
+          .all(msg.chatId, messageId)) as unknown as Candidate[]
+
+        const link = await findLink(msg.text, prev, timezoneOf())
+        rows.push(linkRow(link, prev, rows.length + 1))
+      }
+
       const put = await appendRows(rows, { intakeAt: opened.at, done: true })
       if (!put.ok) notes.push(`task-rows:${put.error}`)
     } catch (e) {

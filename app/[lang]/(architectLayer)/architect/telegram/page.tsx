@@ -80,8 +80,6 @@ export default async function TelegramPage({
         {/* 🔒 ПОЛОСА ОБНОВЛЕНИЯ СТОИТ НАД ЗАГОЛОВКОМ И ТОЛЬКО НА ВИДЕ РАЗБОРА:
             остальные виды не меняются сами, и полоса там обещала бы движение,
             которого нет. */}
-        {active === "logs" && view === "parse" ? <AutoRefresh /> : null}
-
         <PageHeader
           lang={lang}
           breadcrumbs={[{ label: t.layer }, { label: ui.title }, { label: ui.pages[active].title }]}
@@ -126,6 +124,12 @@ export default async function TelegramPage({
             data-telegram-linked={String(Boolean(channels.telegram?.chatId))}
             className="flex min-w-0 flex-1 flex-col gap-6"
           >
+            {/* 🔒 ПОЛОСА ОБНОВЛЕНИЯ ЖИВЁТ В ПРАВОМ КОНТЕЙНЕРЕ, ПЕРВОЙ СТРОКОЙ ПОД
+                ЛИДОМ РАЗДЕЛА, а не на общем холсте страницы — прямая правка
+                владельца. Она относится к таблице разбора, а не к сайту: на холсте
+                она обещала бы, что живая вся страница. */}
+            {active === "logs" && view === "parse" ? <AutoRefresh /> : null}
+
             {/* 🔒 «ОПИСАНИЕ» БЕРЁТ ОБЩУЮ СВЁРНУТУЮ СПРАВКУ, А НЕ СВОЮ. Тот же
                 островок, что у блоков и у инструментов; третий экземпляр разошёлся
                 бы с первыми двумя на первой правке текста.

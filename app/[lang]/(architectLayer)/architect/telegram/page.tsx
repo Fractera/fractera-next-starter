@@ -14,6 +14,8 @@ import {
 import { SectionIntro } from "../../_components/section-intro.client"
 import { TelegramSettings } from "../../_components/telegram-settings"
 import { TaskParseSection } from "../../_components/task-parse-section"
+import { AutoRefresh } from "../../_components/auto-refresh.client"
+import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { TelegramAbout } from "../../_components/telegram-about"
 import { InProgress } from "../../_components/in-progress"
 import { readChannels } from "@/lib/architect/channels"
@@ -75,6 +77,11 @@ export default async function TelegramPage({
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
+        {/* 🔒 ПОЛОСА ОБНОВЛЕНИЯ СТОИТ НАД ЗАГОЛОВКОМ И ТОЛЬКО НА ВИДЕ РАЗБОРА:
+            остальные виды не меняются сами, и полоса там обещала бы движение,
+            которого нет. */}
+        {active === "logs" && view === "parse" ? <AutoRefresh /> : null}
+
         <PageHeader
           lang={lang}
           breadcrumbs={[{ label: t.layer }, { label: ui.title }, { label: ui.pages[active].title }]}
@@ -228,7 +235,7 @@ export default async function TelegramPage({
                 не размен: её дом — вид `db` этого же ряда, объявлен и не построен. */}
             {active === "logs" &&
               (view === "parse" ? (
-                <TaskParseSection state={channels} ui={ui} />
+                <TaskParseSection state={channels} ui={ui} dialogUi={appDialogUi(lang)} />
               ) : (
                 <InProgress where={`logs-${view}`} label={ui.skeleton.views[view]} lead={ui.skeleton.inProgress} />
               ))}

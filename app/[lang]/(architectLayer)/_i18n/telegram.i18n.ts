@@ -72,6 +72,8 @@ export type TelegramUi = {
     colNo: string
     colInstruction: string
     colAction: string
+    /** Кнопка под однострочной ячейкой: открыть весь текст в окне. */
+    viewAll: string
     colKind: string
     colWhat: string
     colSource: string
@@ -400,6 +402,7 @@ const EN: TelegramUi = {
     colNo: "#",
     colInstruction: "Instruction",
     colAction: "Action",
+    viewAll: "View all",
     colWhat: "Output",
     colSource: "Tool",
     colTime: "Time",
@@ -712,6 +715,7 @@ const RU: TelegramUi = {
     colNo: "№",
     colInstruction: "Инструкция",
     colAction: "Экшен",
+    viewAll: "Посмотреть всё",
     colWhat: "Выход",
     colSource: "Инструмент",
     colTime: "Время",

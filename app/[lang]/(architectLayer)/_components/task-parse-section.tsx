@@ -1,6 +1,7 @@
-import type { ReactNode } from "react"
 import { SectionIntro } from "./section-intro.client"
 import { TaskTime } from "./task-time.client"
+import { TaskCell } from "./task-cell.client"
+import type { AppDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { readTask } from "@/lib/task/store"
 import type { RequestChannel, TaskRow } from "@/lib/task/types"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
@@ -73,11 +74,13 @@ function Row({
   confidence,
   at,
   mark,
+  dialogUi,
+  cols,
 }: {
   no: number
   kind: string
   fact?: string
-  what: ReactNode
+  what: string
   payload?: Record<string, unknown>
   source: string
   instruction?: string
@@ -85,6 +88,8 @@ function Row({
   confidence?: number
   at: string
   mark: Record<string, string | undefined>
+  dialogUi: AppDialogUi
+  cols: { what: string; instruction: string; action: string; viewAll: string }
 }) {
   return (
     <tr {...mark} className="border-t">
@@ -98,21 +103,8 @@ function Row({
             человек говорит о признаке его ключом — так он назван и в реестре. */}
         {fact ? <span className="ml-2 font-mono text-[0.85em] text-foreground">{fact}</span> : null}
       </td>
-      <td className={`${CELL} ${stripe(2)} whitespace-pre-wrap break-words text-foreground`}>
-        {what}
-        {/* 🔒 ПОД ФРАЗОЙ — РАЗОБРАННЫЕ ЗНАЧЕНИЯ, И ЭТО НЕ ОТЛАДКА (91-5).
-            Фраза читается человеком, начинка уезжает в таблицы; показать только
-            фразу значит скрыть ровно то, чем строка полезна дальше — а показать
-            только начинку значит вернуть технический мусор. */}
-        {payload && Object.keys(payload).length ? (
-          <div data-task-payload className="mt-1 font-mono text-[0.85em] text-muted-foreground">
-            {Object.entries(payload).map(([k, v]) => (
-              <span key={k} className="mr-3 whitespace-nowrap">
-                {k}={typeof v === "object" ? JSON.stringify(v) : String(v)}
-              </span>
-            ))}
-          </div>
-        ) : null}
+      <td className={`${CELL} ${stripe(2)} text-foreground`}>
+        <TaskCell text={what} title={cols.what} ui={dialogUi} viewAll={cols.viewAll} />
       </td>
       <td className={`${CELL} ${stripe(3)} whitespace-nowrap text-muted-foreground`}>
         {source}
@@ -123,9 +115,13 @@ function Row({
       {/* 🔒 КОЛОНКА «ИНСТРУКЦИЯ» ЗАВЕДЕНА ПУСТОЙ ПО СЛОВУ ВЛАДЕЛЬЦА: работать с
           ней будем следующим шагом. Пустая ячейка честнее отсутствующей колонки —
           видно, что место под инструкцию есть и оно пока не наполнено. */}
-      <td className={`${CELL} ${stripe(4)} whitespace-nowrap text-muted-foreground`}>{instruction ?? ""}</td>
+      <td className={`${CELL} ${stripe(4)} text-muted-foreground`}>
+        <TaskCell text={instruction ?? ""} title={cols.instruction} ui={dialogUi} viewAll={cols.viewAll} />
+      </td>
       {/* Экшен — предпоследняя колонка, по слову владельца. В первой записи пусто. */}
-      <td className={`${CELL} ${stripe(5)} whitespace-nowrap text-muted-foreground`}>{action ?? ""}</td>
+      <td className={`${CELL} ${stripe(5)} text-muted-foreground`}>
+        <TaskCell text={action ?? ""} title={cols.action} ui={dialogUi} viewAll={cols.viewAll} />
+      </td>
       <td className={`${CELL} ${stripe(6)} whitespace-nowrap font-mono text-muted-foreground`}>
         <TaskTime at={at} />
       </td>
@@ -133,7 +129,21 @@ function Row({
   )
 }
 
-export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui: TelegramUi }) {
+export async function TaskParseSection({
+  state,
+  ui,
+  dialogUi,
+}: {
+  state: ChannelsState
+  ui: TelegramUi
+  dialogUi: AppDialogUi
+}) {
+  const cols = {
+    what: ui.parse.colWhat,
+    instruction: ui.parse.colInstruction,
+    action: ui.parse.colAction,
+    viewAll: ui.parse.viewAll,
+  }
   // 🔒 ЧИТАЕТ САМ ВИД, А НЕ СТРАНИЦА. Объект разбора нужен ровно здесь; чтение
   // его на странице стоило бы запроса к слою данных на КАЖДОМ виде верхнего
   // ряда, включая те, которым он не нужен.
@@ -208,6 +218,8 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                   confidence={row.confidence}
                   at={row.at}
                   mark={{ "data-task-row": row.kind, "data-task-fact": row.fact }}
+                  dialogUi={dialogUi}
+                  cols={cols}
                 />
               ))}
 
@@ -229,6 +241,8 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                   "data-task-channel": task.intake.channel,
                   "data-task-at": task.intake.at,
                 }}
+                dialogUi={dialogUi}
+                cols={cols}
               />
             </tbody>
           </table>

@@ -33,6 +33,20 @@ to ask, and asks the wrong person.
 | **project** | the app on `3000`, the owner's repository | `/opt/fractera/app` — you work here |
 | **product** | one thing the server carries: a page, a shop, a company brain | a dossier in `PRODUCTS-CONFIG`; there can be several |
 
+🔒 **THE PROJECT NOW HAS A SECOND FRONT DOOR: THE AI CHAT ON `chat.<domain>` (:3600), added by
+platform step 96 (2026-09-02).** It is a platform service like auth or the panel — outside your
+`3000`, and you have nothing to change it with. Two things about it matter to you:
+
+1. **It is the SAME person.** The chat asks the same sign-in service `:3001` the site and the panel
+   ask. Someone signed in as architect on the site is an architect in the chat. There is no second
+   account system anywhere in this product — if you ever feel the need to build one, that is the
+   signal you are about to reinvent a platform layer.
+2. **Its files land in the project's media library**, the same warehouse the Telegram bot fills. "All
+   the files of this project" is one answer, not three lists in three services.
+
+The site's footer carries a button to it next to the Telegram-bot one. You do not build the chat, you
+do not proxy it, and you never copy its interface into `3000`.
+
 🔒 **Your work ends at the boundary of app `3000`.** Everything else is platform, and you have nothing
 to change it with: a deployment runs `rm -rf /opt/fractera` and installs it again. ✗ an edit there
 survives nothing and is saved nowhere.

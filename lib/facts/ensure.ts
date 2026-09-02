@@ -1,5 +1,5 @@
 import { dataFetch } from "@/lib/fractera/data-service"
-import { factTableName, factTableSql, needsTable, FACT_TABLE_COLUMNS } from "./table"
+import { factTableName, factTableSql, factTableAlters, needsTable, FACT_TABLE_COLUMNS } from "./table"
 import type { Fact } from "./types"
 
 // ТАБЛИЦЫ ПРИЗНАКОВ ПОРОЖДАЮТСЯ ИЗ РЕЕСТРА (81-2).
@@ -26,6 +26,15 @@ export type EnsureReport = {
   created: string[]
   /** Ключи, которым таблицу создать нельзя: имя не прошло белый список. */
   rejected: string[]
+  /**
+   * Что дописано в уже существующие таблицы лестницей колонок (83-2).
+   *
+   * 🔒 ОТЧЁТ ОТДЕЛЬНЫЙ ОТ `created`, И ЭТО НЕ ПЕДАНТИЗМ. «Создал таблицу» и
+   * «дописал колонку в чужую таблицу с данными» — разные по последствиям вещи:
+   * первое ничем не рискует, второе трогает то, где уже лежат значения. Слив их
+   * в один счётчик, мы потеряли бы возможность увидеть, что именно произошло.
+   */
+  upgraded: string[]
   failed: { table: string; error: string }[]
 }
 
@@ -66,7 +75,7 @@ export async function existingFactTables(): Promise<Set<string>> {
  * узнал бы об этом человек по пустоте через неделю.
  */
 export async function ensureFactTables(facts: Fact[]): Promise<EnsureReport> {
-  const report: EnsureReport = { checked: 0, created: [], rejected: [], failed: [] }
+  const report: EnsureReport = { checked: 0, created: [], rejected: [], upgraded: [], failed: [] }
   const have = await existingFactTables()
 
   for (const fact of facts) {
@@ -77,12 +86,43 @@ export async function ensureFactTables(facts: Fact[]): Promise<EnsureReport> {
       report.rejected.push(fact.key)
       continue
     }
-    if (have.has(table)) continue
+    if (have.has(table)) {
+      // 🔒 СУЩЕСТВУЮЩАЯ ТАБЛИЦА ПРОХОДИТ ЛЕСТНИЦУ КОЛОНОК, А НЕ ПРОПУСКАЕТСЯ
+      // (83-2). `CREATE TABLE IF NOT EXISTS` ей не добавит ничего, и второй слой
+      // на всех уже созданных таблицах не появился бы НИКОГДА. ✗ этот класс
+      // оплачен в проекте дважды: 2026-08-17 и 2026-08-18.
+      report.upgraded.push(...(await addLateColumns(table)))
+      continue
+    }
     const res = await migrate(factTableSql(table))
     if (res.ok) report.created.push(table)
     else report.failed.push({ table, error: res.error ?? "failed" })
   }
   return report
+}
+
+/**
+ * Дописать колонки второго слоя в уже существующую таблицу.
+ *
+ * 🔒 «КОЛОНКА УЖЕ ЕСТЬ» — НЕ ОШИБКА, А НОРМАЛЬНЫЙ ИСХОД ВТОРОГО ПРОГОНА. Лестница
+ * исполняется на каждом заведении признака, то есть постоянно; отказ `duplicate
+ * column` означает «сделано раньше» и в отчёт не идёт. Тот же приём, что у
+ * `safeAddColumn()` в схеме проекта.
+ *
+ * 🛑 ЛЮБОЙ ДРУГОЙ ОТКАЗ ЗАПИСЫВАЕТСЯ. Молча проглоченная неудача `ALTER` даёт
+ * таблицу без колонки, в которую потом молча не пишут, — и обнаруживается это
+ * пустотой через неделю.
+ */
+async function addLateColumns(table: string): Promise<string[]> {
+  const added: string[] = []
+  for (const sql of factTableAlters(table)) {
+    const res = await migrate(sql)
+    if (res.ok) added.push(`${table}: ${sql.split("ADD COLUMN ")[1]}`)
+    else if (!/duplicate column/i.test(res.error ?? "")) {
+      added.push(`${table}: ОТКАЗ ${res.error ?? "failed"}`)
+    }
+  }
+  return added
 }
 
 /**

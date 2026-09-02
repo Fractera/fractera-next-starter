@@ -270,6 +270,24 @@ const SCHEMA = `
     -- сообщения. 🛑 Здесь НЕ БЫВАЕТ кода: только куда сходить и что взять.
     fn          TEXT,
     enabled     INTEGER NOT NULL DEFAULT 1,
+    -- ВТОРОЙ СЛОЙ РЕЕСТРА — восемь настроек (83-1). Все необязательны: 25
+    -- признаков реестра 81 лежат в базе без них и обязаны читаться дальше.
+    -- Несколько именованных значений одного факта, JSON. Пусто — одно значение.
+    produces     TEXT,
+    -- Ключ признака-источника: значение считается ИЗ него, а не ищется в тексте.
+    derived_from TEXT,
+    derived_slot TEXT,
+    -- none | sum | avg | count | last — как накапливается по окну времени.
+    aggregate    TEXT    NOT NULL DEFAULT 'none',
+    unit         TEXT,
+    -- none | self | person — к кому относится факт.
+    subject      TEXT    NOT NULL DEFAULT 'none',
+    -- Состояния сущности, JSON. Пусто — обычный неизменный факт.
+    lifecycle    TEXT,
+    -- none | reminder | check — порождает ли отложенное действие.
+    schedules    TEXT    NOT NULL DEFAULT 'none',
+    -- cheap | strong — какой моделью извлекать. Дорогое объявляется заранее.
+    model        TEXT    NOT NULL DEFAULT 'cheap',
     created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS fact_registry_enabled ON fact_registry (enabled, level);
@@ -295,6 +313,26 @@ const SCHEMA = `
     last_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
   );
   CREATE INDEX IF NOT EXISTS fact_candidates_ripe ON fact_candidates (dismissed, offered, seen);
+
+  -- ЛЮДИ, О КОТОРЫХ ИДЁТ РЕЧЬ (83-5).
+  --
+  -- 🔒 БЕЗ ПРОДУКТОВОГО ПРЕФИКСА, как и реестр признаков: люди понадобятся
+  -- любому продукту, а префикс tgdesk_ запер бы их внутри бота.
+  --
+  -- 🔒 ПОЛЕ confirmed ОТДЕЛЯЕТ ПРЕДЛОЖЕННОЕ ОТ ПОДТВЕРЖДЁННОГО. Опознание имени
+  -- предлагает, а не решает: слияние двух людей в одного НЕОБРАТИМО портит
+  -- данные, а разделение одного на троих делает вопрос «как дела у Миши»
+  -- бессмысленным. Тот же закон, что у кандидатов в реестр.
+  --
+  -- 🔒 МИША ТОЛЬКО УПОМИНАЕТСЯ (решение владельца 2026-09-01): он не пишет боту.
+  -- Здесь люди, О КОТОРЫХ говорят, а не те, КТО говорит. Учётные записи живут
+  -- своей жизнью и своей группой прав.
+  CREATE TABLE IF NOT EXISTS fact_subjects (
+    key        TEXT PRIMARY KEY NOT NULL,
+    title      TEXT NOT NULL,
+    confirmed  INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  );
 
   -- РАЗБОР ТЕКУЩЕГО ЗАПРОСА — РОВНО ОДНА ЗАПИСЬ, И ДРУГОЙ НЕ БЫВАЕТ (91-2).
   --
@@ -623,6 +661,18 @@ const LATE_COLUMNS = [
   `ALTER TABLE tgdesk_entries ADD COLUMN status TEXT NOT NULL DEFAULT 'confirmed'`,
   `ALTER TABLE tgdesk_entries ADD COLUMN currency TEXT`,
   `ALTER TABLE tgdesk_messages ADD COLUMN bundle INTEGER`,
+  // ВТОРОЙ СЛОЙ РЕЕСТРА ПРИЗНАКОВ (83-1). Таблица `fact_registry` уже стоит на
+  // сервере с 81-2 — значит `CREATE TABLE IF NOT EXISTS` не добавит ей ни одной
+  // колонки, и приехать они могут только этой лестницей.
+  `ALTER TABLE fact_registry ADD COLUMN produces     TEXT`,
+  `ALTER TABLE fact_registry ADD COLUMN derived_from TEXT`,
+  `ALTER TABLE fact_registry ADD COLUMN derived_slot TEXT`,
+  `ALTER TABLE fact_registry ADD COLUMN aggregate    TEXT NOT NULL DEFAULT 'none'`,
+  `ALTER TABLE fact_registry ADD COLUMN unit         TEXT`,
+  `ALTER TABLE fact_registry ADD COLUMN subject      TEXT NOT NULL DEFAULT 'none'`,
+  `ALTER TABLE fact_registry ADD COLUMN lifecycle    TEXT`,
+  `ALTER TABLE fact_registry ADD COLUMN schedules    TEXT NOT NULL DEFAULT 'none'`,
+  `ALTER TABLE fact_registry ADD COLUMN model        TEXT NOT NULL DEFAULT 'cheap'`,
 ]
 
 async function initRemoteSchema() {

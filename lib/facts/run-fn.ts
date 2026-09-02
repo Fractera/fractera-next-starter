@@ -77,14 +77,32 @@ export async function runFactFn(
 ): Promise<FactFnResult> {
   switch (fn.kind) {
     case "http": {
-      if (!fn.url || !fn.pick) return { ok: false, reason: "bad-fn" }
+      // 🔒 ОДНО ПОЛЕ ИЛИ НЕСКОЛЬКО — ОДИН ЗАПРОС, А НЕ ДВА РАЗНЫХ РОДА ВЫЗОВА
+      // (83-3). Четыре числа питательности приходят одним ответом источника;
+      // четыре обращения за ними значили бы четырёхкратную цену и четыре шанса
+      // получить рассогласованные данные.
+      const many = fn.picks && Object.keys(fn.picks).length > 0
+      if (!fn.url || (!fn.pick && !many)) return { ok: false, reason: "bad-fn" }
       const url = fill(fn.url, ctx)
       if (!hostAllowed(url)) return { ok: false, reason: "host-not-allowed" }
       try {
         const r = await fetch(url, { signal: AbortSignal.timeout(8000) })
         if (!r.ok) return { ok: false, reason: "source-silent" }
         const data = (await r.json()) as unknown
-        const v = pickField(data, fn.pick)
+
+        if (many) {
+          const values: Record<string, string> = {}
+          for (const [slot, path] of Object.entries(fn.picks!)) {
+            const v = pickField(data, path)
+            // 🔒 ОТСУТСТВУЮЩИЙ СЛОТ ПРОПУСКАЕТСЯ, А НЕ РОНЯЕТ ОСТАЛЬНЫЕ. Источник
+            // отдал калории и не отдал клетчатку — три числа лучше нуля, и
+            // недостающее видно по отсутствию строки, а не по общему отказу.
+            if (v !== undefined && v !== null) values[slot] = String(v).slice(0, MAX_VALUE)
+          }
+          return Object.keys(values).length ? { ok: true, values } : { ok: false, reason: "no-field" }
+        }
+
+        const v = pickField(data, fn.pick!)
         if (v === undefined || v === null) return { ok: false, reason: "no-field" }
         return { ok: true, value: String(v).slice(0, MAX_VALUE) }
       } catch {
@@ -142,6 +160,17 @@ export async function runFactFn(
         return { ok: false, reason: "source-silent" }
       }
     }
+
+    // 🛑 РОД ОБЪЯВЛЕН В 83-1, ИСПОЛНИТЕЛЬ ПРИЕЗЖАЕТ ШАГОМ 87, И ОТКАЗ ЗДЕСЬ
+    // НАЗВАННЫЙ, А НЕ МОЛЧАЛИВЫЙ. Признак с родом `web` заводится уже сегодня:
+    // объявление и исполнение разнесены намеренно, чтобы дверь и экран умели его
+    // раньше, чем появится ключ внешней службы.
+    //
+    // 🔒 ПОЧЕМУ НЕ «BAD-FN». Описание ИСПРАВНО — отсутствует способность. Свали я
+    // это в общий отказ, человек чинил бы правильное описание, а причина
+    // осталась бы в другом месте и без имени.
+    case "web":
+      return { ok: false, reason: "not-implemented" }
   }
 }
 

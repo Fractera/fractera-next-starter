@@ -113,7 +113,7 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                     {/* 🔒 КЛЮЧ ПРИЗНАКА ПОКАЗЫВАЕТСЯ РЯДОМ С РОДОМ, А НЕ ВМЕСТО НЕГО:
                         человек говорит о признаке его ключом — так он назван и в реестре. */}
                     {row.fact ? (
-                      <span className="ml-2 font-mono text-[0.85em] text-foreground/70">{row.fact}</span>
+                      <span className="ml-2 font-mono text-[0.85em] text-foreground">{row.fact}</span>
                     ) : null}
                   </td>
                   <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">

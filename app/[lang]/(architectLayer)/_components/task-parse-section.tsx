@@ -183,11 +183,11 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
               </tr>
             </thead>
             <tbody>
-              {rows.map(row => (
+              {rows.map((row, i) => (
                 <Row
                   key={row.id}
-                  // Сырьё занимает номер 1, поэтому строки разбора идут со второго.
-                  no={row.id + 1}
+                  // Номер — позиция на экране: сверху 1, дальше вниз.
+                  no={i + 1}
                   kind={ui.parse.kinds[row.kind]}
                   fact={row.fact}
                   what={row.phrase}
@@ -207,7 +207,7 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                   сверяют всё остальное. Обрезанный «для вида» оригинал перестаёт
                   быть оригиналом. */}
               <Row
-                no={1}
+                no={rows.length + 1}
                 kind={ui.parse.kinds.intake}
                 what={task.intake.text || ui.parse.noWords}
                 source={ui.parse.via.replace("{name}", channelName(task.intake.channel))}

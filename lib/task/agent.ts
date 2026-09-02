@@ -241,9 +241,9 @@ export async function projectRequest(
   rows.push(fakeRow(fakeMeaningRegistry(request), rows.length + 1))
 
   // 🔒 ШАГОВЫЙ ПРЕДЕЛ ОТЛАДКИ. Владелец идёт по разбору шаг за шагом и хочет
-  // видеть, как строки появляются по одной. `TASK_DEBUG_STEPS=3` останавливает
+  // видеть, как строки появляются по одной. `TASK_DEBUG_STEPS=4` останавливает
   // разбор сразу после строки эволюции реестра.
-  if (stepLimit() <= 3) return rows
+  if (stepLimit() <= 4) return rows
 
   findings.forEach((f, i) => {
     rows.push({

@@ -1,6 +1,8 @@
+import type { ReactNode } from "react"
 import { SectionIntro } from "./section-intro.client"
+import { TaskTime } from "./task-time.client"
 import { readTask } from "@/lib/task/store"
-import type { RequestChannel } from "@/lib/task/types"
+import type { RequestChannel, TaskRow } from "@/lib/task/types"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 import type { ChannelsState } from "@/lib/architect/channels"
 
@@ -45,17 +47,80 @@ function channelName(c: RequestChannel): string {
 }
 
 /**
- * Метка времени: дата и время С МИЛЛИСЕКУНДАМИ.
+ * Полоса колонки.
  *
- * 🔒 МИЛЛИСЕКУНДЫ ПОКАЗЫВАЮТСЯ, А НЕ ТОЛЬКО ХРАНЯТСЯ — прямое требование
- * владельца. Отрезанные при показе, они неотличимы от неписанных.
- *
- * 🔒 UTC НАЗВАН ВСЛУХ И НЕ ПЕРЕВОДИТСЯ В МЕСТНОЕ ВРЕМЯ. Время, показанное без
- * пояса, читается как своё; сервер, человек и Telegram живут в разных поясах, и
- * молчаливый сдвиг на три часа выглядит не ошибкой показа, а ошибкой разбора.
+ * 🔒 ЧЕРЕДОВАНИЕ ПО КОЛОНКАМ, А НЕ ПО СТРОКАМ — прямое слово владельца:
+ * «поочерёдно колонки разделены разным цветом, сейчас у тебя всё тело таблицы
+ * выглядит одинаково». Полосы по строкам здесь врали бы: строка — это шаг
+ * разбора, и подсветка через одну намекала бы на чередование, которого нет.
  */
-function stamp(iso: string): string {
-  return `${iso.slice(0, 10)} ${iso.slice(11, 23)} UTC`
+function stripe(col: number): string {
+  return col % 2 === 1 ? "bg-muted/25" : ""
+}
+
+const CELL = "px-4 py-3 align-top"
+
+/** Одна строка таблицы: номер, род, содержимое, чем добыто, время. */
+function Row({
+  no,
+  kind,
+  fact,
+  what,
+  payload,
+  source,
+  confidence,
+  at,
+  mark,
+}: {
+  no: number
+  kind: string
+  fact?: string
+  what: ReactNode
+  payload?: Record<string, unknown>
+  source: string
+  confidence?: number
+  at: string
+  mark: Record<string, string | undefined>
+}) {
+  return (
+    <tr {...mark} className="border-t">
+      {/* 🔒 НОМЕР — ПОРЯДОК ПОЯВЛЕНИЯ, А НЕ ПОРЯДОК ПОКАЗА. Сортировка обратная,
+          значит сверху идут бо́льшие числа: так видно, что первая строка разбора
+          лежит внизу, а не что нумерация сбилась. */}
+      <td className={`${CELL} ${stripe(0)} w-10 text-right font-mono text-muted-foreground`}>{no}</td>
+      <td className={`${CELL} ${stripe(1)} whitespace-nowrap text-muted-foreground`}>
+        {kind}
+        {/* 🔒 КЛЮЧ ПРИЗНАКА ПОКАЗЫВАЕТСЯ РЯДОМ С РОДОМ, А НЕ ВМЕСТО НЕГО:
+            человек говорит о признаке его ключом — так он назван и в реестре. */}
+        {fact ? <span className="ml-2 font-mono text-[0.85em] text-foreground">{fact}</span> : null}
+      </td>
+      <td className={`${CELL} ${stripe(2)} whitespace-pre-wrap break-words text-foreground`}>
+        {what}
+        {/* 🔒 ПОД ФРАЗОЙ — РАЗОБРАННЫЕ ЗНАЧЕНИЯ, И ЭТО НЕ ОТЛАДКА (91-5).
+            Фраза читается человеком, начинка уезжает в таблицы; показать только
+            фразу значит скрыть ровно то, чем строка полезна дальше — а показать
+            только начинку значит вернуть технический мусор. */}
+        {payload && Object.keys(payload).length ? (
+          <div data-task-payload className="mt-1 font-mono text-[0.85em] text-muted-foreground">
+            {Object.entries(payload).map(([k, v]) => (
+              <span key={k} className="mr-3 whitespace-nowrap">
+                {k}={typeof v === "object" ? JSON.stringify(v) : String(v)}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </td>
+      <td className={`${CELL} ${stripe(3)} whitespace-nowrap text-muted-foreground`}>
+        {source}
+        {typeof confidence === "number" ? (
+          <span className="ml-2">{Math.round(confidence * 100)}%</span>
+        ) : null}
+      </td>
+      <td className={`${CELL} ${stripe(4)} whitespace-nowrap font-mono text-muted-foreground`}>
+        <TaskTime at={at} />
+      </td>
+    </tr>
+  )
 }
 
 export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui: TelegramUi }) {
@@ -64,6 +129,13 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
   // ряда, включая те, которым он не нужен.
   const task = await readTask()
   const empty = emptyReason(state, ui)
+
+  // 🔒 СОРТИРОВКА ОБРАТНАЯ — ПРЯМОЕ СЛОВО ВЛАДЕЛЬЦА. Новое сверху: разбор растёт
+  // по времени вниз, и человек, открывший вкладку, должен видеть последнее
+  // случившееся, а не прокручивать до него.
+  // 🔒 СЫРЬЁ ПРИ ЭТОМ УЕЗЖАЕТ В САМЫЙ НИЗ И ОСТАЁТСЯ ПЕРВЫМ ПО НОМЕРУ: оно не
+  // «одна из строк», а основание, с которым сверяют остальные.
+  const rows: TaskRow[] = task ? [...task.rows].reverse() : []
 
   return (
     <section data-task-parse className="flex flex-col gap-6">
@@ -84,92 +156,68 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
         lessLabel={ui.facts.less}
       />
 
-      {/* 🔒 ПУСТОЕ СОСТОЯНИЕ НЕСЁТ СВОЙ КЛЮЧ В РАЗМЕТКЕ, А НЕ ТОЛЬКО ТЕКСТ.
-          Текст переводится и меняется; ключ — то, по чему причина проверяется
-          измерением, не завися от языка страницы. */}
       {/* 🔒 ЛИБО ТАБЛИЦА, ЛИБО ПРИЧИНА ПУСТОТЫ — И НИКОГДА ОБЕ. Пустая таблица с
           заголовками столбцов выглядит как работающий экран, которому нечего
-          сказать, и человек ждёт строк, которых не будет. */}
+          сказать, и человек ждёт строк, которых не будет.
+
+          🔒 ПУСТОЕ СОСТОЯНИЕ НЕСЁТ СВОЙ КЛЮЧ В РАЗМЕТКЕ, А НЕ ТОЛЬКО ТЕКСТ:
+          текст переводится и меняется, ключ — то, по чему причина проверяется
+          измерением, не завися от языка страницы. */}
       {task ? (
         // 🔒 ШИРОКОЕ СОДЕРЖИМОЕ ПРОКРУЧИВАЕТСЯ ВНУТРИ СВОЕГО КОНТЕЙНЕРА: текст
         // запроса приходит какой угодно длины, а страница не имеет права ехать
         // вбок целиком.
         <div data-task-parse-table className="overflow-x-auto rounded-md border">
           <table className="w-full min-w-[36rem] border-collapse text-[length:var(--fs-small)]">
-            <thead className="border-b bg-muted/40 text-left text-muted-foreground">
+            {/* 🛑 ШАПКА ОТДЕЛЕНА ОТ ТЕЛА ЦВЕТОМ, И ЭТО ПОЧИНКА, А НЕ УКРАШЕНИЕ.
+                ✗ строки разбора стояли ВНУТРИ `<thead>` — фон шапки красил их
+                все, и «обычной» выглядела одна последняя строка. Владелец описал
+                это точно: «сейчас с цветом у тебя отделена последняя строка». */}
+            <thead className="border-b-2 bg-muted text-left text-muted-foreground">
               <tr>
-                <th className="px-4 py-2 font-normal">{ui.parse.colKind}</th>
-                <th className="px-4 py-2 font-normal">{ui.parse.colWhat}</th>
-                <th className="px-4 py-2 font-normal">{ui.parse.colSource}</th>
-                <th className="px-4 py-2 font-normal">{ui.parse.colTime}</th>
+                <th className={`px-4 py-2 text-right font-normal ${stripe(0)}`}>{ui.parse.colNo}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(1)}`}>{ui.parse.colKind}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(2)}`}>{ui.parse.colWhat}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(3)}`}>{ui.parse.colSource}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(4)}`}>{ui.parse.colTime}</th>
               </tr>
-              {/* 🔒 ОСТАЛЬНЫЕ СТРОКИ — ИНТЕРПРЕТАЦИЯ, И ОНИ ИДУТ ПОД СЫРЬЁМ (91-4).
-                  Порядок в списке — порядок появления: разбор виден как ход, а не
-                  как отсортированный отчёт. */}
-              {task.rows.map(row => (
-                <tr key={row.id} data-task-row={row.kind} data-task-fact={row.fact}>
-                  <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
-                    {ui.parse.kinds[row.kind]}
-                    {/* 🔒 КЛЮЧ ПРИЗНАКА ПОКАЗЫВАЕТСЯ РЯДОМ С РОДОМ, А НЕ ВМЕСТО НЕГО:
-                        человек говорит о признаке его ключом — так он назван и в реестре. */}
-                    {row.fact ? (
-                      <span className="ml-2 font-mono text-[0.85em] text-foreground">{row.fact}</span>
-                    ) : null}
-                  </td>
-                  <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">
-                    {row.phrase}
-                    {/* 🔒 ПОД ФРАЗОЙ — РАЗОБРАННЫЕ ЗНАЧЕНИЯ, И ЭТО НЕ ОТЛАДКА (91-5).
-                        Фраза читается человеком, начинка уезжает в таблицы; показать
-                        только фразу значит скрыть ровно то, чем строка полезна дальше —
-                        а показать только начинку значит вернуть технический мусор. */}
-                    {row.payload && Object.keys(row.payload).length ? (
-                      <div data-task-payload className="mt-1 font-mono text-[0.85em] text-muted-foreground">
-                        {Object.entries(row.payload).map(([k, v]) => (
-                          <span key={k} className="mr-3 whitespace-nowrap">
-                            {k}={typeof v === "object" ? JSON.stringify(v) : String(v)}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
-                    {ui.parse.sources[row.source]}
-                    {typeof row.confidence === "number" ? (
-                      <span className="ml-2">{Math.round(row.confidence * 100)}%</span>
-                    ) : null}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 align-top font-mono text-muted-foreground">
-                    <time dateTime={row.at}>{stamp(row.at)}</time>
-                  </td>
-                </tr>
-              ))}
             </thead>
             <tbody>
-              {/* 🔒 ПЕРВАЯ СТРОКА — СЫРЬЁ, КАКИМ ОНО ПРИШЛО, И ОНА НЕ ИЗ `rows`.
-                  Остальные строки таблицы — интерпретация, и живут они списком;
-                  эта одна есть у КАЖДОГО разбора по устройству, потому и лежит
-                  отдельным полем объекта. */}
-              <tr
-                data-task-row="intake"
-                data-task-channel={task.intake.channel}
-                data-task-at={task.intake.at}
-              >
-                <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
-                  {ui.parse.kinds.intake}
-                </td>
-                {/* 🔒 ТЕКСТ ДОСЛОВНО, С ПЕРЕВОДАМИ СТРОК: он и есть то, с чем
-                    сверяют всё остальное. Обрезанный «для вида» оригинал
-                    перестаёт быть оригиналом. */}
-                <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">
-                  {task.intake.text || ui.parse.noWords}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
-                  {ui.parse.via.replace("{name}", channelName(task.intake.channel))}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 align-top font-mono text-muted-foreground">
-                  <time dateTime={task.intake.at}>{stamp(task.intake.at)}</time>
-                </td>
-              </tr>
+              {rows.map(row => (
+                <Row
+                  key={row.id}
+                  // Сырьё занимает номер 1, поэтому строки разбора идут со второго.
+                  no={row.id + 1}
+                  kind={ui.parse.kinds[row.kind]}
+                  fact={row.fact}
+                  what={row.phrase}
+                  payload={row.payload}
+                  source={ui.parse.sources[row.source]}
+                  confidence={row.confidence}
+                  at={row.at}
+                  mark={{ "data-task-row": row.kind, "data-task-fact": row.fact }}
+                />
+              ))}
+
+              {/* 🔒 СЫРЬЁ — НЕ ИЗ `rows`, И ЛЕЖИТ ОНО ОТДЕЛЬНЫМ ПОЛЕМ ОБЪЕКТА.
+                  Остальные строки — интерпретация и живут списком; эта одна есть
+                  у КАЖДОГО разбора по устройству.
+
+                  🔒 ТЕКСТ ДОСЛОВНО, С ПЕРЕВОДАМИ СТРОК: он и есть то, с чем
+                  сверяют всё остальное. Обрезанный «для вида» оригинал перестаёт
+                  быть оригиналом. */}
+              <Row
+                no={1}
+                kind={ui.parse.kinds.intake}
+                what={task.intake.text || ui.parse.noWords}
+                source={ui.parse.via.replace("{name}", channelName(task.intake.channel))}
+                at={task.intake.at}
+                mark={{
+                  "data-task-row": "intake",
+                  "data-task-channel": task.intake.channel,
+                  "data-task-at": task.intake.at,
+                }}
+              />
             </tbody>
           </table>
         </div>

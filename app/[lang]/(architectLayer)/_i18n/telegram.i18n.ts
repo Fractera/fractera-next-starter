@@ -69,6 +69,7 @@ export type TelegramUi = {
     emptyNotLinked: string
     emptyNoRequests: string
     /** Заголовки колонок таблицы. */
+    colNo: string
     colKind: string
     colWhat: string
     colSource: string
@@ -394,6 +395,7 @@ const EN: TelegramUi = {
     emptyNoRequests:
       "Nobody has written to the bot yet. The first message will be taken apart here.",
     colKind: "Row",
+    colNo: "#",
     colWhat: "What was established",
     colSource: "Obtained by",
     colTime: "Time",
@@ -703,6 +705,7 @@ const RU: TelegramUi = {
     emptyNoRequests:
       "Боту ещё никто не писал. Первое сообщение будет разобрано здесь.",
     colKind: "Строка",
+    colNo: "№",
     colWhat: "Что установлено",
     colSource: "Чем добыто",
     colTime: "Время",

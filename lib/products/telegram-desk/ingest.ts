@@ -9,6 +9,8 @@ import { getAppConfig } from "@/config/app-config"
 import { waitingLabel } from "./calendar"
 import { timezoneOf } from "./timezone"
 import { openTask } from "@/lib/task/intake"
+import { appendRows } from "@/lib/task/store"
+import { projectRequest } from "@/lib/task/agent"
 
 // ПРИЁМ СООБЩЕНИЯ — здесь сообщение расходится по складам и собирается обратно.
 //
@@ -313,6 +315,31 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   ]
     .filter(Boolean)
     .join(String.fromCharCode(10))
+  // ── Проекция запроса на реестр признаков (91-4) ─────────────────────────
+  // 🔒 ИДЁТ ПОСЛЕ ВЛОЖЕНИЯ И ДО ОТВЕТА ЧЕЛОВЕКУ. Прочитанное с чека — часть
+  // того, что человек сказал: разобрать подпись без картинки значит понять
+  // половину. А до ответа — потому что экран показывает ход рассуждения, и
+  // строка, появившаяся после ответа, объясняет уже случившееся.
+  //
+  // 🛑 СОСЕДНЕЕ СООБЩЕНИЕ В ПРОЕКЦИЮ НЕ ИДЁТ, В ОТЛИЧИЕ ОТ `spoken`. Контекст
+  // связки объясняет, О ЧЁМ речь, и не является содержимым ЭТОГО запроса:
+  // признаки, найденные во вчерашней фразе, приписались бы сегодняшней.
+  if (opened.ok && opened.at) {
+    try {
+      const forFacts = [msg.text, ...files.map(f => f.text)].filter(Boolean).join(String.fromCharCode(10))
+      const rows = await projectRequest(forFacts)
+      // `done: true` — разбор на сегодня кончился: других стадий, дописывающих
+      // строки, пока не существует. Появятся (91-5…91-9) — отметку поставит последняя.
+      const put = await appendRows(rows, { intakeAt: opened.at, done: true })
+      if (!put.ok) notes.push(`task-rows:${put.error}`)
+    } catch (e) {
+      // 🛑 РАЗБОР ДЛЯ ЭКРАНА НЕ ИМЕЕТ ПРАВА УРОНИТЬ ПРИЁМ СООБЩЕНИЯ. Экран —
+      // наблюдатель: человек обязан получить ответ бота даже тогда, когда
+      // проекция не сложилась.
+      notes.push(`task-rows:${e instanceof Error ? e.name : "failed"}`)
+    }
+  }
+
   // 🔒 МАРШРУТИЗАТОР ДОЛЖЕН ЗНАТЬ, ЧТО ЧЕГО-ТО ЖДУТ. «20 августа» само по себе —
   // заметка; оно же в ответ на «дату не разобрал» — поправка. Смысл фразы задаёт
   // не фраза, а вопрос, заданный секунду назад.

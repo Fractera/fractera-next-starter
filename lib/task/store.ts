@@ -1,6 +1,6 @@
 import { dataFetch } from "@/lib/fractera/data-service"
 import { REQUEST_CHANNELS, TASK_ROW_KINDS, TASK_SOURCES } from "./types"
-import type { TaskObject } from "./types"
+import type { TaskObject, TaskRow } from "./types"
 
 // ХРАНИЛИЩЕ ОБЪЕКТА РАЗБОРА — ОДНА СТРОКА, ОДИН ЧИТАТЕЛЬ, ОДИН ПИСАТЕЛЬ (91-2).
 //
@@ -113,4 +113,38 @@ export async function writeTask(task: TaskObject): Promise<{ ok: boolean; error?
 export function isStale(task: TaskObject): boolean {
   if (task.done) return false
   return Date.now() - Date.parse(task.intake.at) > STALE_MS
+}
+
+/**
+ * Дописать строки в текущий объект разбора.
+ *
+ * 🔒 ЧИТАЕТ И ПИШЕТ ЦЕЛИКОМ, И ЭТО СЛЕДСТВИЕ УСТРОЙСТВА, А НЕ ЛЕНЬ: объект
+ * лежит в базе одной строкой JSON, частичного обновления у него не бывает.
+ * Оттого и правило — дописывать сразу пачкой, а не по строке на вызов.
+ *
+ * 🔒 НОМЕРА ПРОДОЛЖАЮТ УЖЕ ЛЕЖАЩИЕ, А НЕ НАЧИНАЮТСЯ С ЕДИНИЦЫ. Строки приходят
+ * от разных стадий разбора; сквозной номер — единственное, чем видно их порядок.
+ *
+ * 🛑 ЧУЖОЙ ОБЪЕКТ НЕ ДОПИСЫВАЕТСЯ. Пока шли шаги разбора, могло прийти новое
+ * сообщение и заменить стол; дописать в него строки прошлого запроса значило бы
+ * смешать два разбора в один, и заметно это стало бы не сразу.
+ */
+export async function appendRows(
+  rows: TaskRow[],
+  opts: { intakeAt: string; done?: boolean } = { intakeAt: "" },
+): Promise<{ ok: boolean; error?: string }> {
+  const task = await readTask()
+  if (!task) return { ok: false, error: "no-task" }
+  if (opts.intakeAt && task.intake.at !== opts.intakeAt) {
+    return { ok: false, error: "task-replaced" }
+  }
+
+  const base = task.rows.length ? Math.max(...task.rows.map(r => r.id)) : 0
+  const next = rows.map((r, i) => ({ ...r, id: base + i + 1 }))
+
+  return writeTask({
+    ...task,
+    rows: [...task.rows, ...next],
+    done: opts.done ?? task.done,
+  })
 }

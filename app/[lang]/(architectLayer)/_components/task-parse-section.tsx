@@ -103,6 +103,33 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                 <th className="px-4 py-2 font-normal">{ui.parse.colSource}</th>
                 <th className="px-4 py-2 font-normal">{ui.parse.colTime}</th>
               </tr>
+              {/* 🔒 ОСТАЛЬНЫЕ СТРОКИ — ИНТЕРПРЕТАЦИЯ, И ОНИ ИДУТ ПОД СЫРЬЁМ (91-4).
+                  Порядок в списке — порядок появления: разбор виден как ход, а не
+                  как отсортированный отчёт. */}
+              {task.rows.map(row => (
+                <tr key={row.id} data-task-row={row.kind} data-task-fact={row.fact}>
+                  <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
+                    {ui.parse.kinds[row.kind]}
+                    {/* 🔒 КЛЮЧ ПРИЗНАКА ПОКАЗЫВАЕТСЯ РЯДОМ С РОДОМ, А НЕ ВМЕСТО НЕГО:
+                        человек говорит о признаке его ключом — так он назван и в реестре. */}
+                    {row.fact ? (
+                      <span className="ml-2 font-mono text-[0.85em] text-foreground/70">{row.fact}</span>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">
+                    {row.phrase}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
+                    {ui.parse.sources[row.source]}
+                    {typeof row.confidence === "number" ? (
+                      <span className="ml-2">{Math.round(row.confidence * 100)}%</span>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 align-top font-mono text-muted-foreground">
+                    <time dateTime={row.at}>{stamp(row.at)}</time>
+                  </td>
+                </tr>
+              ))}
             </thead>
             <tbody>
               {/* 🔒 ПЕРВАЯ СТРОКА — СЫРЬЁ, КАКИМ ОНО ПРИШЛО, И ОНА НЕ ИЗ `rows`.

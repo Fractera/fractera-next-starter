@@ -84,6 +84,14 @@ export type TelegramUi = {
     noWords: string
     /** Имена пяти родов строки. */
     kinds: Record<'intake' | 'extract' | 'resolve' | 'plan' | 'reveal', string>
+    /**
+     * Чем строка добыта — по слову на источник.
+     *
+     * 🔒 СПИСОК ТОТ ЖЕ, ЧТО `TASK_SOURCES`, И ПРОВЕРЯЕТСЯ ТИПОМ. Словарь, не
+     * знающий нового источника, показал бы пустую ячейку вместо ответа на
+     * вопрос «чем это добыто» — то есть отнял бы у таблицы половину смысла.
+     */
+    sources: Record<'none' | 'model' | 'http' | 'rag' | 'table' | 'vector' | 'map', string>
   }
 
   /**
@@ -398,6 +406,15 @@ const EN: TelegramUi = {
       plan: "Plan",
       reveal: "Fact",
     },
+    sources: {
+      none: "taken as it came",
+      model: "a model",
+      http: "an external service",
+      rag: "the knowledge graph",
+      table: "the project database",
+      vector: "the vector store",
+      map: "the map service",
+    },
   },
 
   facts: {
@@ -697,6 +714,15 @@ const RU: TelegramUi = {
       resolve: "Разрешена ссылка",
       plan: "План",
       reveal: "Признак",
+    },
+    sources: {
+      none: "принято как есть",
+      model: "модель",
+      http: "внешняя служба",
+      rag: "граф знаний",
+      table: "база проекта",
+      vector: "векторное хранилище",
+      map: "служба карт",
     },
   },
 

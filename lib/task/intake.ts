@@ -37,7 +37,7 @@ export async function openTask(input: {
   channel: string
   messageId?: number
   hasAttachment?: boolean
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; at?: string }> {
   const channel = asChannel(input.channel)
   if (!channel) return { ok: false, error: "bad-channel" }
 
@@ -56,5 +56,9 @@ export async function openTask(input: {
     done: false,
   }
 
-  return writeTask(task)
+  // 🔒 ВРЕМЯ ВОЗВРАЩАЕТСЯ НАРУЖУ, И ЭТО НЕ УДОБСТВО, А ЗАМОК (91-4). Пока идёт
+  // разбор, на стол может лечь СЛЕДУЮЩИЙ запрос; строки, дописанные вслепую,
+  // смешали бы два разбора в один. `at` — то, чем дописывающий узнаёт свой стол.
+  const written = await writeTask(task)
+  return { ...written, at: task.intake.at }
 }

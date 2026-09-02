@@ -1,6 +1,6 @@
 import { dataFetch } from "@/lib/fractera/data-service"
 import { activeFacts } from "./registry"
-import { factTableName, needsTable } from "./table"
+import { factTableName, factIdentifier, needsTable } from "./table"
 import { runFactFn } from "./run-fn"
 import type { FactFn } from "./fn-types"
 
@@ -36,13 +36,21 @@ function parseFn(raw: unknown): FactFn | null {
   }
 }
 
-async function store(table: string, messageId: number, value: string): Promise<boolean> {
+async function store(
+  table: string,
+  messageId: number,
+  value: string,
+  slot?: string,
+): Promise<boolean> {
   try {
+    // 🔒 КОЛОНКИ НАЗЫВАЮТСЯ ПОИМЁННО ВСЕГДА. Позиционный `INSERT` работает на
+    // чистой машине и путает значения на поднятой лестницей: там порядок колонок
+    // другой (83-2), и ломается это только у того, у кого система поработала.
     const r = await dataFetch("/db/migrate", {
       method: "POST",
       body: JSON.stringify({
-        sql: `INSERT INTO ${table} (message_id, value_text, source) VALUES (?, ?, 'fn')`,
-        params: [messageId, value],
+        sql: `INSERT INTO ${table} (message_id, value_text, slot, source) VALUES (?, ?, ?, 'fn')`,
+        params: [messageId, value, slot ?? null],
       }),
     })
     if (!r.ok) return false
@@ -83,6 +91,28 @@ export async function collectFactValues(
       report.failed.push({ key: fact.key, reason: "bad-key" })
       continue
     }
+
+    // 🔒 НЕСКОЛЬКО ЗНАЧЕНИЙ — N СТРОК, РАЗЛИЧИМЫХ ПО `slot` (83-3). Из «трёх
+    // пирожков по 25» нужны ккал, белки, жиры и углеводы: четыре числа ОДНОГО
+    // факта еды. Свернуть их в одну строку значило бы хранить объект в текстовом
+    // поле — и складывать белки за неделю стало бы нечем.
+    if ("values" in res) {
+      let ok = 0
+      for (const [slot, value] of Object.entries(res.values)) {
+        // 🛑 СЛОТ ПРОХОДИТ БЕЛЫЙ СПИСОК ПЕРЕД ЗАПИСЬЮ. Он приезжает из описания,
+        // которое человек составил через модель, и попадает в значение колонки.
+        const safe = factIdentifier(slot)
+        if (!safe) {
+          report.failed.push({ key: `${fact.key}#${slot}`, reason: "bad-slot" })
+          continue
+        }
+        if (await store(table, messageId, value, safe)) ok++
+        else report.failed.push({ key: `${fact.key}#${safe}`, reason: "store-failed" })
+      }
+      if (ok) report.stored.push(`${fact.key} (${ok})`)
+      continue
+    }
+
     if (await store(table, messageId, res.value)) report.stored.push(fact.key)
     else report.failed.push({ key: fact.key, reason: "store-failed" })
   }

@@ -6,6 +6,7 @@ import { activeFacts } from "@/lib/facts/registry"
 import { openAiKey } from "@/lib/openai-key"
 import { factTools, toolableFacts, type Finding } from "./tools"
 import { phraseOf } from "./phrase"
+import { fakeRow, fakeMeaningRegistry } from "./fakes"
 import { nowMs } from "./store"
 import type { Fact } from "@/lib/facts/types"
 import type { TaskRow } from "./types"
@@ -54,7 +55,7 @@ export function stepLimit(): number {
   const raw = process.env.TASK_DEBUG_STEPS
   if (raw) return Number(raw) || 99
   try {
-    const m = readFileSync(join(process.cwd(), ".env.local"), "utf8").match(/^TASK_DEBUG_STEPS=(d+)s*$/m)
+    const m = readFileSync(join(process.cwd(), ".env.local"), "utf8").match(/^TASK_DEBUG_STEPS=(\d+)\s*$/m)
     return m ? Number(m[1]) : 99
   } catch {
     return 99
@@ -230,10 +231,16 @@ export async function projectRequest(
   // 🔒 ПО СТРОКЕ НА НАХОДКУ, А НЕ НА ПРИЗНАК. Признак, ничего не взявший, строки
   // не получает: таблица показывает, что НАЙДЕНО, а не что существует, — для
   // второго есть реестр.
+  // 🔒 ДВА ПРАВИЛА ИСПОЛНЯЮТСЯ ВСЕГДА, НЕЗАВИСИМО ОТ НАХОДОК (решение владельца
+  // 2026-09-02). Первое — связь с другим сообщением — объявлено в `next` строки
+  // выше. Второе — эволюция реестра: не «что я умею», а «чему пора научиться».
+  // Оба сегодня стоят ЗАГЛУШКАМИ, отвечающими 200 и помеченными ненастоящими.
+  rows.push(fakeRow(fakeMeaningRegistry(request), rows.length + 1))
+
   // 🔒 ШАГОВЫЙ ПРЕДЕЛ ОТЛАДКИ. Владелец идёт по разбору шаг за шагом и хочет
-  // видеть, как строки появляются по одной. `TASK_DEBUG_STEPS=2` останавливает
-  // разбор сразу после строки соответствия реестру.
-  if (stepLimit() <= 2) return rows
+  // видеть, как строки появляются по одной. `TASK_DEBUG_STEPS=3` останавливает
+  // разбор сразу после строки эволюции реестра.
+  if (stepLimit() <= 3) return rows
 
   findings.forEach((f, i) => {
     rows.push({

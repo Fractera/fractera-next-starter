@@ -260,7 +260,7 @@ export function WorkspaceShell({
           <nav
             data-workspace-tabs
             aria-label={typeof title === 'string' ? title : menuWord}
-            className="slim-scrollbar wsx-strip -mx-1 flex gap-1 overflow-x-auto border-b border-border bg-card px-1 md:sticky wsx-sticky md:z-30 md:pt-3"
+            className="slim-scrollbar wsx-strip -mx-1 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border bg-card px-1 pb-2 md:sticky wsx-sticky md:z-30 md:pt-3"
           >
             {tabs.map((tab, i) => (
               <Item

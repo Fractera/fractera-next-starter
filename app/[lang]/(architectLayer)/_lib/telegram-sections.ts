@@ -26,6 +26,10 @@ export const TELEGRAM_SECTIONS = [
   "calendar",
   "map",
   "settings",
+  // 🔒 ПАСПОРТ — РАЗДЕЛ БОТА, А НЕ КНОПКА В ПОДВАЛЕ (правка владельца
+  // 2026-09-02): «паспорт нужно поднять на вкладку Telegram и кнопку разместить
+  // в левом меню ниже, чем кнопка настройки».
+  "passport",
 ] as const
 export type TelegramSection = (typeof TELEGRAM_SECTIONS)[number]
 

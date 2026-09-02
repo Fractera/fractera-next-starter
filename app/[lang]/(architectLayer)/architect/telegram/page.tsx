@@ -19,6 +19,10 @@ import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
 import { TelegramAbout } from "../../_components/telegram-about"
 import { InProgress } from "../../_components/in-progress"
 import { readChannels } from "@/lib/architect/channels"
+import { readFile } from "node:fs/promises"
+import { join } from "node:path"
+import { PassportBody } from "../../_components/passport-body.client"
+import { passportOutline } from "../../_lib/passport-outline"
 
 // TELEGRAM-БОТ — ЧЕТВЁРТЫЙ ВХОД СЛОЯ АРХИТЕКТОРА (77-1, 2026-08-31).
 //
@@ -74,6 +78,25 @@ export default async function TelegramPage({
   // показывать ОДНО состояние, а не каждый своё, снятое в разные секунды.
   const channels = await readChannels()
 
+  // 🔒 ПАСПОРТ ЧИТАЕТСЯ ФАЙЛОМ ПРОЕКТА (правка владельца 2026-09-02): он живёт в
+  // `development-docs/PASSPORT.md`, правится обычной правкой файла, и второй
+  // копии текста не существует. Файла может не быть — это законный исход.
+  let passport = ""
+  if (active === "passport") {
+    try {
+      passport = await readFile(join(process.cwd(), "development-docs", "PASSPORT.md"), "utf8")
+    } catch {
+      passport = ""
+    }
+  }
+  // 🔒 ЗАГОЛОВКИ ПЕРВОГО УРОВНЯ СТАНОВЯТСЯ ЛИПКИМ МЕНЮ — той же полосой, что
+  // виды раздела «Логи»: одна раскладка, один вид, никакого второго меню.
+  const passportTabs = passportOutline(passport).map(i => ({
+    label: i.title,
+    href: '#' + i.id,
+    active: false,
+  }))
+
   return (
     <main className="min-h-screen bg-background">
       <div data-app-column className="px-6 py-[var(--page-py-work)]">
@@ -100,7 +123,9 @@ export default async function TelegramPage({
           title={ui.pages[active].title}
           lead={ui.pages[active].hint}
           tabs={
-            active === "logs"
+            active === "passport"
+              ? passportTabs
+              : active === "logs"
               ? TELEGRAM_LOG_VIEWS.map(v => ({
                   label: ui.skeleton.views[v],
                   href: hrefOfTelegramLogView(lang, v),
@@ -249,6 +274,16 @@ export default async function TelegramPage({
                 короткое описание». Каждый называет, ЧТО здесь будет, — иначе
                 пустая вкладка читается как поломка (28-13). Содержимое расписано
                 в ТЗ подшагов 77-16 … 77-19. */}
+            {active === "passport" &&
+              (passport ? (
+                <PassportBody text={passport} />
+              ) : (
+                <div className="rounded-md border border-dashed border-muted-foreground/30 p-6 text-[length:var(--fs-small)] text-muted-foreground">
+                  Паспорт ещё не написан. Он лежит файлом development-docs/PASSPORT.md в самом
+                  проекте — создайте его, и он появится здесь.
+                </div>
+              ))}
+
             {active === "commands" && (
               <InProgress where="commands" label={ui.pages.commands.title} lead={ui.skeleton.commandsLead} />
             )}

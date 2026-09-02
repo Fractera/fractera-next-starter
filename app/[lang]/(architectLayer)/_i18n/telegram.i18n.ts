@@ -16,7 +16,7 @@ export type TelegramUi = {
   menuTitle: string
   subtitle: string
   pages: Record<
-    "about" | "commands" | "logs" | "calendar" | "map" | "settings",
+    "about" | "commands" | "logs" | "calendar" | "map" | "settings" | "passport",
     { title: string; hint: string }
   >
   /** Свёрнутая справка раздела «Описание». */
@@ -360,6 +360,10 @@ const EN: TelegramUi = {
       title: "Settings",
       hint: "The token, the connection and everything the bot needs in order to answer.",
     },
+    passport: {
+      title: "Passport",
+      hint: "What we are building, why, and how it works today. A living document.",
+    },
   },
   helpMore: "Learn more",
   helpLess: "Collapse",
@@ -679,6 +683,10 @@ const RU: TelegramUi = {
     settings: {
       title: "Настройки",
       hint: "Токен, связь и всё, без чего бот не отвечает.",
+    },
+    passport: {
+      title: "Паспорт",
+      hint: "Что мы строим, зачем и как это устроено сегодня. Живой документ: правится по мере того, как решения принимаются.",
     },
   },
   helpMore: "Узнать больше",

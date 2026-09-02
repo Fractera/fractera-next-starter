@@ -3,6 +3,7 @@ import { createOpenAI } from "@ai-sdk/openai"
 import { activeFacts } from "@/lib/facts/registry"
 import { openAiKey } from "@/lib/openai-key"
 import { factTools, toolableFacts, type Finding } from "./tools"
+import { phraseOf } from "./phrase"
 import { nowMs } from "./store"
 import type { Fact } from "@/lib/facts/types"
 import type { TaskRow } from "./types"
@@ -126,6 +127,9 @@ export async function projectRequest(request: string): Promise<TaskRow[]> {
   if (!request.trim()) return []
 
   const facts = toolableFacts(await activeFacts())
+  // Признак нужен и при сборке фразы: единицы, подписи слотов и их порядок
+  // живут в реестре, а не в строке.
+  const byKey = new Map(facts.map(f => [f.key, f]))
   const cheap = facts.filter(f => f.model !== "strong")
   const strong = facts.filter(f => f.model === "strong")
 
@@ -164,11 +168,10 @@ export async function projectRequest(request: string): Promise<TaskRow[]> {
       kind: "reveal",
       fact: f.fact,
       payload: f.values,
-      // 🛑 ФРАЗА ЗДЕСЬ ЧЕРНОВАЯ И НАЗВАНА ТАКОЙ: человеческую собирает 91-5 из
-      // начинки. Пустая строка на её месте выглядела бы поломкой вида.
-      phrase: Object.entries(f.values)
-        .map(([k, v]) => (k === "value" ? v : `${k}: ${v}`))
-        .join("; "),
+      // 🔒 ФРАЗА СОБИРАЕТСЯ ИЗ НАЧИНКИ (91-5), А НЕ ПРИХОДИТ ОТ МОДЕЛИ. Второго
+      // источника у неё нет: поля `phrase` нет в схеме инструмента, и схема
+      // строгая — значит разойтись с данными фраза не может по устройству.
+      phrase: phraseOf(byKey.get(f.fact), f.values),
       source: "model",
       confidence: f.confidence,
       at,

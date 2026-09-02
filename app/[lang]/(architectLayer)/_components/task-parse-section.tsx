@@ -118,6 +118,19 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                   </td>
                   <td className="whitespace-pre-wrap break-words px-4 py-3 align-top text-foreground">
                     {row.phrase}
+                    {/* 🔒 ПОД ФРАЗОЙ — РАЗОБРАННЫЕ ЗНАЧЕНИЯ, И ЭТО НЕ ОТЛАДКА (91-5).
+                        Фраза читается человеком, начинка уезжает в таблицы; показать
+                        только фразу значит скрыть ровно то, чем строка полезна дальше —
+                        а показать только начинку значит вернуть технический мусор. */}
+                    {row.payload && Object.keys(row.payload).length ? (
+                      <div data-task-payload className="mt-1 font-mono text-[0.85em] text-muted-foreground">
+                        {Object.entries(row.payload).map(([k, v]) => (
+                          <span key={k} className="mr-3 whitespace-nowrap">
+                            {k}={typeof v === "object" ? JSON.stringify(v) : String(v)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 align-top text-muted-foreground">
                     {ui.parse.sources[row.source]}

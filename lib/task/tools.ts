@@ -1,26 +1,32 @@
 import { tool, type ToolSet } from "ai"
 import { z } from "zod"
-import type { Fact } from "@/lib/facts/types"
+import type { Fact, FactValueType } from "@/lib/facts/types"
 
-// ПРИЗНАК РЕЕСТРА СТАНОВИТСЯ ИНСТРУМЕНТОМ МОДЕЛИ (91-4).
+// ПРИЗНАК РЕЕСТРА СТАНОВИТСЯ ИНСТРУМЕНТОМ МОДЕЛИ (91-4), А ЕГО ЗНАЧЕНИЯ —
+// ТИПИЗИРОВАННОЙ НАЧИНКОЙ (91-5).
 //
 // 🔒 ЭТО ОТВЕТ НА ВОПРОС ВЛАДЕЛЬЦА «ЧТОБЫ АГЕНТ МОГ НАТИВНО ВЫЗЫВАТЬ». Модель
 // выбирает инструмент САМА, по его описанию, — мы не перебираем признаки в
-// цикле и не спрашиваем «есть ли здесь деньги?» по одному. Описание инструмента
-// это `howToFind` признака: та самая инструкция узнавания, ради которой реестр и
-// заведён. Признак без неё — колонка, которую никто не заполняет.
+// цикле. Описание инструмента это `howToFind` признака: та самая инструкция
+// узнавания, ради которой реестр и заведён.
 //
 // 🔒 ЭТО ПРОЕКЦИЯ, А НЕ ДЕЛЕНИЕ ЗАПРОСА НА КУСКИ. Запрос предъявляется каждому
-// инструменту ЦЕЛИКОМ, и каждый берёт столько, сколько его касается. Один и тот
-// же фрагмент попадает в три строки; строка может не иметь фрагмента вовсе —
-// «самые вкусные» есть предпочтение, а не отрезок текста.
+// инструменту ЦЕЛИКОМ, и каждый берёт столько, сколько его касается.
+//
+// 🔒 ПРОЗА — НЕ ДАННЫЕ, И ЭТО ГЛАВНОЕ ТРЕБОВАНИЕ 91-5. «Расход 40 рублей, четыре
+// пирожка по 10» — предложение; в колонку `value_num` его не записать, и
+// следующему шагу писать будет нечего. Поэтому форма значения берётся из
+// признака: число просится числом, дата — датой, признак-флаг — да или нет.
 
-/** Что инструмент нашёл в запросе. Сырое значение, без назначения и без фразы. */
+/** Значение слота после проверки схемой. Проза сюда не попадает. */
+export type TaskValue = string | number | boolean | string[] | { lat: number; lon: number }
+
+/** Что инструмент нашёл в запросе. Типизированная начинка, без фразы и назначения. */
 export type Finding = {
   /** Ключ признака реестра. */
   fact: string
   /** Значения по слотам. Признак без `produces` кладёт одно — под ключом `value`. */
-  values: Record<string, string>
+  values: Record<string, TaskValue>
   confidence?: number
 }
 
@@ -28,8 +34,8 @@ export type Finding = {
  * Имя инструмента из ключа признака.
  *
  * 🔒 ТОЧКА В ИМЕНИ ФУНКЦИИ ПРОВАЙДЕРОМ НЕ ПРИНИМАЕТСЯ, а ключи реестра почти все
- * с точкой (`intent.capture`). Перевод механический и обратимый: обратно ищем по
- * списку, а не разбираем строку — второй разбор разошёлся бы с первым.
+ * с точкой (`intent.capture`). Перевод механический; обратно ищем по списку, а
+ * не разбираем строку — второй разбор разошёлся бы с первым.
  */
 export function toolNameOf(key: string): string {
   return key.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 60)
@@ -60,12 +66,80 @@ export function toolableFacts(facts: Fact[]): Fact[] {
   })
 }
 
+export type Slot = { name: string; title: string; valueType: FactValueType; unit?: string }
+
 /** Слоты признака: несколько именованных значений или одно безымянное. */
-function slotsOf(fact: Fact): { name: string; title: string; unit?: string }[] {
+export function slotsOf(fact: Fact): Slot[] {
   if (fact.produces?.length) {
-    return fact.produces.map(p => ({ name: p.slot, title: p.title, unit: p.unit }))
+    return fact.produces.map(p => ({
+      name: p.slot,
+      title: p.title,
+      valueType: p.valueType,
+      unit: p.unit,
+    }))
   }
-  return [{ name: "value", title: fact.title }]
+  return [{ name: "value", title: fact.title, valueType: fact.valueType, unit: fact.unit }]
+}
+
+/**
+ * Схема одного слота — ПО ФОРМЕ ЗНАЧЕНИЯ ПРИЗНАКА, а не «строка на всё».
+ *
+ * 🔒 ЭТО И ЕСТЬ ПРОВЕРКА ЗАКРЫТОГО СПИСКА, ТОЛЬКО ПО ТИПУ. Модель вернёт «сорок»
+ * там, где ждут число, и выглядеть это будет правдоподобно; схема отвергает
+ * такой вызов ЦЕЛИКОМ, потому что наполовину разобранное сохранят (закон
+ * `socials-ai`, оплаченный `fact-draft`).
+ */
+function slotSchema(s: Slot): z.ZodTypeAny {
+  const label = s.unit ? `${s.title} (${s.unit})` : s.title
+  switch (s.valueType) {
+    case "flag":
+      return z.boolean().describe(`${label}. Да или нет.`)
+    case "number":
+    case "money":
+      return z.number().describe(`${label}. Только число, без слов и знаков валюты.`)
+    case "date":
+      return z
+        .string()
+        .describe(`${label}. Дата видом ГГГГ-ММ-ДД или ГГГГ-ММ-ДДTЧЧ:ММ, а не словами.`)
+    case "geo":
+      return z
+        .object({ lat: z.number(), lon: z.number() })
+        .describe(`${label}. Широта и долгота числами.`)
+    case "list":
+      return z.array(z.string()).describe(`${label}. Список коротких значений.`)
+    default:
+      return z.string().describe(label)
+  }
+}
+
+/**
+ * Привести значение к тому, что можно записать в колонку.
+ *
+ * 🔒 ДАТА СТАНОВИТСЯ МЕТКОЙ ВРЕМЕНИ ЗДЕСЬ, А НЕ ПРИ ЗАПИСИ. Слова «в воскресенье»
+ * схему не проходят вовсе; но и «2026-13-45» разобрать нельзя, а выглядит оно как
+ * дата. Неразобранное возвращает `null`, и находка отбрасывается ЦЕЛИКОМ.
+ */
+function normalise(s: Slot, v: unknown): TaskValue | null {
+  if (v === undefined || v === null) return null
+  if (s.valueType === "date") {
+    const ms = Date.parse(String(v))
+    if (!Number.isFinite(ms)) return null
+    return Math.floor(ms / 1000)
+  }
+  if (typeof v === "string") {
+    const t = v.trim()
+    return t === "" ? null : t
+  }
+  if (Array.isArray(v)) {
+    const list = v.map(String).filter(x => x.trim() !== "")
+    return list.length ? list : null
+  }
+  if (typeof v === "number" || typeof v === "boolean") return v
+  if (typeof v === "object" && "lat" in v && "lon" in v) {
+    const g = v as { lat: unknown; lon: unknown }
+    if (typeof g.lat === "number" && typeof g.lon === "number") return { lat: g.lat, lon: g.lon }
+  }
+  return null
 }
 
 /**
@@ -73,7 +147,11 @@ function slotsOf(fact: Fact): { name: string; title: string; unit?: string }[] {
  *
  * 🔒 НАЙДЕННОЕ УХОДИТ В `take`, А НЕ ВОЗВРАЩАЕТСЯ МОДЕЛИ ОБРАТНО. Инструмент
  * отвечает коротким «принято»: верни он значение целиком, модель принялась бы
- * его пересказывать и уточнять, а нам нужен факт вызова, а не разговор о нём.
+ * его пересказывать, а нам нужен факт вызова, а не разговор о нём.
+ *
+ * 🔒 СХЕМА СТРОГАЯ: ЛИШНЕЕ ПОЛЕ ОТВЕРГАЕТ ВЫЗОВ, А НЕ ОТБРАСЫВАЕТСЯ МОЛЧА. Так
+ * закрыт единственный путь, которым фраза могла бы приехать от модели отдельным
+ * полем и разойтись с начинкой: поля просто нет в схеме (91-5).
  *
  * 🛑 ЗДЕСЬ НИЧЕГО НЕ СОХРАНЯЕТСЯ В ТАБЛИЦЫ ПРИЗНАКОВ. Строка называет, что
  * найдено; куда это ляжет — 91-6. Модель ПРЕДЛАГАЕТ, человек применяет.
@@ -84,12 +162,7 @@ export function factTools(facts: Fact[], take: (f: Finding) => void): ToolSet {
   for (const fact of facts) {
     const slots = slotsOf(fact)
     const shape: Record<string, z.ZodTypeAny> = {}
-    for (const s of slots) {
-      shape[s.name] = z
-        .string()
-        .optional()
-        .describe(s.unit ? `${s.title} (${s.unit})` : s.title)
-    }
+    for (const s of slots) shape[s.name] = slotSchema(s).optional()
     shape.confidence = z
       .number()
       .min(0)
@@ -102,14 +175,20 @@ export function factTools(facts: Fact[], take: (f: Finding) => void): ToolSet {
       // выбирает; заголовок без инструкции узнавания не отличает «деньги» от
       // «числа». Заголовок и назначение идут рядом — они дают контекст.
       description: `${fact.title}. ${fact.description} КАК УЗНАВАТЬ: ${fact.howToFind}`,
-      inputSchema: z.object(shape),
+      inputSchema: z.strictObject(shape),
       execute: async (input: Record<string, unknown>) => {
-        const values: Record<string, string> = {}
+        const values: Record<string, TaskValue> = {}
         for (const s of slots) {
-          const v = input[s.name]
-          if (v !== undefined && v !== null && String(v).trim() !== "") {
-            values[s.name] = String(v).trim()
+          if (!(s.name in input)) continue
+          const raw = input[s.name]
+          const v = normalise(s, raw)
+          // 🛑 НЕРАЗОБРАННОЕ ЗНАЧЕНИЕ РОНЯЕТ ВСЮ НАХОДКУ, А НЕ ОДИН СЛОТ. Запись
+          // «покупка на неизвестную сумму» в таблице неотличима от покупки за
+          // ноль, и разбираться в этом будут через месяц по итогам.
+          if (v === null && raw !== undefined && raw !== null) {
+            return { recorded: false, reason: `значение слота ${s.name} не разобрано` }
           }
+          if (v !== null) values[s.name] = v
         }
         // 🔒 ПУСТОЙ ВЫЗОВ — ЭТО НЕ НАХОДКА. Модель зовёт инструмент «на всякий
         // случай» и не кладёт ни одного значения; записав такой вызов, экран

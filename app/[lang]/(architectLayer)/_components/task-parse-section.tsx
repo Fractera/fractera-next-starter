@@ -148,12 +148,11 @@ export async function TaskParseSection({
   const task = await readTask()
   const empty = emptyReason(state, ui)
 
-  // 🔒 СОРТИРОВКА ОБРАТНАЯ — ПРЯМОЕ СЛОВО ВЛАДЕЛЬЦА. Новое сверху: разбор растёт
-  // по времени вниз, и человек, открывший вкладку, должен видеть последнее
-  // случившееся, а не прокручивать до него.
-  // 🔒 СЫРЬЁ ПРИ ЭТОМ УЕЗЖАЕТ В САМЫЙ НИЗ И ОСТАЁТСЯ ПЕРВЫМ ПО НОМЕРУ: оно не
-  // «одна из строк», а основание, с которым сверяют остальные.
-  const rows: TaskRow[] = task ? [...task.rows].reverse() : []
+  // 🔒 ПОРЯДОК ПРЯМОЙ: СТАРОЕ СВЕРХУ, НОВОЕ ВНИЗУ — правка владельца 2026-09-02.
+  // Таблица читается как ход разбора: строка называет следующее действие, и оно
+  // стоит ПОД ней. Обратный порядок разрывал эту сцепку — «следующее» оказывалось
+  // выше того, что его породило.
+  const rows: TaskRow[] = task ? task.rows : []
 
   return (
     <section data-task-parse className="flex flex-col gap-6">
@@ -221,11 +220,34 @@ export async function TaskParseSection({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
+              {/* 🔒 СЫРЬЁ — НЕ ИЗ `rows`, И ЛЕЖИТ ОНО ОТДЕЛЬНЫМ ПОЛЕМ ОБЪЕКТА.
+                  Остальные строки — интерпретация и живут списком; эта одна есть
+                  у КАЖДОГО разбора по устройству.
+
+                  🔒 ТЕКСТ ДОСЛОВНО, С ПЕРЕВОДАМИ СТРОК: он и есть то, с чем
+                  сверяют всё остальное. Обрезанный «для вида» оригинал перестаёт
+                  быть оригиналом. */}
+              <Row
+                no={1}
+                kind={ui.parse.kinds.intake}
+                what={task.intake.text || ui.parse.noWords}
+                source={`${channelName(task.intake.channel)}${task.intake.who ? ": " + task.intake.who : ""}`}
+                action={ui.parse.nextAfterIntake}
+                at={task.intake.at}
+                mark={{
+                  "data-task-row": "intake",
+                  "data-task-channel": task.intake.channel,
+                  "data-task-at": task.intake.at,
+                }}
+                dialogUi={dialogUi}
+                cols={cols}
+              />
+
+              {rows.map(row => (
                 <Row
                   key={row.id}
-                  // Номер — позиция на экране: сверху 1, дальше вниз.
-                  no={i + 1}
+                  // Номер — порядок появления: сырьё №1, дальше по ходу разбора.
+                  no={row.id + 1}
                   kind={ui.parse.kinds[row.kind]}
                   fact={row.fact}
                   what={row.phrase}
@@ -240,27 +262,6 @@ export async function TaskParseSection({
                 />
               ))}
 
-              {/* 🔒 СЫРЬЁ — НЕ ИЗ `rows`, И ЛЕЖИТ ОНО ОТДЕЛЬНЫМ ПОЛЕМ ОБЪЕКТА.
-                  Остальные строки — интерпретация и живут списком; эта одна есть
-                  у КАЖДОГО разбора по устройству.
-
-                  🔒 ТЕКСТ ДОСЛОВНО, С ПЕРЕВОДАМИ СТРОК: он и есть то, с чем
-                  сверяют всё остальное. Обрезанный «для вида» оригинал перестаёт
-                  быть оригиналом. */}
-              <Row
-                no={rows.length + 1}
-                kind={ui.parse.kinds.intake}
-                what={task.intake.text || ui.parse.noWords}
-                source={ui.parse.via.replace("{name}", channelName(task.intake.channel))}
-                at={task.intake.at}
-                mark={{
-                  "data-task-row": "intake",
-                  "data-task-channel": task.intake.channel,
-                  "data-task-at": task.intake.at,
-                }}
-                dialogUi={dialogUi}
-                cols={cols}
-              />
             </tbody>
           </table>
         </div>

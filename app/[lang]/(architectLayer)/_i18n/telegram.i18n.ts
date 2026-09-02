@@ -74,6 +74,8 @@ export type TelegramUi = {
     colAction: string
     /** Кнопка под однострочной ячейкой: открыть весь текст в окне. */
     viewAll: string
+    /** Следующее действие первой строки — она всегда ведёт к анализу реестра. */
+    nextAfterIntake: string
     colKind: string
     colWhat: string
     colSource: string
@@ -404,6 +406,7 @@ const EN: TelegramUi = {
     colInstruction: "Instruction",
     colAction: "Next action",
     viewAll: "View all",
+    nextAfterIntake: "Find out which registry facts this message matches.",
     colWhat: "Output",
     colSource: "Tool",
     colTime: "Time",
@@ -718,6 +721,7 @@ const RU: TelegramUi = {
     colInstruction: "Инструкция",
     colAction: "Следующее действие",
     viewAll: "Посмотреть всё",
+    nextAfterIntake: "Узнать, каким элементам реестра признаков соответствует сообщение.",
     colWhat: "Выход",
     colSource: "Инструмент",
     colTime: "Время",

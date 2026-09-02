@@ -53,7 +53,32 @@ function budget<T extends ToolSet>(): StopCondition<T> {
   }
 }
 
-const INSTRUCTIONS = [
+/**
+ * Наставление агенту.
+ *
+ * 🛑 «СЕЙЧАС» НАЗЫВАЕТСЯ ВСЛУХ, И ЭТО ОПЛАЧЕНО ИЗМЕРЕНИЕМ 91-5. На «вчера купил
+ * чайник за 900 рублей» модель вернула дату **2023-10-06**: текущего дня она не
+ * знает и берёт его из своего обучения. **Неверная дата хуже отсутствующей** —
+ * запись уезжает в чужой месяц и портит подсчёт, не сообщая об этом ничем.
+ *
+ * 🔒 ПОЯС ПРИХОДИТ ПАРАМЕТРОМ, А НЕ ЧИТАЕТСЯ ЗДЕСЬ. Этот слой не знает имени
+ * своего продукта; пояс знает продукт, он же его и настраивает.
+ */
+function instructions(now: Date, timeZone: string): string {
+  const day = new Intl.DateTimeFormat("ru-RU", {
+    timeZone: timeZone || "UTC",
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(now)
+  return [
+    `Сейчас ${day} (${timeZone || "UTC"}).`,
+    "Относительные сроки — вчера, в воскресенье, через неделю — считай от этого момента",
+    "и возвращай полной датой.",
+    ...BASE,
+  ].join(" ")
+}
+
+const BASE = [
   "Тебе дают ОДИН запрос человека целиком и набор инструментов.",
   "Каждый инструмент — это признак: он описывает, что именно он узнаёт и по каким словам.",
   "Спроси у инструментов, что из этого запроса им принадлежит: вызови КАЖДЫЙ, которому в запросе",
@@ -62,7 +87,10 @@ const INSTRUCTIONS = [
   "Не вызывай инструмент, которому нечего взять: пустой вызов хуже отсутствия вызова.",
   "Ничего не выдумывай: значение либо сказано, либо прямо следует из сказанного.",
   "Когда все подходящие инструменты вызваны — ответь одной строкой, ничего не пересказывая.",
-].join(" ")
+]
+
+/** Когда и в каком поясе идёт разбор. Пусто — сейчас и UTC. */
+export type When = { now?: Date; timeZone?: string }
 
 /** Что дал один прогон агента. */
 export type Projection = {
@@ -85,13 +113,14 @@ export async function runProjection(
   request: string,
   facts: Fact[],
   llm: LanguageModel,
+  when: When = {},
 ): Promise<Projection> {
   const findings: Finding[] = []
   const tools = factTools(facts, f => findings.push(f))
 
   const agent = new ToolLoopAgent({
     model: llm,
-    instructions: INSTRUCTIONS,
+    instructions: instructions(when.now ?? new Date(), when.timeZone ?? ""),
     tools,
     // 🔒 ДВА УСЛОВИЯ, А НЕ ОДНО: шаги ловят зацикливание, токены — один
     // непомерно дорогой шаг. Любое из них останавливает петлю.
@@ -123,7 +152,7 @@ export async function runProjection(
  * Гонять весь разбор сильной моделью из-за одного признака значило бы сделать
  * дорогим каждое сообщение — согласие давали не на это.
  */
-export async function projectRequest(request: string): Promise<TaskRow[]> {
+export async function projectRequest(request: string, when: When = {}): Promise<TaskRow[]> {
   if (!request.trim()) return []
 
   const facts = toolableFacts(await activeFacts())
@@ -134,8 +163,8 @@ export async function projectRequest(request: string): Promise<TaskRow[]> {
   const strong = facts.filter(f => f.model === "strong")
 
   const runs: Projection[] = []
-  if (cheap.length) runs.push(await runProjection(request, cheap, model("cheap")))
-  if (strong.length) runs.push(await runProjection(request, strong, model("strong")))
+  if (cheap.length) runs.push(await runProjection(request, cheap, model("cheap"), when))
+  if (strong.length) runs.push(await runProjection(request, strong, model("strong"), when))
 
   const findings = runs.flatMap(r => r.findings)
   const failed = runs.find(r => r.failed)?.failed

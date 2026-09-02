@@ -327,7 +327,14 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   if (opened.ok && opened.at) {
     try {
       const forFacts = [msg.text, ...files.map(f => f.text)].filter(Boolean).join(String.fromCharCode(10))
-      const rows = await projectRequest(forFacts)
+      // 🔒 ВРЕМЯ И ПОЯС ПЕРЕДАЮТСЯ ЯВНО (91-5). Модель не знает, какой сегодня
+      // день: измерено — на «вчера» она вернула дату 2023 года. Момент берётся у
+      // САМОГО СООБЩЕНИЯ, а не у часов сервера: разбор мог задержаться, а «вчера»
+      // считается от того, когда человек это сказал. Пояс — настройка продукта.
+      const rows = await projectRequest(forFacts, {
+        now: new Date(Date.parse(at) || Date.now()),
+        timeZone: timezoneOf(),
+      })
       // `done: true` — разбор на сегодня кончился: других стадий, дописывающих
       // строки, пока не существует. Появятся (91-5…91-9) — отметку поставит последняя.
       const put = await appendRows(rows, { intakeAt: opened.at, done: true })

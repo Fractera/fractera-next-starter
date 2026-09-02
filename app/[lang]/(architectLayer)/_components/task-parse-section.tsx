@@ -68,6 +68,8 @@ function Row({
   what,
   payload,
   source,
+  instruction,
+  action,
   confidence,
   at,
   mark,
@@ -78,6 +80,8 @@ function Row({
   what: ReactNode
   payload?: Record<string, unknown>
   source: string
+  instruction?: string
+  action?: string
   confidence?: number
   at: string
   mark: Record<string, string | undefined>
@@ -116,7 +120,13 @@ function Row({
           <span className="ml-2">{Math.round(confidence * 100)}%</span>
         ) : null}
       </td>
-      <td className={`${CELL} ${stripe(4)} whitespace-nowrap font-mono text-muted-foreground`}>
+      {/* 🔒 КОЛОНКА «ИНСТРУКЦИЯ» ЗАВЕДЕНА ПУСТОЙ ПО СЛОВУ ВЛАДЕЛЬЦА: работать с
+          ней будем следующим шагом. Пустая ячейка честнее отсутствующей колонки —
+          видно, что место под инструкцию есть и оно пока не наполнено. */}
+      <td className={`${CELL} ${stripe(4)} whitespace-nowrap text-muted-foreground`}>{instruction ?? ""}</td>
+      {/* Экшен — предпоследняя колонка, по слову владельца. В первой записи пусто. */}
+      <td className={`${CELL} ${stripe(5)} whitespace-nowrap text-muted-foreground`}>{action ?? ""}</td>
+      <td className={`${CELL} ${stripe(6)} whitespace-nowrap font-mono text-muted-foreground`}>
         <TaskTime at={at} />
       </td>
     </tr>
@@ -179,7 +189,9 @@ export async function TaskParseSection({ state, ui }: { state: ChannelsState; ui
                 <th className={`px-4 py-2 font-normal ${stripe(1)}`}>{ui.parse.colKind}</th>
                 <th className={`px-4 py-2 font-normal ${stripe(2)}`}>{ui.parse.colWhat}</th>
                 <th className={`px-4 py-2 font-normal ${stripe(3)}`}>{ui.parse.colSource}</th>
-                <th className={`px-4 py-2 font-normal ${stripe(4)}`}>{ui.parse.colTime}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(4)}`}>{ui.parse.colInstruction}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(5)}`}>{ui.parse.colAction}</th>
+                <th className={`px-4 py-2 font-normal ${stripe(6)}`}>{ui.parse.colTime}</th>
               </tr>
             </thead>
             <tbody>

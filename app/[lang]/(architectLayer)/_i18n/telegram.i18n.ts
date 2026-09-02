@@ -70,6 +70,8 @@ export type TelegramUi = {
     emptyNoRequests: string
     /** Заголовки колонок таблицы. */
     colNo: string
+    colInstruction: string
+    colAction: string
     colKind: string
     colWhat: string
     colSource: string
@@ -394,12 +396,14 @@ const EN: TelegramUi = {
       "The bot is not linked to a chat yet. Link it in Settings, write to it, and the breakdown of that message appears here.",
     emptyNoRequests:
       "Nobody has written to the bot yet. The first message will be taken apart here.",
-    colKind: "Row",
+    colKind: "Fact",
     colNo: "#",
-    colWhat: "What was established",
+    colInstruction: "Instruction",
+    colAction: "Action",
+    colWhat: "Output",
     colSource: "Tool",
     colTime: "Time",
-    via: "{name} channel",
+    via: "{name}",
     noWords: "No words of their own — the message arrived as an attachment.",
     kinds: {
       intake: "Raw request",
@@ -704,12 +708,14 @@ const RU: TelegramUi = {
       "Бот ещё не привязан к чату. Привяжите его в «Настройках», напишите ему — и разбор этого сообщения появится здесь.",
     emptyNoRequests:
       "Боту ещё никто не писал. Первое сообщение будет разобрано здесь.",
-    colKind: "Строка",
+    colKind: "Признак",
     colNo: "№",
-    colWhat: "Что установлено",
+    colInstruction: "Инструкция",
+    colAction: "Экшен",
+    colWhat: "Выход",
     colSource: "Инструмент",
     colTime: "Время",
-    via: "канал {name}",
+    via: "{name}",
     noWords: "Своих слов нет — сообщение пришло вложением.",
     kinds: {
       intake: "Сырой запрос",

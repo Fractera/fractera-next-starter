@@ -209,6 +209,13 @@ export async function POST(req: NextRequest) {
     lon: typeof body.lon === "number" ? body.lon : undefined,
   })
 
+  // 🔒 ПАУЗА РАЗБОРА (режим отладки): отвечаем СТАТИЧЕСКОЙ строкой, не зовя
+  // модель. Молчание бота человек читает как поломку, а любой сочинённый ответ
+  // означал бы вызов модели — то есть ровно то, что пауза и запрещает.
+  if (result.notes.includes("paused")) {
+    return NextResponse.json({ ok: true, messageId: result.messageId, paused: true })
+  }
+
   // Повтор доставки: строка уже есть, отвечать человеку второй раз не за что.
   if (result.duplicate) {
     return NextResponse.json({ ok: true, messageId: result.messageId, duplicate: true })

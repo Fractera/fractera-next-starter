@@ -292,6 +292,25 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   })
   if (!opened.ok) notes.push(`task:${opened.error}`)
 
+  // ── РЕЖИМ ОТЛАДКИ: РАЗБОР НА ПАУЗЕ ──────────────────────────────────────
+  // 🔒 ПРЯМОЕ СЛОВО ВЛАДЕЛЬЦА: «функция которая вызывает искусственный интеллект
+  // должна быть поставлена на паузу… я шаг за шагом хочу пройти и увидеть, как в
+  // таблице появляются нужные записи». Пауза останавливает ВСЁ, что стучится в
+  // модель: понимание, проекцию на реестр, векторы и граф знаний.
+  //
+  // 🔒 СООБЩЕНИЕ ПРИ ЭТОМ ПРИНЯТО И ЗАПИСАНО, а первая строка разбора уже лежит:
+  // на паузе видно ровно то, что система знает БЕЗ модели.
+  if (process.env.TASK_DEBUG_PAUSE === "1") {
+    notes.push("paused")
+    return {
+      messageId, duplicate: false, summary: "", kind: null, payload: null,
+      happenedAt: null, currency: "", currencyFromConfig: false, dateFromToday: false,
+      envelope: "", fileText: "", forwardedFrom: msg.forwardedFrom ?? "", fileRead: "",
+      needsConfirm: false, artifacts: [], understood: false, candidate: "",
+      intent: "capture", schedule: null, confirmation: null, notes,
+    }
+  }
+
   // ── Вложение забирается ДО разбора ─────────────────────────────────────
   // Прочитанное с картинки — часть того, что человек сказал. Разобрать сперва
   // подпись, а картинку приложить потом значит понять половину: «вот чек»

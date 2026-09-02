@@ -588,6 +588,55 @@ is dropped whole — half-parsed is worse than refused, because half-parsed gets
 any screen where a person describes in words what the code needs as fields. **A good tool does not
 know the name of its first consumer** — otherwise the second one starts with a copy.
 
+### The second layer — how a fact LIVES, not only what it is (step 83, 2026-09-02)
+
+The first layer declared WHAT to pull out of a message. Six of the owner's scenarios could not be
+expressed on it, and every wall turned out to be a missing **setting**, not missing code.
+
+🔒 **EIGHT SETTINGS, AND THE NUMBER IS FIXED IN THE SAME EDIT AS THE LIST:** `produces` (several
+named values of one fact) · `derivedFrom` (computed from another fact, not searched for in the text) ·
+`aggregate` (how it accumulates) · `subject` (whose fact it is) · `lifecycle` (states instead of
+immutability) · `schedules` (spawns a deferred action) · `fn.kind="web"` · `model` (which model
+extracts it). **All eight are optional** — the 25 built-in facts predate them and must keep working.
+
+🔒 **THREE COLUMNS — `slot`, `subject_key`, `status` — ON EVERY FACT TABLE, not only the ones that
+need them.** One standard without exceptions: "some this way, some that way" is no rule at all.
+🛑 **THE `ALTER` LADDER LIVES NEXT TO THE SHAPE IT REPAIRS** (`lib/facts/table.ts`), never in the
+executor: whoever edits the shape must see the ladder in the same file. ✗ the previous code skipped
+existing tables entirely, so the second layer would have reached **none** of the 24 already created.
+
+🛑 **A LADDERED TABLE AND A FRESH ONE HOLD THE SAME COLUMNS IN A DIFFERENT ORDER** — `ALTER` appends.
+This is harmless **only because** nothing addresses columns by position: measured, `SELECT *` across
+`lib/facts/` is zero files. **Hence the ban:** `SELECT *` and column-less `INSERT` on fact tables are
+forbidden — they work on a clean machine and scramble values on an upgraded one, i.e. they break
+**only for someone whose system has already been running**.
+
+🔒 **`lifecycle` KEEPS HISTORY INSTEAD OF OVERWRITING, and "current" is the LAST ROW.** A separate
+"current status" column would be a second truth and would diverge silently. Order by `id`, never by
+`created_at`: the database default prints **seconds**, and two transitions inside one second would
+carry the same stamp.
+
+✗ **A REAL DEFECT, FOUND BY MEASUREMENT ON THE OWNER'S OWN SENTENCE:** "Мише дали задание" and "Миша
+молодец" produce the keys `mishe` and `misha` — **Russian grammatical cases split one person in
+two**, and half his tasks go to the twin.
+🛑 **CURED BY PROPOSING, NEVER BY MERGING.** A rule like "Миша = Михаил = Мишка" is easy to write and
+wrong **irreversibly**: merged data cannot be unmerged. Similarity is a shared key prefix — crude on
+purpose — and the owner decides. Same law as registry candidates.
+
+🔒 **A DERIVED CHAIN IS CHECKED WHOLE, AND AT SAVE TIME.** `a → b` looks innocent until `b → c → a`;
+refusing on the authoring screen is cheaper than a silent loop on every message. **"Source not there
+yet" is a separate outcome and does not block the save:** describing a derived fact before its source
+is a legitimate order of work.
+
+🔒 **THE CARD EXPANDER (81-9) SEPARATES DECLARED FROM WORKING.** Five lines: how a person says it ·
+what is extracted and where it lands · what obtains it · the code behind it · **what is extracted and
+NOT kept**. The fifth was not requested — the other four are honest only by half. ✗ it immediately
+showed that `facets` are extracted on every parse and **thrown away**, that a purchase amount stays a
+flag without a number, and that the word "here" never becomes a place.
+🔒 **Three lines are generated, two are handwritten** — and the handwritten ones live **next to the
+mechanism** (`builtin.ts`), not in the screen's dictionary. **Empty says "not described"** rather
+than inventing: a made-up example is a lie about what the system understands.
+
 **Where it lives:** `lib/facts/` (types, generated built-ins, table shape, registry, table
 generation) · `app/api/architect/facts` and `…/fact-draft` · the card in the bot's Settings section ·
 `_tools/fact-draft/`. The document written for the owner is

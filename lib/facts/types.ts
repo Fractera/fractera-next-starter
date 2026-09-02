@@ -33,7 +33,7 @@
 //   entity      — чем оказалось: заметка, задача, чек, место, идея. Второй вызов.
 //   destination — куда уехало: медиатека, вектор, граф знаний.
 //   field       — что извлекли ИЗ содержимого: сумма, дата, координаты, связь.
-export const FACT_LEVELS = ["material", "intent", "entity", "destination", "field"] as const
+export const FACT_LEVELS = ["initiator", "material", "intent", "entity", "destination", "field"] as const
 export type FactLevel = (typeof FACT_LEVELS)[number]
 
 /** Форма значения. Решает, как признак хранится и как его показывать. */

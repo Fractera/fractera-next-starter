@@ -4,6 +4,7 @@ import { TelegramSetup } from "./telegram-setup.client"
 import { TelegramSchedule } from "./telegram-schedule.client"
 import { OpenAiKeySection } from "./openai-key"
 import { FactsRegistrySection } from "./facts-registry"
+import { ToolsRegistry } from "./tools-registry"
 import { InProgress } from "./in-progress"
 import type { ChannelsState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
@@ -64,6 +65,10 @@ export function TelegramSettings({
             Реестр описывает ПРОЕКТ, а не бота: он про то, что система умеет
             вынимать из любого сообщения, и от живости Telegram не зависит. */}
         <FactsRegistrySection lang={lang} ui={ui} />
+
+      <div className="rounded-lg border border-border p-4">
+        <ToolsRegistry />
+      </div>
       </div>
     )
   }
@@ -185,6 +190,10 @@ export function TelegramSettings({
           реестр говорит, что система умеет вынимать, а инструкция — как ей
           об этом рассказывать. Порядок смысловой, как у трёх карточек выше. */}
       <FactsRegistrySection lang={lang} ui={ui} />
+
+      <div className="rounded-lg border border-border p-4">
+        <ToolsRegistry />
+      </div>
 
 
       {/* ── 5. Ваша инструкция боту — каркас (77-15) ─────────────────────────

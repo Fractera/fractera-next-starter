@@ -2,6 +2,7 @@ import { ENTRY_KINDS } from "@/lib/products/telegram-desk/branches/capture"
 import { INTENTS } from "@/lib/products/telegram-desk/route-intent"
 import { ARTIFACT_KINDS } from "@/lib/products/telegram-desk/artifact-kinds"
 import { ARRIVAL_KINDS, type ArrivalKind } from "@/lib/products/telegram-desk/arrival-kinds"
+import { INITIATORS, INITIATOR_TEXTS } from "@/lib/products/telegram-desk/initiators"
 import type { Fact } from "./types"
 
 // ВСТРОЕННЫЕ ПРИЗНАКИ — ПОРОЖДАЮТСЯ ИЗ СВОИХ ИСТОЧНИКОВ (81-1).
@@ -31,12 +32,37 @@ import type { Fact } from "./types"
 /** Признак, который система умеет сегодня. Порождается, а не хранится. */
 export function builtinFacts(): Fact[] {
   return [
+    ...initiatorFacts(),
     ...materialFacts(),
     ...intentFacts(),
     ...entityFacts(),
     ...destinationFacts(),
     ...fieldFacts(),
   ]
+}
+
+/**
+ * Кто начал разговор — группа ВЫШЕ «чем пришло» (правка владельца 2026-09-02).
+ *
+ * 🔒 ТРАНСПОРТ И ИСТОЧНИК СОБЫТИЯ — РАЗНЫЕ ВОПРОСЫ. Одно и то же сообщение
+ * бывает текстовым И порождённым расписанием; смешав их в одну группу, мы
+ * потеряли бы возможность отличить слова человека от сработавшего напоминания.
+ */
+function initiatorFacts(): Fact[] {
+  return INITIATORS.map(key => ({
+    key: `initiator.${key}`,
+    level: "initiator" as const,
+    title: INITIATOR_TEXTS[key].title,
+    description: INITIATOR_TEXTS[key].description,
+    valueType: "flag" as const,
+    howToFind: INITIATOR_TEXTS[key].howToFind,
+    storedIn: "tgdesk_messages.initiator",
+    onMissing: "silent" as const,
+    builtin: true,
+    enabled: true,
+    example: INITIATOR_TEXTS[key].example,
+    lost: INITIATOR_TEXTS[key].lost,
+  }))
 }
 
 /**

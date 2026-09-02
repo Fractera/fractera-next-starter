@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send, KeyRound } from "lucide-react";
+import { Boxes, SlidersHorizontal, Wrench, Palette, GitBranch, Send, KeyRound, BookText } from "lucide-react";
 import { findSocialIcon } from "@/components/icons/socials";
 import { isUploadedIcon } from "@/lib/socials/catalogue";
 import { getAppConfig } from "@/config/app-config";
@@ -340,6 +340,20 @@ export function FooterMenu({ lang }: { lang: string }) {
             >
               <KeyRound className="hidden size-3.5 sm:inline-block" />
               {authLinkUi(lang).footer}
+            </Link>
+
+            {/* 🔒 ПАСПОРТ ПРОЕКТА — ШЕСТОЙ ВХОД СЛОЯ (владелец 2026-09-02): «создадим
+                паспорт… чтобы я время от времени читал и корректировал это удобно, в
+                человеческом интерфейсе». Стоит ПОД настройками, как он и просил.
+                Законы соседних ссылок действуют дословно: замок на слое и дверях,
+                `rel="nofollow"` — страница служебная, `Link` — она своя. */}
+            <Link
+              href={`/${lang}/architect/passport`}
+              rel="nofollow"
+              className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
+            >
+              <BookText className="hidden size-3.5 sm:inline-block" />
+              Паспорт
             </Link>
 
             {/* 🔒 ВХОД В ПАНЕЛЬ УПРАВЛЕНИЯ (владелец 2026-08-14).

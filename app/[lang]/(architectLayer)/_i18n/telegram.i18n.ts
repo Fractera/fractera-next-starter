@@ -119,7 +119,7 @@ export type TelegramUi = {
     more: string
     less: string
     /** Подписи пяти уровней — отвечают на вопрос «когда признак известен». */
-    levels: Record<'material' | 'intent' | 'entity' | 'destination' | 'field', string>
+    levels: Record<'initiator' | 'material' | 'intent' | 'entity' | 'destination' | 'field', string>
     /** Пометки записи. */
     builtin: string
     required: string
@@ -445,6 +445,7 @@ const EN: TelegramUi = {
     more: "What is a fact",
     less: "Collapse",
     levels: {
+      initiator: "Who started it",
       material: "How it arrived",
       intent: "Why it arrived",
       entity: "What it turned out to be",
@@ -765,6 +766,7 @@ const RU: TelegramUi = {
     more: "Что такое признак",
     less: "Свернуть",
     levels: {
+      initiator: "Кто инициировал",
       material: "Чем пришло",
       intent: "Зачем пришло",
       entity: "Чем оказалось",

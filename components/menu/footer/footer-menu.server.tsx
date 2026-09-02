@@ -11,6 +11,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
 import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi, chatLinkUi } from "@/components/menu/footer/footer-menu.i18n";
+import { ChatLink } from "./chat-link.client"
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
 import { adminUrlFromSite, chatUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
@@ -331,16 +332,13 @@ export function FooterMenu({ lang }: { lang: string }) {
                 выводится из адреса сайта, а он на новой машине не заполнен.
                 Кнопка тогда не показывается — выдуманный адрес хуже
                 отсутствующего, он ведёт человека в никуда. */}
-            {chatUrl && (
-              <a
-                href={chatUrl}
-                rel="nofollow noopener noreferrer"
-                className={buttonVariants({ variant: "ghost", size: "sm" }) + " gap-1.5 text-muted-foreground hover:text-foreground"}
-              >
-                <Bot className="hidden size-3.5 sm:inline-block" />
-                {chatLinkUi(lang).footer}
-              </a>
-            )}
+            {/* 🔒 КНОПКА ЧАТА РИСУЕТСЯ ВСЕГДА, АДРЕС У НЕЁ ИЗ ДВУХ ИСТОЧНИКОВ.
+                ✗ Оплачено 2026-09-03: здесь стояло `{chatUrl && …}`, и на свежем
+                сервере кнопки не было вовсе — владелец сообщил «ссылки на чат в
+                подвале нет». Это ТОТ ЖЕ дефект, что случился с кнопкой панели
+                2026-08-29, и лечится он тем же островком: сервер даёт адрес из
+                настроек, а без них он выводится из адреса окна. */}
+            <ChatLink href={chatUrl} label={chatLinkUi(lang).footer} />
 
             {/* 🔒 АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ (владелец 2026-08-31): «сюда из
                 административной панели мы вытащим настройку авторизации… первая

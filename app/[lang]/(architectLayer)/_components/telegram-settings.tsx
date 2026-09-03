@@ -1,12 +1,17 @@
 import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle, Timer, ScrollText } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { TelegramSetup } from "./telegram-setup.client"
+import {
+  type AddBotLabels,
+  TelegramAddBot,
+  TelegramRemoveBot,
+} from "./telegram-add-bot.client"
 import { TelegramSchedule } from "./telegram-schedule.client"
 import { OpenAiKeySection } from "./openai-key"
 import { FactsRegistrySection } from "./facts-registry"
 import { ToolsRegistry } from "./tools-registry"
 import { InProgress } from "./in-progress"
-import type { ChannelsState } from "@/lib/architect/channels"
+import type { ChannelsState, TelegramState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 
 // РАЗДЕЛ «НАСТРОЙКИ» ВХОДА «TELEGRAM-БОТ» — ПЕРЕНЕСЁН ИЗ ПАНЕЛИ (77-4),
@@ -75,15 +80,97 @@ export function TelegramSettings({
 
   const configured = Boolean(tg?.configured)
 
+  // 🔒 БОТОВ МОЖЕТ БЫТЬ НЕСКОЛЬКО (99-4, слово владельца 2026-09-03: «нет никакой
+  // разницы, сколько подключится телеграммов — каждый из них создаст просто свой
+  // чат»). Список приходит от службы; пустой заменяется одной пустой строкой,
+  // чтобы человеку было куда вписать первый токен.
+  const bots = state.bots.length > 0 ? state.bots : tg ? [tg] : [{ ...EMPTY_BOT }]
+
+  // 🔒 СЛОВА СОБИРАЮТСЯ ОДИН РАЗ И ОТДАЮТСЯ ОСТРОВКАМ ПОИМЁННО (закон слоя):
+  // тип не сужает рантайм, и по проводу уезжает всё переданное.
+  const addLabels: AddBotLabels = {
+    add: w.addBot,
+    added: w.addedBot,
+    adding: w.addingBot,
+    confirmRemove: w.confirmRemoveBot,
+    failed: w.failed,
+    remove: w.removeBot,
+    removed: w.removedBot,
+    removing: w.removingBot,
+  }
+
   return (
     <div data-telegram-settings="ready" className="flex flex-col gap-4">
-      {/* ── 1. Telegram ─────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-          <span className="flex flex-1 items-center gap-2">
-            <MessagesSquare className="size-4 text-muted-foreground" />
-            <H4 variant="ui">Telegram</H4>
-          </span>
+      {/* ── 1. Telegram: по строке на бота ──────────────────────────────── */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2">
+          <MessagesSquare className="size-4 text-muted-foreground" />
+          <H4 variant="ui">{w.botsTitle.replace("{n}", String(bots.length))}</H4>
+        </span>
+        <TelegramAddBot labels={addLabels} />
+      </div>
+
+      {bots.map((b, i) => (
+        <TelegramBotCard
+          key={b.id ?? `bot-${i}`}
+          bot={b}
+          index={i}
+          open={i === 0}
+          w={w}
+          addLabels={addLabels}
+        />
+      ))}
+
+      {/* ── 2. Ключ OpenAI ──────────────────────────────────────────────── */}
+      <OpenAiKeySection ui={ui} />
+      <TelegramTail configured={configured} lang={lang} tg={tg} ui={ui} />
+    </div>
+  )
+}
+
+/** Пустой бот — строка, в которую человек вписывает первый токен. */
+const EMPTY_BOT = {
+  bot: null,
+  chatId: null,
+  configured: false,
+  enabled: true,
+  reachable: false,
+  who: null,
+}
+
+/**
+ * Одна строка аккордеона — один бот.
+ *
+ * 🔒 РАСКРЫТИЕ ДЕЛАЕТ `<details>` БРАУЗЕРА, БЕЗ ЕДИНОЙ СТРОКИ JS. Закон проекта:
+ * сначала спроси, нужен ли островок вообще. Здесь не нужен — состояние
+ * «раскрыто» браузер держит сам, и это работает даже без скриптов.
+ *
+ * 🔒 ПЕРВЫЙ ОТКРЫТ, ОСТАЛЬНЫЕ СВЁРНУТЫ: у одного бота аккордеон ведёт себя как
+ * обычная карточка, и переход от одного к нескольким не меняет привычного вида.
+ */
+function TelegramBotCard({
+  bot: tg,
+  index,
+  open,
+  w,
+  addLabels,
+}: {
+  bot: TelegramState
+  index: number
+  open: boolean
+  w: TelegramUi["settings"]
+  addLabels: AddBotLabels
+}) {
+  const configured = Boolean(tg?.configured)
+  const heading = tg.bot ? `@${tg.bot}` : w.botUnnamed.replace("{n}", String(index + 1))
+
+  return (
+    <details data-telegram-bot={tg.id ?? `b${index + 1}`} open={open} className="rounded-lg border border-border">
+      <summary className="flex cursor-pointer flex-wrap items-center gap-2 px-3 py-2 [&::-webkit-details-marker]:hidden">
+        <span className="flex flex-1 items-center gap-2">
+          <MessagesSquare className="size-4 text-muted-foreground" />
+          <H4 variant="ui">{heading}</H4>
+        </span>
 
           {tg?.chatId ? (
             <span
@@ -108,8 +195,10 @@ export function TelegramSettings({
               {w.noToken}
             </span>
           )}
-        </div>
+        {tg.id ? <TelegramRemoveBot botId={tg.id} labels={addLabels} /> : null}
+      </summary>
 
+      <div className="border-border border-t">
         <div className="flex flex-col gap-4 p-3">
           {/* 🔒 ТОКЕН ЕСТЬ, НО TELEGRAM ЕГО НЕ УЗНАЁТ — ОТДЕЛЬНОЕ СОСТОЯНИЕ, а не
               приписка в подписи поля: лечение у него своё. */}
@@ -130,6 +219,7 @@ export function TelegramSettings({
           )}
 
           <TelegramSetup
+            botId={tg.id}
             configured={configured}
             // 🔒 ФОРМА ЗНАЕТ О ПРИВЯЗКЕ, ПОТОМУ ЧТО ЕЙ НУЖНО ЗВАТЬ ЧЕЛОВЕКА
             // (правка владельца 2026-09-03): «после добавления токена нужно
@@ -166,10 +256,32 @@ export function TelegramSettings({
           />
         </div>
       </div>
+    </details>
+  )
+}
 
-      {/* ── 2. Ключ OpenAI ──────────────────────────────────────────────── */}
-      <OpenAiKeySection ui={ui} />
-
+/**
+ * Всё, что принадлежит ПРОЕКТУ, а не боту.
+ *
+ * 🔒 РАСПИСАНИЕ, РЕЕСТР ПРИЗНАКОВ, ИНСТРУМЕНТЫ И ИНСТРУКЦИЯ ОСТАЮТСЯ В
+ * ЕДИНСТВЕННОМ ЧИСЛЕ, И ЭТО НЕ ЛЕНЬ. Реестр говорит, что система умеет вынимать
+ * из ЛЮБОГО сообщения; расписание дёргает ПРОЕКТ по времени. Раздать их по
+ * ботам значило бы завести по копии правды на бота — ровно то, чего мы избегаем.
+ */
+function TelegramTail({
+  configured,
+  lang,
+  tg,
+  ui,
+}: {
+  configured: boolean
+  lang: string
+  tg: TelegramState | null
+  ui: TelegramUi
+}) {
+  const w = ui.settings
+  return (
+    <>
       {/* ── 3. Расписание ───────────────────────────────────────────────── */}
       <div className="rounded-lg border border-border">
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
@@ -227,6 +339,6 @@ export function TelegramSettings({
           />
         </div>
       </div>
-    </div>
+    </>
   )
 }

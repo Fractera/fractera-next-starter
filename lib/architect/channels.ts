@@ -28,6 +28,20 @@
 const CHANNELS_URL = process.env.CHANNELS_URL ?? "http://127.0.0.1:3500"
 
 export type TelegramState = {
+  /**
+   * Вечный идентификатор бота в службе (`b1`, `b2`).
+   *
+   * 🔒 БОТОВ МОЖЕТ БЫТЬ НЕСКОЛЬКО (99-4, 2026-09-03, слово владельца: «нет
+   * никакой разницы, сколько подключится телеграммов — каждый из них создаст
+   * просто свой чат»). Адресуемся идентификатором, а не именем бота: имя
+   * владелец меняет в @BotFather, а идентификатор не меняется никогда.
+   *
+   * Необязательное, потому что служба старой версии его не присылает: экран
+   * обязан пережить сервер, который ещё не обновлён.
+   */
+  id?: string
+  /** Как эту строку назвал человек. Пусто — показываем имя бота. */
+  title?: string
   /** Токен сохранён в службе. Само значение наружу не выходит никогда. */
   configured: boolean
   /** Telegram ответил на этот токен: служба спросила `getMe`. */
@@ -45,7 +59,19 @@ export type TelegramState = {
 export type ChannelsState = {
   /** Служба каналов ответила. `false` — это НОРМАЛЬНОЕ состояние на ноутбуке. */
   available: boolean
+  /**
+   * Первый бот. Оставлен, потому что его читает описание раздела и логи.
+   * 🔒 Не «главный», а именно первый: у службы нет понятия главного бота.
+   */
   telegram: TelegramState | null
+  /**
+   * Все боты по порядку.
+   *
+   * 🔒 ПУСТОЙ СПИСОК И `null` У `telegram` — РАЗНЫЕ СОСТОЯНИЯ. Пустой список
+   * значит «служба ответила, ботов нет»; `available: false` — «службы здесь
+   * нет вовсе», и это норма на машине человека.
+   */
+  bots: TelegramState[]
 }
 
 /**
@@ -64,11 +90,15 @@ export async function readChannels(): Promise<ChannelsState> {
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     })
-    if (!r.ok) return { available: false, telegram: null }
-    const d = (await r.json()) as { telegram?: TelegramState }
-    return { available: true, telegram: d.telegram ?? null }
+    if (!r.ok) return { available: false, bots: [], telegram: null }
+    const d = (await r.json()) as { telegram?: TelegramState; bots?: TelegramState[] }
+    // 🔒 СТАРАЯ СЛУЖБА СПИСКА НЕ ПРИСЫЛАЕТ — СОБИРАЕМ ЕГО ИЗ ОДИНОЧНОГО ПОЛЯ.
+    // Экран проекта и служба обновляются по отдельности, и порядок не
+    // гарантирован: страница обязана работать на обеих версиях.
+    const bots = Array.isArray(d.bots) ? d.bots : d.telegram ? [d.telegram] : []
+    return { available: true, bots, telegram: d.telegram ?? bots[0] ?? null }
   } catch {
-    return { available: false, telegram: null }
+    return { available: false, bots: [], telegram: null }
   }
 }
 

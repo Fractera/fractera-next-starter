@@ -48,11 +48,21 @@ export type TelegramSetupLabels = {
 }
 
 export function TelegramSetup({
+  botId,
   configured,
   enabled,
   linked,
   labels,
 }: {
+  /**
+   * Какого бота правит эта форма (`b1`, `b2`).
+   *
+   * 🔒 БОТОВ НЕСКОЛЬКО (99-4), И ФОРМА ОБЯЗАНА НАЗЫВАТЬ СВОЕГО. Пусто — первый:
+   * так вызов ведёт себя как до появления списка, и старые поверхности не
+   * ломаются. ✗ без адресата вторая форма на странице молча правила бы первого
+   * бота, а человек видел бы, что «настройка не сохраняется».
+   */
+  botId?: string
   configured: boolean
   enabled: boolean
   /** Привязана ли учётная запись Telegram. Решает, зовёт ли кнопка к себе. */
@@ -60,6 +70,7 @@ export function TelegramSetup({
   labels: TelegramSetupLabels
 }) {
   const router = useRouter()
+  const botQuery = botId ? `?bot=${encodeURIComponent(botId)}` : ""
   const [token, setToken] = useState("")
   const [saving, setSaving] = useState(false)
   const [linking, setLinking] = useState(false)
@@ -70,7 +81,7 @@ export function TelegramSetup({
     setSaving(true)
     setError(null)
     try {
-      const r = await fetch("/api/architect/channels/telegram", {
+      const r = await fetch(`/api/architect/channels/telegram${botQuery}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token.trim() }),
@@ -94,7 +105,7 @@ export function TelegramSetup({
 
   async function toggle(on: boolean) {
     try {
-      await fetch("/api/architect/channels/telegram", {
+      await fetch(`/api/architect/channels/telegram${botQuery}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: on }),
@@ -110,7 +121,7 @@ export function TelegramSetup({
     setError(null)
     setDeepLink(null)
     try {
-      const r = await fetch("/api/architect/channels/telegram/link", { method: "POST" })
+      const r = await fetch(`/api/architect/channels/telegram/link${botQuery}`, { method: "POST" })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.deepLink) {
         setError(String(d.error ?? labels.linkFailed))

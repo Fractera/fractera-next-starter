@@ -185,6 +185,17 @@ export type TelegramUi = {
   settings: {
     serviceDown: string
     noToken: string
+    /** Ботов может быть несколько (99-4). {n} — их число. */
+    botsTitle: string
+    /** Заголовок строки бота, у которого ещё нет токена. {n} — номер. */
+    botUnnamed: string
+    addBot: string
+    addingBot: string
+    addedBot: string
+    removeBot: string
+    removingBot: string
+    removedBot: string
+    confirmRemoveBot: string
     notLinked: string
     /** `{who}` — имя привязанной учётной записи. */
     linkedTo: string
@@ -513,6 +524,15 @@ const EN: TelegramUi = {
   settings: {
     serviceDown: "The channels service is not running, so nothing can be set up here yet.",
     noToken: "no token yet",
+    botsTitle: "Telegram bots: {n}",
+    botUnnamed: "Bot {n} — no token",
+    addBot: "Add a bot",
+    addingBot: "Adding…",
+    addedBot: "Bot added — enter its token",
+    removeBot: "Remove",
+    removingBot: "Removing…",
+    removedBot: "Bot removed. The conversation history is kept.",
+    confirmRemoveBot: "Press again to remove",
     notLinked: "token saved, account not linked",
     linkedTo: "linked to {who}",
     tokenRejected:
@@ -838,6 +858,15 @@ const RU: TelegramUi = {
   settings: {
     serviceDown: "Служба каналов не запущена, поэтому настроить здесь пока нечего.",
     noToken: "токен не задан",
+    botsTitle: "Telegram-боты: {n}",
+    botUnnamed: "Бот {n} — без токена",
+    addBot: "Добавить бота",
+    addingBot: "Добавляю…",
+    addedBot: "Бот добавлен — впишите его токен",
+    removeBot: "Убрать",
+    removingBot: "Убираю…",
+    removedBot: "Бот убран. Переписка сохранена.",
+    confirmRemoveBot: "Нажмите ещё раз, чтобы убрать",
     notLinked: "токен сохранён, учётная запись не привязана",
     linkedTo: "привязано к {who}",
     tokenRejected:

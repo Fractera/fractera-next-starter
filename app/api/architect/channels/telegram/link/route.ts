@@ -25,11 +25,17 @@ export async function POST(req: NextRequest) {
   const denied = await requireRoles(req, ARCHITECT_LAYER_ROLES)
   if (denied) return denied
 
+  // 🔒 ПРИВЯЗЫВАЕМ НАЗВАННОГО БОТА (99-4). Код рукопожатия запоминает в службе,
+  // чьим ботом он выдан: без этого код одного бота закрывал бы привязку другого.
+  const bot = req.nextUrl.searchParams.get("bot") ?? ""
   try {
-    const r = await fetch(`${CHANNELS_URL}/telegram/link/start`, {
-      method: "POST",
-      signal: AbortSignal.timeout(15000),
-    })
+    const r = await fetch(
+      `${CHANNELS_URL}/telegram/link/start${bot ? `?bot=${encodeURIComponent(bot)}` : ""}`,
+      {
+        method: "POST",
+        signal: AbortSignal.timeout(15000),
+      },
+    )
     const data = await r.json().catch(() => ({}))
     return NextResponse.json(data, {
       status: r.status,

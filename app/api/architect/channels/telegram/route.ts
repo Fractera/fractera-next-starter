@@ -36,8 +36,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "bad-json" }, { status: 400 })
   }
 
+  // 🔒 АДРЕСАТ ЕДЕТ В СЛУЖБУ КАК ЕСТЬ, И ПРОВЕРЯЕТ ЕГО ОНА (99-4). Ботов может
+  // быть несколько; `?bot=b2` называет, чей это токен, `?bot=new` заводит нового,
+  // пустой — первый. Вторая проверка идентификатора здесь разошлась бы со
+  // службой — тот же довод, по которому формат токена проверяет только она.
+  const bot = req.nextUrl.searchParams.get("bot") ?? ""
+  const suffix = bot ? `?bot=${encodeURIComponent(bot)}` : ""
+
   try {
-    const r = await fetch(`${CHANNELS_URL}/telegram/config`, {
+    const r = await fetch(`${CHANNELS_URL}/telegram/config${suffix}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

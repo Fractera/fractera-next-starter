@@ -1,4 +1,4 @@
-import { MessagesSquare, CheckCircle2, XCircle, AlertTriangle, Timer, ScrollText } from "lucide-react"
+import { MessagesSquare, CheckCircle2, ChevronRight, XCircle, AlertTriangle, Timer, ScrollText } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { TelegramSetup } from "./telegram-setup.client"
 import {
@@ -86,6 +86,15 @@ export function TelegramSettings({
   // чтобы человеку было куда вписать первый токен.
   const bots = state.bots.length > 0 ? state.bots : tg ? [tg] : [{ ...EMPTY_BOT }]
 
+  // 🔒 ОТКРЫТА КАРТОЧКА ТОГО, КОМУ НУЖНО ВНИМАНИЕ, А НЕ ПРОСТО ПЕРВАЯ. Только
+  // что добавленный бот — без токена, и человек добавил его именно затем, чтобы
+  // вписать токен: заставлять его после этого раскрывать карточку руками значит
+  // требовать лишнего движения там, где намерение очевидно.
+  // Все настроены — открыт первый. Тот же довод, что у пульсирующей кнопки
+  // привязки: зовём туда, где действие ещё не сделано.
+  const needsToken = bots.findIndex(b => !b.configured)
+  const openAt = needsToken >= 0 ? needsToken : 0
+
   // 🔒 СЛОВА СОБИРАЮТСЯ ОДИН РАЗ И ОТДАЮТСЯ ОСТРОВКАМ ПОИМЁННО (закон слоя):
   // тип не сужает рантайм, и по проводу уезжает всё переданное.
   const addLabels: AddBotLabels = {
@@ -115,7 +124,7 @@ export function TelegramSettings({
           key={b.id ?? `bot-${i}`}
           bot={b}
           index={i}
-          open={i === 0}
+          open={i === openAt}
           w={w}
           addLabels={addLabels}
         />
@@ -145,8 +154,19 @@ const EMPTY_BOT = {
  * сначала спроси, нужен ли островок вообще. Здесь не нужен — состояние
  * «раскрыто» браузер держит сам, и это работает даже без скриптов.
  *
- * 🔒 ПЕРВЫЙ ОТКРЫТ, ОСТАЛЬНЫЕ СВЁРНУТЫ: у одного бота аккордеон ведёт себя как
- * обычная карточка, и переход от одного к нескольким не меняет привычного вида.
+ * 🔒 ОТКРЫТ РОВНО ОДИН, И ЭТО ПРАВКА ВЛАДЕЛЬЦА 2026-09-03, ДОСЛОВНО: «я ожидал,
+ * чтобы это было в формате карточек, которые закрываются и открываются, причём
+ * чтобы зараз можно было видеть только одного бота, потому что в проекте может
+ * быть множество ботов, и это неудобно, когда все открыты».
+ *
+ * 🔒 ВЗАИМНОЕ ИСКЛЮЧЕНИЕ ДАЁТ АТРИБУТ `name` — ЭТО РОДНОЕ СВОЙСТВО БРАУЗЕРА, А
+ * НЕ НАШ КОД. Общее имя у группы `<details>` означает «открыт может быть только
+ * один»: открывая соседа, браузер сам закрывает предыдущий. Своё состояние
+ * потребовало бы островка и дало бы то же самое хуже.
+ *
+ * 🛑 В СТАРОМ БРАУЗЕРЕ, НЕ ЗНАЮЩЕМ `name`, КАРТОЧКИ ПРОСТО ОТКРЫВАЮТСЯ ВСЕ —
+ * это ухудшение вида, а не потеря способности, и оно названо здесь, чтобы
+ * следующий не счёл его дефектом.
  */
 function TelegramBotCard({
   bot: tg,
@@ -165,8 +185,14 @@ function TelegramBotCard({
   const heading = tg.bot ? `@${tg.bot}` : w.botUnnamed.replace("{n}", String(index + 1))
 
   return (
-    <details data-telegram-bot={tg.id ?? `b${index + 1}`} open={open} className="rounded-lg border border-border">
+    <details
+      className="rounded-lg border border-border"
+      data-telegram-bot={tg.id ?? `b${index + 1}`}
+      name="telegram-bot"
+      open={open}
+    >
       <summary className="flex cursor-pointer flex-wrap items-center gap-2 px-3 py-2 [&::-webkit-details-marker]:hidden">
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform [details[open]_&]:rotate-90" />
         <span className="flex flex-1 items-center gap-2">
           <MessagesSquare className="size-4 text-muted-foreground" />
           <H4 variant="ui">{heading}</H4>

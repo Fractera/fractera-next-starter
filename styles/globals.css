@@ -986,9 +986,10 @@ html[data-app-width="narrow"] { --app-w: 64rem; }
    🔒 ЦВЕТ — РОЛЬ ПАЛИТРЫ, а не литерал: подсветка следует за фирменным цветом
    проекта и одинаково читается в светлой и тёмной теме. */
 [data-passport-text] u {
-  background: color-mix(in oklab, var(--primary) 16%, transparent);
-  border-radius: 0.2em;
-  padding: 0.05em 0.25em;
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  border: 1px solid var(--primary);
+  border-radius: 0.35em;
+  padding: 0.15em 0.5em;
   text-decoration: none;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;

@@ -22,10 +22,22 @@ import { remarkPassportAnchors, remarkPassportMarks } from "../_lib/passport-mar
 // решил, что списки складываются; на живой странице таблиц стало **ноль** там,
 // где их было две. **Чужую сборку читают как подсказку, а проверяют
 // измерением.** Порядок важен: GFM первым, наши плагины после него.
+//
+// 🛑 `allowedTags={{ u: [] }}` ОБЯЗАТЕЛЕН, И БЕЗ НЕГО ПОДСВЕТКА НЕ РАБОТАЕТ
+// НИКОГДА (найдено 2026-09-03 чтением `node_modules/streamdown/dist`, а не
+// предположено). `Streamdown` санирует hast-дерево схемой на основе
+// `hast-util-sanitize`'s `defaultSchema`, и `u` в неё не входит — плагин верно
+// строит `<u>`, а санитайзер молча его снимает, оставляя голый текст. Прежние
+// три «попытки» (mark → атрибуты вырезаны → span атрибуты вырезаны → голый `u`
+// «должен был сработать») ошибались в одном месте: считали разметчик и
+// санитайзер одним и тем же слоем. `allowedTags` — единственная официальная
+// дверь `Streamdown` для расширения списка тегов; передавать `rehypePlugins`
+// самим сюда нельзя — тогда отключится и санирование, и harden-слой ссылок.
 export function PassportBody({ text }: { text: string }) {
   return (
     <article data-passport-text className="max-w-none">
       <MessageResponse
+        allowedTags={{ u: [] }}
         remarkPlugins={[remarkGfm, remarkPassportMarks, remarkPassportAnchors]}
       >
         {text}

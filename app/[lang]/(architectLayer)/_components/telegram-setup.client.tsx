@@ -50,10 +50,13 @@ export type TelegramSetupLabels = {
 export function TelegramSetup({
   configured,
   enabled,
+  linked,
   labels,
 }: {
   configured: boolean
   enabled: boolean
+  /** Привязана ли учётная запись Telegram. Решает, зовёт ли кнопка к себе. */
+  linked?: boolean
   labels: TelegramSetupLabels
 }) {
   const router = useRouter()
@@ -199,11 +202,25 @@ export function TelegramSetup({
 
       <div data-telegram-link-row className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
+          {/* 🔒 КНОПКА ЗОВЁТ К СЕБЕ РОВНО ТОГДА, КОГДА НАЖАТЬ ЕЁ НАДО, И НИ
+              МИНУТОЙ ДОЛЬШЕ (правка владельца 2026-09-03: «пользователь забывает
+              нажать эту кнопку»). Токен сохранён, а привязки нет — единственное
+              состояние, в котором человек застревает: бот настроен и молчит,
+              потому что не знает, кому отвечать.
+
+              🛑 ПОСЛЕ ПРИВЯЗКИ ПУЛЬСАЦИЯ ОБЯЗАНА ПРОПАСТЬ. Зовущий к себе орган
+              управления, который зовёт всегда, к третьему разу не значит ничего —
+              тот же закон, что у одного цвета тревоги на шаг. Здесь это ещё и
+              ложь: кнопка называется уже «привязать другую», и звать к ней
+              человека, у которого всё работает, значит толкать его ломать
+              рабочую настройку. */}
           <Button
-            variant="outline"
+            variant={configured && !linked ? "default" : "outline"}
             size="sm"
             onClick={startLink}
             disabled={!configured || linking}
+            data-telegram-link-call={configured && !linked && !linking ? "on" : "off"}
+            className={configured && !linked && !linking ? "animate-pulse" : undefined}
           >
             {linking ? (
               <Loader2 className="size-3.5 animate-spin" />

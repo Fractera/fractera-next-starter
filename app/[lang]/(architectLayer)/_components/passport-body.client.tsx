@@ -1,5 +1,6 @@
 "use client"
 
+import remarkGfm from "remark-gfm"
 import { MessageResponse } from "@/components/ai-elements/message"
 import { remarkPassportAnchors, remarkPassportMarks } from "../_lib/passport-marks"
 
@@ -14,27 +15,18 @@ import { remarkPassportAnchors, remarkPassportMarks } from "../_lib/passport-mar
 // (шаг 98). ✗ прежний способ — вписать `<a id="…">` прямо в Markdown — не
 // работал НИКОГДА: `Streamdown` сырой HTML не пропускает, и меню наверху
 // ссылалось в пустоту. Владелец нашёл это как «нет прокрутки к разделу».
-// Оба плагина живут в `_lib/passport-marks.ts` рядом с объяснением.
-
+//
+// 🛑 `remarkGfm` ЗДЕСЬ ОБЯЗАТЕЛЕН, И ЭТО ОПЛАЧЕНО СЛОМАННЫМ ПАСПОРТОМ.
+// Переданный список `remarkPlugins` **заменяет** умолчание разметчика, а в
+// умолчании живёт GFM — то есть таблицы. Я прочёл минифицированную сборку и
+// решил, что списки складываются; на живой странице таблиц стало **ноль** там,
+// где их было две. **Чужую сборку читают как подсказку, а проверяют
+// измерением.** Порядок важен: GFM первым, наши плагины после него.
 export function PassportBody({ text }: { text: string }) {
   return (
     <article data-passport-text className="max-w-none">
       <MessageResponse
-        components={{
-          // 🔒 ЦВЕТ ФОНА — РОЛЬ ПАЛИТРЫ, А НЕ ЛИТЕРАЛ. Закон проекта: цвет,
-          // вписанный в компонент, переживёт смену палитры и останется
-          // последней заплатой прежнего вида. Здесь взяты токены темы, и
-          // подсветка читается в светлой и тёмной одинаково.
-          mark: ({ children }) => (
-            <mark
-              data-passport-new
-              className="rounded-[0.2em] bg-primary/15 px-[0.25em] py-[0.05em] text-foreground"
-            >
-              {children}
-            </mark>
-          ),
-        }}
-        remarkPlugins={[remarkPassportMarks, remarkPassportAnchors]}
+        remarkPlugins={[remarkGfm, remarkPassportMarks, remarkPassportAnchors]}
       >
         {text}
       </MessageResponse>

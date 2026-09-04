@@ -40,7 +40,7 @@ function restartSlot(): void {
 export async function GET(req: NextRequest) {
   const denied = await requireRoles(req, ARCHITECT_LAYER_ROLES)
   if (denied) return denied
-  return NextResponse.json(readOpenAiKeyState(), { headers: { "Cache-Control": "no-store" } })
+  return NextResponse.json(await readOpenAiKeyState(), { headers: { "Cache-Control": "no-store" } })
 }
 
 export async function POST(req: NextRequest) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   // Проверка живого ключа — без тела запроса и без секрета в проводе.
   if (req.nextUrl.searchParams.get("check") === "1") {
-    const state = readOpenAiKeyState()
+    const state = await readOpenAiKeyState()
     if (!state.app.configured) {
       return NextResponse.json({ error: "no-key" }, { status: 409 })
     }
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "bad-key-format" }, { status: 400 })
   }
 
-  const { written, failed } = writeOpenAiKey(key)
+  const { written, failed } = await writeOpenAiKey(key)
   if (!written.length) {
     return NextResponse.json({ error: "no-consumers" }, { status: 409 })
   }

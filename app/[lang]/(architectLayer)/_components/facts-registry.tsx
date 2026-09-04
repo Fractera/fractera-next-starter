@@ -1,5 +1,6 @@
 import { Layers } from "lucide-react"
-import { H4, Small } from "@/components/ui/typography"
+import { Small } from "@/components/ui/typography"
+import { SettingsCard } from "./settings-card"
 import { SectionIntro } from "./section-intro.client"
 import { FactsAdd } from "./facts-add.client"
 import { allFacts } from "@/lib/facts/registry"
@@ -39,18 +40,20 @@ export async function FactsRegistrySection({ lang, ui }: { lang: string; ui: Tel
   for (const f of facts) byLevel.set(f.level, [...(byLevel.get(f.level) ?? []), f])
 
   return (
-    <div className="rounded-lg border border-border" data-facts-registry="ready">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex flex-1 items-center gap-2">
-          <Layers className="size-4 text-muted-foreground" />
-          <H4 variant="ui">{w.title}</H4>
-        </span>
+    // 🔒 СЧЁТЧИК ПРИЗНАКОВ ОСТАЁТСЯ В ЗАГОЛОВКЕ (111): свёрнутая карточка обязана
+    // говорить, сколько система умеет вынимать, — иначе складывание прячет саму
+    // способность, а не только её список.
+    <SettingsCard
+      mark={{ "data-facts-registry": "ready" }}
+      icon={<Layers className="size-4 text-muted-foreground" />}
+      title={w.title}
+      status={
         <Small data-facts-count className="text-muted-foreground">
           {w.counted.replace("{n}", String(facts.length))}
         </Small>
-      </div>
-
-      <div className="flex flex-col gap-4 p-3">
+      }
+      bodyClassName="flex flex-col gap-4 p-3"
+    >
         <SectionIntro
           name="facts"
           summary={<Small className="leading-relaxed text-muted-foreground">{w.summary}</Small>}
@@ -109,8 +112,7 @@ export async function FactsRegistrySection({ lang, ui }: { lang: string; ui: Tel
             </section>
           )
         })}
-      </div>
-    </div>
+    </SettingsCard>
   )
 }
 

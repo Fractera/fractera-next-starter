@@ -15,10 +15,9 @@ export type TelegramUi = {
   /** Подпись группы в левом меню. */
   menuTitle: string
   subtitle: string
-  pages: Record<
-    "about" | "commands" | "logs" | "calendar" | "map" | "settings" | "passport",
-    { title: string; hint: string }
-  >
+  // 🪦 БЫЛО СЕМЬ РАЗДЕЛОВ, СТАЛО ЧЕТЫРЕ (111, 2026-09-04): «команды»,
+  // «календарь» и «карта» убраны словом владельца вместе со своими словами.
+  pages: Record<"about" | "logs" | "settings" | "passport", { title: string; hint: string }>
   /** Свёрнутая справка раздела «Описание». */
   helpMore: string
   helpLess: string
@@ -38,9 +37,6 @@ export type TelegramUi = {
    */
   skeleton: {
     inProgress: string
-    commandsLead: string
-    calendarLead: string
-    mapLead: string
     instructionTitle: string
     instructionLead: string
     views: Record<'parse' | 'db' | 'media' | 'vectors' | 'rag', string>
@@ -350,18 +346,6 @@ const EN: TelegramUi = {
       title: "About",
       hint: "What the bot is for in this project and how it is arranged.",
     },
-    commands: {
-      title: "Commands",
-      hint: "What the bot understands and how to talk to it.",
-    },
-    calendar: {
-      title: "Calendar",
-      hint: "What the bot has scheduled and when it will remind you.",
-    },
-    map: {
-      title: "Map",
-      hint: "Places this project has remembered.",
-    },
     logs: {
       title: "Logs",
       hint:
@@ -388,12 +372,6 @@ const EN: TelegramUi = {
   soonPanel: "the Channels tab of the control panel — the link to it is in the site footer.",
   skeleton: {
     inProgress: "Being built",
-    commandsLead:
-      "Everything the bot understands: the phrasings it is taught, what it does with each of them, and the ways of talking to it beyond typing.",
-    calendarLead:
-      "Reminders and events the bot has scheduled — what is due, when, and what it will say.",
-    mapLead:
-      "Places saved in this project: what was recorded there and when.",
     instructionTitle: "Your own instruction for the bot",
     instructionLead:
       "A text you write yourself and the bot follows in addition to its own rules — your limits, your tone, your subject. It is added to the instruction the bot already has, not instead of it.",
@@ -683,18 +661,6 @@ const RU: TelegramUi = {
       title: "Описание",
       hint: "Зачем боту существовать в этом проекте и как он устроен.",
     },
-    commands: {
-      title: "Команды",
-      hint: "Что бот понимает и как с ним говорить.",
-    },
-    calendar: {
-      title: "Календарь",
-      hint: "Что бот запланировал и когда напомнит.",
-    },
-    map: {
-      title: "Карта",
-      hint: "Места, которые запомнил этот проект.",
-    },
     logs: {
       title: "Логи",
       hint:
@@ -721,12 +687,6 @@ const RU: TelegramUi = {
   soonPanel: "вкладка «Каналы связи» панели управления — ссылка на неё в подвале сайта.",
   skeleton: {
     inProgress: "В процессе разработки",
-    commandsLead:
-      "Всё, что бот понимает: слова, которым он обучен, что он делает с каждым из них, и способы говорить с ним помимо печати.",
-    calendarLead:
-      "Напоминания и встречи, которые бот запланировал: что наступит, когда и что он скажет.",
-    mapLead:
-      "Места, сохранённые в этом проекте: что там было записано и когда.",
     instructionTitle: "Ваша собственная инструкция боту",
     instructionLead:
       "Текст, который вы пишете сами, а бот исполняет вдобавок к своим правилам: ваши ограничения, ваш тон, ваша предметная область. Он добавляется к инструкции бота, а не заменяет её.",

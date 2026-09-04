@@ -1,5 +1,6 @@
 import { Wrench } from "lucide-react"
-import { H4, Small } from "@/components/ui/typography"
+import { Small } from "@/components/ui/typography"
+import { SettingsCard } from "./settings-card"
 import {
   INBOX_STORE,
   FACT_MATCHER,
@@ -35,12 +36,21 @@ const TOOLS: { actor: Actor; real: boolean; where: string }[] = [
 
 export function ToolsRegistry() {
   return (
-    <section data-tools-registry className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Wrench className="size-4 text-muted-foreground" aria-hidden />
-        <H4>Реестр инструментов</H4>
-      </div>
-
+    // 🔒 КАРТОЧКА СКЛАДНАЯ И САМА НЕСЁТ СВОЮ РАМКУ (111). Прежде рамку рисовал
+    // ВЫЗЫВАЮЩИЙ — `<div className="rounded-lg border p-4">` в двух местах
+    // `telegram-settings.tsx`, — и это ровно та копия, которая расходится: один
+    // вызов правят, второй остаётся прежним. Теперь вид карточки знает она сама.
+    <SettingsCard
+      mark={{ "data-tools-registry": "" }}
+      icon={<Wrench className="size-4 text-muted-foreground" aria-hidden />}
+      title="Реестр инструментов"
+      status={
+        <Small data-tools-count className="text-muted-foreground">
+          {TOOLS.length} шт.
+        </Small>
+      }
+      bodyClassName="flex flex-col gap-4 p-3"
+    >
       <Small className="text-muted-foreground">
         Один инструмент — одно действие. Реестр признаков отвечает, что извлекать; этот — кто и чем
         это делает. У каждого инструмента своя инструкция внутри, поэтому в таблице разбора в колонке
@@ -74,6 +84,6 @@ export function ToolsRegistry() {
           </div>
         ))}
       </div>
-    </section>
+    </SettingsCard>
   )
 }

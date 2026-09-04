@@ -11,6 +11,7 @@ import { OpenAiKeySection } from "./openai-key"
 import { FactsRegistrySection } from "./facts-registry"
 import { ToolsRegistry } from "./tools-registry"
 import { InProgress } from "./in-progress"
+import { SettingsCard } from "./settings-card"
 import type { ChannelsState, TelegramState } from "@/lib/architect/channels"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
 
@@ -70,10 +71,7 @@ export function TelegramSettings({
             Реестр описывает ПРОЕКТ, а не бота: он про то, что система умеет
             вынимать из любого сообщения, и от живости Telegram не зависит. */}
         <FactsRegistrySection lang={lang} ui={ui} />
-
-      <div className="rounded-lg border border-border p-4">
         <ToolsRegistry />
-      </div>
       </div>
     )
   }
@@ -309,14 +307,11 @@ function TelegramTail({
   return (
     <>
       {/* ── 3. Расписание ───────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-          <span className="flex flex-1 items-center gap-2">
-            <Timer className="size-4 text-muted-foreground" />
-            <H4 variant="ui">{w.scheduleLabel}</H4>
-          </span>
-        </div>
-        <div className="p-3">
+      <SettingsCard
+        mark={{ "data-schedule-card": "" }}
+        icon={<Timer className="size-4 text-muted-foreground" />}
+        title={w.scheduleLabel}
+      >
           <TelegramSchedule
             configured={configured}
             tickSeconds={Number(tg?.tickSeconds ?? 0)}
@@ -328,19 +323,14 @@ function TelegramTail({
               failed: w.failed,
             }}
           />
-        </div>
-      </div>
+      </SettingsCard>
       {/* ── 4. Реестр признаков (81-3) ──────────────────────────────────
           🔒 МЕСТО НАЗВАНО ВЛАДЕЛЬЦЕМ: он ответил адресом этого раздела на
           прямой вопрос, где живёт реестр. Стоит ПЕРЕД инструкцией боту:
           реестр говорит, что система умеет вынимать, а инструкция — как ей
           об этом рассказывать. Порядок смысловой, как у трёх карточек выше. */}
       <FactsRegistrySection lang={lang} ui={ui} />
-
-      <div className="rounded-lg border border-border p-4">
-        <ToolsRegistry />
-      </div>
-
+      <ToolsRegistry />
 
       {/* ── 5. Ваша инструкция боту — каркас (77-15) ─────────────────────────
           🔒 МЕСТО ЗАНЯТО ЗАРАНЕЕ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА: «создаём на этой

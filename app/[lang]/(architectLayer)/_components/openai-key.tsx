@@ -1,5 +1,6 @@
 import { KeyRound, CheckCircle2, AlertTriangle } from "lucide-react"
-import { H4, Small } from "@/components/ui/typography"
+import { Small } from "@/components/ui/typography"
+import { SettingsCard } from "./settings-card"
 import { OpenAiKeyForm } from "./openai-key.client"
 import { readOpenAiKeyState } from "@/lib/architect/openai-key"
 import type { TelegramUi } from "../_i18n/telegram.i18n"
@@ -36,15 +37,12 @@ export async function OpenAiKeySection({ ui }: { ui: TelegramUi }) {
   const anyKey = living.some(c => c.configured)
   const complete = anyKey && missing.length === 0
 
-  return (
-    <div data-openai-key className="rounded-lg border border-border">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="flex flex-1 items-center gap-2">
-          <KeyRound className="size-4 text-muted-foreground" />
-          <H4 variant="ui">{w.title}</H4>
-        </span>
-
-        {complete ? (
+  // 🔒 ПЛАШКА СОСТОЯНИЯ УЕХАЛА В ЗАГОЛОВОК КАРТОЧКИ (111): свёрнутая карточка
+  // обязана говорить, задан ключ или нет, — иначе складывание прячет ровно тот
+  // факт, ради которого сюда приходят.
+  const status = (
+    <>
+      {complete ? (
           <span
             data-openai-state="ok"
             className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[length:var(--fs-small)] text-emerald-800 dark:text-emerald-200"
@@ -61,18 +59,26 @@ export async function OpenAiKeySection({ ui }: { ui: TelegramUi }) {
             <AlertTriangle className="size-3.5" />
             {w.partial}: {missing.join(", ")}
           </span>
-        ) : (
-          <span
-            data-openai-state="missing"
-            className="text-[length:var(--fs-small)] text-muted-foreground"
-          >
-            {w.missing}
-          </span>
-        )}
-      </div>
+      ) : (
+        <span
+          data-openai-state="missing"
+          className="text-[length:var(--fs-small)] text-muted-foreground"
+        >
+          {w.missing}
+        </span>
+      )}
+    </>
+  )
 
-      <div className="flex flex-col gap-3 p-3">
-        <Small className="leading-relaxed text-muted-foreground">{w.lead}</Small>
+  return (
+    <SettingsCard
+      mark={{ "data-openai-key": "" }}
+      icon={<KeyRound className="size-4 text-muted-foreground" />}
+      title={w.title}
+      status={status}
+      bodyClassName="flex flex-col gap-3 p-3"
+    >
+      <Small className="leading-relaxed text-muted-foreground">{w.lead}</Small>
 
         <OpenAiKeyForm
           configured={anyKey}
@@ -96,7 +102,6 @@ export async function OpenAiKeySection({ ui }: { ui: TelegramUi }) {
             restartNote: w.restartNote,
           }}
         />
-      </div>
-    </div>
+    </SettingsCard>
   )
 }

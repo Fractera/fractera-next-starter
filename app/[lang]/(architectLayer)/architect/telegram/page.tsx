@@ -269,11 +269,6 @@ export default async function TelegramPage({
                 <InProgress where={`logs-${view}`} label={ui.skeleton.views[view]} lead={ui.skeleton.inProgress} />
               ))}
 
-            {/* 🛑 ТРИ РАЗДЕЛА ПОСТРОЕНЫ КАРКАСОМ ПО ПРЯМОМУ СЛОВУ ВЛАДЕЛЬЦА:
-                «текущий этап твоей задачи только создать вкладки и создать
-                короткое описание». Каждый называет, ЧТО здесь будет, — иначе
-                пустая вкладка читается как поломка (28-13). Содержимое расписано
-                в ТЗ подшагов 77-16 … 77-19. */}
             {active === "passport" &&
               (passport ? (
                 <PassportBody text={passport} />
@@ -284,15 +279,9 @@ export default async function TelegramPage({
                 </div>
               ))}
 
-            {active === "commands" && (
-              <InProgress where="commands" label={ui.pages.commands.title} lead={ui.skeleton.commandsLead} />
-            )}
-            {active === "calendar" && (
-              <InProgress where="calendar" label={ui.pages.calendar.title} lead={ui.skeleton.calendarLead} />
-            )}
-            {active === "map" && (
-              <InProgress where="map" label={ui.pages.map.title} lead={ui.skeleton.mapLead} />
-            )}
+            {/* 🪦 ЗДЕСЬ СТОЯЛИ ТРИ ЗАГЛУШКИ — «Команды», «Календарь», «Карта».
+                Убраны 2026-09-04 (шаг 111) вместе со своими разделами по слову
+                владельца; причина и порядок возврата — в файле telegram-sections.ts. */}
           </div>
         </WorkspaceShell>
       </div>

@@ -13,6 +13,7 @@ import {
 } from "../../_lib/telegram-sections"
 import { SectionIntro } from "../../_components/section-intro.client"
 import { TelegramSettings } from "../../_components/telegram-settings"
+import { AutomationStrategySection } from "../../_components/automation-strategy"
 import { TaskParseSection } from "../../_components/task-parse-section"
 import { AutoRefresh } from "../../_components/auto-refresh.client"
 import { appDialogUi } from "@/components/dialog/app-dialog.i18n"
@@ -282,6 +283,13 @@ export default async function TelegramPage({
             {/* 🪦 ЗДЕСЬ СТОЯЛИ ТРИ ЗАГЛУШКИ — «Команды», «Календарь», «Карта».
                 Убраны 2026-09-04 (шаг 111) вместе со своими разделами по слову
                 владельца; причина и порядок возврата — в файле telegram-sections.ts. */}
+
+            {/* 🔒 «СТРАТЕГИЯ АВТОМАТИЗАЦИИ» — ВТОРАЯ ДВЕРЬ К ЗНАЧЕНИЮ, ХОЗЯИН
+                КОТОРОГО ЧАТ (112-3). Решение владельца: переключатель в поле ввода
+                чата «первичный и основной», эта секция — «дополнительный механизм
+                управления, дверь», «ядро живёт порт 3600». Ключ один на обе
+                поверхности; второй правды не заводится. */}
+            {active === "automation" && <AutomationStrategySection lang={lang} />}
           </div>
         </WorkspaceShell>
       </div>

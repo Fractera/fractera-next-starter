@@ -59,6 +59,13 @@
         "migration"
       ]
     },
+    "automationMode": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "openai"
+      ]
+    },
     "migration": {
       "type": "object",
       "properties": {

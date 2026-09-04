@@ -119,6 +119,15 @@ export type PlatformConfigFile = {
    */
   developmentMode?: "classic" | "steps" | "cases" | "migration";
   /**
+   * Стратегия автоматизации: `claude` — Claude Agent SDK, `openai` — ручной
+   * конвейер на AI SDK с моделями OpenAI (шаг 112).
+   *
+   * 🔒 ИМЯ РЕЖИМА `claude`, А НЕ `cloud`: продукт называется **Claude Agent SDK**
+   * (`https://code.claude.com/docs/en/agent-sdk/overview`). Поправка владельца
+   * 2026-09-04 — «Cloud Agent SDK incorrect»; «Cloud» был артефактом распознавания.
+   */
+  automationMode?: "claude" | "openai";
+  /**
    * Откуда читать чужой проект при переезде (панель, «Переезд на Fractera»).
    *
    * `repository` — владелец назвал адрес, агент читает клон; `local` — проект
@@ -167,7 +176,14 @@ export type PlatformConfigFile = {
 //
 // 🔒 ЗНАЧЕНИЕ ЖИВЁТ В ТРЁХ МЕСТАХ И ОБЯЗАНО СОВПАДАТЬ: здесь, в `_lib/dev-mode.ts`
 // слоя архитектора и в `lib/development-mode.ts` панели.
+// 🔒 УМОЛЧАНИЕ СТРАТЕГИИ — `claude`, ПРЯМОЕ СЛОВО ВЛАДЕЛЬЦА 2026-09-04: «по
+// умолчанию показываем переключатель в состоянии режим Claude агент SDK активен».
+// Оно обязано совпадать с `_lib/automation-strategy.ts` слоя архитектора и с
+// `lib/fractera/automation-mode.ts` чата — тот же закон о трёх местах, что у
+// режима разработки строкой выше: разойдясь, они назовут ненастроенный проект
+// по-разному, и правой окажется та копия, которую человек открыл первой.
 export const DEFAULT_PLATFORM_CONFIG_FILE: PlatformConfigFile = {
+  automationMode: "claude",
   developmentMode: "steps",
 };
 

@@ -1,7 +1,6 @@
-import { Bot, ScanSearch, Sparkles } from "lucide-react"
+import { Bot, Layers, Plug, ScanSearch, Sparkles, Wrench } from "lucide-react"
 import { H4, Small } from "@/components/ui/typography"
 import { readRawPlatformConfig } from "@/lib/architect/platform-config-writer"
-import { AgentCapabilities } from "./agent-capabilities"
 import { AutomationMode } from "./automation-mode.client"
 import { SettingsCard } from "./settings-card"
 import { InProgress } from "./in-progress"
@@ -121,11 +120,41 @@ function CloudPanel() {
     <div className="flex flex-col gap-3" data-automation-panel="claude">
       <H4 variant="ui">Настройка автоматического режима</H4>
 
-      {/* 🪦 ЗДЕСЬ СТОЯЛИ ДВЕ ЗАГЛУШКИ «Пока ничего нет» (112-4). Заменены живой
-          витриной 2026-09-04 (113-4): она спрашивает у чата, что видит САМ SDK,
-          а не рисует обещание. Пустой список остался — но теперь он пуст по
-          измерению, а не по замыслу, и называет адрес, куда класть навык. */}
-      <AgentCapabilities />
+      <SettingsCard
+        mark={{ "data-automation-group": "skills" }}
+        icon={<Wrench className="size-4 text-muted-foreground" />}
+        title="Скилы"
+      >
+        <SettingsCard
+          mark={{ "data-automation-slot": "skills-list" }}
+          icon={<Layers className="size-4 text-muted-foreground" />}
+          title="Подключённые навыки"
+        >
+          <InProgress
+            where="automation-skills"
+            label="Пока ничего нет"
+            lead="Здесь появятся навыки, которые агент получает в работу. Первоисточник подтверждает, что Agent SDK читает их из папки проекта — но ни одного мы ещё не подключали."
+          />
+        </SettingsCard>
+      </SettingsCard>
+
+      <SettingsCard
+        mark={{ "data-automation-group": "mcp" }}
+        icon={<Plug className="size-4 text-muted-foreground" />}
+        title="MCP"
+      >
+        <SettingsCard
+          mark={{ "data-automation-slot": "mcp-list" }}
+          icon={<Plug className="size-4 text-muted-foreground" />}
+          title="Подключённые серверы"
+        >
+          <InProgress
+            where="automation-mcp"
+            label="Пока ничего нет"
+            lead="Здесь появятся внешние инструменты и источники данных, подключённые по Model Context Protocol."
+          />
+        </SettingsCard>
+      </SettingsCard>
     </div>
   )
 }

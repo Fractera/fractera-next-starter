@@ -8,7 +8,6 @@ import {
 } from "./telegram-add-bot.client"
 import { TelegramSchedule } from "./telegram-schedule.client"
 import { OpenAiKeySection } from "./openai-key"
-import { AnthropicKeySection } from "./anthropic-key"
 import { FactsRegistrySection } from "./facts-registry"
 import { ToolsRegistry } from "./tools-registry"
 import { InProgress } from "./in-progress"
@@ -131,16 +130,6 @@ export function TelegramSettings({
 
       {/* ── 2. Ключ OpenAI ──────────────────────────────────────────────── */}
       <OpenAiKeySection ui={ui} />
-
-      {/* ── 2а. Ключ Anthropic (113-2) ───────────────────────────────────
-          🔒 СТОИТ РЯДОМ С КЛЮЧОМ OPENAI, А НЕ В РАЗДЕЛЕ СТРАТЕГИИ. Оба отвечают
-          на один вопрос — «чем оплачен ответ», — и человек, пришедший заводить
-          ключи, ищет их в одном месте. Раздел стратегии отвечает на другой
-          вопрос: КАКИМ путём идёт автоматизация.
-          🛑 И ключ OpenAI нужен в ЛЮБОМ режиме: голос, векторная память и граф
-          знаний живут на нём. Разнеси их по разным экранам — и это перестанет
-          быть видно рядом. */}
-      <AnthropicKeySection />
       <TelegramTail configured={configured} lang={lang} tg={tg} ui={ui} />
     </div>
   )

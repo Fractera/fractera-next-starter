@@ -24,6 +24,26 @@ const RAG_ENV = process.env.RAG_ENV_PATH ?? "/opt/fractera/services/rag/.env"
 
 const KEY = "OPENAI_API_KEY"
 
+// 🔒 ИМЯ ПЕРЕМЕННОЙ ПРИНАДЛЕЖИТ ПОТРЕБИТЕЛЮ, А НЕ НАМ (шаг 107, 2026-09-04).
+//
+// ✗ ЧЕМ ОПЛАЧЕНО. Этот файл писал графу `OPENAI_API_KEY` — переменную, которой
+// LightRAG НЕ ЧИТАЕТ: он читает `LLM_BINDING_API_KEY` и `EMBEDDING_BINDING_API_KEY`.
+// Ключ доезжал под чужим именем, плашка зеленела, а граф оставался слепым, и отказ
+// у него молчаливый: приём документа отвечает `200` и не встраивает ничего.
+// Владелец заметил это словами «раньше всегда подключалось автоматически»: панель
+// (`bridges/app/app/api/config/embeddings`) пишет верные имена с самого начала, а
+// этот экран — нет. Измерено на боевом сервере 2026-09-03.
+//
+// 🔒 ПОЭТОМУ ИМЕНА ПЕРЕМЕННЫХ — СВОЙСТВО ПОТРЕБИТЕЛЯ, ОБЪЯВЛЕННОЕ ЗДЕСЬ ЯВНО.
+// Третий потребитель завтра прочтёт своё имя, и писатель, знающий одно имя на всех,
+// сломается на нём так же молча.
+const VARS: Record<"app" | "data" | "graph", readonly string[]> = {
+  app: [KEY],
+  data: [KEY],
+  // Обе: LightRAG берёт ключ модели и ключ встраивания по отдельности.
+  graph: ["LLM_BINDING_API_KEY", "EMBEDDING_BINDING_API_KEY"],
+}
+
 export type Consumer = {
   /** Ключ найден в файле этого потребителя. */
   configured: boolean
@@ -42,10 +62,20 @@ export type OpenAiKeyState = {
   tail: string | null
 }
 
-function readOne(path: string): { value: string | null; present: boolean } {
+/**
+ * Прочитать ключ у одного потребителя ЕГО ИМЕНАМИ.
+ *
+ * 🔒 «ЗАДАН» ЗНАЧИТ «ЗАПОЛНЕНЫ ВСЕ ЕГО ПЕРЕМЕННЫЕ, А НЕ ХОТЯ БЫ ОДНА». У графа их
+ * две, и заполненная половина — это работающая генерация при слепом встраивании,
+ * то есть ровно тот молчаливый отказ, ради которого шаг и заведён.
+ */
+function readOne(path: string, names: readonly string[]): { value: string | null; present: boolean } {
   try {
-    const v = readEnvValue(KEY, path)
-    return { value: v && v.trim() ? v.trim() : null, present: true }
+    const values = names.map((n) => {
+      const v = readEnvValue(n, path)
+      return v && v.trim() ? v.trim() : null
+    })
+    return { value: values.every(Boolean) ? values[0] : null, present: true }
   } catch {
     return { value: null, present: false }
   }
@@ -57,9 +87,9 @@ function readOne(path: string): { value: string | null; present: boolean } {
  * бессмысленно), второе — что ключ ей не доехал.
  */
 export function readOpenAiKeyState(): OpenAiKeyState {
-  const app = readOne(SLOT_ENV)
-  const data = readOne(DATA_ENV)
-  const graph = readOne(RAG_ENV)
+  const app = readOne(SLOT_ENV, VARS.app)
+  const data = readOne(DATA_ENV, VARS.data)
+  const graph = readOne(RAG_ENV, VARS.graph)
   const tail = app.value ? app.value.slice(-4) : null
   return {
     app: { configured: Boolean(app.value), present: app.present },
@@ -84,10 +114,12 @@ export function writeOpenAiKey(value: string): { written: string[]; failed: stri
     ["data", DATA_ENV],
     ["graph", RAG_ENV],
   ] as const) {
-    const { present } = readOne(path)
+    const { present } = readOne(path, VARS[name])
     if (!present) continue
-    const r = writeEnvValue(KEY, value, path)
-    if (r.ok) written.push(name)
+    // 🔒 ПИШЕМ ИМЕНАМИ ПОТРЕБИТЕЛЯ. У графа их две, и записаны обязаны быть обе:
+    // одна из двух — это работающая генерация при слепом встраивании.
+    const results = VARS[name].map((n) => writeEnvValue(n, value, path))
+    if (results.every((r) => r.ok)) written.push(name)
     else failed.push(name)
   }
   return { written, failed }

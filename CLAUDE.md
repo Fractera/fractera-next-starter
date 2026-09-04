@@ -566,7 +566,7 @@ phone number may have to be joined from a neighbouring message. Declare the beha
 the cases silently.
 
 🔒 **BUILT-IN FACTS ARE GENERATED FROM THE CODE, NEVER LISTED** — from `ENTRY_KINDS`, `INTENTS`,
-`ARTIFACT_KINDS` and the columns of `tgdesk_messages`. Twenty-five of them. **The names are
+`ARTIFACT_KINDS` and the columns of `tgdesk_messages`. **Thirty-six of them, measured 2026-09-04 by RUNNING `builtinFacts()`** (initiator 4 · material 9 · intent 8 · entity 6 · destination 3 · field 6); the prose said twenty-five for days because a hand-written number never moves itself. **The names are
 generated; the human descriptions and the recognition instructions are written by hand, and that is
 legal**: the code knows WHAT exists and does not know HOW to recognise it. That half is the whole
 reason the registry exists.

@@ -79,7 +79,7 @@ export function AutomationMode({
         <ModeRow
           busy={busy === "claude"}
           checked={mode === "claude"}
-          label="Режим Claude Agent SDK активен"
+          label="Агент Anthropic по подписке (Claude Code на сервере)"
           onPick={() => void choose("claude")}
           value="claude"
         />

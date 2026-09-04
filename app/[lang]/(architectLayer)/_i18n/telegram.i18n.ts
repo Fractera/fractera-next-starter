@@ -360,7 +360,7 @@ const EN: TelegramUi = {
     },
     automation: {
       title: "Automation strategy",
-      hint: "What automates this project: the Claude Agent SDK, or a pipeline of your own on OpenAI models.",
+      hint: "What automates this project: an Anthropic agent on your own subscription, or a pipeline of your own on OpenAI models.",
     },
     passport: {
       title: "Passport",
@@ -679,7 +679,7 @@ const RU: TelegramUi = {
     },
     automation: {
       title: "Стратегия автоматизации",
-      hint: "Чем автоматизируется этот проект: Claude Agent SDK или собственный конвейер на моделях OpenAI.",
+      hint: "Чем автоматизируется этот проект: агент Anthropic на вашей подписке или собственный конвейер на моделях OpenAI.",
     },
     passport: {
       title: "Паспорт",

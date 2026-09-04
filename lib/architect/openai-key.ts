@@ -1,4 +1,4 @@
-import { readEnvValue, writeEnvValue } from "@/lib/architect/env-writer"
+import { dataFetch } from "@/lib/fractera/data-service"
 
 // КЛЮЧ OPENAI — СОСТОЯНИЕ, ЗАПИСЬ И ПРОВЕРКА (77-8, 2026-09-01).
 //
@@ -13,36 +13,26 @@ import { readEnvValue, writeEnvValue } from "@/lib/architect/env-writer"
 // сохранение. Наружу едет `configured` и хвост из четырёх символов: его хватает,
 // чтобы человек узнал свой ключ, и не хватает, чтобы им воспользоваться.
 //
-// 🔒 ПИСАТЕЛЬ ОДИН — `env-writer.ts`, построчный и атомарный. Второго писателя
-// `.env` в этом проекте нет и не будет: два места, пишущих один файл, расходятся
-// на первой же правке формата.
-
-/** Файлы окружения трёх потребителей ключа. Пути — параметром окружения, чтобы работа проверялась на временной папке. */
-const SLOT_ENV = process.env.SLOT_ENV_PATH ?? "/opt/fractera/app/.env.local"
-const DATA_ENV = process.env.DATA_ENV_PATH ?? "/opt/fractera/services/data/.env"
-const RAG_ENV = process.env.RAG_ENV_PATH ?? "/opt/fractera/services/rag/.env"
-
-const KEY = "OPENAI_API_KEY"
-
-// 🔒 ИМЯ ПЕРЕМЕННОЙ ПРИНАДЛЕЖИТ ПОТРЕБИТЕЛЮ, А НЕ НАМ (шаг 107, 2026-09-04).
+// 🪦 ЗДЕСЬ СТОЯЛО: «ПИСАТЕЛЬ ОДИН — env-writer.ts… три файла читаются по
+// отдельности». ОТМЕНЕНО ШАГОМ 109-2 (2026-09-04): этот файл больше не пишет и не
+// читает env вовсе — он ЗВОНИТ В ДВЕРЬ `POST/GET /platform/openai-key` службы
+// данных. Прежняя правда о построчной атомарной записи не исчезла, она переехала
+// туда вместе с писателем.
 //
-// ✗ ЧЕМ ОПЛАЧЕНО. Этот файл писал графу `OPENAI_API_KEY` — переменную, которой
-// LightRAG НЕ ЧИТАЕТ: он читает `LLM_BINDING_API_KEY` и `EMBEDDING_BINDING_API_KEY`.
-// Ключ доезжал под чужим именем, плашка зеленела, а граф оставался слепым, и отказ
-// у него молчаливый: приём документа отвечает `200` и не встраивает ничего.
-// Владелец заметил это словами «раньше всегда подключалось автоматически»: панель
-// (`bridges/app/app/api/config/embeddings`) пишет верные имена с самого начала, а
-// этот экран — нет. Измерено на боевом сервере 2026-09-03.
+// ✗ ЧЕМ ОПЛАЧЕН ПЕРЕЕЗД. Ключ вводится в ТРЁХ местах — панель, этот экран, чат, —
+// и каждое держало СВОЙ список имён потребителей. Они разошлись молча: этот файл
+// писал графу `OPENAI_API_KEY`, которую LightRAG не читает (ему нужны
+// `LLM_BINDING_API_KEY` и `EMBEDDING_BINDING_API_KEY`), а чат не писал графу вовсе.
+// Плашка зеленела, граф оставался слепым, отказ у него молчаливый. Владелец назвал
+// симптом словами «раньше всегда подключалось автоматически».
 //
-// 🔒 ПОЭТОМУ ИМЕНА ПЕРЕМЕННЫХ — СВОЙСТВО ПОТРЕБИТЕЛЯ, ОБЪЯВЛЕННОЕ ЗДЕСЬ ЯВНО.
-// Третий потребитель завтра прочтёт своё имя, и писатель, знающий одно имя на всех,
-// сломается на нём так же молча.
-const VARS: Record<"app" | "data" | "graph", readonly string[]> = {
-  app: [KEY],
-  data: [KEY],
-  // Обе: LightRAG берёт ключ модели и ключ встраивания по отдельности.
-  graph: ["LLM_BINDING_API_KEY", "EMBEDDING_BINDING_API_KEY"],
-}
+// 🔒 ЛЕЧЕНИЕ — НЕ «ПОПРАВИТЬ ТРИ СПИСКА», А УБРАТЬ ДВА. Кто потребляет ключ и
+// какими именами его читает — знает ОДНА служба данных. Здесь этого знания нет
+// намеренно: вернув сюда список путей или имён, вы вернёте и дефект.
+//
+// 🔒 ПОЧЕМУ ДВЕРЬ ЖИВЁТ НЕ ЗДЕСЬ. Гостевой слот в покое пуст и сменяем, а панель
+// обязана уметь ставить ключ и тогда; при этом гостевое приложение не имеет права
+// зависеть от панели в рантайме. Служба данных есть всегда.
 
 export type Consumer = {
   /** Ключ найден в файле этого потребителя. */
@@ -63,39 +53,28 @@ export type OpenAiKeyState = {
 }
 
 /**
- * Прочитать ключ у одного потребителя ЕГО ИМЕНАМИ.
- *
- * 🔒 «ЗАДАН» ЗНАЧИТ «ЗАПОЛНЕНЫ ВСЕ ЕГО ПЕРЕМЕННЫЕ, А НЕ ХОТЯ БЫ ОДНА». У графа их
- * две, и заполненная половина — это работающая генерация при слепом встраивании,
- * то есть ровно тот молчаливый отказ, ради которого шаг и заведён.
- */
-function readOne(path: string, names: readonly string[]): { value: string | null; present: boolean } {
-  try {
-    const values = names.map((n) => {
-      const v = readEnvValue(n, path)
-      return v && v.trim() ? v.trim() : null
-    })
-    return { value: values.every(Boolean) ? values[0] : null, present: true }
-  } catch {
-    return { value: null, present: false }
-  }
-}
-
-/**
  * 🔒 «НЕТ ФАЙЛА» И «ЕСТЬ ФАЙЛ БЕЗ КЛЮЧА» — РАЗНЫЕ СОСТОЯНИЯ, И ЛЕЧЕНИЕ У НИХ
  * РАЗНОЕ: первое означает, что служба не установлена (и требовать от неё ключ
  * бессмысленно), второе — что ключ ей не доехал.
+ *
+ * 🔒 СОСТОЯНИЕ СПРАШИВАЕТСЯ У ДВЕРИ, А НЕ ЧИТАЕТСЯ ИЗ ФАЙЛОВ (109-2). Файлы читает
+ * служба данных — она же их и пишет. Второй читатель тех же файлов разошёлся бы с
+ * писателем на первой правке имён, что этим шагом и лечится.
  */
-export function readOpenAiKeyState(): OpenAiKeyState {
-  const app = readOne(SLOT_ENV, VARS.app)
-  const data = readOne(DATA_ENV, VARS.data)
-  const graph = readOne(RAG_ENV, VARS.graph)
-  const tail = app.value ? app.value.slice(-4) : null
-  return {
-    app: { configured: Boolean(app.value), present: app.present },
-    data: { configured: Boolean(data.value), present: data.present },
-    graph: { configured: Boolean(graph.value), present: graph.present },
-    tail,
+export async function readOpenAiKeyState(): Promise<OpenAiKeyState> {
+  const empty = { configured: false, present: false }
+  try {
+    const r = await dataFetch("/platform/openai-key", { cache: "no-store" })
+    if (!r.ok) return { app: empty, data: empty, graph: empty, tail: null }
+    const d = (await r.json()) as {
+      state: Record<"app" | "data" | "graph", { configured: boolean; present: boolean }>
+      tail: string | null
+    }
+    return { app: d.state.app, data: d.state.data, graph: d.state.graph, tail: d.tail }
+  } catch {
+    // 🔒 СЛОЙ ДАННЫХ НЕДОСТУПЕН — ЭТО НЕ «КЛЮЧА НЕТ». Отдаём «служб не видно»,
+    // и экран скажет это словами, а не покрасит всё в красный.
+    return { app: empty, data: empty, graph: empty, tail: null }
   }
 }
 
@@ -106,21 +85,23 @@ export function readOpenAiKeyState(): OpenAiKeyState {
  * значило бы завести файл, который никто не читает, и потом объяснять, почему
  * «ключ задан», а граф молчит.
  */
-export function writeOpenAiKey(value: string): { written: string[]; failed: string[] } {
+export async function writeOpenAiKey(value: string): Promise<{ written: string[]; failed: string[] }> {
   const written: string[] = []
   const failed: string[] = []
-  for (const [name, path] of [
-    ["app", SLOT_ENV],
-    ["data", DATA_ENV],
-    ["graph", RAG_ENV],
-  ] as const) {
-    const { present } = readOne(path, VARS[name])
-    if (!present) continue
-    // 🔒 ПИШЕМ ИМЕНАМИ ПОТРЕБИТЕЛЯ. У графа их две, и записаны обязаны быть обе:
-    // одна из двух — это работающая генерация при слепом встраивании.
-    const results = VARS[name].map((n) => writeEnvValue(n, value, path))
-    if (results.every((r) => r.ok)) written.push(name)
-    else failed.push(name)
+  // 🔒 ПИШЕТ ДВЕРЬ, А НЕ ЭТОТ ФАЙЛ (109-2). Список имён потребителей живёт в одном
+  // месте на всю платформу — в службе данных. Здесь его копии больше нет: именно
+  // три расходящиеся копии и были дефектом, ради которого шаг заведён.
+  try {
+    const r = await dataFetch("/platform/openai-key", {
+      method: "POST",
+      body: JSON.stringify({ key: value }),
+    })
+    if (!r.ok) return { written: [], failed: ["door"] }
+    const d = (await r.json()) as { written?: string[]; failed?: string[] }
+    written.push(...(d.written ?? []))
+    failed.push(...(d.failed ?? []))
+  } catch {
+    return { written: [], failed: ["door"] }
   }
   return { written, failed }
 }

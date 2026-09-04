@@ -22,9 +22,9 @@ import type { TelegramUi } from "../_i18n/telegram.i18n"
 // быть не установлен вовсе, и требовать от него ключ бессмысленно: такой
 // потребитель в счёт не идёт.
 
-export function OpenAiKeySection({ ui }: { ui: TelegramUi }) {
+export async function OpenAiKeySection({ ui }: { ui: TelegramUi }) {
   const w = ui.openai
-  const state = readOpenAiKeyState()
+  const state = await readOpenAiKeyState()
 
   const living = [
     { name: w.consumerApp, ...state.app },

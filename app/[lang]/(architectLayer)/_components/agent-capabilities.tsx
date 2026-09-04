@@ -27,8 +27,30 @@ type Caps = {
   workspace: string
 }
 
+/**
+ * Адрес чата.
+ *
+ * ✗ ЗДЕСЬ СТОЯЛ ТОЛЬКО `chatUrlFromSite(getAppConfig().url)`, И ЖИВОЙ ЗАМЕР
+ * 2026-09-04 ПОКАЗАЛ, ЧЕМ ЭТО ПЛОХО: на сервере адрес сайта не настроен
+ * (`url: null`), функция вернула пустую строку — и витрина сказала «чат не
+ * отвечает» ПРО ЖИВОЙ ЧАТ, который в ту же секунду отвечал `200`.
+ * 🔒 ЛОЖНЫЙ ДИАГНОЗ ХУЖЕ ОТСУТСТВИЯ ДИАГНОЗА: человек пошёл бы чинить чат.
+ * Поэтому адрес сперва выводится из хоста ЗАПРОСА — тем же правилом, которым
+ * сам чат находит соседей, — и только потом из настройки.
+ */
+async function chatAddress(): Promise<string> {
+  const h = await headers()
+  const host = h.get("host") ?? ""
+  const proto = h.get("x-forwarded-proto") ?? "http"
+  // Режим по IP: `<адрес>:3000` → `<адрес>:3600`. Доменный: `chat.<домен>`.
+  const byIp = host.match(/^(.+):3000$/)
+  if (byIp) return `${proto}://${byIp[1]}:3600`
+  if (host && !host.startsWith("chat.")) return `${proto}://chat.${host.replace(/^www\./, "")}`
+  return chatUrlFromSite(getAppConfig().url)
+}
+
 async function readCaps(): Promise<Caps | null> {
-  const url = chatUrlFromSite(getAppConfig().url)
+  const url = await chatAddress()
   if (!url) return null
   try {
     // 🔒 КУКА ПЕРЕСЫЛАЕТСЯ: дверь чата под ролью архитектора, и спрашивать её

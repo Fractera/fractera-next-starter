@@ -42,6 +42,22 @@ export type PreStepRequest = {
   pageSlug?: string
   /** Четвёртый повод (76-5): речь об ИНСТРУМЕНТЕ в `_tools/`. */
   tool?: boolean
+  /**
+   * Пятый повод (133, 2026-09-05): человек попросил РАЗРАБОТКУ у бота в Telegram.
+   *
+   * 🔒 АГЕНТУ АВТОМАТИЗАЦИИ РАЗРАБАТЫВАТЬ ЗАПРЕЩЕНО — решение владельца. Просьбу
+   * «сделай мне страницу» он не исполняет и не отклоняет: он кладёт её сюда и
+   * возвращает человеку ИМЯ ФАЙЛА заявки, чтобы тот запустил её через бота
+   * агента разработки. Заявка — единственный законный путь из разговора в код.
+   * 🛑 Отличается от четырёх поводов выше источником: там страница проекта, здесь
+   * живой разговор в мессенджере. Кто просил и через какой канал — часть записи,
+   * иначе агент разработки не поймёт, у кого уточнять.
+   */
+  fromAgent?: boolean
+  /** Имя человека в канале: `roma_armstrong`. Только у заявки от агента. */
+  who?: string
+  /** Имя канала: `Telegram`. Только у заявки от агента. */
+  channel?: string
   /** Какой именно — `_tools/code-view`. Есть только у правки существующего. */
   toolId?: string
   /**
@@ -104,17 +120,22 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
   const tool = body.tool === true
   const toolId = typeof body.toolId === "string" ? body.toolId.trim().slice(0, LIMITS.toolId) : ""
   const page = typeof body.page === "string" ? body.page.trim().slice(0, 200) : ""
+  const fromAgent = body.fromAgent === true
+  const who = typeof body.who === "string" ? body.who.trim().slice(0, 120) : ""
+  const channel = typeof body.channel === "string" ? body.channel.trim().slice(0, 60) : ""
 
   // Заявка про существующий образец, про новый блок в типе, про текст страницы
   // подвала ИЛИ про новый инструмент. Ни одно из четырёх — значит форма прислала
   // мусор, и агенту будет нечего искать.
-  if (!code && !kind && !pageSlug && !tool) {
-    return { ok: false, reason: "bad-body", detail: "code, kind, pageSlug or tool is required" }
+  if (!code && !kind && !pageSlug && !tool && !fromAgent) {
+    return { ok: false, reason: "bad-body", detail: "code, kind, pageSlug, tool or fromAgent is required" }
   }
 
   const { file: base, human } = stamp(now)
 
-  const source = tool
+  const source = fromAgent
+    ? `разговор в мессенджере · ${channel || "Telegram"}${who ? " · @" + who : ""}`
+    : tool
     ? "каталог инструментов · слой архитектора"
     : pageSlug
       ? "страница подвала · публичный слой"
@@ -128,6 +149,7 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
   if (kind) lines.push(`тип:           ${kind}`)
   if (pageSlug) lines.push(`страница:      ${pageSlug}`)
   if (tool) lines.push(`предмет:       ${toolId ? `правка инструмента ${toolId}` : "новый инструмент в _tools/"}`)
+  if (fromAgent) lines.push(`предмет:       разработка по просьбе человека в разговоре`)
   lines.push(`что просят:    «${quote(text)}»`)
   // Подпись второго поля даёт предмет: у блока это роль, у инструмента — место
   // применения. Вопросы разные, ключ один.
@@ -158,6 +180,19 @@ export function writePreStep(input: unknown, now: Date = new Date()): PreStepRes
     "   заявка проходит те же ворота, что задача, сказанная владельцем голосом.",
   )
   lines.push("   → development-docs/development-steps/pre-steps/README.md")
+  // 🔒 ЗАЯВКА ОТ АГЕНТА НЕСЁТ СВОЙ ЗАКОН, И ОН СТРОЖЕ ОСТАЛЬНЫХ ЧЕТЫРЁХ.
+  // Слова пришли из живого разговора в мессенджере, а не из формы на странице
+  // проекта: у формы есть предмет — образец, тип, страница, инструмент, — и она
+  // сама ограничивает, о чём речь. Здесь ограничения нет никакого.
+  if (fromAgent) {
+    lines.push("🔒 Просьбу принял агент автоматизации. РАЗРАБАТЫВАТЬ ЕМУ ЗАПРЕЩЕНО — он только")
+    lines.push("   записал сказанное и вернул человеку имя этого файла. Ничего из просьбы не")
+    lines.push("   сделано и не начато.")
+    lines.push("🛑 Предмет заявки НЕ ОГРАНИЧЕН формой: человек говорил свободно, и просьба может")
+    lines.push("   оказаться чем угодно — от правки текста до новой службы. Первый вопрос агента")
+    lines.push("   разработки — не «как сделать», а «что именно просят и относится ли это к нам».")
+    lines.push("")
+  }
   lines.push("")
 
   try {

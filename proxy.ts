@@ -67,6 +67,9 @@ const PUBLIC_API_PREFIXES = [
   // возвращает текст для агента, не сочиняя ответа. Стучится машина — предзагрузчик
   // MCP, — и стережёт её тот же общий секрет, что и две двери выше.
   "/api/intake",
+  // Заявка на разработку от агента автоматизации (133): та же машина, тот же
+  // секрет. Соседняя api/architect/pre-step закрыта РОЛЬЮ — у машины сессии нет.
+  "/api/intake/request",
 ];
 
 // Non-content root pages that live at the ROOT and never take a language prefix

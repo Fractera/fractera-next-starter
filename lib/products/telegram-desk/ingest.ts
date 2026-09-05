@@ -6,7 +6,7 @@ import { db } from "@/lib/db"
 import { remember } from "@/lib/fractera/vectors"
 import { learn } from "@/lib/fractera/knowledge"
 import { understand, type Understanding } from "./understand"
-import { takeFile } from "./branches/files"
+import { takeFile, takeLocalFile } from "./branches/files"
 import { getAppConfig } from "@/config/app-config"
 import { waitingLabel } from "./calendar"
 import { timezoneOf } from "./timezone"
@@ -115,6 +115,16 @@ export type Incoming = {
   objectType?: string
   /** Файл у Telegram. */
   fileId?: string
+  /**
+   * Байты файла, когда он УЖЕ на руках, а не у службы каналов (133, 2026-09-05).
+   *
+   * 🔒 ПОЛЕ РЯДОМ С `fileId`, А НЕ ВМЕСТО НЕГО: источников байтов два, и оба
+   * законны. Плагин каналов Claude Code кладёт присланное человеком на диск —
+   * идти за этим файлом в службу неоткуда, его там нет.
+   * 🛑 Имя обязательно вместе с байтами: род файла решается по расширению.
+   */
+  fileBytes?: Buffer
+  fileName?: string
   /** От кого переслано. Пусто — человек написал это сам. */
   forwardedFrom?: string
   /**
@@ -343,7 +353,26 @@ export async function ingest(msg: Incoming): Promise<IngestResult> {
   // без суммы это не запись о трате, а бессмысленная строка.
   const files: { kind: string; text: string }[] = []
   let fileRead = ""
-  if (msg.fileId) {
+  // 🔒 ДВА ИСТОЧНИКА БАЙТОВ, ОДИН РАЗБОР (133, 2026-09-05). `fileId` — файл у
+  // службы каналов; `fileBytes` — файл уже на руках, его кладёт на диск плагин
+  // каналов Claude Code. Ветка одна на оба: `takeLocalFile` и `takeFile` зовут
+  // общий `processBytes`, и промпт зрения у них тот же самый.
+  if (msg.fileBytes && msg.fileName) {
+    const f = await takeLocalFile(msg.fileBytes, msg.fileName, messageId, msg.objectType)
+    if (f.name) {
+      artifacts.push({ kind: "media", ref: f.name })
+      if (f.text) {
+        files.push({ kind: f.kind, text: f.text })
+        fileRead = f.kind === "image" ? "фотография прочитана" : f.kind === "audio" ? "звук расшифрован" : "документ прочитан"
+      } else {
+        fileRead = "сохранено, прочитать не удалось"
+        notes.push(`file:${f.kind}:${f.failed || "not-read"}`)
+      }
+    } else {
+      fileRead = "вложение не удалось сохранить"
+      notes.push(`file:${f.failed || "media-upload"}`)
+    }
+  } else if (msg.fileId) {
     const f = await takeFile(msg.fileId, messageId, msg.objectType)
     if (f?.name) {
       artifacts.push({ kind: "media", ref: f.name })

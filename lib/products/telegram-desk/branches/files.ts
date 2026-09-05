@@ -193,6 +193,48 @@ const MIME: Record<string, string> = {
  * Забрать, сохранить, прочитать. Любой шаг может не удаться по отдельности, и
  * тогда работает то, что удалось: файл без описания полезнее отсутствия файла.
  */
+/**
+ * Общая часть приёма файла: медиатека, затем перевод в текст по роду.
+ *
+ * 🔒 ВЫНЕСЕНА ИЗ `takeFile` (133, 2026-09-05), ПОТОМУ ЧТО ИСТОЧНИКОВ БАЙТОВ СТАЛО
+ * ДВА. Прежде байты приходили только от службы каналов по `fileId`; теперь файл
+ * может лежать локально — плагин каналов Claude Code кладёт присланное человеком
+ * в свой склад на диске. **Разбор при этом обязан быть один и тот же:** второй
+ * путь, повторяющий эти двадцать строк, разошёлся бы с первым на первой правке
+ * промпта, и разошёлся бы молча.
+ *
+ * 🔒 МЕДИАТЕКА ПЕРВОЙ, ДО РАЗБОРА (§ 11.2 паспорта): разбор может не удаться, а
+ * файл, положенный первым, переживает отказ следующих шагов — и именно он делает
+ * возможной вторую волну, переописание.
+ */
+async function processBytes(
+  bytes: Buffer,
+  fileName: string,
+  messageId: number,
+  declaredKind?: string,
+): Promise<StoredFile> {
+  const kind = kindOf(fileName, declaredKind)
+  if (!kind) return { name: "", kind: "document", text: "", failed: "unknown-kind" }
+
+  const name = await toMedia(bytes, fileName, messageId)
+  if (!name) return { name: "", kind, text: "", failed: "media-upload" }
+
+  let text = ""
+  let why = ""
+  if (kind === "image") {
+    const ext = (fileName.split(".").pop() ?? "jpg").toLowerCase()
+    const seen = await describeImage(bytes, MIME[ext] ?? "image/jpeg")
+    text = seen.text
+    why = seen.why
+  } else if (kind === "audio") {
+    text = await transcribe(bytes, fileName)
+  } else {
+    text = readDocument(bytes, fileName)
+  }
+
+  return { name, kind, text, failed: text ? "" : why || "not-read" }
+}
+
 export async function takeFile(
   fileId: string,
   messageId: number,
@@ -200,27 +242,23 @@ export async function takeFile(
 ): Promise<StoredFile | null> {
   const got = await fetchFromChannel(fileId, declaredKind)
   if (!got) return null
+  return processBytes(got.bytes, got.name, messageId, declaredKind)
+}
 
-  const kind = kindOf(got.name, declaredKind)
-  if (!kind) return { name: "", kind: "document", text: "", failed: "unknown-kind" }
-
-  const name = await toMedia(got.bytes, got.name, messageId)
-  if (!name) return { name: "", kind, text: "", failed: "media-upload" }
-
-  let text = ""
-  let why = ""
-  if (kind === "image") {
-    const ext = (got.name.split(".").pop() ?? "jpg").toLowerCase()
-    const seen = await describeImage(got.bytes, MIME[ext] ?? "image/jpeg")
-    text = seen.text
-    why = seen.why
-  } else if (kind === "audio") {
-    text = await transcribe(got.bytes, got.name)
-  } else {
-    text = readDocument(got.bytes, got.name)
-  }
-
-  return { name, kind, text, failed: text ? "" : why || "not-read" }
+/**
+ * Тот же приём, но байты уже на руках — файл лежит локально, а не у службы.
+ *
+ * 🛑 ИМЯ ФАЙЛА ЗДЕСЬ НЕ УКРАШЕНИЕ, А ЕДИНСТВЕННЫЙ ИСТОЧНИК РОДА. По расширению
+ * решается, звать ли зрение, расшифровку или чтение документа. Пустое имя
+ * означает «род неизвестен», и это честный отказ, а не повод угадывать по байтам.
+ */
+export async function takeLocalFile(
+  bytes: Buffer,
+  fileName: string,
+  messageId: number,
+  declaredKind?: string,
+): Promise<StoredFile> {
+  return processBytes(bytes, fileName, messageId, declaredKind)
 }
 
 /**

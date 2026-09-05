@@ -93,10 +93,25 @@ export async function POST(req: NextRequest) {
   const text = String(body.text ?? "").trim()
   const chatId = String(body.chatId ?? "")
   const fileId = String(body.fileId ?? "")
-  // Текст ИЛИ файл — одного достаточно: снимок без подписи несёт смысл на себе.
-  if ((!text && !fileId) || !chatId) {
+  const fileName = String(body.fileName ?? "")
+  const fileBase64 = String(body.fileBase64 ?? "")
+
+  // 🔒 ФАЙЛ ПРИЕЗЖАЕТ ДВУМЯ СПОСОБАМИ, И ОБА ЗАКОННЫ. `fileId` — файл лежит у
+  // службы каналов; `fileBase64` + `fileName` — файл уже на руках у звонящего,
+  // потому что плагин каналов Claude Code кладёт присланное человеком на диск.
+  // 🛑 ИМЯ ОБЯЗАТЕЛЬНО ВМЕСТЕ С БАЙТАМИ: род файла решается по расширению, и
+  // байты без имени — это «неизвестно что», а не «документ».
+  if (fileBase64 && !fileName) {
     return NextResponse.json(
-      { ok: false, error: "text or fileId, and chatId, are required" },
+      { ok: false, error: "fileName is required together with fileBase64" },
+      { status: 400 },
+    )
+  }
+
+  // Текст ИЛИ файл — одного достаточно: снимок без подписи несёт смысл на себе.
+  if ((!text && !fileId && !fileBase64) || !chatId) {
+    return NextResponse.json(
+      { ok: false, error: "text, fileId or fileBase64, and chatId, are required" },
       { status: 400 },
     )
   }
@@ -106,7 +121,9 @@ export async function POST(req: NextRequest) {
     at: String(body.at ?? new Date().toISOString()),
     chatId,
     who: String(body.who ?? ""),
-    kind: String(body.kind ?? (fileId ? "document" : "text")),
+    kind: String(body.kind ?? (fileId || fileBase64 ? "document" : "text")),
+    fileBytes: fileBase64 ? Buffer.from(fileBase64, "base64") : undefined,
+    fileName: fileName || undefined,
     text,
     forwardedFrom: body.forwardedFrom ? String(body.forwardedFrom) : undefined,
     objectType: body.objectType ? String(body.objectType) : undefined,

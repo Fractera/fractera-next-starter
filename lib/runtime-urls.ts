@@ -32,15 +32,9 @@ export function adminBase(): string {
   return `${protocol}//admin.${apexFrom(hostname)}`;
 }
 
-// Публичный адрес чата с ИИ-агентом (fractera-chat :3600, шаг 96) — восьмая служба сервера.
-// IP → <host>:3600 ; домен → chat.<apex>. Считается ровно как `adminBase()`: второй способ
-// вычисления адреса службы разошёлся бы с первым в день переезда на домен.
-export function chatBase(): string {
-  if (typeof window === "undefined") return "http://localhost:3600";
-  const { protocol, hostname } = window.location;
-  if (isIpHost(hostname)) return `${protocol}//${hostname}:3600`;
-  return `${protocol}//chat.${apexFrom(hostname)}`;
-}
+// 🪦 `chatBase()` УБРАН 2026-09-05 (ревизия, шаг 116) вместе со ссылкой на чат в подвале.
+// Служба `:3600` жива, но перестала быть путём к агенту, и её адрес больше никто не считает.
+// Понадобится снова — восстанавливается из git по этому комментарию.
 
 // Public base URL of the Projects service (fractera-projects :3003, step 197) — the automations
 // layer that moved out of this slot into its own process. IP → <host>:3003 ; domain → projects.<apex>.

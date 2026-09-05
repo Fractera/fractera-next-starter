@@ -44,8 +44,16 @@ platform step 96 (2026-09-02).** It is a platform service like auth or the panel
 2. **Its files land in the project's media library**, the same warehouse the Telegram bot fills. "All
    the files of this project" is one answer, not three lists in three services.
 
-The site's footer carries a button to it next to the Telegram-bot one. You do not build the chat, you
-do not proxy it, and you never copy its interface into `3000`.
+You do not build the chat, you do not proxy it, and you never copy its interface into `3000`.
+
+🪦 **THE FOOTER NO LONGER CARRIES A BUTTON TO IT — REMOVED 2026-09-05 BY THE OWNER'S DIRECT WORD**
+("из подвала также убирай ссылку на чат"). This line used to read: *"The site's footer carries a
+button to it next to the Telegram-bot one."* The strategy of running the chat library and Telegram
+side by side is over: **the one path to the agent is Telegram → Claude Code.** The service on `:3600`
+is still alive and still the same person's session — it simply stopped being a way to reach the AI,
+so nothing in the site points at it. Removed whole, not hidden: the island `chat-link.client.tsx`,
+the dictionary `CHAT_LINK` and both address calculations (`chatUrlFromSite`, `chatBase`) went with
+it. **Do not rebuild that button**; if it is ever wanted back, it comes from git.
 
 🔒 **Your work ends at the boundary of app `3000`.** Everything else is platform, and you have nothing
 to change it with: a deployment runs `rm -rf /opt/fractera` and installs it again. ✗ an edit there
@@ -515,7 +523,7 @@ total** — this one plus the four below, all of them on the same shell
 |---|---|
 | `/{lang}/architect/dev-mode` | the development mode: classic · steps · cases · migration |
 | `/{lang}/architect/design` | **the look of this project** — seven sections: fonts · type scale · shape · colours · blocks · **dialogs** · **tools** |
-| `/{lang}/architect/telegram` | **the Telegram bot** — description · logs · settings, all three built (step 77) |
+| `/{lang}/architect/telegram` | **the Telegram bot** — description · logs · settings · passport, **four sections**, all built |
 | `/{lang}/architect/auth` | **how people sign in** — description · sign-in visibility · Google · Resend |
 
 🔒 **THE COUNT AND THE LIST ARE FIXED IN ONE EDIT, NEVER ONE WITHOUT THE OTHER.** A hand-written list
@@ -659,7 +667,18 @@ generation) · `app/api/architect/facts` and `…/fact-draft` · the card in the
 
 ### `/{lang}/architect/telegram` — the bot (step 77)
 
-Three sections. **Description** says what the bot can do today and what it cannot, both written from
+**Four sections**, and the count is corrected in the same edit as the list: **description · logs ·
+settings · passport**. 🪦 This line said "Three" while a fourth (`passport`) had shipped and a fifth
+("automation strategy") had come and gone — the same class of miss this corpus has paid for five
+times: *a hand-written number never moves itself.*
+
+🪦 **AND A FIFTH SECTION, "AUTOMATION STRATEGY", WAS REMOVED 2026-09-05** (owner: "the left-menu tabs
+built for configuring different ways of working — remove them entirely"). It offered a choice between
+a pipeline on OpenAI models and an Anthropic agent; there is no choice any more. Removed whole, with
+its island and its dictionary — a section struck only from the menu would still live at its direct
+address. The reason and the way back are in `_lib/telegram-sections.ts`.
+
+**Description** says what the bot can do today and what it cannot, both written from
 the service's source rather than from memory. **Logs** is a live feed of what the bot heard — the last
 500 messages the channel service keeps, newest first, with the reason spelled out when it is empty
 (no token · not linked · nobody wrote). **Settings** is the panel's screen moved here whole: the token,

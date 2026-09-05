@@ -10,10 +10,9 @@ import { featureOn } from "@/config/platform-config";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/menu/shared/theme-toggle.client";
 import { AppWidthToggle } from "@/components/menu/footer/app-width-toggle.client";
-import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi, chatLinkUi } from "@/components/menu/footer/footer-menu.i18n";
-import { ChatLink } from "./chat-link.client"
+import { footerLabels, widthLabels, adminLinkLabels, architectLinkUi, designLinkUi, devModeLinkUi, telegramLinkUi, authLinkUi, architectGroupUi } from "@/components/menu/footer/footer-menu.i18n";
 import { AdminLink } from "@/components/menu/footer/admin-link.client";
-import { adminUrlFromSite, chatUrlFromSite } from "@/lib/site-urls";
+import { adminUrlFromSite } from "@/lib/site-urls";
 import { FooterSocialDropdown, type SocialKey } from "@/components/menu/footer/footer-social-dropdown.client";
 import { LanguageSwitcher } from "@/components/language-switcher.client";
 import { CookieSettingsButton } from "@/components/menu/footer/cookie-settings-button.client";
@@ -129,7 +128,6 @@ export function FooterMenu({ lang }: { lang: string }) {
   // Адрес панели выводится из адреса сайта, а не из окна браузера: подвал —
   // серверная разметка, и ссылка обязана быть в статическом HTML.
   const adminUrl = adminUrlFromSite(cfg.url);
-  const chatUrl = chatUrlFromSite(cfg.url);
 
   return (
     <footer className="border-t border-border bg-background text-foreground mt-auto">
@@ -322,23 +320,18 @@ export function FooterMenu({ lang }: { lang: string }) {
               {telegramLinkUi(lang).footer}
             </Link>
 
-            {/* 🔒 ЧАТ С ИИ-АГЕНТОМ — СПРАВА ОТ TELEGRAM-БОТА (правка владельца
-                2026-09-02). Это не раздел слоя, а ОТДЕЛЬНАЯ СЛУЖБА на своём
-                адресе: чат живёт на `chat.<домен>` (или `:3600` по IP), поэтому
-                здесь обычная ссылка наружу, а не `Link` на свой маршрут — тем же
-                правилом, что и вход в панель управления.
+            {/* 🪦 ССЫЛКА НА ЧАТ С ИИ-АГЕНТОМ УБРАНА 2026-09-05 (ревизия, шаг 116)
+                ПРЯМЫМ СЛОВОМ ВЛАДЕЛЬЦА: «из подвала также убирай ссылку на чат».
+                Стратегия одновременной работы библиотеки чата и Telegram
+                прекращена: путь к агенту один — Telegram → Claude Code. Кнопка,
+                ведущая на службу, которая перестала быть путём к агенту, обещает
+                человеку не то.
 
-                🛑 ПУСТОЙ АДРЕС — ЗАКОННОЕ СОСТОЯНИЕ СВЕЖЕГО СЕРВЕРА: адрес
-                выводится из адреса сайта, а он на новой машине не заполнен.
-                Кнопка тогда не показывается — выдуманный адрес хуже
-                отсутствующего, он ведёт человека в никуда. */}
-            {/* 🔒 КНОПКА ЧАТА РИСУЕТСЯ ВСЕГДА, АДРЕС У НЕЁ ИЗ ДВУХ ИСТОЧНИКОВ.
-                ✗ Оплачено 2026-09-03: здесь стояло `{chatUrl && …}`, и на свежем
-                сервере кнопки не было вовсе — владелец сообщил «ссылки на чат в
-                подвале нет». Это ТОТ ЖЕ дефект, что случился с кнопкой панели
-                2026-08-29, и лечится он тем же островком: сервер даёт адрес из
-                настроек, а без них он выводится из адреса окна. */}
-            <ChatLink href={chatUrl} label={chatLinkUi(lang).footer} />
+                🔒 УБРАНА ЦЕЛИКОМ, А НЕ СПРЯТАНА. Вместе с ней удалены островок
+                `chat-link.client.tsx`, словарь `CHAT_LINK` и оба расчёта адреса
+                (`chatUrlFromSite`, `chatBase`). Спрятанная кнопка оставила бы
+                живым весь расчёт адреса службы — способность без входа, о
+                которой знает только читавший код. Восстанавливается из git. */}
 
             {/* 🔒 АВТОРИЗАЦИЯ — ПЯТЫЙ ВХОД СЛОЯ (владелец 2026-08-31): «сюда из
                 административной панели мы вытащим настройку авторизации… первая

@@ -17,8 +17,11 @@ export type TelegramUi = {
   subtitle: string
   // 🪦 БЫЛО СЕМЬ РАЗДЕЛОВ, СТАЛО ЧЕТЫРЕ (111, 2026-09-04): «команды»,
   // «календарь» и «карта» убраны словом владельца вместе со своими словами.
+  // 🪦 И СТАЛО ЧЕТЫРЕ ИЗ ПЯТИ (ревизия, шаг 116, 2026-09-05): «Стратегия
+  // автоматизации» убрана — выбор между конвейером на OpenAI и агентом Anthropic
+  // перестал существовать вместе со стратегией, которая его породила.
   pages: Record<
-    "about" | "logs" | "settings" | "automation" | "passport",
+    "about" | "logs" | "settings" | "passport",
     { title: string; hint: string }
   >
   /** Свёрнутая справка раздела «Описание». */
@@ -358,10 +361,6 @@ const EN: TelegramUi = {
       title: "Settings",
       hint: "The token, the connection and everything the bot needs in order to answer.",
     },
-    automation: {
-      title: "Automation strategy",
-      hint: "What automates this project: an Anthropic agent on your own subscription, or a pipeline of your own on OpenAI models.",
-    },
     passport: {
       title: "Passport",
       hint: "What we are building, why, and how it works today. A living document.",
@@ -676,10 +675,6 @@ const RU: TelegramUi = {
     settings: {
       title: "Настройки",
       hint: "Токен, связь и всё, без чего бот не отвечает.",
-    },
-    automation: {
-      title: "Стратегия автоматизации",
-      hint: "Чем автоматизируется этот проект: агент Anthropic на вашей подписке или собственный конвейер на моделях OpenAI.",
     },
     passport: {
       title: "Паспорт",

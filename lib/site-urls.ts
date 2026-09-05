@@ -48,23 +48,6 @@ export function adminUrlFromSite(siteUrl: string | undefined): string {
   }
 }
 
-/**
- * Адрес чата с ИИ-агентом — по тому же правилу, что и панель.
- *
- * 🔒 ПОРТ `3600` У IP-РЕЖИМА И ПОДДОМЕН `chat.` У ДОМЕННОГО — ровно как у
- * панели с её `3002` и `admin.`. Второй способ вычисления адреса службы
- * разошёлся бы с первым в тот день, когда сервер переедет на домен.
- *
- * Пустой адрес — законный исход свежего сервера: выдуманный адрес хуже
- * отсутствующего, он ведёт человека в никуда.
- */
-export function chatUrlFromSite(siteUrl: string | undefined): string {
-  if (!siteUrl) return "";
-  try {
-    const { protocol, hostname } = new URL(siteUrl);
-    if (isIpHost(hostname)) return `${protocol}//${hostname}:3600`;
-    return `${protocol}//chat.${apexFrom(hostname)}`;
-  } catch {
-    return "";
-  }
-}
+// 🪦 `chatUrlFromSite()` УБРАН 2026-09-05 (ревизия, шаг 116) вместе со ссылкой на чат в
+// подвале — его единственным потребителем. Служба `:3600` жива, но перестала быть путём к
+// агенту. Восстанавливается из git по этому комментарию.

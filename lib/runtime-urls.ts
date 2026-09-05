@@ -34,7 +34,21 @@ export function adminBase(): string {
 
 // 🪦 `chatBase()` УБРАН 2026-09-05 (ревизия, шаг 116) вместе со ссылкой на чат в подвале.
 // Служба `:3600` жива, но перестала быть путём к агенту, и её адрес больше никто не считает.
-// Понадобится снова — восстанавливается из git по этому комментарию.
+
+// Адрес ТЕРМИНАЛА агента в браузере (шаг 117): IP → <host>:3600/terminal, домен →
+// chat.<apex>/terminal. Считается ровно как `adminBase()` — из адреса окна, а не из
+// `NEXT_PUBLIC_*`: те запекаются на сборке и пустеют при переходе IP → домен.
+//
+// 🪦 РАСЧЁТ ВЕРНУЛСЯ ЧЕРЕЗ ДЕНЬ ПОСЛЕ СВОЕГО НАДГРОБИЯ, И ИМЯ У НЕГО ДРУГОЕ НЕ СЛУЧАЙНО.
+// Убран был `chatBase()` — «адрес чата вообще», повод поставить ссылку на чат куда угодно.
+// Здесь считается адрес ОДНОЙ страницы, у которой одно назначение: вход в подписку Claude
+// Code. Верни мы общее имя — вернулся бы и повод, ради устранения которого его убирали.
+export function agentTerminalUrl(): string {
+  if (typeof window === "undefined") return "http://localhost:3600/terminal";
+  const { protocol, hostname } = window.location;
+  if (isIpHost(hostname)) return `${protocol}//${hostname}:3600/terminal`;
+  return `${protocol}//chat.${apexFrom(hostname)}/terminal`;
+}
 
 // Public base URL of the Projects service (fractera-projects :3003, step 197) — the automations
 // layer that moved out of this slot into its own process. IP → <host>:3003 ; domain → projects.<apex>.

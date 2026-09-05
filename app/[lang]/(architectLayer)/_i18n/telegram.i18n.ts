@@ -289,6 +289,45 @@ export type TelegramUi = {
     restartNote: string
   }
 
+  /**
+   * КАНАЛ АГЕНТА: ПОДПИСКА CLAUDE CODE И ДВА ЕГО БОТА (шаг 117, 2026-09-05).
+   *
+   * 🔒 ПОДПИСКА — ПЕРВАЯ КАРТОЧКА РАЗДЕЛА по прямому слову владельца. Ключи
+   * отвечают на вопрос «чем оплачено дополнительное», подписка — «работает ли
+   * агент вообще»; порядок карточек повторяет этот порядок вопросов.
+   */
+  agent: {
+    title: string
+    statusOn: string
+    statusOff: string
+    lead: string
+    openTerminal: string
+    dialogTitle: string
+    dialogDescription: string
+    newTab: string
+    unreachable: string
+    botAutomationTitle: string
+    botAutomationLead: string
+    botDevTitle: string
+    botDevLead: string
+    botDevSoon: string
+    allowed: string
+    pending: string
+    bot: {
+      placeholder: string
+      save: string
+      saving: string
+      saved: string
+      configured: string
+      notConfigured: string
+      hint: string
+      appliesOnRestart: string
+      errBadFormat: string
+      errUnreachable: string
+      errFailed: string
+    }
+  }
+
   about: {
     /**
      * ПЕРВЫЙ АБЗАЦ ОПИСАНИЯ (77-10, 2026-09-01, заказ владельца).
@@ -629,7 +668,7 @@ const EN: TelegramUi = {
   openai: {
     title: "OpenAI key",
     lead:
-      "The bot needs it more often than not: without this key a voice note is not transcribed and an answer is not composed. It is set here so that both settings live on one screen.",
+      "Recommended, not required. This key powers Fracteras memory: the vector store and the agentic RAG, that is the knowledge graph. With it the bot remembers what was said, searches by meaning and answers from your own documents rather than from the last few messages. Without it the bot still works — it simply has no memory of its own.",
     exists: "An OpenAI key is set",
     missing: "No OpenAI key yet",
     partial: "The key has not reached every service",
@@ -654,6 +693,38 @@ const EN: TelegramUi = {
     balanceNote:
       "The remaining balance cannot be shown: OpenAI returns it only to a browser session of your account or to an admin key with the api.usage.read scope. An ordinary project key never sees it.",
     restartNote: "The project restarts to pick up the new key; the channel service reads it straight away.",
+  },
+
+  agent: {
+    title: "Claude Code subscription",
+    statusOn: "signed in",
+    statusOff: "not signed in",
+    lead: "This is how the bot thinks. A message from Telegram goes straight into a live Claude Code session on your server, and the answer comes back to Telegram — on your subscription, with no API billing. Without this sign-in nothing below works: neither the bot nor its answers.",
+    openTerminal: "Open the terminal",
+    dialogTitle: "Claude Code terminal",
+    dialogDescription: "Sign in to the subscription, connect the bot and confirm the pairing code that arrives in Telegram.",
+    newTab: "Open in a new tab",
+    unreachable: "The chat service is not answering, so the terminal cannot be shown. That is normal on your own machine: the service lives on the server.",
+    botAutomationTitle: "Telegram bot — automation agent",
+    botAutomationLead: "The main bot of the project: you write to it from your phone and Claude Code answers. The token entered here goes to the very file the channel plugin reads — set it up here or in the terminal, it is the same bot either way.",
+    botDevTitle: "Telegram bot — development agent",
+    botDevLead: "The second bot of the project, for driving development. Its place is reserved; it is not built yet.",
+    botDevSoon: "later",
+    allowed: "people paired: {n}",
+    pending: "codes awaiting confirmation: {n}",
+    bot: {
+      placeholder: "Token from @BotFather",
+      save: "Save",
+      saving: "Saving…",
+      saved: "Saved. The bot starts answering after the channel restarts.",
+      configured: "configured",
+      notConfigured: "not configured",
+      hint: "Create the bot in @BotFather and paste its token. Pairing happens in Telegram: the bot sends a code, you confirm it.",
+      appliesOnRestart: "Saving is not yet working: the plugin reads this file when the channel starts, so until it restarts the token is checked by its shape alone.",
+      errBadFormat: "That does not look like a bot token. Copy it from @BotFather whole, including the digits before the colon.",
+      errUnreachable: "The chat service is not answering — the token has not been saved.",
+      errFailed: "Could not save. The reason is in the chat service log.",
+    },
   },
 }
 
@@ -945,7 +1016,7 @@ const RU: TelegramUi = {
   openai: {
     title: "Ключ OpenAI",
     lead:
-      "Боту он нужен чаще, чем нет: без этого ключа голосовая заметка не расшифруется, а ответ не соберётся. Поэтому он настраивается здесь — обе настройки на одном экране.",
+      "Рекомендуется, но не обязателен. На этом ключе живёт память Fractera: векторная база и агентный RAG, то есть граф знаний. С ним бот помнит сказанное, ищет по смыслу и отвечает по вашим документам, а не по последним нескольким сообщениям — именно это делает работу с Telegram-ботом полноценной. Без ключа бот работает, просто своей памяти у него нет.",
     exists: "Ключ OpenAI существует",
     missing: "Ключ OpenAI не задан",
     partial: "Ключ доехал не до всех служб",
@@ -970,6 +1041,38 @@ const RU: TelegramUi = {
     balanceNote:
       "Остаток показать нельзя: OpenAI отдаёт его только браузерной сессии вашего кабинета или админскому ключу с правом api.usage.read. Обычный проектный ключ его не видит.",
     restartNote: "Проект перезапускается, чтобы прочитать новый ключ; служба каналов читает его сразу.",
+  },
+
+  agent: {
+    title: "Подписка Claude Code",
+    statusOn: "вход выполнен",
+    statusOff: "вход не выполнен",
+    lead: "Этим бот и думает. Сообщение из Telegram попадает прямо в живую сессию Claude Code на вашем сервере, а ответ возвращается в Telegram — по вашей подписке, без оплаты API. Без этого входа не работает ничего из того, что ниже: ни бот, ни ответы.",
+    openTerminal: "Открыть терминал",
+    dialogTitle: "Терминал Claude Code",
+    dialogDescription: "Войдите в подписку, подключите бота и подтвердите код привязки, который придёт в Telegram.",
+    newTab: "Открыть отдельной вкладкой",
+    unreachable: "Служба чата не отвечает, поэтому терминал показать нечем. На вашем компьютере это нормально: служба живёт на сервере.",
+    botAutomationTitle: "Telegram-бот — агент автоматизации",
+    botAutomationLead: "Основной бот проекта: вы пишете ему с телефона, отвечает Claude Code. Токен, введённый здесь, попадает в тот же файл, который читает плагин каналов, — настроите отсюда или из терминала, бот получится один и тот же.",
+    botDevTitle: "Telegram-бот — агент разработки",
+    botDevLead: "Второй бот проекта, для управления разработкой. Место под него занято; сам он ещё не построен.",
+    botDevSoon: "позже",
+    allowed: "привязано собеседников: {n}",
+    pending: "ожидают подтверждения: {n}",
+    bot: {
+      placeholder: "Токен от @BotFather",
+      save: "Сохранить",
+      saving: "Сохраняю…",
+      saved: "Сохранено. Бот начнёт отвечать после перезапуска канала.",
+      configured: "настроен",
+      notConfigured: "не настроен",
+      hint: "Заведите бота у @BotFather и вставьте его токен. Привязка происходит в Telegram: бот пришлёт код, вы его подтвердите.",
+      appliesOnRestart: "Сохранить — ещё не значит заработало: плагин читает этот файл при запуске канала, и до перезапуска токен проверен только своей формой.",
+      errBadFormat: "Это не похоже на токен бота. Скопируйте его у @BotFather целиком, вместе с цифрами до двоеточия.",
+      errUnreachable: "Служба чата не отвечает — токен не сохранён.",
+      errFailed: "Сохранить не удалось. Причина — в журнале службы чата.",
+    },
   },
 }
 

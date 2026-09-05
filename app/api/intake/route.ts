@@ -1,4 +1,4 @@
-// @api receive one message into all stores and return the text summary, no answer
+// @api receive one message into every store and return text for the agent
 import { NextRequest, NextResponse } from "next/server"
 import { ingest, type Incoming } from "@/lib/products/telegram-desk/ingest"
 
